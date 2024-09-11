@@ -1,0 +1,93 @@
+{
+  "Files": [
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/blazor.webassembly.js",
+      "PackagePath": "staticwebassets/_framework/blazor.webassembly.js"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/obj/Debug/net8.0/compressed/4y0e1h684l.gz",
+      "PackagePath": "staticwebassets/_framework/blazor.webassembly.js.gz"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/obj/Debug/net8.0/scopedcss/bundle/OverblikPlus.styles.css",
+      "PackagePath": "staticwebassets/OverblikPlus.styles.css"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/breakfast.png",
+      "PackagePath": "staticwebassets/breakfast.png"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/clothes.png",
+      "PackagePath": "staticwebassets/clothes.png"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/css/app.css",
+      "PackagePath": "staticwebassets/css/app.css"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/css/bootstrap/bootstrap.min.css",
+      "PackagePath": "staticwebassets/css/bootstrap/bootstrap.min.css"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/css/bootstrap/bootstrap.min.css.map",
+      "PackagePath": "staticwebassets/css/bootstrap/bootstrap.min.css.map"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/favicon.png",
+      "PackagePath": "staticwebassets/favicon.png"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/icon-192x192.png",
+      "PackagePath": "staticwebassets/icon-192x192.png"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/icon-512x512.png",
+      "PackagePath": "staticwebassets/icon-512x512.png"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/index.html",
+      "PackagePath": "staticwebassets/index.html"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/manifest.json",
+      "PackagePath": "staticwebassets/manifest.json"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/sample-data/employees.json",
+      "PackagePath": "staticwebassets/sample-data/employees.json"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/sample-data/tasks.json",
+      "PackagePath": "staticwebassets/sample-data/tasks.json"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/sample-data/weather.json",
+      "PackagePath": "staticwebassets/sample-data/weather.json"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/service-worker.js",
+      "PackagePath": "staticwebassets/service-worker.js"
+    },
+    {
+      "Id": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/wwwroot/toothbrush.png",
+      "PackagePath": "staticwebassets/toothbrush.png"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.OverblikPlus.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.build.OverblikPlus.props",
+      "PackagePath": "build\\OverblikPlus.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.OverblikPlus.props",
+      "PackagePath": "buildMultiTargeting\\OverblikPlus.props"
+    },
+    {
+      "Id": "obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.OverblikPlus.props",
+      "PackagePath": "buildTransitive\\OverblikPlus.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
