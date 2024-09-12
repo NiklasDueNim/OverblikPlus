@@ -1,4 +1,5 @@
 using API.Dto;
+using API.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -8,18 +9,27 @@ namespace API.Controllers;
     [Route("api/[controller]")]
     public class TaskController : ControllerBase
     {
+        private readonly ITaskService _taskService;
 
-        [HttpGet("today")]
-        public IActionResult GetTodaysTasks()
-        { 
-            var tasks = new List<string> { "Task 1", "Task 2", "Task 3"};
-            return Ok(tasks);
+        public TaskController(ITaskService taskService)
+        {
+            _taskService = taskService;
+        }
+
+        [HttpGet("id")]
+        public IActionResult GetTaskById(int id)
+        {
+            var task = _taskService.GetTaskById(id);
+            if (task == null) 
+                return NotFound();
+            
+            return Ok(task);
         }
 
         [HttpPost]
         public IActionResult CreateTask([FromBody] TaskDto taskDto)
         {
-            return (CreatedAtAction(nameof(GetTodaysTasks), new { id = taskDto.Id, taskDto }));
+            return (CreatedAtAction(nameof(GetTaskById), new { id = taskDto.Id, taskDto }));
         }
 
         [HttpPut("{id}")]

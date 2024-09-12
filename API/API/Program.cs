@@ -1,3 +1,4 @@
+using API.Services;
 using DataAccess;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
@@ -5,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<ITaskService, TaskService>();
     
 
 builder.Services.AddControllers();
