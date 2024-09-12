@@ -2190,11 +2190,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/OverblikPlus.csproj",
+      "projectUniqueName": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/OverblikPlus.csproj",
       "projectName": "OverblikPlus",
-      "projectPath": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/OverblikPlus.csproj",
+      "projectPath": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/OverblikPlus.csproj",
       "packagesPath": "/Users/niklasduenim/.nuget/packages/",
-      "outputPath": "/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/obj/",
+      "outputPath": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/niklasduenim/.nuget/NuGet/NuGet.Config"

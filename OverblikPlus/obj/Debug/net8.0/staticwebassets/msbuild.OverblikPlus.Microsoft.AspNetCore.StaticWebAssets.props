@@ -281,7 +281,7 @@
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Alternative</AssetRole>
-      <RelatedAsset>/Users/niklasduenim/Documents/Programmering/IkkeGitten/OverblikPlus/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/blazor.webassembly.js</RelatedAsset>
+      <RelatedAsset>/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/blazor.webassembly.js</RelatedAsset>
       <AssetTraitName>Content-Encoding</AssetTraitName>
       <AssetTraitValue>gzip</AssetTraitValue>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
