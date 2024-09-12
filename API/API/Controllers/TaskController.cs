@@ -19,7 +19,7 @@ namespace API.Controllers;
         [HttpPost]
         public IActionResult CreateTask([FromBody] TaskDto taskDto)
         {
-            return Ok("Opgave oprettet");
+            return (CreatedAtAction(nameof(GetTodaysTasks), new { id = taskDto.Id, taskDto }));
         }
 
         [HttpPut("{id}")]
