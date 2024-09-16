@@ -1,4 +1,6 @@
+using API.Dto;
 using DataAccess;
+using DataAccess.Models;
 
 namespace API.Services;
 
@@ -10,17 +12,18 @@ public class TaskService : ITaskService
     {
         _dbContext = dbContext;
     }
-    public IEnumerable<Task> GetAllTasks()
+    public IEnumerable<TaskDto> GetAllTasks()
     {
         throw new NotImplementedException();
     }
 
-    public Task GetTaskById(int id)
+    public TaskDto GetTaskById(int id)
     {
-        return _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
+        var task = _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
+        return TaskMapper.MapToTaskDto(task);
     }
 
-    public void CreateTask(Task task)
+    public void CreateTask(TaskDto taskDto)
     {
         throw new NotImplementedException();
     }
@@ -30,7 +33,7 @@ public class TaskService : ITaskService
         throw new NotImplementedException();
     }
 
-    public void UpdateTask(Task task)
+    public void UpdateTask(TaskDto task)
     {
         throw new NotImplementedException();
     }

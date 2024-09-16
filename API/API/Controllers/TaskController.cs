@@ -29,7 +29,7 @@ namespace API.Controllers;
         [HttpPost]
         public IActionResult CreateTask([FromBody] TaskDto taskDto)
         {
-            return (CreatedAtAction(nameof(GetTaskById), new { id = taskDto.Id, taskDto }));
+            return Ok();
         }
 
         [HttpPut("{id}")]
@@ -43,6 +43,5 @@ namespace API.Controllers;
         {
             return Ok($"Opgave med ID: {id} er slettet");
         }
-
     }
 

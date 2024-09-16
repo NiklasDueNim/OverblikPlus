@@ -1,6 +1,6 @@
 namespace DataAccess.Models;
 
-public class Task
+public class TaskToDo
 {
     public int Id { get; set; }
     
