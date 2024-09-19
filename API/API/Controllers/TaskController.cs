@@ -49,7 +49,8 @@ namespace API.Controllers
         [HttpDelete ("{id}")]
         public IActionResult DeleteTask(int id)
         {
-            return Ok($"Opgave med ID: {id} er slettet");
+            _taskService.DeleteTask(id);
+            return Ok();
         }
     }
     

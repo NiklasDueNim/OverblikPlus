@@ -26,7 +26,6 @@ namespace API.Services
         public TaskDto GetTaskById(int id)
         {
             var task = _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
-
             return _mapper.Map<TaskDto>(task);
         }
 
@@ -41,7 +40,10 @@ namespace API.Services
 
         public void DeleteTask(int id)
         {
-            throw new NotImplementedException();
+            var task = _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
+            
+            _dbContext.Remove(task);
+            _dbContext.SaveChanges();
         }
 
         public void UpdateTask(TaskDto task)
