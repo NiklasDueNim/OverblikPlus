@@ -1,14 +1,16 @@
 using API.Dto;
 using DataAccess.Models;
 
-namespace API.Services;
-
-public interface ITaskService
+namespace API.Services
 {
-    IEnumerable<TaskDto> GetAllTasks();
-    TaskDto GetTaskById(int id);
-    void CreateTask(TaskDto taskDto);
-    void DeleteTask(int id);
-    void UpdateTask(TaskDto taskDto);
+    public interface ITaskService
+    {
+        IEnumerable<TaskDto> GetAllTasks();
+        TaskDto GetTaskById(int id);
+        void CreateTask(TaskDto taskDto);
+        void DeleteTask(int id);
+        void UpdateTask(TaskDto taskDto);
     
+    }
 }
+

@@ -2,7 +2,7 @@ namespace API.Dto;
 
 public class TaskDto
 {
-    public int Id { get; set; }
+    public int Id { get; set; } // Brugeren kender vel ikke id, Description, ImageUrl
     
     public string Name { get; set; }
     
