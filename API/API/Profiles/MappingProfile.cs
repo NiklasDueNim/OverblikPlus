@@ -8,7 +8,8 @@ namespace API.Profiles
     {
         public MappingProfile()
         {
-            CreateMap<TaskToDo, TaskDto>();
+            CreateMap<TaskToDo, TaskDto>(); //Read
+            CreateMap<CreateTaskDto, TaskToDo>(); //Create
         }
     }
 }

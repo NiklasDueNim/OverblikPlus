@@ -7,7 +7,7 @@ namespace API.Services
     {
         IEnumerable<TaskDto> GetAllTasks();
         TaskDto GetTaskById(int id);
-        void CreateTask(TaskDto taskDto);
+        int CreateTask(CreateTaskDto createTaskDto);
         void DeleteTask(int id);
         void UpdateTask(TaskDto taskDto);
     

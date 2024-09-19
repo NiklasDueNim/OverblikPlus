@@ -2,9 +2,8 @@ using API.Dto;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers;
-
-
+namespace API.Controllers
+{
     [ApiController]
     [Route("api/[controller]")]
     public class TaskController : ControllerBase
@@ -27,9 +26,10 @@ namespace API.Controllers;
         }
 
         [HttpPost]
-        public IActionResult CreateTask([FromBody] TaskDto taskDto)
+        public IActionResult CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
-            return Ok();
+            var taskId =  _taskService.CreateTask(createTaskDto);
+            return CreatedAtAction(nameof(GetTaskById), new {id = taskId}, null);
         }
 
         [HttpPut("{id}")]
@@ -44,4 +44,7 @@ namespace API.Controllers;
             return Ok($"Opgave med ID: {id} er slettet");
         }
     }
+    
+}
+
 

@@ -1,3 +1,4 @@
+using API.Controllers;
 using API.Dto;
 using DataAccess;
 using DataAccess.Models;
@@ -27,9 +28,13 @@ namespace API.Services
             return _mapper.Map<TaskDto>(task);
         }
 
-        public void CreateTask(TaskDto taskDto)
+        public int CreateTask(CreateTaskDto createTaskDto)
         {
-            throw new NotImplementedException();
+            var task = _mapper.Map<TaskToDo>(createTaskDto);
+            _dbContext.Tasks.Add(task);
+            _dbContext.SaveChanges();
+
+            return task.Id;
         }
 
         public void DeleteTask(int id)
