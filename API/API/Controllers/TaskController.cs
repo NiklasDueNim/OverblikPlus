@@ -1,5 +1,6 @@
 using API.Dto;
 using API.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -22,6 +23,13 @@ namespace API.Controllers
             if (task == null) 
                 return NotFound();
             
+            return Ok(task);
+        }
+
+        [HttpGet("tasks")]
+        public IActionResult GetAllTasks()
+        {
+            var task = _taskService.GetAllTasks();
             return Ok(task);
         }
 

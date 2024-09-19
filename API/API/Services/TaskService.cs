@@ -3,6 +3,7 @@ using API.Dto;
 using DataAccess;
 using DataAccess.Models;
 using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace API.Services
 {
@@ -18,7 +19,8 @@ namespace API.Services
         }
         public IEnumerable<TaskDto> GetAllTasks()
         {
-            throw new NotImplementedException();
+            var task = _dbContext.Tasks.ToList();
+            return _mapper.Map<List<TaskDto>>(task);
         }
 
         public TaskDto GetTaskById(int id)
