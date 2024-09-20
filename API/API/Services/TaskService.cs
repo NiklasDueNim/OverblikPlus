@@ -17,10 +17,10 @@ namespace API.Services
             _dbContext = dbContext;
             _mapper = mapper;
         }
-        public IEnumerable<TaskDto> GetAllTasks()
+        public IEnumerable<ReadTaskDto> GetAllTasks()
         {
             var task = _dbContext.Tasks.ToList();
-            return _mapper.Map<List<TaskDto>>(task);
+            return _mapper.Map<List<ReadTaskDto>>(task);
         }
 
         public TaskEntity GetTaskById(int id)

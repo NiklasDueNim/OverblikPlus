@@ -5,21 +5,21 @@ namespace API
 {
     public static class TaskMapper
     {
-        public static TaskEntity MapToTaskToDo(TaskDto taskDto)
+        public static TaskEntity MapToTaskToDo(ReadTaskDto readTaskDto)
             {
                 return new TaskEntity 
                 {
-                    Name = taskDto.Name,
-                    IsCompleted = taskDto.IsCompleted
+                    Name = readTaskDto.Name,
+                    IsCompleted = readTaskDto.IsCompleted
                 };
             }
 
-        public static TaskDto MapToTaskDto(TaskEntity taskEntity)
+        public static ReadTaskDto MapToTaskDto(TaskEntity taskEntity)
         {
             if (taskEntity == null)
                 return null;
             
-            return new TaskDto
+            return new ReadTaskDto
             {
                 Name = taskEntity.Name,
                 IsCompleted = taskEntity.IsCompleted
