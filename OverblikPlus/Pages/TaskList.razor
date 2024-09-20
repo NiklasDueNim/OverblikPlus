@@ -1,5 +1,6 @@
 @page "/tasks"
-@inject HttpClient Http
+@using OverblikPlus.Services
+@inject ITaskService TaskService
 
 <h3>Dagens Gøremål</h3>
 
@@ -36,7 +37,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        tasks = await Http.GetFromJsonAsync<List<TaskItem>>("sample-data/tasks.json");
+        tasks = await TaskService.GetTasksAsync();
     }
 
     private void MarkAsCompleted(TaskItem task)
