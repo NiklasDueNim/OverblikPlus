@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "hdxvG24La9PbeD2QBCHyCWMCaghPZX8Vq57pP4ZVIMw=",
+  "Hash": "4o6u8qDmCxsRLnMHd8wTWtPPhR2ULbgqEAf/A9SugIc=",
   "Source": "OverblikPlus",
   "BasePath": "/",
   "Mode": "Root",
@@ -71,7 +71,7 @@
       "AssetTraitValue": "native",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.7/runtimes/browser-wasm/native/dotnet.js"
+      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.8/runtimes/browser-wasm/native/dotnet.js"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.js.map",
@@ -90,15 +90,15 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.7/runtimes/browser-wasm/native/dotnet.js.map"
+      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.8/runtimes/browser-wasm/native/dotnet.js.map"
     },
     {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.8.0.7.y2f651p0qo.js",
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.8.0.8.gm0p869l0b.js",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
       "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.native.8.0.7.y2f651p0qo.js",
+      "RelativePath": "_framework/dotnet.native.8.0.8.gm0p869l0b.js",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -109,7 +109,7 @@
       "AssetTraitValue": "native",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.7/runtimes/browser-wasm/native/dotnet.native.js"
+      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.8/runtimes/browser-wasm/native/dotnet.native.js"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.wasm",
@@ -128,15 +128,15 @@
       "AssetTraitValue": "native",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.7/runtimes/browser-wasm/native/dotnet.native.wasm"
+      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.8/runtimes/browser-wasm/native/dotnet.native.wasm"
     },
     {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.8.0.7.fhze1su5pp.js",
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.8.0.8.a0u3qoy1bg.js",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
       "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.runtime.8.0.7.fhze1su5pp.js",
+      "RelativePath": "_framework/dotnet.runtime.8.0.8.a0u3qoy1bg.js",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -147,7 +147,7 @@
       "AssetTraitValue": "native",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.7/runtimes/browser-wasm/native/dotnet.runtime.js"
+      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.8/runtimes/browser-wasm/native/dotnet.runtime.js"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.js.map",
@@ -166,7 +166,7 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.7/runtimes/browser-wasm/native/dotnet.runtime.js.map"
+      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.8/runtimes/browser-wasm/native/dotnet.runtime.js.map"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_CJK.dat",
@@ -185,7 +185,7 @@
       "AssetTraitValue": "native",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.7/runtimes/browser-wasm/native/icudt_CJK.dat"
+      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.8/runtimes/browser-wasm/native/icudt_CJK.dat"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_EFIGS.dat",
@@ -204,7 +204,7 @@
       "AssetTraitValue": "native",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.7/runtimes/browser-wasm/native/icudt_EFIGS.dat"
+      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.8/runtimes/browser-wasm/native/icudt_EFIGS.dat"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_no_CJK.dat",
@@ -223,7 +223,7 @@
       "AssetTraitValue": "native",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.7/runtimes/browser-wasm/native/icudt_no_CJK.dat"
+      "OriginalItemSpec": "/Users/niklasduenim/.nuget/packages/microsoft.netcore.app.runtime.mono.browser-wasm/8.0.8/runtimes/browser-wasm/native/icudt_no_CJK.dat"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/Microsoft.AspNetCore.Authorization.wasm",
@@ -4235,6 +4235,25 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Collections.Specialized.wasm"
     },
     {
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/3j817hqu7l.gz",
+      "SourceId": "OverblikPlus",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.js.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.js"
+    },
+    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/3mptlr6e9a.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -4520,6 +4539,25 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Net.NameResolution.wasm"
     },
     {
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/5ss2l6zyss.gz",
+      "SourceId": "OverblikPlus",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.runtime.js.map.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.js.map",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.js.map"
+    },
+    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/5u2niblgcs.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -4613,6 +4651,25 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Linq.Parallel.wasm"
+    },
+    {
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/6afzbbd1ra.gz",
+      "SourceId": "OverblikPlus",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "_framework/icudt_no_CJK.dat.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_no_CJK.dat",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_no_CJK.dat"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/6qysvzqm08.gz",
@@ -4995,6 +5052,25 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Private.CoreLib.wasm"
     },
     {
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/a0u3qoy1bg.gz",
+      "SourceId": "OverblikPlus",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.runtime.8.0.8.a0u3qoy1bg.js.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.8.0.8.a0u3qoy1bg.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.8.0.8.a0u3qoy1bg.js"
+    },
+    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/a4of5r83m8.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -5375,25 +5451,6 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/Microsoft.Extensions.FileSystemGlobbing.wasm"
     },
     {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/d6pi5k1d07.gz",
-      "SourceId": "OverblikPlus",
-      "SourceType": "Computed",
-      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "_framework/icudt_no_CJK.dat.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_no_CJK.dat",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_no_CJK.dat"
-    },
-    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/daqd16jegk.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -5603,25 +5660,6 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Drawing.Primitives.wasm"
     },
     {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/fhze1su5pp.gz",
-      "SourceId": "OverblikPlus",
-      "SourceType": "Computed",
-      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.runtime.8.0.7.fhze1su5pp.js.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.8.0.7.fhze1su5pp.js",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.8.0.7.fhze1su5pp.js"
-    },
-    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/fjeg2w0ogq.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -5753,6 +5791,25 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.IO.Pipes.wasm"
+    },
+    {
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/gm0p869l0b.gz",
+      "SourceId": "OverblikPlus",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.native.8.0.8.gm0p869l0b.js.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.8.0.8.gm0p869l0b.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.8.0.8.gm0p869l0b.js"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/gpe0saotby.gz",
@@ -5943,25 +6000,6 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Configuration.wasm"
-    },
-    {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/itt2ger34w.gz",
-      "SourceId": "OverblikPlus",
-      "SourceType": "Computed",
-      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.js.map.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.js.map",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.js.map"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/iwwkuonabr.gz",
@@ -6306,25 +6344,6 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Xml.XmlSerializer.wasm"
     },
     {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/m5yex2iwr2.gz",
-      "SourceId": "OverblikPlus",
-      "SourceType": "Computed",
-      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.runtime.js.map.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.js.map",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.runtime.js.map"
-    },
-    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/ma9smusven.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -6361,6 +6380,25 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/Microsoft.Extensions.Configuration.Binder.wasm"
+    },
+    {
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/mqi8yf0ofh.gz",
+      "SourceId": "OverblikPlus",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.native.wasm.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.wasm",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.wasm"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/n0cpi8gnjq.gz",
@@ -6513,25 +6551,6 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Globalization.Extensions.wasm"
-    },
-    {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/oalt2tr4dv.gz",
-      "SourceId": "OverblikPlus",
-      "SourceType": "Computed",
-      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "_framework/icudt_EFIGS.dat.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_EFIGS.dat",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_EFIGS.dat"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/odrxlct6qp.gz",
@@ -7009,25 +7028,6 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Formats.Asn1.wasm"
     },
     {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/s4k52lhb1r.gz",
-      "SourceId": "OverblikPlus",
-      "SourceType": "Computed",
-      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.native.wasm.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.wasm",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.wasm"
-    },
-    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/sv0w9wug2y.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -7085,6 +7085,25 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/Microsoft.Win32.Registry.wasm"
     },
     {
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/tdtgbx2uz3.gz",
+      "SourceId": "OverblikPlus",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "_framework/icudt_EFIGS.dat.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_EFIGS.dat",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_EFIGS.dat"
+    },
+    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/to2qo8qb46.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -7140,25 +7159,6 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.IO.IsolatedStorage.wasm"
-    },
-    {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/u7tyjk90vz.gz",
-      "SourceId": "OverblikPlus",
-      "SourceType": "Computed",
-      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.js.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.js",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.js"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/ug2au22q3i.gz",
@@ -7484,6 +7484,25 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Xml.Linq.wasm"
     },
     {
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/win81zr6uo.gz",
+      "SourceId": "OverblikPlus",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "_framework/icudt_CJK.dat.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_CJK.dat",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_CJK.dat"
+    },
+    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/wj8h55tmp9.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -7539,6 +7558,25 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Transactions.wasm"
+    },
+    {
+      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/x7ynn12bhg.gz",
+      "SourceId": "OverblikPlus",
+      "SourceType": "Computed",
+      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.js.map.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.js.map",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.js.map"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/xed6m3blm8.gz",
@@ -7598,25 +7636,6 @@
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Buffers.wasm"
     },
     {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/y2f651p0qo.gz",
-      "SourceId": "OverblikPlus",
-      "SourceType": "Computed",
-      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.native.8.0.7.y2f651p0qo.js.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.8.0.7.y2f651p0qo.js",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/dotnet.native.8.0.7.y2f651p0qo.js"
-    },
-    {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/yajdt2pvg5.gz",
       "SourceId": "OverblikPlus",
       "SourceType": "Computed",
@@ -7634,25 +7653,6 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/System.Text.Encoding.wasm"
-    },
-    {
-      "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/yeepad4oes.gz",
-      "SourceId": "OverblikPlus",
-      "SourceType": "Computed",
-      "ContentRoot": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/",
-      "BasePath": "/",
-      "RelativePath": "_framework/icudt_CJK.dat.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_CJK.dat",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "CopyToOutputDirectory": "PreserveNewest",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/bin/Debug/net8.0/wwwroot/_framework/icudt_CJK.dat"
     },
     {
       "Identity": "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus/obj/Debug/net8.0/compressed/yjrpax1igf.gz",

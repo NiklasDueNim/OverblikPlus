@@ -6,7 +6,7 @@ namespace API.Services
     public interface ITaskService
     {
         IEnumerable<TaskDto> GetAllTasks();
-        TaskToDo GetTaskById(int id);
+        TaskEntity GetTaskById(int id);
         int CreateTask(CreateTaskDto createTaskDto);
         void DeleteTask(int id);
         void UpdateTask(int id, UpdateTaskDto updateTaskDto);

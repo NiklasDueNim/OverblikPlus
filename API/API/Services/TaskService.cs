@@ -23,7 +23,7 @@ namespace API.Services
             return _mapper.Map<List<TaskDto>>(task);
         }
 
-        public TaskToDo GetTaskById(int id)
+        public TaskEntity GetTaskById(int id)
         {
             var task = _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
             return task;
@@ -31,7 +31,7 @@ namespace API.Services
 
         public int CreateTask(CreateTaskDto createTaskDto)
         {
-            var task = _mapper.Map<TaskToDo>(createTaskDto);
+            var task = _mapper.Map<TaskEntity>(createTaskDto);
             _dbContext.Tasks.Add(task);
             _dbContext.SaveChanges();
 

@@ -1,15 +1,15 @@
 {
   "mainAssemblyName": "OverblikPlus",
   "resources": {
-    "hash": "sha256-5kNp1HOfPJKtSpEq5do5N1wj7UvZCjBBs3Zk+DCyPEc=",
+    "hash": "sha256-SdwDThkXg58Q5V3R/WzstBVAKUnDf+VGCMXgnA3Fvms=",
     "jsModuleNative": {
-      "dotnet.native.8.0.7.y2f651p0qo.js": "sha256-tFsxPBbhkdn6GKNBKvCRLzrfAHdyM86odYTe0MtrwMk="
+      "dotnet.native.8.0.8.gm0p869l0b.js": "sha256-juC5sA7gHTLXFEhAKgdM2/RavswpwCtDfjYGsAz2FXg="
     },
     "jsModuleRuntime": {
-      "dotnet.runtime.8.0.7.fhze1su5pp.js": "sha256-soZyw6XWXOLKhA26AOyzSpCP5cAsw1wvhdPHSYNTMfQ="
+      "dotnet.runtime.8.0.8.a0u3qoy1bg.js": "sha256-0Dpj/NkVD5WqSC16ZvJLmlc38iv9+Je+umYBVOycPVU="
     },
     "wasmNative": {
-      "dotnet.native.wasm": "sha256-ApuqKsuYqEC0ZTUIUV5mIV1IIRYYCwmOiB912jgs8CQ="
+      "dotnet.native.wasm": "sha256-OcUTcd7qQceenWEF93409WZcaXp2qQbEyhdchog4RUE="
     },
     "icu": {
       "icudt_CJK.dat": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
@@ -209,10 +209,10 @@
       "mscorlib.wasm": "sha256-fLbZiSHBNdpHoh4EgRqMaNP5NQyIK5TEj6AXFLqo8m8=",
       "netstandard.wasm": "sha256-d4xbAE8qrKq5euUoZHPO+jkYPjlCYBzUew45MKsYKic=",
       "System.Private.CoreLib.wasm": "sha256-8yi6NcX1lkNQgV4WKjnMBYIZyKh4P+OXnXVQmgxGZD4=",
-      "OverblikPlus.wasm": "sha256-p2eR+7UCHc+AZNOjsdqRBvn2oNEzxEl1B8g5KLqSIQQ="
+      "OverblikPlus.wasm": "sha256-thgX0LsCBOX2LSKEdK4WHPzFx9kUza49ZmJh6s9jFm8="
     },
     "pdb": {
-      "OverblikPlus.pdb": "sha256-5ejofo7lRAv8tkJmKMP7vVTX8h8xGDOjXT7/zNvUGCI="
+      "OverblikPlus.pdb": "sha256-QR0ytgNuTEBxsXPKoa5Yx5p1eCCLEbzXAe6XmwgWQs8="
     }
   },
   "cacheBootResources": true,
