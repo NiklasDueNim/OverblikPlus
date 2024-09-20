@@ -23,10 +23,10 @@ namespace API.Services
             return _mapper.Map<List<TaskDto>>(task);
         }
 
-        public TaskDto GetTaskById(int id)
+        public TaskToDo GetTaskById(int id)
         {
             var task = _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
-            return _mapper.Map<TaskDto>(task);
+            return task;
         }
 
         public int CreateTask(CreateTaskDto createTaskDto)
@@ -46,9 +46,15 @@ namespace API.Services
             _dbContext.SaveChanges();
         }
 
-        public void UpdateTask(TaskDto task)
+        public void UpdateTask(int id, UpdateTaskDto updateTaskDto)
         {
-            throw new NotImplementedException();
+            var task = GetTaskById(id);
+
+            if (task != null)
+            {
+                _mapper.Map(updateTaskDto, task);
+                _dbContext.SaveChanges();
+            }
         }
     }
 }

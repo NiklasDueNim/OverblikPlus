@@ -10,6 +10,7 @@ namespace API.Profiles
         {
             CreateMap<TaskToDo, TaskDto>(); //Read
             CreateMap<CreateTaskDto, TaskToDo>(); //Create
+            CreateMap<UpdateTaskDto, TaskToDo>(); // Update
         }
     }
 }

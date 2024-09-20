@@ -41,9 +41,10 @@ namespace API.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateTask(int id, [FromBody] TaskDto taskDto)
+        public IActionResult UpdateTask(int id, [FromBody] UpdateTaskDto updateTaskDto)
         {
-            return Ok($"Opgave med ID {id} er blevet opdateret");
+            _taskService.UpdateTask(id, updateTaskDto);
+            return NoContent();
         }
 
         [HttpDelete ("{id}")]
