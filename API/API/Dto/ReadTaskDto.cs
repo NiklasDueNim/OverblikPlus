@@ -1,3 +1,6 @@
+using System.Reflection.Metadata.Ecma335;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
 namespace API.Dto;
 
 public class ReadTaskDto
@@ -12,5 +15,8 @@ public class ReadTaskDto
     public bool IsCompleted { get; set; }
 
     public DateTime DueDate { get; set; }
+
+    public int UserId { get; set; }
+    public UserDto User { get; set; }
 
 }

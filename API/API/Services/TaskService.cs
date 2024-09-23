@@ -4,6 +4,7 @@ using DataAccess;
 using DataAccess.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
@@ -23,10 +24,12 @@ namespace API.Services
             return _mapper.Map<List<ReadTaskDto>>(task);
         }
 
-        public TaskEntity GetTaskById(int id)
+        public ReadTaskDto GetTaskById(int id)
         {
-            var task = _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
-            return task;
+            var task = _dbContext.Tasks
+                .Include(t => t.User)
+                .FirstOrDefault(t => t.Id == id);
+            return _mapper.Map<ReadTaskDto>(task);
         }
 
         public int CreateTask(CreateTaskDto createTaskDto)
