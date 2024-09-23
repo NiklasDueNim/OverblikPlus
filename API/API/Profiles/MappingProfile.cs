@@ -9,7 +9,7 @@ namespace API.Profiles
         public MappingProfile()
         {
             CreateMap<TaskEntity, ReadTaskDto>()
-                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User)); //Read
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username)); //Read
             CreateMap<CreateTaskDto, TaskEntity>(); //Create
             CreateMap<UpdateTaskDto, TaskEntity>(); // Update
             CreateMap<UserEntity, UserDto>();

@@ -17,6 +17,7 @@ public class ReadTaskDto
     public DateTime DueDate { get; set; }
 
     public int UserId { get; set; }
-    public UserDto User { get; set; }
+    
+    public string Username { get; set; }
 
 }

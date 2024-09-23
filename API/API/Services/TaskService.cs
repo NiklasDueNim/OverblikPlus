@@ -51,11 +51,11 @@ namespace API.Services
 
         public void UpdateTask(int id, UpdateTaskDto updateTaskDto)
         {
-            var task = GetTaskById(id);
+            var taskEntity = _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
 
-            if (task != null)
+            if (taskEntity != null)
             {
-                _mapper.Map(updateTaskDto, task);
+                _mapper.Map(updateTaskDto, taskEntity);
                 _dbContext.SaveChanges();
             }
         }
