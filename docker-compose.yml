@@ -1,14 +1,14 @@
-version: '3.8'
-
+version: "3.8"
 services:
   api:
     build:
       context: ./API
-      dockerfile: Dockerfile
+      dockerfile: API/Dockerfile  # Sørg for at dette peger på den rigtige placering
     ports:
       - "5165:5165"
-    networks:
-      - mynetwork
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5165
 
   frontend:
     build:
@@ -16,8 +16,5 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
-    networks:
-      - mynetwork
-
-networks:
-  mynetwork:
+    depends_on:
+      - api

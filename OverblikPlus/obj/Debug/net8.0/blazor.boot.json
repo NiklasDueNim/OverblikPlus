@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "OverblikPlus",
   "resources": {
-    "hash": "sha256-CtRL7A+pHFL0nXL9IliZx14g17haJONMD1+YKNVJTWA=",
+    "hash": "sha256-GLWDxs2ky+4O1eFRMNs8tT34OPP3OT+Pimmp8ncwb6Y=",
     "jsModuleNative": {
       "dotnet.native.8.0.8.gm0p869l0b.js": "sha256-juC5sA7gHTLXFEhAKgdM2/RavswpwCtDfjYGsAz2FXg="
     },
@@ -209,10 +209,10 @@
       "mscorlib.wasm": "sha256-fLbZiSHBNdpHoh4EgRqMaNP5NQyIK5TEj6AXFLqo8m8=",
       "netstandard.wasm": "sha256-d4xbAE8qrKq5euUoZHPO+jkYPjlCYBzUew45MKsYKic=",
       "System.Private.CoreLib.wasm": "sha256-8yi6NcX1lkNQgV4WKjnMBYIZyKh4P+OXnXVQmgxGZD4=",
-      "OverblikPlus.wasm": "sha256-OgCkqHCnDAn8NUb/FAYgS9X0U3wfLUGZvHEx2OKz7CI="
+      "OverblikPlus.wasm": "sha256-mgd1raeGcDUF+zq6hc2ur/aJfYDF8s2ubUxyJlXiXSg="
     },
     "pdb": {
-      "OverblikPlus.pdb": "sha256-EU4oQA1WKs06A4TSKb05oUCRVg2O9rS2GyzuEi1uIq8="
+      "OverblikPlus.pdb": "sha256-aurN74ZriKUROfil/tskhniDN9IDEK6SDzOOAXFtYbo="
     }
   },
   "cacheBootResources": true,
