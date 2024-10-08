@@ -19,11 +19,11 @@ namespace API.Controllers
         [HttpGet("id")]
         public IActionResult GetTaskById(int id)
         {
-            var task = _taskService.GetTaskById(id);
-            if (task == null) 
+            var taskDto = _taskService.GetTaskById(id);
+            if (taskDto == null) 
                 return NotFound();
             
-            return Ok(task);
+            return Ok(taskDto);
         }
 
         [HttpGet("tasks")]

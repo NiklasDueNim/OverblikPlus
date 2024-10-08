@@ -1,0 +1,9 @@
+# Ignorer bin og obj mapperne
+**/bin/
+**/obj/
+
+# Ignorer AssemblyInfo filer
+**/AssemblyInfo.cs
+**/AssemblyInfoInputs.cache
+
+
