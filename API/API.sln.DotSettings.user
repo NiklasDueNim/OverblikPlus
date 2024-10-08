@@ -1,0 +1,16 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=75066ade_002Dcabf_002D4b31_002Dbacf_002D7be64abf9d25/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="GetAllTasks_ShouldReturnEmptyList_WhenNoTasks" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::6A54856A-4C55-4D4B-92A5-419DD732D6AD::net8.0::TaskServiceTests.GetAllTasks_ShouldReturnEmptyList_WhenNoTasks&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ca3b3358_002De30e_002D4873_002Db5c7_002D5f64ecd4cb8d/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TaskServiceTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::6A54856A-4C55-4D4B-92A5-419DD732D6AD::net8.0::TaskServiceTests&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e6da1b68_002Dd67f_002D4999_002Db6ec_002D5b7f9609c9fe/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="GetAllTasks_ShouldReturnEmptyList_WhenNoTasks #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::6A54856A-4C55-4D4B-92A5-419DD732D6AD::net8.0::TaskServiceTests.GetAllTasks_ShouldReturnEmptyList_WhenNoTasks&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
