@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OverblikPlus")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4b527b24daa3e6de491441a3ffb323cc92c0f0b4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f292dd89fb6a6c0249a3d6a7359061fc86ccf6c7")]
 [assembly: System.Reflection.AssemblyProductAttribute("OverblikPlus")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OverblikPlus")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
