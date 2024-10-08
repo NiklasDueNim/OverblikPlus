@@ -1,6 +1,6 @@
 namespace API.Dto;
 
-public class UserDto
+public class ReadUserDto
 {
     public int Id { get; set; }
     
