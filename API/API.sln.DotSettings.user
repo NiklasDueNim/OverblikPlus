@@ -9,8 +9,20 @@
     &lt;TestId&gt;xUnit::6A54856A-4C55-4D4B-92A5-419DD732D6AD::net8.0::TaskServiceTests&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e4002117_002Dc931_002D43e5_002D9cb9_002D3eccfbf1d9fd/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from TaskServiceTests.cs" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;ProjectFile&gt;6A54856A-4C55-4D4B-92A5-419DD732D6AD/f:TaskServiceTests.cs&lt;/ProjectFile&gt;
+&lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e6da1b68_002Dd67f_002D4999_002Db6ec_002D5b7f9609c9fe/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="GetAllTasks_ShouldReturnEmptyList_WhenNoTasks #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;xUnit::6A54856A-4C55-4D4B-92A5-419DD732D6AD::net8.0::TaskServiceTests.GetAllTasks_ShouldReturnEmptyList_WhenNoTasks&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ea3a0853_002D4ab9_002D453c_002D8703_002D32ff3abbef31/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Test1 #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::26FF7335-8F05-4A9C-8453-135E3D3CA989::net8.0::Tests.UnitTest1.Test1&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=fa9838a8_002D1837_002D4941_002Db274_002De2a79cdf817e/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Test1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;ProjectFile&gt;26FF7335-8F05-4A9C-8453-135E3D3CA989/f:TaskServiceTest.cs&lt;/ProjectFile&gt;
+&lt;/SessionState&gt;</s:String>
+	</wpf:ResourceDictionary>

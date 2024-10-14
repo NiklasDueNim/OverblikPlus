@@ -9,27 +9,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="91f38560-370a-49c0-be4a-a8ca778086b5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.API.dir/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.API.dir/.idea/indexLayout.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.API.dir/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Dockerfile.dev" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Dto/CreateUserDto.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Services/IUserService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dto/ReadTaskDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Dto/ReadTaskDto.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dto/UserDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Dto/ReadUserDto.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Profiles/MappingProfile.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Profiles/MappingProfile.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TaskMapper.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/Debug/net8.0/API.dll" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net8.0/API.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/Debug/net8.0/API.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net8.0/API.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/API.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/API.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/API.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/API.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/API.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/API.csproj.CoreCompileInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/API.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/API.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/API.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/API.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/API.sourcelink.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/API.sourcelink.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/ref/API.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/ref/API.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net8.0/refint/API.dll" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net8.0/refint/API.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/rider.project.model.nuget.info" beforeDir="false" afterPath="$PROJECT_DIR$/obj/rider.project.model.nuget.info" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.API.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.API.dir/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../OverblikPlus/obj/Debug/net8.0/OverblikPlus.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../../OverblikPlus/obj/Debug/net8.0/OverblikPlus.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../OverblikPlus/obj/Debug/net8.0/OverblikPlus.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/../../OverblikPlus/obj/Debug/net8.0/OverblikPlus.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../OverblikPlus/obj/rider.project.model.nuget.info" beforeDir="false" afterPath="$PROJECT_DIR$/../../OverblikPlus/obj/rider.project.model.nuget.info" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,7 +33,7 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;API&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -109,6 +92,8 @@
       <workItem from="1728376600425" duration="21000" />
       <workItem from="1728377112681" duration="339000" />
       <workItem from="1728382001632" duration="54000" />
+      <workItem from="1728484560057" duration="1039000" />
+      <workItem from="1728895056900" duration="46000" />
     </task>
     <servers />
   </component>
