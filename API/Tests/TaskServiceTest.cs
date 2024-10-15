@@ -5,6 +5,7 @@ using DataAccess;
 using DataAccess.Models;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Xunit.Sdk;
 
 public class TaskServiceTests
 {
@@ -171,6 +172,13 @@ public class TaskServiceTests
         Assert.Equal(updateTaskDto.Name, updatedTask.Name);
         Assert.Equal(updateTaskDto.Description, updatedTask.Description);
         Assert.Equal(updateTaskDto.ImageUrl, updatedTask.ImageUrl);
+    }
+
+    [Fact]
+    public void FailTest()
+    {
+        throw new NotImplementedException();
+
     }
 
 }
