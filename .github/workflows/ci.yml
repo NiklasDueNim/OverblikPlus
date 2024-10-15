@@ -20,8 +20,6 @@ jobs:
       uses: actions/setup-dotnet@v4.0.1
       with:
         dotnet-version: 8.0.x # Specify the SDK version you are using
-        global-json-file: ''   # Leave this empty if you're not using global.json
-        config-file: ''        # Leave this empty if you're not using NuGet.config
 
     - name: Install dependencies
       run: dotnet restore
@@ -30,4 +28,4 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Run tests
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --configuration Release --no-restore --verbosity normal
