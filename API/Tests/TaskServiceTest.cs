@@ -1,4 +1,3 @@
-using Xunit;
 using Moq;
 using API.Services;
 using API.Dto;
@@ -6,8 +5,6 @@ using DataAccess;
 using DataAccess.Models;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
 
 public class TaskServiceTests
 {

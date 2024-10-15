@@ -1,9 +1,6 @@
-# Ignorer bin og obj mapperne
-**/bin/
-**/obj/
-
-# Ignorer AssemblyInfo filer
-**/AssemblyInfo.cs
-**/AssemblyInfoInputs.cache
-
-
+*.suo
+*.user
+_ReSharper.*
+bin
+obj
+packages
