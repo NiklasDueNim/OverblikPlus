@@ -174,11 +174,4 @@ public class TaskServiceTests
         Assert.Equal(updateTaskDto.ImageUrl, updatedTask.ImageUrl);
     }
 
-    [Fact]
-    public void FailTest()
-    {
-        throw new NotImplementedException();
-
-    }
-
 }
