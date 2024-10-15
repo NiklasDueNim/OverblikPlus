@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace DataAccess.Models;
 
 public class UserEntity
