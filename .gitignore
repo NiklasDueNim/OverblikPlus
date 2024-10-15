@@ -5,5 +5,5 @@ bin/
 obj/
 packages
 debug/
-DS_Store
+.DS_Store
 .idea
