@@ -3,18 +3,10 @@ services:
   api:
     build:
       context: ./API
-      dockerfile: API/Dockerfile  
+      dockerfile: API/Dockerfile
     ports:
       - "5165:5165"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5165
 
-  frontend:
-    build:
-      context: ./OverblikPlus
-      dockerfile: Dockerfile
-    ports:
-      - "8080:80"
-    depends_on:
-      - api
