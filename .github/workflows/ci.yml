@@ -22,8 +22,7 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies for API
-      run: dotnet restore "API/API.csproj"
-
+      run: dotnet restore "API/API/API.csproj"
 
     - name: Restore dependencies for Tests
       run: dotnet restore "API/Tests/Tests.csproj"
@@ -33,8 +32,7 @@ jobs:
 
     - name: Run tests
       run: dotnet test "API/Tests/Tests.csproj" --no-restore --verbosity normal
-
-    # Docker specific steps
+  
     - name: Build Docker image
       run: docker build -t my-api:latest ./API
 
