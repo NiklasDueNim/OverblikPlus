@@ -2,21 +2,18 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Kopier csproj-filerne og genskab afhængigheder
-# Change 1: Correct the path to DataAccess.csproj (absolute path based on your folder structure)
+# Copy csproj files and restore dependencies
 COPY ["API/API.csproj", "./API/"]
 COPY ["DataAccess/DataAccess.csproj", "./API/DataAccess/"]
-
-# Genskab dependencies
 RUN dotnet restore "./API/API.csproj"
 
-# Kopier resten af projektfilerne og byg applikationen
+# Copy the rest of the files and build the application
 COPY . .
 WORKDIR /app/API
 RUN dotnet build --configuration Release --no-restore
 RUN dotnet publish --configuration Release -o /app/publish
 
-# Runtime stage - kør applikationen i en lille runtime container
+# Runtime stage - run the application in a small runtime container
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
