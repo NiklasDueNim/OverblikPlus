@@ -1,11 +1,10 @@
-using System.Reflection.Metadata.Ecma335;
-
-namespace API.Dto;
+namespace UserService.dto;
 
 public class CreateUserDto
 {
     public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public int Type { get; set; }
     
+    public string LastName { get; set; }
+    
+    public int Type { get; set; }
 }

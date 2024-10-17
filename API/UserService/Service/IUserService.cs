@@ -1,18 +1,18 @@
-using System.Collections.Generic;
-using API.Dto;
+using UserService.dto;
 
-
-namespace API.Services;
+namespace UserService.Service;
 
 public interface IUserService
 {
-    ReadUserDto GetUserById(int id);
-    
     IEnumerable<ReadUserDto> GetAllUsers();
+    
+    ReadUserDto GetUserById(int id);
 
-    int Createuser(CreateUserDto createUserDto);
+    int CreateUser(CreateUserDto createUserDto);
     
     void DeleteUser(int id);
-    
+
+    void UpdateTask(int id, ReadUserDto readUserDto); 
+
 
 }

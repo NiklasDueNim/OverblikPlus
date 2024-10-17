@@ -1,4 +1,4 @@
-namespace API.Dto;
+namespace UserService.dto;
 
 public class ReadUserDto
 {
