@@ -1,9 +1,10 @@
 # Bruger SDK som basebillede for at bygge applikationen
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
-COPY ["API/API.csproj", "./API/"]
-COPY ["DataAccess/DataAccess.csproj", "./DataAccess/"]
-RUN dotnet restore "./API/API.csproj"
+# Kopier csproj-filerne og genskab afhængigheder
+COPY ["API/API/API.csproj", "./API/"]
+COPY ["API/DataAccess/DataAccess.csproj", "./DataAccess/"]
+RUN dotnet restore "./API/API/API.csproj"
 
 # Kopier resten af applikationen og byg den
 COPY . ./
