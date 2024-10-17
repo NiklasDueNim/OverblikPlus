@@ -5,7 +5,7 @@ WORKDIR /app
 # Kopier csproj-filerne og genskab afhængigheder
 # Change 1: Correct the path to DataAccess.csproj (absolute path based on your folder structure)
 COPY ["API/API.csproj", "./API/"]
-COPY ["API/DataAccess/DataAccess.csproj", "./API/DataAccess/"]
+COPY ["DataAccess/DataAccess.csproj", "./API/DataAccess/"]
 
 # Genskab dependencies
 RUN dotnet restore "./API/API.csproj"
