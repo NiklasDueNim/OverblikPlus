@@ -1,9 +1,10 @@
 using DataAccess.Models;
 using UserService.dto;
+using AutoMapper;
 
 namespace UserService.Profile;
 
-public class MappingProfile : AutoMapper.Profile
+public class MappingProfile : Profile
 {
     public MappingProfile()
     {
