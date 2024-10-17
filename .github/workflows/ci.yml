@@ -21,14 +21,25 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Restore dependencies for OverblikPlus
-      run: dotnet restore "OverblikPlus/OverblikPlus.csproj"
+    - name: Restore dependencies for API
+      run: dotnet restore "API/API.csproj"
 
     - name: Restore dependencies for Tests
       run: dotnet restore "API/Tests/Tests.csproj"
 
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
+    - name: Build API
+      run: dotnet build "API/API.csproj" --configuration Release --no-restore
 
     - name: Run tests
       run: dotnet test "API/Tests/Tests.csproj" --no-restore --verbosity normal
+
+    # Docker specific steps
+    - name: Build Docker image
+      run: docker build -t my-api:latest ./API
+
+    - name: Run Docker container
+      run: docker run -d -p 5165:5165 my-api:latest
+
+    - name: Verify API is running
+      run: curl http://localhost:5165/swagger/index.html
+
