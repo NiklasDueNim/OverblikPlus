@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 using UserService.dto;
+using UserService.Service;
 
 namespace UserService.Controller;
 
@@ -8,10 +10,11 @@ namespace UserService.Controller;
 [Route("api/[controller]")]
 public class UserServiceController : ControllerBase
 {
+    private readonly IUserService _userService;
 
-    public UserServiceController()
+    public UserServiceController(IUserService userService)
     {
-        
+        _userService = userService;
     }
 
 
@@ -24,7 +27,8 @@ public class UserServiceController : ControllerBase
     [HttpGet("users")]
     public IActionResult GetAllUsers()
     {
-        throw new NotImplementedException();
+        var users = _userService.GetAllUsers();
+        return Ok(users);
     }
 
     [HttpPost]

@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using API.Dto;
+using TaskService.dto;
 
-
-namespace API.Services
+namespace TaskService.Service
 {
     public interface ITaskService
     {

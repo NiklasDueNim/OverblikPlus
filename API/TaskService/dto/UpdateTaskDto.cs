@@ -1,7 +1,4 @@
-using System;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-
-namespace API.Dto;
+namespace TaskService.dto;
 
 public class UpdateTaskDto
 {

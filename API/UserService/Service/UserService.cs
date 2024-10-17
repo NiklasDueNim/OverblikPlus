@@ -17,7 +17,8 @@ public class UserService : IUserService
     
     public IEnumerable<ReadUserDto> GetAllUsers()
     {
-        throw new NotImplementedException();
+        var user = _dbContext.Users.ToList();
+        return _mapper.Map<List<ReadUserDto>>(user);
     }
 
     public ReadUserDto GetUserById(int id)

@@ -1,4 +1,4 @@
-namespace API.Dto;
+namespace TaskService.dto;
 
 public class ReadTaskDto
 {
@@ -7,6 +7,6 @@ public class ReadTaskDto
     public string Name { get; set; }
     
     public string Description { get; set; }
-    public string Username { get; set; } 
     
+    public string Username { get; set; } 
 }

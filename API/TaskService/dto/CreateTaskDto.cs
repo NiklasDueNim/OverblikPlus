@@ -1,6 +1,4 @@
-using System;
-
-namespace API.Dto;
+namespace TaskService.dto;
 
 public class CreateTaskDto
 {

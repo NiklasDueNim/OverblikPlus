@@ -1,6 +1,6 @@
-using API.Dto;
-using API.Services;
 using Microsoft.AspNetCore.Mvc;
+using TaskService.dto;
+using TaskService.Service;
 
 namespace API.Controllers
 {
@@ -28,8 +28,8 @@ namespace API.Controllers
         [HttpGet("tasks")]
         public IActionResult GetAllTasks()
         {
-            var task = _taskService.GetAllTasks();
-            return Ok(task);
+            var tasks = _taskService.GetAllTasks();
+            return Ok(tasks);
         }
 
         [HttpPost]

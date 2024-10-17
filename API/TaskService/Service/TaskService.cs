@@ -1,14 +1,10 @@
-using System.Collections.Generic;
-using System.Linq;
-using API.Controllers;
-using API.Dto;
+using AutoMapper;
 using DataAccess;
 using DataAccess.Models;
-using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using TaskService.dto;
 
-namespace API.Services
+namespace TaskService.Service
 {
     public class TaskService : ITaskService
     {
