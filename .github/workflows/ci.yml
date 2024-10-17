@@ -24,6 +24,7 @@ jobs:
     - name: Restore dependencies for API
       run: dotnet restore "API/API.csproj"
 
+
     - name: Restore dependencies for Tests
       run: dotnet restore "API/Tests/Tests.csproj"
 
