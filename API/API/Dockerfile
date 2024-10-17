@@ -1,23 +1,22 @@
-# Bruger SDK som basebillede for at bygge applikationen
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Kopier begge csproj filer og genskab afhængigheder
+# Kopier csproj-filerne og genskab afhængigheder
 COPY ["API/API.csproj", "./API/"]
-COPY ["DataAccess/DataAccess.csproj", "./DataAccess/"]
+COPY ["API/DataAccess/DataAccess.csproj", "./DataAccess/"]
+
+# Genskab dependencies
 RUN dotnet restore "./API/API.csproj"
 
-# Kopier resten af applikationen og byg den
-COPY . ./
-RUN dotnet build -c Release -o out
+# Kopier resten af projektfilerne og byg applikationen
+COPY . .
+WORKDIR /app/API
+RUN dotnet build --configuration Release --no-restore
+RUN dotnet publish --configuration Release -o /app/publish
 
-# Runtime stage
+# Runtime stage - kør applikationen i en lille runtime container
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app/out .
-
-# Sørg for, at Kestrel bruger port 5165
-ENV ASPNETCORE_URLS=http://+:5165
-EXPOSE 5165
-
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "API.dll"]
