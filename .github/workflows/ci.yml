@@ -21,11 +21,14 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Install dependencies
-      run: dotnet restore
+    - name: Restore dependencies for OverblikPlus
+      run: dotnet restore "OverblikPlus/OverblikPlus.csproj"
+
+    - name: Restore dependencies for Tests
+      run: dotnet restore "API/Tests/Tests.csproj"
 
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
     - name: Run tests
-      run: dotnet test "Tests/Tests.csproj" --no-restore --verbosity normal
+      run: dotnet test "API/Tests/Tests.csproj" --no-restore --verbosity normal
