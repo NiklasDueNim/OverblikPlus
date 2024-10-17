@@ -8,12 +8,11 @@ COPY ["API/DataAccess/DataAccess.csproj", "API/DataAccess/"]
 COPY ["API/Tests/Tests.csproj", "API/Tests/"]
 COPY ["API/UserService/UserService.csproj", "API/UserService/"]
 
-
-
 # Genskab dependencies for alle projekter
 RUN dotnet restore "API/API/API.csproj" \
     && dotnet restore "API/Tests/Tests.csproj" \
-    && dotnet restore "API/UserService/UserService.csproj"
+    && dotnet restore "API/UserService/UserService.csproj" \
+    && dotnet restore "API/DataAccess/DataAccess.csproj"
 
 # Kopier resten af applikationen
 COPY . .
