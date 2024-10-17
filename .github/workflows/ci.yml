@@ -21,7 +21,10 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Restore dependencies
+    - name: Restore dependencies for OverblikPlus
+      run: dotnet restore "OverblikPlus/OverblikPlus.csproj"
+
+    - name: Restore dependencies for Tests
       run: dotnet restore "API/Tests/Tests.csproj"
 
     - name: Build
