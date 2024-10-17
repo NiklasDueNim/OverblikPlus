@@ -34,7 +34,7 @@ jobs:
       run: dotnet test "API/Tests/Tests.csproj" --no-restore --verbosity normal
   
     - name: Build Docker image for API
-      run: docker build -t my-api:latest -f ./API/API/Dockerfile ./API/API
+      run: docker build -t my-api:latest -f ./API/API/Dockerfile ./API
 
     - name: Run Docker container for API
       run: docker run -d -p 5165:5165 my-api:latest
