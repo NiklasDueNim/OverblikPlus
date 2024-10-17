@@ -21,34 +21,50 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    # Restore dependencies for DataAccess
+    - name: Restore dependencies for DataAccess
+      run: dotnet restore "API/DataAccess/DataAccess.csproj"
+
     # Restore dependencies for UserService
     - name: Restore dependencies for UserService
       run: dotnet restore "API/UserService/UserService.csproj"
 
+    # Restore dependencies for API
     - name: Restore dependencies for API
       run: dotnet restore "API/API/API.csproj"
 
+    # Restore dependencies for Tests
     - name: Restore dependencies for Tests
       run: dotnet restore "API/Tests/Tests.csproj"
+
+    # Build DataAccess
+    - name: Build DataAccess
+      run: dotnet build "API/DataAccess/DataAccess.csproj" --configuration Release --no-restore
 
     # Build UserService
     - name: Build UserService
       run: dotnet build "API/UserService/UserService.csproj" --configuration Release --no-restore
 
+    # Build API
     - name: Build API
       run: dotnet build "API/API/API.csproj" --configuration Release --no-restore
 
+    # Run tests
     - name: Run tests
       run: dotnet test "API/Tests/Tests.csproj" --no-restore --verbosity normal
   
+    # Build Docker image
     - name: Build Docker image
       run: docker build -t my-api:latest -f API/API/Dockerfile ./API/API
 
+    # Run Docker container for API
     - name: Run Docker container for API
       run: docker run -d -p 5165:5165 my-api:latest
 
+    # Wait for API to be ready
     - name: Wait for API to be ready
       run: sleep 20
 
+    # Verify API is running
     - name: Verify API is running
       run: curl http://localhost:5165/swagger/index.html
