@@ -1,6 +1,5 @@
 using API.Dto;
 using API.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
