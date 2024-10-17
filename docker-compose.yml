@@ -3,7 +3,7 @@ services:
   api:
     build:
       context: ./API
-      dockerfile: API/Dockerfile  # Sørg for at dette peger på den rigtige placering
+      dockerfile: API/Dockerfile  
     ports:
       - "5165:5165"
     environment:
