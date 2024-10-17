@@ -4,6 +4,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 # Kopier csproj-filerne og genskab afhængigheder
 COPY ["API/API/API.csproj", "./API/"]
 COPY ["API/DataAccess/DataAccess.csproj", "./DataAccess/"]
+
+# Genskab dependencies
 RUN dotnet restore "./API/API/API.csproj"
 
 # Kopier resten af applikationen og byg den
