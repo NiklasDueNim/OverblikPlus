@@ -26,11 +26,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
+      <Folder Include="Controllers\" />
       <Folder Include="Dto\" />
+      <Folder Include="Profiles\" />
+      <Folder Include="Services\" />
     </ItemGroup>
 
 </Project>
