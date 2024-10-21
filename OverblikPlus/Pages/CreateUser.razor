@@ -1,0 +1,43 @@
+@page "/create-user"
+@using OverblikPlus.Services
+
+<h3>Opret Bruger</h3>
+
+<EditForm Model="@newUser" OnValidSubmit="@HandleCreateUser" class="user-form">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="firstName">Fornavn</label>
+        <InputText id="firstName" @bind-Value="newUser.FirstName" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="lastName">Efternavn</label>
+        <InputText id="lastName" @bind-Value="newUser.LastName" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="username">Brugernavn</label>
+        <InputText id="username" @bind-Value="newUser.Username" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="role">Rolle</label>
+        <InputText id="role" @bind-Value="newUser.Role" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Opret Bruger</button>
+</EditForm>
+
+@code {
+private CreateUserDto newUser = new CreateUserDto();
+
+[Inject]
+public IUserService UserService { get; set; }
+
+private async Task HandleCreateUser()
+{
+await UserService.CreateUserAsync(newUser);
+}
+}
