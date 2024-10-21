@@ -19,6 +19,14 @@ EncryptionHelper.SetEncryptionKey(encryptionKey);
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder => builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -39,6 +47,8 @@ else
 }
 
 app.UseRouting();
+
+app.UseCors("AllowAllOrigins");
 
 app.UseAuthorization();
 app.MapControllers();
