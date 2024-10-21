@@ -1,0 +1,64 @@
+@page "/user-list"
+@using OverblikPlus.Services
+@inject IUserService UserService
+
+<h3>Liste over brugere</h3>
+
+@if (users == null)
+{
+    <p>Indlæser brugere...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Fornavn</th>
+            <th>Efternavn</th>
+            <th>Brugernavn</th>
+            <th>Rolle</th>
+            <th>Handlinger</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in users)
+        {
+            <tr>
+                <td>@user.FirstName</td>
+                <td>@user.LastName</td>
+                <td>@user.Username</td>
+                <td>@user.Role</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="() => EditUser(user.Id)">Rediger</button>
+                    <button class="btn btn-danger" @onclick="() => DeleteUser(user.Id)">Slet</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<ReadUserDto> users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        users = await UserService.GetAllUsers();
+    }
+
+    private async Task EditUser(int userId)
+    {
+        // Implement edit user logic or navigate to the edit page
+    }
+
+    private async Task DeleteUser(int userId)
+    {
+        await UserService.DeleteUser(userId);
+        await LoadUsers();
+    }
+}

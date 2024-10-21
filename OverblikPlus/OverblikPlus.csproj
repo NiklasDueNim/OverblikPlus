@@ -21,4 +21,10 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="OverblikPlus.Tests\OverblikPlus.Tests\obj\OverblikPlus.Tests.csproj.nuget.dgspec.json" />
+      <_ContentIncludedByDefault Remove="OverblikPlus.Tests\OverblikPlus.Tests\obj\project.assets.json" />
+      <_ContentIncludedByDefault Remove="OverblikPlus.Tests\OverblikPlus.Tests\obj\project.packagespec.json" />
+    </ItemGroup>
+
 </Project>
