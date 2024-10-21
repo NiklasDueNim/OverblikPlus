@@ -1,0 +1,19 @@
+@using OverblikPlus.Services
+@inject IUserService userService
+
+<h3>Brugerprofil</h3>
+
+<div>
+    <p>Navn: @user.FirstName @user.LastName</p>
+    <p>Rolle: @user.Role</p>
+    <p>Opgaver: ...</p>
+</div>
+
+@code {
+    private ReadUserDto user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await userService.GetUserByIdAsync(1); // Assuming ID = 1 for demo purposes
+    }
+}
