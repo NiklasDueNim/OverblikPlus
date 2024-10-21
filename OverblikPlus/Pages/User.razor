@@ -1,19 +1,25 @@
+@page "/user/{id:int}"
 @using OverblikPlus.Services
 @inject IUserService userService
 
 <h3>Brugerprofil</h3>
 
-<div>
+@if (user == null)
+{
+    <p>Loading...</p>
+}
+else
+{
     <p>Navn: @user.FirstName @user.LastName</p>
     <p>Rolle: @user.Role</p>
-    <p>Opgaver: ...</p>
-</div>
+}
 
 @code {
+    [Parameter] public int Id { get; set; }
     private ReadUserDto user;
 
     protected override async Task OnInitializedAsync()
     {
-        user = await userService.GetUserByIdAsync(1); // Assuming ID = 1 for demo purposes
+        user = await userService.GetUserByIdAsync(Id);
     }
 }
