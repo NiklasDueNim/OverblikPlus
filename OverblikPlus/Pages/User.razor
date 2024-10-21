@@ -21,6 +21,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        user = await userService.GetUserByIdAsync(Id);
+        user = await userService.GetUserById(Id);
     }
 }

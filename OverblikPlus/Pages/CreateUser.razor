@@ -16,11 +16,20 @@
         <label for="lastName">Efternavn</label>
         <InputText id="lastName" @bind-Value="newUser.LastName" class="form-control" />
     </div>
+    <div class="form-group">
+        <label for="CPRNumber">CPRNumber</label>
+        <InputText id="role" @bind-Value="newUser.CPRNumber" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="MedicationDetails">Medicin</label>
+        <InputText id="role" @bind-Value="newUser.MedicationDetails" class="form-control" />
+    </div>
 
     <div class="form-group">
         <label for="username">Brugernavn</label>
         <InputText id="username" @bind-Value="newUser.Username" class="form-control" />
     </div>
+    
 
     <div class="form-group">
         <label for="role">Rolle</label>
@@ -31,13 +40,22 @@
 </EditForm>
 
 @code {
-private CreateUserDto newUser = new CreateUserDto();
+    private CreateUserDto newUser = new CreateUserDto();
 
-[Inject]
-public IUserService UserService { get; set; }
+    [Inject] public IUserService UserService { get; set; }
 
-private async Task HandleCreateUser()
-{
-await UserService.CreateUserAsync(newUser);
-}
+    private async Task HandleCreateUser()
+    {
+        try
+        {
+            Console.WriteLine($"Forsøger at oprette bruger: {newUser.FirstName}, {newUser.LastName}, {newUser.Username}, {newUser.Role}");
+            await UserService.CreateUser(newUser);
+            Console.WriteLine("Bruger oprettet succesfuldt.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl ved oprettelse af bruger: {ex.Message}");
+        }
+    }
+
 }

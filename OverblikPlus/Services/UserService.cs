@@ -11,17 +11,17 @@ public class UserService : IUserService
         _httpClient = httpClient;
     }
 
-    public async Task<IEnumerable<ReadUserDto>> GetAllUsersAsync()
+    public async Task<IEnumerable<ReadUserDto>> GetAllUsers()
     {
         return await _httpClient.GetFromJsonAsync<IEnumerable<ReadUserDto>>("api/UserService/users");
     }
 
-    public async Task<ReadUserDto> GetUserByIdAsync(int id)
+    public async Task<ReadUserDto> GetUserById(int id)
     {
         return await _httpClient.GetFromJsonAsync<ReadUserDto>($"api/UserService/{id}");
     }
 
-    public async Task<int> CreateUserAsync(CreateUserDto newUser)
+    public async Task<int> CreateUser(CreateUserDto newUser)
     {
         var response = await _httpClient.PostAsJsonAsync("api/UserService", newUser);
         response.EnsureSuccessStatusCode();
@@ -31,13 +31,13 @@ public class UserService : IUserService
         return userId;
     }
 
-    public async Task UpdateUserAsync(int id, UpdateUserDto updatedUser)
+    public async Task UpdateUser(int id, UpdateUserDto updatedUser)
     {
         var response = await _httpClient.PutAsJsonAsync($"api/UserService/{id}", updatedUser);
         response.EnsureSuccessStatusCode();
     }
 
-    public async Task DeleteUserAsync(int id)
+    public async Task DeleteUser(int id)
     {
         var response = await _httpClient.DeleteAsync($"api/UserService/{id}");
         response.EnsureSuccessStatusCode();
