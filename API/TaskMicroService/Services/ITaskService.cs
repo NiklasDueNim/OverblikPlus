@@ -4,12 +4,10 @@ namespace TaskMicroService.Services
 {
     public interface ITaskService
     {
-        IEnumerable<ReadTaskDto> GetAllTasks();
-        ReadTaskDto GetTaskById(int id);
-        int CreateTask(CreateTaskDto createTaskDto);
-        void DeleteTask(int id);
-        void UpdateTask(int id, UpdateTaskDto updateTaskDto);
-    
+        Task<IEnumerable<ReadTaskDto>> GetAllTasks();
+        Task<ReadTaskDto> GetTaskById(int id);
+        Task<int> CreateTask(CreateTaskDto createTaskDto);
+        Task DeleteTask(int id);
+        Task UpdateTask(int id, UpdateTaskDto updateTaskDto);
     }
 }
-

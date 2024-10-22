@@ -1,19 +1,27 @@
-using TaskMicroService.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using TaskMicroService.DataAccess;
 using TaskMicroService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<TaskDbContext>(options => 
+// Registrer DbContext og andre services
+builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers();
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder => builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddControllers();
+builder.Services.AddAutoMapper(typeof(Program));  // Tilføj AutoMapper for mapping
+builder.Services.AddScoped<ITaskService, TaskService>();  // Registrer TaskMicroService
 
 var app = builder.Build();
 
@@ -22,9 +30,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
+app.UseRouting();
+
+app.UseCors("AllowAllOrigins");
+
+app.UseAuthorization();
 app.MapControllers();
-
-app.UseHttpsRedirection();
-
 app.Run();

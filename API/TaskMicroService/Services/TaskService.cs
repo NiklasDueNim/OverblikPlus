@@ -16,45 +16,48 @@ namespace TaskMicroService.Services
             _dbContext = dbContext;
             _mapper = mapper;
         }
-        public IEnumerable<ReadTaskDto> GetAllTasks()
+
+        public async Task<IEnumerable<ReadTaskDto>> GetAllTasks()
         {
-            var task = _dbContext.Tasks.ToList();
-            return _mapper.Map<List<ReadTaskDto>>(task);
+            var tasks = await _dbContext.Tasks.ToListAsync();
+            return _mapper.Map<List<ReadTaskDto>>(tasks);
         }
 
-        public ReadTaskDto GetTaskById(int id)
+        public async Task<ReadTaskDto> GetTaskById(int id)
         {
-            var task = _dbContext.Tasks
+            var task = await _dbContext.Tasks
                 .Include(t => t.User)
-                .FirstOrDefault(t => t.Id == id);
+                .FirstOrDefaultAsync(t => t.Id == id);
+            
             return _mapper.Map<ReadTaskDto>(task);
         }
 
-        public int CreateTask(CreateTaskDto createTaskDto)
+        public async Task<int> CreateTask(CreateTaskDto createTaskDto)
         {
             var task = _mapper.Map<TaskEntity>(createTaskDto);
             _dbContext.Tasks.Add(task);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
             return task.Id;
         }
 
-        public void DeleteTask(int id)
+        public async Task DeleteTask(int id)
         {
-            var task = _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
-            
-            _dbContext.Remove(task);
-            _dbContext.SaveChanges();
+            var task = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+            if (task != null)
+            {
+                _dbContext.Tasks.Remove(task);
+                await _dbContext.SaveChangesAsync();
+            }
         }
 
-        public void UpdateTask(int id, UpdateTaskDto updateTaskDto)
+        public async Task UpdateTask(int id, UpdateTaskDto updateTaskDto)
         {
-            var taskEntity = _dbContext.Tasks.FirstOrDefault(t => t.Id == id);
-
+            var taskEntity = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
             if (taskEntity != null)
             {
                 _mapper.Map(updateTaskDto, taskEntity);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
             }
         }
     }

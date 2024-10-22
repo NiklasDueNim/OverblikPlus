@@ -2,18 +2,21 @@ using AutoMapper;
 using TaskMicroService.dto;
 using TaskMicroService.Entities;
 
-
-namespace TaskMicroService.Profiles;
-
-public class MappingProfile : Profile
+namespace TaskMicroService.Profiles
 {
-    public MappingProfile()
+    public class MappingProfile : Profile
     {
-        CreateMap<TaskEntity, ReadTaskDto>()
-            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username)); //Read
-        CreateMap<CreateTaskDto, TaskEntity>(); //Create
-        CreateMap<UpdateTaskDto, TaskEntity>(); // Update
-            
+        public MappingProfile()
+        {
+            // Mapping TaskEntity to ReadTaskDto, including the Username from the related User entity
+            CreateMap<TaskEntity, ReadTaskDto>()
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User != null ? src.User.Username : string.Empty)); // Read
+
+            // Mapping from CreateTaskDto to TaskEntity for creating new tasks
+            CreateMap<CreateTaskDto, TaskEntity>();
+
+            // Mapping from UpdateTaskDto to TaskEntity for updating existing tasks
+            CreateMap<UpdateTaskDto, TaskEntity>();
+        }
     }
-    
 }
