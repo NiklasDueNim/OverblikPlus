@@ -1,8 +1,6 @@
 using System.Net.Http.Json;
-using Microsoft.VisualBasic;
-using OverblikPlus.Pages;
-
-namespace OverblikPlus.Services;
+using OverblikPlus;
+using OverblikPlus.Services;
 
 public class TaskService : ITaskService
 {
@@ -12,14 +10,19 @@ public class TaskService : ITaskService
     {
         _httpClient = httpClient;
     }
-    
-    public async Task<List<TaskList.TaskItem>> GetTasksAsync()
-    {
-        return await _httpClient.GetFromJsonAsync<List<TaskList.TaskItem>>("api/task/tasks");
-    }
 
-    public async Task MarkTaskAsCompleted(int taskId)
+    public Task<List<TaskDto>> GetAllTasksAsync()
     {
         throw new NotImplementedException();
+    }
+
+    public Task<List<TaskDto>> GetTasksForUserAsync(int userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<TaskDto>> GetTasksForTodayAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<TaskDto>>("api/tasks/today");
     }
 }

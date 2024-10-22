@@ -37,7 +37,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        tasks = await TaskService.GetTasksAsync();
+        //tasks = await TaskService.GetAllTasksAsync();
     }
 
     private void MarkAsCompleted(TaskItem task)

@@ -1,0 +1,69 @@
+@page "/"
+@using OverblikPlus.Services
+@inject IUserService UserService
+@inject ITaskService TaskService
+
+<h1>Velkommen, @user.FirstName @user.LastName!</h1>
+
+<h3>Dagens Opgaver</h3>
+<ul>
+    @foreach (var task in todaysTasks)
+    {
+        <li>
+            <input type="checkbox" @bind="task.IsCompleted" />
+            <span>@task.Name</span>
+        </li>
+    }
+</ul>
+
+<h3>Notifikationer</h3>
+<ul>
+    @foreach (var notification in notifications)
+    {
+        <li>@notification.Message</li>
+    }
+</ul>
+
+<h3>XP Progress</h3>
+<div class="xp-progress">
+    <div class="xp-progress-bar" style="width: @(xpPercentage)%"></div>
+</div>
+
+<h3>Medarbejder Status</h3>
+<table>
+    <thead>
+    <tr>
+        <th>Medarbejder</th>
+        <th>Gruppe</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var employee in employees)
+    {
+        <tr>
+            <td>@employee.Name</td>
+            <td>@employee.Group</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h3>Personlig Kalender</h3>
+<p>Her kan brugeren se deres kommende aftaler og aktiviteter.</p>
+
+@code {
+    private ReadUserDto user = new();
+    private List<TaskDto> todaysTasks = new();
+    private List<NotificationDto> notifications = new();
+    private List<EmployeeDto> employees = new();
+    private double xpPercentage = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserService.GetUserById(1); // Antager at brugeren er logget ind og har ID 1
+        todaysTasks = await TaskService.GetTasksForTodayAsync();
+        //notifications = await NotificationService.GetNotificationsAsync();
+       // employees = await EmployeeService.GetEmployeesStatusAsync();
+       // xpPercentage = user.XP / 100.0 * 100; // XP som procent
+    }
+}

@@ -1,14 +1,15 @@
 .navbar-toggler {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(97, 189, 11, 0.4);
 }
 
 .top-row {
     height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(97, 189, 11, 0.4);
 }
 
 .navbar-brand {
     font-size: 1.1rem;
+    color: whitesmoke;
 }
 
 .bi {
@@ -56,12 +57,12 @@
     }
 
 .nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
+    background-color: rgba(128, 128, 0, 0.4);
     color: white;
 }
 
 .nav-item ::deep a:hover {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(128, 128, 0, 0.4);
     color: white;
 }
 
