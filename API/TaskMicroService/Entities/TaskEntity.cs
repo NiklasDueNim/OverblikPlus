@@ -14,6 +14,6 @@ public class TaskEntity
     
     public DateTime DueDate { get; set; }
 
-    public int UserId { get; set; }
-    public UserEntity User { get; set; }
+    public int? UserId { get; set; }
+    public UserEntity? User { get; set; }
 }

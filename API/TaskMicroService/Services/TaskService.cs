@@ -34,6 +34,14 @@ namespace TaskMicroService.Services
 
         public async Task<int> CreateTask(CreateTaskDto createTaskDto)
         {
+            // if (createTaskDto.UserId.HasValue)
+            //{
+                //var userExists = await _dbContext.Users.AnyAsync(u => u.Id == createTaskDto.UserId.Value);
+                //if (!userExists)
+                //{
+                    //throw new InvalidOperationException("Invalid UserId");
+                //}
+            //}
             var task = _mapper.Map<TaskEntity>(createTaskDto);
             _dbContext.Tasks.Add(task);
             await _dbContext.SaveChangesAsync();
