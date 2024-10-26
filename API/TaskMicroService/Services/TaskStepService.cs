@@ -1,8 +1,8 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using TaskMicroService.dto;
-using TaskMicroService.DataAccess;
 using TaskMicroService.Entities;
+using TaskMicroService.DataAccess;
+using TaskMicroService.dto;
 
 namespace TaskMicroService.Services
 {
@@ -17,31 +17,25 @@ namespace TaskMicroService.Services
             _mapper = mapper;
         }
 
-        // Opretter TaskStep baseret på en DTO og mapper til entiteten
-        public async Task<int> CreateTaskStep(TaskStepDto stepDto)
+        public async Task<int> CreateTaskStep(TaskStep step)
         {
-            var taskStep = _mapper.Map<TaskStep>(stepDto);
-            _dbContext.TaskSteps.Add(taskStep);
+            _dbContext.TaskSteps.Add(step);
             await _dbContext.SaveChangesAsync();
-            return taskStep.Id; // Returner den nyoprettede TaskStep Id
+            return step.StepNumber;
         }
 
-        public async Task<TaskStepDto?> GetTaskStep(int taskId, int stepNumber)
+        public async Task<TaskStep?> GetTaskStep(int taskId, int stepNumber)
         {
-            var taskStep = await _dbContext.TaskSteps
+            return await _dbContext.TaskSteps
                 .FirstOrDefaultAsync(step => step.TaskId == taskId && step.StepNumber == stepNumber);
-
-            return taskStep != null ? _mapper.Map<TaskStepDto>(taskStep) : null;
         }
 
-        public async Task<List<TaskStepDto>> GetAllStepsForTask(int taskId)
+        public async Task<List<TaskStep>> GetAllStepsForTask(int taskId)
         {
-            var taskSteps = await _dbContext.TaskSteps
+            return await _dbContext.TaskSteps
                 .Where(step => step.TaskId == taskId)
                 .OrderBy(step => step.StepNumber)
                 .ToListAsync();
-            
-            return _mapper.Map<List<TaskStepDto>>(taskSteps);
         }
 
         public async Task UpdateTaskStep(int taskId, int stepNumber, TaskStepDto updatedStepDto)
