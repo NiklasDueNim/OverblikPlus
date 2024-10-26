@@ -10,17 +10,24 @@ namespace TaskMicroService.DataAccess
         }
 
         public DbSet<TaskEntity> Tasks { get; set; }
+        public DbSet<TaskStep> TaskSteps { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configure TaskEntity and its relationship with UserEntity
             modelBuilder.Entity<TaskEntity>()
-                .HasOne(t => t.User) // A task has one user
-                .WithMany()          // A user can have many tasks
-                .HasForeignKey(t => t.UserId)  // Foreign key
-                .OnDelete(DeleteBehavior.Cascade); // If a user is deleted, their tasks are deleted
+                .HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TaskEntity>()
+                .HasMany(t => t.Steps) // En Task har mange Steps
+                .WithOne(s => s.Task)   // Et Step hører til én Task
+                .HasForeignKey(s => s.TaskId)  // Fremmednøgle på TaskId
+                .OnDelete(DeleteBehavior.Cascade); // Sletter Steps, hvis Task slettes
 
             base.OnModelCreating(modelBuilder);
         }
+
     }
 }

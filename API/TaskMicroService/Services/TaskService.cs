@@ -68,5 +68,14 @@ namespace TaskMicroService.Services
                 await _dbContext.SaveChangesAsync();
             }
         }
+        
+        // public async Task<List<TaskStep>> GetStepsForTask(int taskId)
+        // {
+        //     return await _dbContext.TaskSteps
+        //         .Where(step => step.TaskId == taskId)
+        //         .OrderBy(step => step.StepNumber)
+        //         .ToListAsync();
+        // }
+
     }
 }

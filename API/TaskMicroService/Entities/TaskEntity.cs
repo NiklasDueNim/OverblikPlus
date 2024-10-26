@@ -16,4 +16,7 @@ public class TaskEntity
 
     public int? UserId { get; set; }
     public UserEntity? User { get; set; }
+    
+    public ICollection<TaskStep> Steps { get; set; } = new List<TaskStep>();
+
 }

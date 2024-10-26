@@ -22,6 +22,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(Program));  // Tilføj AutoMapper for mapping
 builder.Services.AddScoped<ITaskService, TaskService>();  // Registrer TaskMicroService
+builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 
 var app = builder.Build();
 
