@@ -1,41 +1,39 @@
-@page "/task-sequence/{taskId:int}"
+@page "/task-sequence/{taskId:int}/step/{stepNumber:int}"
 @inject HttpClient Http
+@inject NavigationManager NavigationManager
 
 <h3>Opgave Sekvens</h3>
 
-@if (Steps == null)
+@if (StepData == null)
 {
-    <p>Indlæser opgavedata...</p>
+    <p>Indlæser opgavetrin...</p>
 }
 else
 {
     <div>
-        @foreach (var step in Steps)
-        {
-            <div>
-                <img src="@step.ImageUrl" alt="Trin billede" width="300" />
-                <p>@step.Text</p>
-            </div>
-        }
+        <img src="@StepData.ImageUrl" alt="Trin billede" width="300" />
+        <p>@StepData.Text</p>
     </div>
+    <button @onclick="NextStep">Næste</button>
 }
 
 @code {
-    [Parameter]
-    public int TaskId { get; set; }
+    [Parameter] public int taskId { get; set; }
+    [Parameter] public int stepNumber { get; set; }
 
-    private List<TaskStep> Steps;
+    private TaskStep? StepData;
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            Steps = await Http.GetFromJsonAsync<List<TaskStep>>($"http://localhost:5032/api/TaskSequence/{TaskId}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Fejl ved hentning af data fra API: {ex.Message}");
-        }
+        // Hent opgavetrinnet fra API’en
+        StepData = await Http.GetFromJsonAsync<TaskStep>($"http://localhost:5032/api/tasksequence/{taskId}/step/{stepNumber}");
+    }
+
+    private async Task NextStep()
+    {
+        // Naviger til næste trin i sekvensen
+        stepNumber++;
+        NavigationManager.NavigateTo($"/task-sequence/{taskId}/step/{stepNumber}");
     }
 
     public class TaskStep
