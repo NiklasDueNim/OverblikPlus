@@ -1,21 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskMicroService.dto;
 using TaskMicroService.Services;
+using TaskMicroService.dto;
 
 namespace TaskMicroService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TaskMicroServiceController : ControllerBase
+    public class TaskController : ControllerBase
     {
         private readonly ITaskService _taskService;
 
-        public TaskMicroServiceController(ITaskService taskService)
+        public TaskController(ITaskService taskService)
         {
             _taskService = taskService;
         }
 
-        // Brug asynkrone metoder til bedre performance
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskById(int id)
         {
@@ -26,7 +25,7 @@ namespace TaskMicroService.Controllers
             return Ok(taskDto);
         }
 
-        [HttpGet("tasks")]
+        [HttpGet]
         public async Task<IActionResult> GetAllTasks()
         {
             var tasks = await _taskService.GetAllTasks();
@@ -58,7 +57,7 @@ namespace TaskMicroService.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTaskAsync(int id)
+        public async Task<IActionResult> DeleteTask(int id)
         {
             var existingTask = await _taskService.GetTaskById(id);
             if (existingTask == null)

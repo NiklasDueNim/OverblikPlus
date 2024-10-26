@@ -2,7 +2,7 @@ namespace TaskMicroService.dto;
 
 public class TaskStepDto
 {
-    public int Id { get; set; }
+    public int? Id { get; set; }
     
     public string ImageUrl { get; set; }
     

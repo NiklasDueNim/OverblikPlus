@@ -12,5 +12,5 @@ public class UpdateTaskDto
     
     public DateTime DueDate { get; set; }
 
-    public int UserId { get; set; }
+    public int? UserId { get; set; }
 }

@@ -8,9 +8,9 @@ namespace TaskMicroService.Profiles
     {
         public MappingProfile()
         {
-            // Mapping TaskEntity to ReadTaskDto, including the Username from the related User entity
+            // Mapping TaskEntity to ReadTaskDto, including the Steps
             CreateMap<TaskEntity, ReadTaskDto>()
-                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User != null ? src.User.Username : string.Empty)); // Read
+                .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.Steps));
 
             // Mapping from CreateTaskDto to TaskEntity for creating new tasks
             CreateMap<CreateTaskDto, TaskEntity>();
@@ -18,11 +18,10 @@ namespace TaskMicroService.Profiles
             // Mapping from UpdateTaskDto to TaskEntity for updating existing tasks
             CreateMap<UpdateTaskDto, TaskEntity>();
             
-            // Mapping between TaskStep and TaskStepDto
-            CreateMap<TaskStep, TaskStepDto>();
-            
-            CreateMap<TaskStepDto, TaskStep>();
-
+            // Mapping for TaskStep entities
+            CreateMap<TaskStep, ReadTaskStepDto>();    // Maps TaskStep to ReadTaskStepDto
+            CreateMap<CreateTaskStepDto, TaskStep>();  // Maps CreateTaskStepDto to TaskStep for creation
+            CreateMap<UpdateTaskStepDto, TaskStep>();  // Maps UpdateTaskStepDto to TaskStep for updates
         }
     }
 }

@@ -1,14 +1,13 @@
 using TaskMicroService.dto;
-using TaskMicroService.Entities;
 
 namespace TaskMicroService.Services
 {
     public interface ITaskStepService
     {
-        Task<TaskStep?> GetTaskStep(int taskId, int stepNumber);
-        Task<List<TaskStep>> GetAllStepsForTask(int taskId);
-        Task<int> CreateTaskStep(TaskStep step); // Ændret til TaskStep
-        Task UpdateTaskStep(int taskId, int stepNumber, TaskStepDto updatedStepDto);
+        Task<List<ReadTaskStepDto>> GetStepsForTask(int taskId);
+        Task<int> CreateTaskStep(CreateTaskStepDto createStepDto);
+        Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepNumber);
+        Task UpdateTaskStep(int taskId, int stepNumber, UpdateTaskStepDto updateStepDto); 
         Task DeleteTaskStep(int taskId, int stepNumber);
     }
 }

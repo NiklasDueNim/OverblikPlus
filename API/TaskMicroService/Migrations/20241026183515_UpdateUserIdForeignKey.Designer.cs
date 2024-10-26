@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskMicroService.DataAccess;
 
@@ -11,9 +12,11 @@ using TaskMicroService.DataAccess;
 namespace TaskMicroService.Migrations
 {
     [DbContext(typeof(TaskDbContext))]
-    partial class TaskDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241026183515_UpdateUserIdForeignKey")]
+    partial class UpdateUserIdForeignKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,10 +49,17 @@ namespace TaskMicroService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("UserEntityId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserEntityId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Tasks");
                 });
@@ -83,6 +93,49 @@ namespace TaskMicroService.Migrations
                     b.ToTable("TaskSteps");
                 });
 
+            modelBuilder.Entity("TaskMicroService.Entities.UserEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CPRNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MedicationDetails")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserEntity");
+                });
+
+            modelBuilder.Entity("TaskMicroService.Entities.TaskEntity", b =>
+                {
+                    b.HasOne("TaskMicroService.Entities.UserEntity", null)
+                        .WithMany("Tasks")
+                        .HasForeignKey("UserEntityId");
+
+                    b.HasOne("TaskMicroService.Entities.UserEntity", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TaskMicroService.Entities.TaskStep", b =>
                 {
                     b.HasOne("TaskMicroService.Entities.TaskEntity", "Task")
@@ -97,6 +150,11 @@ namespace TaskMicroService.Migrations
             modelBuilder.Entity("TaskMicroService.Entities.TaskEntity", b =>
                 {
                     b.Navigation("Steps");
+                });
+
+            modelBuilder.Entity("TaskMicroService.Entities.UserEntity", b =>
+                {
+                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

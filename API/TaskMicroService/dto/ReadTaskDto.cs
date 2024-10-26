@@ -7,6 +7,6 @@ public class ReadTaskDto
     public string Name { get; set; }
     
     public string Description { get; set; }
-    
-    public string Username { get; set; } 
+    public List<TaskStepDto>? Steps { get; set; } = new();
+
 }

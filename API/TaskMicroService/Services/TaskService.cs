@@ -19,29 +19,23 @@ namespace TaskMicroService.Services
 
         public async Task<IEnumerable<ReadTaskDto>> GetAllTasks()
         {
-            var tasks = await _dbContext.Tasks.ToListAsync();
+            var tasks = await _dbContext.Tasks
+                .Include(t => t.Steps) // Include Steps
+                .ToListAsync();
             return _mapper.Map<List<ReadTaskDto>>(tasks);
         }
 
         public async Task<ReadTaskDto> GetTaskById(int id)
         {
             var task = await _dbContext.Tasks
-                .Include(t => t.User)
+                .Include(t => t.Steps)
                 .FirstOrDefaultAsync(t => t.Id == id);
-            
+
             return _mapper.Map<ReadTaskDto>(task);
         }
 
         public async Task<int> CreateTask(CreateTaskDto createTaskDto)
         {
-            // if (createTaskDto.UserId.HasValue)
-            //{
-                //var userExists = await _dbContext.Users.AnyAsync(u => u.Id == createTaskDto.UserId.Value);
-                //if (!userExists)
-                //{
-                    //throw new InvalidOperationException("Invalid UserId");
-                //}
-            //}
             var task = _mapper.Map<TaskEntity>(createTaskDto);
             _dbContext.Tasks.Add(task);
             await _dbContext.SaveChangesAsync();
@@ -68,14 +62,57 @@ namespace TaskMicroService.Services
                 await _dbContext.SaveChangesAsync();
             }
         }
-        
-        // public async Task<List<TaskStep>> GetStepsForTask(int taskId)
-        // {
-        //     return await _dbContext.TaskSteps
-        //         .Where(step => step.TaskId == taskId)
-        //         .OrderBy(step => step.StepNumber)
-        //         .ToListAsync();
-        // }
 
+        // TaskStep relaterede metoder
+        public async Task<List<ReadTaskStepDto>> GetStepsForTask(int taskId)
+        {
+            var steps = await _dbContext.TaskSteps
+                .Where(s => s.TaskId == taskId)
+                .OrderBy(s => s.StepNumber)
+                .ToListAsync();
+
+            return _mapper.Map<List<ReadTaskStepDto>>(steps);
+        }
+
+        public async Task<int> CreateTaskStep(CreateTaskStepDto createStepDto)
+        {
+            var taskStep = _mapper.Map<TaskStep>(createStepDto);
+            _dbContext.TaskSteps.Add(taskStep);
+            await _dbContext.SaveChangesAsync();
+
+            return taskStep.Id;
+        }
+
+        public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepNumber)
+        {
+            var step = await _dbContext.TaskSteps
+                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.StepNumber == stepNumber);
+
+            return _mapper.Map<ReadTaskStepDto>(step);
+        }
+
+        public async Task UpdateTaskStep(int taskId, int stepNumber, UpdateTaskStepDto updateStepDto)
+        {
+            var step = await _dbContext.TaskSteps
+                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.StepNumber == stepNumber);
+
+            if (step != null)
+            {
+                _mapper.Map(updateStepDto, step);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteTaskStep(int taskId, int stepNumber)
+        {
+            var step = await _dbContext.TaskSteps
+                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.StepNumber == stepNumber);
+
+            if (step != null)
+            {
+                _dbContext.TaskSteps.Remove(step);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }
