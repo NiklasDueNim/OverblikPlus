@@ -7,51 +7,63 @@
 
 @if (currentStep == null)
 {
-<p>Indlæser opgavetrin...</p>
+    <p>Indlæser opgavetrin...</p>
 }
 else
 {
-<div>
-    <img src="@currentStep.ImageUrl" alt="Trin billede" width="300" />
-    <p>@currentStep.Text</p>
-    <button @onclick="NavigateToNextStep">Næste trin</button>
-</div>
+    <div>
+        <img src="@currentStep.ImageUrl" alt="Trin billede" width="300" style="display: block; margin: auto;" />
+        <p style="text-align: center;">@currentStep.Text</p>
+        <button @onclick="NavigateToNextStep">Næste trin</button>
+    </div>
 }
 
 @code {
-[Parameter]
-public int TaskId { get; set; }
+    [Parameter]
+    public int TaskId { get; set; }
 
-[Parameter]
-public int StepNumber { get; set; }
+    [Parameter]
+    public int StepNumber { get; set; }
 
-private TaskStep? currentStep;
+    private TaskStep? currentStep;
 
-protected override async Task OnParametersSetAsync()
-{
-    try
+    protected override async Task OnParametersSetAsync()
     {
-        // Hent aktuelt trin baseret på TaskId og StepNumber
-        currentStep = await Http.GetFromJsonAsync<TaskStep>($"http://localhost:5032/api/TaskStep/{TaskId}/step/{StepNumber}");
+        try
+        {
+            Console.WriteLine($"Henter trin data for TaskId: {TaskId}, StepNumber: {StepNumber}");
+            currentStep = await Http.GetFromJsonAsync<TaskStep>($"http://localhost:5032/api/TaskStep/{TaskId}/steps/{StepNumber}");
+            if (currentStep != null)
+            {
+                Console.WriteLine("Data hentet:");
+                Console.WriteLine($"ImageUrl: {currentStep.ImageUrl}");
+                Console.WriteLine($"Text: {currentStep.Text}");
+                Console.WriteLine($"StepNumber: {currentStep.StepNumber}");
+            }
+            else
+            {
+                Console.WriteLine("Ingen data modtaget for det valgte trin.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl ved hentning af data: {ex.Message}");
+        }
     }
-    catch (Exception ex)
+
+
+    private void NavigateToNextStep()
     {
-        Console.WriteLine($"Fejl ved hentning af data: {ex.Message}");
+        // Øg step nummeret og naviger til næste trin i sekvensen
+        StepNumber++;
+        NavigationManager.NavigateTo($"/task-sequence/{TaskId}/{StepNumber}");
     }
-}
 
-
-private void NavigateToNextStep()
-{
-StepNumber++;
-NavigationManager.NavigateTo($"/task-sequence/{TaskId}/{StepNumber}");
-}
-
-public class TaskStep
-{
-public int Id { get; set; }
-public string ImageUrl { get; set; } = string.Empty;
-public string Text { get; set; } = string.Empty;
-public int StepNumber { get; set; }
-}
+    public class TaskStep
+    {
+        public int Id { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+        public int StepNumber { get; set; }
+    }
 }
