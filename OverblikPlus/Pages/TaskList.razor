@@ -1,84 +1,21 @@
-@page "/tasks"
-@using OverblikPlus.Services
-@inject ITaskService TaskService
-
-<h3>Dagens Gøremål</h3>
-
+<h3>Task List</h3>
 <ul>
-    @foreach (var task in tasks)
+    @foreach (var task in Tasks)
     {
-    <li class="task-item">
-        <img src="@task.Icon" alt="@task.Task" width="50" />
-        <span>@task.Task</span>
-        @if (!task.Completed)
-        {
-        <button class="btn btn-success" @onclick="() => MarkAsCompleted(task)">Kryds af</button>
-        }
-        else
-        {
-        <span class="completed">✔️ Fuldført +@task.XP XP</span>
-        }
+    <li>
+        <a @onclick="() => ShowTaskDetails(task.Id)">
+            @task.Name
+        </a>
     </li>
     }
 </ul>
 
-<p class="total-xp">Total XP: @totalXP</p>
-<p>Nuværende Level: @GetLevel(totalXP)</p>
-<p>XP til næste level: @XPToNextLevel(totalXP)</p>
-
-<!-- Vis en XP Progress Bar -->
-<div class="xp-progress">
-    <div class="xp-progress-bar" role="progressbar" style="width:@XPProgress(totalXP)%;" aria-valuenow="@XPProgress(totalXP)" aria-valuemin="0" aria-valuemax="100"></div>
-</div>
-
 @code {
-    private List<TaskItem> tasks = new List<TaskItem>();
-    private int totalXP = 0;
+[Parameter]
+public List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
 
-    protected override async Task OnInitializedAsync()
-    {
-        //tasks = await TaskService.GetAllTasksAsync();
-    }
-
-    private void MarkAsCompleted(TaskItem task)
-    {
-        task.Completed = true;
-        totalXP += task.XP;
-    }
-    
-    // Funktion til at beregne niveau baseret på XP
-    private int GetLevel(int xp)
-    {
-        if (xp >= 600) return 4;
-        else if (xp >= 300) return 3;
-        else if (xp >= 100) return 2;
-        else return 1;
-    }
-
-    // Funktion til at vise XP til næste niveau
-    private int XPToNextLevel(int xp)
-    {
-        if (xp >= 600) return 0;  // Når man er på det højeste niveau
-        else if (xp >= 300) return 600 - xp;
-        else if (xp >= 100) return 300 - xp;
-        else return 100 - xp;
-    }
-
-    // Funktion til at vise progression mod næste niveau som en procentdel
-    private int XPProgress(int xp)
-    {
-        if (xp >= 600) return 100;
-        else if (xp >= 300) return ((xp - 300) * 100) / 300;  // Procentdel for level 3-4
-        else if (xp >= 100) return ((xp - 100) * 100) / 200;  // Procentdel for level 2-3
-        else return (xp * 100) / 100;  // Procentdel for level 1-2
-    }
-
-    public class TaskItem
-    {
-        public int Id { get; set; }
-        public string Task { get; set; }
-        public string Icon { get; set; }
-        public bool Completed { get; set; }
-        public int XP { get; set; }
-    }
+private void ShowTaskDetails(int taskId)
+{
+// Implement detail showing logic here or raise an event
+}
 }

@@ -1,0 +1,16 @@
+@page "/tasks"
+@inject HttpClient Http
+
+<h3>Tasks</h3>
+
+<TaskList Tasks="Tasks" />
+
+@code {
+    private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetFromJsonAsync<List<ReadTaskDto>>("/api/tasks");
+        Tasks = response ?? new List<ReadTaskDto>();
+    }
+}
