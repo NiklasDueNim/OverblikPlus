@@ -1,44 +1,56 @@
-@page "/task-sequence/{taskId:int}/step/{stepNumber:int}"
+@page "/task-sequence/{TaskId:int}/{StepNumber:int}"
+
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
-<h3>Opgave Sekvens</h3>
+<h3>Opgave Sekvens - Trin @StepNumber</h3>
 
-@if (StepData == null)
+@if (currentStep == null)
 {
     <p>Indlæser opgavetrin...</p>
 }
 else
 {
     <div>
-        <img src="@StepData.ImageUrl" alt="Trin billede" width="300" />
-        <p>@StepData.Text</p>
+        <img src="@currentStep.ImageUrl" alt="Trin billede" width="300" />
+        <p>@currentStep.Text</p>
+        <button @onclick="NavigateToNextStep">Næste trin</button>
     </div>
-    <button @onclick="NextStep">Næste</button>
 }
 
 @code {
-    [Parameter] public int taskId { get; set; }
-    [Parameter] public int stepNumber { get; set; }
+    [Parameter]
+    public int TaskId { get; set; }
 
-    private TaskStep? StepData;
+    [Parameter]
+    public int StepNumber { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    private TaskStep? currentStep;
+
+    protected override async Task OnParametersSetAsync()
     {
-        // Hent opgavetrinnet fra API’en
-        StepData = await Http.GetFromJsonAsync<TaskStep>($"http://localhost:5032/api/tasksequence/{taskId}/step/{stepNumber}");
+        try
+        {
+            // Hent aktuelt trin baseret på TaskId og StepNumber
+            currentStep = await Http.GetFromJsonAsync<TaskStep>($"http://localhost:5032/api/TaskStep/{TaskId}/steps/{StepNumber}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl ved hentning af data: {ex.Message}");
+        }
     }
 
-    private async Task NextStep()
+    private void NavigateToNextStep()
     {
-        // Naviger til næste trin i sekvensen
-        stepNumber++;
-        NavigationManager.NavigateTo($"/task-sequence/{taskId}/step/{stepNumber}");
+        var nextStep = StepNumber + 1;
+        NavigationManager.NavigateTo($"/task-sequence/{TaskId}/{nextStep}");
     }
 
     public class TaskStep
     {
-        public string ImageUrl { get; set; }
-        public string Text { get; set; }
+        public int Id { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+        public int StepNumber { get; set; }
     }
 }

@@ -26,13 +26,15 @@ namespace TaskMicroService.Services
                 .OrderBy(step => step.StepNumber)
                 .ToListAsync();
         }
-
+        
         public async Task<int> CreateTaskStep(TaskStep step)
         {
+            // Fjern eventuelle værdier for Id, så databasen kan generere det automatisk
             _dbContext.TaskSteps.Add(step);
             await _dbContext.SaveChangesAsync();
-            return step.StepNumber;
+            return step.Id;
         }
+
 
         public async Task UpdateTaskStep(int taskId, int stepNumber, TaskStep updatedStep)
         {
