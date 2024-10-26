@@ -6,11 +6,11 @@ namespace TaskMicroService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TaskServiceController : ControllerBase
+    public class TaskMicroServiceController : ControllerBase
     {
         private readonly ITaskService _taskService;
 
-        public TaskServiceController(ITaskService taskService)
+        public TaskMicroServiceController(ITaskService taskService)
         {
             _taskService = taskService;
         }

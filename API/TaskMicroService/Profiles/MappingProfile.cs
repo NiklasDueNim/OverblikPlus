@@ -17,6 +17,12 @@ namespace TaskMicroService.Profiles
 
             // Mapping from UpdateTaskDto to TaskEntity for updating existing tasks
             CreateMap<UpdateTaskDto, TaskEntity>();
+            
+            // Mapping between TaskStep and TaskStepDto
+            CreateMap<TaskStep, TaskStepDto>();
+            
+            CreateMap<TaskStepDto, TaskStep>();
+
         }
     }
 }

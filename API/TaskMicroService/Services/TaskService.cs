@@ -1,8 +1,8 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TaskMicroService.dto;
-using TaskMicroService.Entities;
 using TaskMicroService.DataAccess;
+using TaskMicroService.Entities;
 
 namespace TaskMicroService.Services
 {

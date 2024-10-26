@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskMicroService.Services;
+using TaskMicroService.dto;
+using AutoMapper;
 using TaskMicroService.Entities;
 
 namespace TaskMicroService.Controllers
@@ -9,10 +11,25 @@ namespace TaskMicroService.Controllers
     public class TaskStepController : ControllerBase
     {
         private readonly ITaskStepService _taskStepService;
+        private readonly IMapper _mapper;
 
-        public TaskStepController(ITaskStepService taskStepService)
+        public TaskStepController(ITaskStepService taskStepService, IMapper mapper)
         {
             _taskStepService = taskStepService;
+            _mapper = mapper;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateTaskStep([FromBody] TaskStepDto stepDto)
+        {
+            // Mapper TaskStepDto til TaskStep
+            var step = _mapper.Map<TaskStep>(stepDto);
+
+            // Opretter TaskStep ved at sende den mapperede enhed til servicen
+            var createdStepNumber = await _taskStepService.CreateTaskStep(step);
+
+            // Returnerer DTO og location i CreatedAtAction
+            return CreatedAtAction(nameof(GetTaskStep), new { taskId = step.TaskId, stepNumber = createdStepNumber }, stepDto);
         }
 
         [HttpGet("{taskId}/step/{stepNumber}")]
@@ -23,27 +40,29 @@ namespace TaskMicroService.Controllers
             {
                 return NotFound();
             }
-            return Ok(stepData);
+
+            // Mapper til DTO for at returnere kun nødvendige data
+            var stepDto = _mapper.Map<TaskStepDto>(stepData);
+            return Ok(stepDto);
         }
 
         [HttpGet("{taskId}/steps")]
         public async Task<IActionResult> GetAllStepsForTask(int taskId)
         {
             var steps = await _taskStepService.GetAllStepsForTask(taskId);
-            return Ok(steps);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateTaskStep([FromBody] TaskStep step)
-        {
-            var stepNumber = await _taskStepService.CreateTaskStep(step);
-            return CreatedAtAction(nameof(GetTaskStep), new { taskId = step.TaskId, stepNumber = step.StepNumber }, step);
+            
+            // Mapper listen af TaskSteps til DTO'er
+            var stepDtos = _mapper.Map<List<TaskStepDto>>(steps);
+            return Ok(stepDtos);
         }
 
         [HttpPut("{taskId}/step/{stepNumber}")]
-        public async Task<IActionResult> UpdateTaskStep(int taskId, int stepNumber, [FromBody] TaskStep updatedStep)
+        public async Task<IActionResult> UpdateTaskStep(int taskId, int stepNumber, [FromBody] TaskStepDto updatedStepDto)
         {
-            await _taskStepService.UpdateTaskStep(taskId, stepNumber, updatedStep);
+            // Mapper DTO til TaskStep enhed
+            var updatedStep = _mapper.Map<TaskStep>(updatedStepDto);
+            await _taskStepService.UpdateTaskStep(taskId, stepNumber, updatedStepDto);
+            
             return NoContent();
         }
 
@@ -53,18 +72,5 @@ namespace TaskMicroService.Controllers
             await _taskStepService.DeleteTaskStep(taskId, stepNumber);
             return NoContent();
         }
-        
-        // [HttpGet("{taskId}/steps")]
-        // public async Task<IActionResult> GetTaskSteps(int taskId)
-        // {
-        //     var steps = await _taskService.GetStepsForTask(taskId);
-        //     if (steps == null || !steps.Any())
-        //         return NotFound("Ingen trin fundet for denne opgave.");
-        //
-        //     return Ok(steps);
-        // }
-        //
-        
-
     }
 }

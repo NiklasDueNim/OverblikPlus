@@ -1,55 +1,66 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using TaskMicroService.Entities;
+using TaskMicroService.dto;
 using TaskMicroService.DataAccess;
+using TaskMicroService.Entities;
 
 namespace TaskMicroService.Services
 {
     public class TaskStepService : ITaskStepService
     {
         private readonly TaskDbContext _dbContext;
+        private readonly IMapper _mapper;
 
-        public TaskStepService(TaskDbContext dbContext)
+        public TaskStepService(TaskDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
-        public async Task<TaskStep?> GetTaskStep(int taskId, int stepNumber)
+        // Opretter TaskStep baseret på en DTO og mapper til entiteten
+        public async Task<int> CreateTaskStep(TaskStepDto stepDto)
         {
-            return await _dbContext.TaskSteps
+            var taskStep = _mapper.Map<TaskStep>(stepDto);
+            _dbContext.TaskSteps.Add(taskStep);
+            await _dbContext.SaveChangesAsync();
+            return taskStep.Id; // Returner den nyoprettede TaskStep Id
+        }
+
+        public async Task<TaskStepDto?> GetTaskStep(int taskId, int stepNumber)
+        {
+            var taskStep = await _dbContext.TaskSteps
                 .FirstOrDefaultAsync(step => step.TaskId == taskId && step.StepNumber == stepNumber);
+
+            return taskStep != null ? _mapper.Map<TaskStepDto>(taskStep) : null;
         }
 
-        public async Task<List<TaskStep>> GetAllStepsForTask(int taskId)
+        public async Task<List<TaskStepDto>> GetAllStepsForTask(int taskId)
         {
-            return await _dbContext.TaskSteps
+            var taskSteps = await _dbContext.TaskSteps
                 .Where(step => step.TaskId == taskId)
                 .OrderBy(step => step.StepNumber)
                 .ToListAsync();
-        }
-        
-        public async Task<int> CreateTaskStep(TaskStep step)
-        {
-            // Fjern eventuelle værdier for Id, så databasen kan generere det automatisk
-            _dbContext.TaskSteps.Add(step);
-            await _dbContext.SaveChangesAsync();
-            return step.Id;
+            
+            return _mapper.Map<List<TaskStepDto>>(taskSteps);
         }
 
-
-        public async Task UpdateTaskStep(int taskId, int stepNumber, TaskStep updatedStep)
+        public async Task UpdateTaskStep(int taskId, int stepNumber, TaskStepDto updatedStepDto)
         {
-            var existingStep = await GetTaskStep(taskId, stepNumber);
+            var existingStep = await _dbContext.TaskSteps
+                .FirstOrDefaultAsync(step => step.TaskId == taskId && step.StepNumber == stepNumber);
+
             if (existingStep != null)
             {
-                existingStep.ImageUrl = updatedStep.ImageUrl;
-                existingStep.Text = updatedStep.Text;
+                _mapper.Map(updatedStepDto, existingStep);
                 await _dbContext.SaveChangesAsync();
             }
         }
 
         public async Task DeleteTaskStep(int taskId, int stepNumber)
         {
-            var step = await GetTaskStep(taskId, stepNumber);
+            var step = await _dbContext.TaskSteps
+                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.StepNumber == stepNumber);
+
             if (step != null)
             {
                 _dbContext.TaskSteps.Remove(step);
