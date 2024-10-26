@@ -1,17 +1,20 @@
-self.addEventListener('install', (event) => {
-    // Tvinger service worker til at opdatere med det samme
-    self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-    // Ryd gammel cache og gør den nyeste version aktiv
-    event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cache => {
-                    return caches.delete(cache);
-                })
-            );
-        }).then(() => self.clients.claim())
-    );
+self.addEventListener('fetch', (event) => {
+    if (event.request.url.includes("/api/tasksequence")) {
+        event.respondWith(
+            caches.open("overblikplus-api-cache").then(cache => {
+                return fetch(event.request)
+                    .then(response => {
+                        cache.put(event.request, response.clone());
+                        return response;
+                    })
+                    .catch(() => cache.match(event.request));
+            })
+        );
+    } else {
+        event.respondWith(
+            caches.match(event.request).then((response) => {
+                return response || fetch(event.request);
+            })
+        );
+    }
 });

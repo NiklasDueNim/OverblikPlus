@@ -2,9 +2,11 @@
   "name": "OverblikPlus",
   "short_name": "Overblik",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3f51b5",
+  "description": "OverblikPlus app til at hjælpe med opgaveoverblik via QR-scanning og sekvensvisning.",
   "icons": [
     {
       "src": "icon-192x192.png",

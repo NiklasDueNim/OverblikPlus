@@ -1,0 +1,46 @@
+@page "/task-sequence/{taskId:int}"
+@inject HttpClient Http
+
+<h3>Opgave Sekvens</h3>
+
+@if (Steps == null)
+{
+    <p>Indlæser opgavedata...</p>
+}
+else
+{
+    <div>
+        @foreach (var step in Steps)
+        {
+            <div>
+                <img src="@step.ImageUrl" alt="Trin billede" width="300" />
+                <p>@step.Text</p>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int TaskId { get; set; }
+
+    private List<TaskStep> Steps;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Steps = await Http.GetFromJsonAsync<List<TaskStep>>($"http://localhost:5032/api/TaskSequence/{TaskId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl ved hentning af data fra API: {ex.Message}");
+        }
+    }
+
+    public class TaskStep
+    {
+        public string ImageUrl { get; set; }
+        public string Text { get; set; }
+    }
+}
