@@ -10,7 +10,28 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await Http.GetFromJsonAsync<List<ReadTaskDto>>("/api/tasks");
+        await LoadTasks();
+    }
+    
+    private async Task LoadTasks()
+    {
+        var response = await Http.GetFromJsonAsync<List<ReadTaskDto>>("/api/Task");
+        Console.WriteLine($"Tasks indlæst: {response?.Count ?? 0}");
         Tasks = response ?? new List<ReadTaskDto>();
+        StateHasChanged();
     }
 }
+
+<ul>
+    @foreach (var task in Tasks)
+    {
+    <li>
+        <p>@task.Name</p>
+        <p>@task.Description</p>
+        @if (!string.IsNullOrEmpty(task.ImageUrl))
+        {
+        <img src="@task.ImageUrl" alt="Task Image" style="width:100px;height:auto;" />
+        }
+    </li>
+    }
+</ul>
