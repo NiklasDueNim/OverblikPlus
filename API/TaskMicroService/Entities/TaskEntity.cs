@@ -8,7 +8,7 @@ public class TaskEntity
 
     public string? Description { get; set; }
 
-    public string? ImageUrl { get; set; }
+    public byte[]? ImageUrl { get; set; }
 
     public bool IsCompleted { get; set; }
 

@@ -11,6 +11,10 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadTasks();
+        foreach (var task in Tasks)
+        {
+            Console.WriteLine(task.ImageUrl);
+        }
     }
     
     private async Task LoadTasks()
@@ -27,11 +31,12 @@
     {
     <li>
         <p>@task.Name</p>
+        <img src="@task.ImageUrl" alt="Task Image" />
         <p>@task.Description</p>
-        @if (!string.IsNullOrEmpty(task.ImageUrl))
-        {
-        <img src="@task.ImageUrl" alt="Task Image" style="width:100px;height:auto;" />
-        }
+        @* Log til konsollen *@
+        @* Kan også bruges til debugging *@
+        <p>@task.ImageUrl</p>
+
     </li>
     }
 </ul>

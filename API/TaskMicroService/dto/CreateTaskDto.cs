@@ -6,7 +6,7 @@ public class CreateTaskDto
     
     public string Description { get; set; }
     
-    public string ImageUrl { get; set; }
+    public string? ImageBase64 { get; set; }
     
     public bool IsCompleted { get; set; }
     

@@ -4,17 +4,21 @@ using TaskMicroService.dto;
 using TaskMicroService.DataAccess;
 using TaskMicroService.Entities;
 
+
 namespace TaskMicroService.Services
 {
     public class TaskService : ITaskService
     {
         private readonly TaskDbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly IImageConversionService _imageConversionService;
+        
 
-        public TaskService(TaskDbContext dbContext, IMapper mapper)
+        public TaskService(TaskDbContext dbContext, IMapper mapper, IImageConversionService imageConversionService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _imageConversionService = imageConversionService;
         }
 
         public async Task<IEnumerable<ReadTaskDto>> GetAllTasks()
@@ -31,17 +35,32 @@ namespace TaskMicroService.Services
                 .Include(t => t.Steps)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
-            return _mapper.Map<ReadTaskDto>(task);
-        }
+            var taskDto = _mapper.Map<ReadTaskDto>(task);
 
+            if (task?.ImageUrl != null)
+            {
+                taskDto.Image = _imageConversionService.ConvertToBase64(task.ImageUrl);
+            }
+
+            return taskDto;
+        }
+        
         public async Task<int> CreateTask(CreateTaskDto createTaskDto)
         {
             var task = _mapper.Map<TaskEntity>(createTaskDto);
+
+            // Konverter base64-streng til byte[] før lagring, hvis billedet er inkluderet
+            if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
+            {
+                task.ImageUrl = Convert.FromBase64String(createTaskDto.ImageBase64);
+            }
+
             _dbContext.Tasks.Add(task);
             await _dbContext.SaveChangesAsync();
 
             return task.Id;
         }
+
 
         public async Task DeleteTask(int id)
         {
