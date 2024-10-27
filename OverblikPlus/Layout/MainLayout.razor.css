@@ -38,16 +38,29 @@ main {
 }
 
 /* Style adjustments for top row links and buttons */
+/*.top-row ::deep a,*/
+/*.top-row ::deep .btn-link {*/
+/*    white-space: nowrap;*/
+/*    margin-left: 1.5rem;*/
+/*    text-decoration: none;*/
+/*}*/
+
 .top-row ::deep a,
 .top-row ::deep .btn-link {
-    white-space: nowrap;
-    margin-left: 1.5rem;
-    text-decoration: none;
+    color: #333; /* Darker color for better readability */
+    padding: 10px; /* Easier to click with more padding */
 }
 
-.top-row ::deep a:hover,
-.top-row ::deep .btn-link:hover {
-    text-decoration: underline;
+/*.top-row ::deep a:hover,*/
+/*.top-row ::deep .btn-link:hover {*/
+/*    text-decoration: underline;*/
+/*}*/
+
+.top-row ::deep a:focus,
+.top-row ::deep .btn-link:focus {
+    background-color: #dee2e6; /* Light background on focus for visibility */
+    outline: none; /* Removing default outline */
+    box-shadow: 0 0 0 3px rgba(33, 37, 41, 0.25); /* Custom focus style */
 }
 
 .top-row ::deep a:first-child {
