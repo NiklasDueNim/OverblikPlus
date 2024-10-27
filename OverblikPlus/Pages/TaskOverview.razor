@@ -13,6 +13,11 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadTasks();
+        foreach (var task in Tasks)
+        {
+            Console.WriteLine(task.Image);
+            
+        }
     }
 
     private async Task LoadTasks()
@@ -44,7 +49,7 @@
     {
         <li>
             <p>@task.Name</p>
-            <p>@task.Image</p>
+            <img src="@task.Image" alt="Task Image"/>
             <button @onclick="() => LoadTaskSteps(task.Id)">Se opgave</button>
         </li>
     }
