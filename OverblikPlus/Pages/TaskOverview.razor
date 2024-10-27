@@ -13,7 +13,7 @@
         await LoadTasks();
         foreach (var task in Tasks)
         {
-            Console.WriteLine(task.ImageUrl);
+            Console.WriteLine(task.Image);
         }
     }
     
@@ -31,12 +31,7 @@
     {
     <li>
         <p>@task.Name</p>
-        <img src="@task.ImageUrl" alt="Task Image" />
-        <p>@task.Description</p>
-        @* Log til konsollen *@
-        @* Kan også bruges til debugging *@
-        <p>@task.ImageUrl</p>
-
+        <img src="@task.Image" />
     </li>
     }
 </ul>

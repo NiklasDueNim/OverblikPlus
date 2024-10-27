@@ -26,8 +26,22 @@ namespace TaskMicroService.Services
             var tasks = await _dbContext.Tasks
                 .Include(t => t.Steps) // Include Steps
                 .ToListAsync();
-            return _mapper.Map<List<ReadTaskDto>>(tasks);
+
+            var taskDtos = _mapper.Map<List<ReadTaskDto>>(tasks);
+
+            foreach (var taskDto in taskDtos)
+            {
+                // Assuming the original TaskEntity has ImageUrl as byte[]
+                if (tasks.FirstOrDefault(t => t.Id == taskDto.Id)?.ImageUrl is byte[] imageUrlBytes)
+                {
+                    taskDto.Image = _imageConversionService.ConvertToBase64(imageUrlBytes);
+                }
+            }
+
+            return taskDtos;
         }
+
+
 
         public async Task<ReadTaskDto> GetTaskById(int id)
         {
