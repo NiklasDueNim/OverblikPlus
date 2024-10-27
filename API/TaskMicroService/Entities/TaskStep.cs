@@ -6,7 +6,7 @@ public class TaskStep
     public int TaskId { get; set; } // Fremmednøgle til Task
     public int StepNumber { get; set; }
     
-    public string ImageUrl { get; set; } = string.Empty;
+    public byte[]? ImageUrl { get; set; } = Array.Empty<byte>();
     
     public string Text { get; set; } = string.Empty;
 

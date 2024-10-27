@@ -12,7 +12,7 @@ using TaskMicroService.DataAccess;
 namespace TaskMicroService.Migrations
 {
     [DbContext(typeof(TaskDbContext))]
-    [Migration("20241027085532_InitialCreate")]
+    [Migration("20241027110637_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -65,9 +65,8 @@ namespace TaskMicroService.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("ImageUrl")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<int>("StepNumber")
                         .HasColumnType("int");
