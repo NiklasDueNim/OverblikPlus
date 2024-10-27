@@ -8,50 +8,60 @@
 @code {
     private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
     private List<TaskStepDto> TaskSteps { get; set; } = new List<TaskStepDto>();
-
+    private int currentStepIndex = 0;
+    
     protected override async Task OnInitializedAsync()
     {
         await LoadTasks();
-        foreach (var task in Tasks)
-        {
-            Console.WriteLine(task.Image);
-        }
-        
-        await LoadTaskSteps(1);
     }
-    
+
     private async Task LoadTasks()
     {
         var response = await Http.GetFromJsonAsync<List<ReadTaskDto>>("/api/Task");
-        Console.WriteLine($"Tasks indlæst: {response?.Count ?? 0}");
         Tasks = response ?? new List<ReadTaskDto>();
         StateHasChanged();
     }
-    
-    public async Task LoadTaskSteps(int taskId)
+
+    private async Task LoadTaskSteps(int taskId)
     {
-        TaskSteps = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{taskId}/steps");
-        Console.WriteLine($"Antal TaskSteps hentet: {TaskSteps.Count}");
+        var response = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{taskId}/steps");
+        TaskSteps = response ?? new List<TaskStepDto>();
+        currentStepIndex = 0;
     }
 
-
+    private void ShowNextStep()
+    {
+        if (currentStepIndex < TaskSteps.Count - 1)
+        {
+            currentStepIndex++;
+        }
+    }
 }
+
+<h3>Task List</h3>
 <ul>
     @foreach (var task in Tasks)
     {
         <li>
             <p>@task.Name</p>
-            <img src="@task.Image" alt="Task Image" />
+            <button @onclick="() => LoadTaskSteps(task.Id)">Open Task</button>
         </li>
     }
 </ul>
 
-<ul>
-    @foreach (var step in TaskSteps)
-    {
-        <li>
-            <img src="@step.Image" alt="Step Image" />
-            <p>@step.Text</p>
-        </li>
-    }
-</ul>
+@if (TaskSteps.Count > 0)
+{
+    <h3>Current Step</h3>
+    <div>
+        <img src="@TaskSteps[currentStepIndex].Image" alt="Step Image" />
+        <p>@TaskSteps[currentStepIndex].Text</p>
+        @if (currentStepIndex < TaskSteps.Count - 1)
+        {
+            <button @onclick="ShowNextStep">Next</button>
+        }
+        else
+        {
+            <p>No more steps.</p>
+        }
+    </div>
+}
