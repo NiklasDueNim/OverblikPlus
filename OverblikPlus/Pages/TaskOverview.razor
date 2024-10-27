@@ -44,24 +44,24 @@
     {
         <li>
             <p>@task.Name</p>
-            <button @onclick="() => LoadTaskSteps(task.Id)">Open Task</button>
+            <button @onclick="() => LoadTaskSteps(task.Id)">Se opgave</button>
         </li>
     }
 </ul>
 
 @if (TaskSteps.Count > 0)
 {
-    <h3>Current Step</h3>
+    <h3>Trin</h3>
     <div>
         <img src="@TaskSteps[currentStepIndex].Image" alt="Step Image" />
         <p>@TaskSteps[currentStepIndex].Text</p>
         @if (currentStepIndex < TaskSteps.Count - 1)
         {
-            <button @onclick="ShowNextStep">Next</button>
+            <button @onclick="ShowNextStep">Næste</button>
         }
         else
         {
-            <p>No more steps.</p>
+            <p>Færdig.</p>
         }
     </div>
 }
