@@ -7,7 +7,7 @@
 
 @code {
     private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
-   
+    private List<TaskStepDto> TaskSteps { get; set; } = new List<TaskStepDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -16,6 +16,8 @@
         {
             Console.WriteLine(task.Image);
         }
+        
+        await LoadTaskSteps(1);
     }
     
     private async Task LoadTasks()
@@ -25,14 +27,31 @@
         Tasks = response ?? new List<ReadTaskDto>();
         StateHasChanged();
     }
-}
+    
+    public async Task LoadTaskSteps(int taskId)
+    {
+        TaskSteps = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{taskId}/steps");
+        Console.WriteLine($"Antal TaskSteps hentet: {TaskSteps.Count}");
+    }
 
+
+}
 <ul>
     @foreach (var task in Tasks)
     {
-    <li>
-        <p>@task.Name</p>
-        <img src="@task.Image" />
-    </li>
+        <li>
+            <p>@task.Name</p>
+            <img src="@task.Image" alt="Task Image" />
+        </li>
+    }
+</ul>
+
+<ul>
+    @foreach (var step in TaskSteps)
+    {
+        <li>
+            <img src="@step.Image" alt="Step Image" />
+            <p>@step.Text</p>
+        </li>
     }
 </ul>
