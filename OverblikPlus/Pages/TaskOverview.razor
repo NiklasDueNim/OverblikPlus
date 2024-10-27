@@ -1,7 +1,7 @@
 @page "/tasks"
 @inject HttpClient Http
 
-<h3>Tasks</h3>
+<h3>Mine Opgaver</h3>
 
 <TaskList Tasks="Tasks" />
 
@@ -38,12 +38,13 @@
     }
 }
 
-<h3>Task List</h3>
+<h3>Opgaver for i dag</h3>
 <ul>
     @foreach (var task in Tasks)
     {
         <li>
             <p>@task.Name</p>
+            <p>@task.Image</p>
             <button @onclick="() => LoadTaskSteps(task.Id)">Se opgave</button>
         </li>
     }
@@ -51,7 +52,7 @@
 
 @if (TaskSteps.Count > 0)
 {
-    <h3>Trin</h3>
+    <h3>Trin @TaskSteps[currentStepIndex].StepNumber</h3>
     <div>
         <img src="@TaskSteps[currentStepIndex].Image" alt="Step Image" />
         <p>@TaskSteps[currentStepIndex].Text</p>
@@ -61,7 +62,7 @@
         }
         else
         {
-            <p>Færdig.</p>
+            <p>Du er færdig med opgaven</p>
         }
     </div>
 }
