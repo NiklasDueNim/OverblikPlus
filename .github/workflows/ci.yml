@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Backend CI Pipeline
 
 on:
   push:
@@ -21,26 +21,11 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    # Restore dependencies for UserService
-    - name: Restore dependencies for UserService
-      run: dotnet restore "API/UserService/UserService.csproj"
+    - name: Restore dependencies
+      run: dotnet restore "OverblikPlusBackend.sln"
 
-    - name: Restore dependencies for API
-      run: dotnet restore "API/API/API.csproj"
-
-    - name: Restore dependencies for Tests
-      run: dotnet restore "API/Tests/Tests.csproj"
-
-    # Restore dependencies for DataAccess
-    - name: Restore dependencies for DataAccess
-      run: dotnet restore "API/DataAccess/DataAccess.csproj"
-
-    # Build UserService
-    - name: Build UserService
-      run: dotnet build "API/UserService/UserService.csproj" --configuration Release --no-restore
-
-    - name: Build API
-      run: dotnet build "API/API/API.csproj" --configuration Release --no-restore
+    - name: Build project
+      run: dotnet build "OverblikPlusBackend.sln" --configuration Release --no-restore
 
     - name: Run tests
-      run: dotnet test "API/Tests/Tests.csproj" --no-restore --verbosity normal
+      run: dotnet test "OverblikPlusBackend.sln" --no-restore --verbosity normal
