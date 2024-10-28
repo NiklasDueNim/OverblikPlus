@@ -35,7 +35,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: "<OverblikPlus>"       # Udskift med navnet på din Azure Web App
+          app-name: <OverblikPlus>       # Replace with your Azure Web App name
           slot-name: "production"                   
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./out
