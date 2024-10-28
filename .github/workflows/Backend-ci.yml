@@ -21,16 +21,16 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore dependencies
-        run: dotnet restore "OverblikPlusBackend/OverblikPlusBackend.sln"
+        run: dotnet restore "./OverblikPlusBackend/OverblikPlusBackend.sln"
 
       - name: Build project
-        run: dotnet build "OverblikPlusBackend/OverblikPlusBackend.sln" --configuration Release --no-restore
+        run: dotnet build "./OverblikPlusBackend/OverblikPlusBackend.sln" --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test "OverblikPlusBackend/OverblikPlusBackend.sln" --no-restore --verbosity normal
+        run: dotnet test "./OverblikPlusBackend/OverblikPlusBackend.sln" --no-restore --verbosity normal
 
       - name: Publish project
-        run: dotnet publish "OverblikPlusBackend/OverblikPlusBackend.sln" --configuration Release --output ./out
+        run: dotnet publish "./OverblikPlusBackend/OverblikPlusBackend.sln" --configuration Release --output ./out
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
