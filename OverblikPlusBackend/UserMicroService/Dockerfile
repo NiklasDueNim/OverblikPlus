@@ -1,23 +1,18 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
-
+# Brug .NET SDK til at bygge projektet
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["UserService/UserService.csproj", "UserService/"]
-RUN dotnet restore "UserService/UserService.csproj"
-COPY . .
-WORKDIR "/src/UserService"
-RUN dotnet build "UserService.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "UserService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+# Kopier UserMicroService csproj og gendan afhængigheder
+COPY OverblikPlusBackend/UserMicroService/*.csproj ./
+RUN dotnet restore
 
-FROM base AS final
+# Kopier resten af UserMicroService-koden og byg projektet
+COPY OverblikPlusBackend/UserMicroService/. .
+RUN dotnet publish -c Release -o /app/publish
+
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "UserService.dll"]
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "UserMicroService.dll"]

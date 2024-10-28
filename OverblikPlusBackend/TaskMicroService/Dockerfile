@@ -1,23 +1,18 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
-
+# Brug .NET SDK til at bygge projektet
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["TaskService/TaskService.csproj", "TaskService/"]
-RUN dotnet restore "TaskService/TaskService.csproj"
-COPY . .
-WORKDIR "/src/TaskService"
-RUN dotnet build "TaskService.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "TaskService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+# Kopier TaskMicroService csproj og gendan afhængigheder
+COPY OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj ./
+RUN dotnet restore
 
-FROM base AS final
+# Kopier resten af TaskMicroService-koden og byg projektet
+COPY OverblikPlusBackend/TaskMicroService/. .
+RUN dotnet publish -c Release -o /app/publish
+
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "TaskService.dll"]
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "TaskMicroService.dll"]

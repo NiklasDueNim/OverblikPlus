@@ -1,16 +1,25 @@
+
 version: '3.8'
+
 services:
-  api:
+  taskmicroservice:
     build:
       context: .
-      dockerfile: API/API/Dockerfile
+      dockerfile: OverblikPlusBackend/TaskMicroService/Dockerfile
     ports:
-      - "5165:5165"
-    networks:
-      - mynetwork
+      - "5101:80" # Extern port : Intern container port
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5165
+      - ConnectionStrings__DefaultConnection=Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;
 
-networks:
-  mynetwork:
+  usermicroservice:
+    build:
+      context: .
+      dockerfile: OverblikPlusBackend/UserMicroService/Dockerfile
+    ports:
+      - "5102:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;
+
+
