@@ -20,14 +20,16 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+
       - name: Restore dependencies
-        run: dotnet restore "OverblikPlusBackend.sln"
+        run: dotnet restore "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlusBackend/OverblikPlusBackend.sln"
 
       - name: Build project
-        run: dotnet build "OverblikPlusBackend.sln" --configuration Release --no-restore
+        run: dotnet build "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlusBackend/OverblikPlusBackend.sln" --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test "OverblikPlusBackend.sln" --no-restore --verbosity normal
+        run: dotnet test "/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlusBackend/OverblikPlusBackend.sln" --no-restore --verbosity normal
+
 
       - name: Publish project
         run: dotnet publish "OverblikPlusBackend.sln" --configuration Release --output ./out
