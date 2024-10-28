@@ -1,0 +1,73 @@
+@page "/tasks"
+@inject HttpClient Http
+
+<h3>Mine Opgaver</h3>
+
+<TaskList Tasks="Tasks" />
+
+@code {
+    private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
+    private List<TaskStepDto> TaskSteps { get; set; } = new List<TaskStepDto>();
+    private int currentStepIndex = 0;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasks();
+        foreach (var task in Tasks)
+        {
+            Console.WriteLine(task.Image);
+            
+        }
+    }
+
+    private async Task LoadTasks()
+    {
+        var response = await Http.GetFromJsonAsync<List<ReadTaskDto>>("/api/Task");
+        Tasks = response ?? new List<ReadTaskDto>();
+        StateHasChanged();
+    }
+
+    private async Task LoadTaskSteps(int taskId)
+    {
+        var response = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{taskId}/steps");
+        TaskSteps = response ?? new List<TaskStepDto>();
+        currentStepIndex = 0;
+    }
+
+    private void ShowNextStep()
+    {
+        if (currentStepIndex < TaskSteps.Count - 1)
+        {
+            currentStepIndex++;
+        }
+    }
+}
+
+<h3>Opgaver for i dag</h3>
+<ul>
+    @foreach (var task in Tasks)
+    {
+        <li>
+            <p>@task.Name</p>
+            <img src="@task.Image" alt="Task Image"/>
+            <button @onclick="() => LoadTaskSteps(task.Id)">Se opgave</button>
+        </li>
+    }
+</ul>
+
+@if (TaskSteps.Count > 0)
+{
+    <h3>Trin @TaskSteps[currentStepIndex].StepNumber</h3>
+    <div>
+        <img src="@TaskSteps[currentStepIndex].Image" alt="Step Image" />
+        <p>@TaskSteps[currentStepIndex].Text</p>
+        @if (currentStepIndex < TaskSteps.Count - 1)
+        {
+            <button @onclick="ShowNextStep">Næste</button>
+        }
+        else
+        {
+            <p>Du er færdig med opgaven</p>
+        }
+    </div>
+}
