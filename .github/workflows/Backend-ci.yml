@@ -1,4 +1,4 @@
-name: Backend CI Pipeline
+name: Backend CI/CD
 
 on:
   push:
@@ -9,23 +9,33 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v4.0.1
-      with:
-        dotnet-version: 8.0.x
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v4.0.1
+        with:
+          dotnet-version: 8.0.x
 
-    - name: Restore dependencies
-      run: dotnet restore "OverblikPlusBackend.sln"
+      - name: Restore dependencies
+        run: dotnet restore "OverblikPlusBackend.sln"
 
-    - name: Build project
-      run: dotnet build "OverblikPlusBackend.sln" --configuration Release --no-restore
+      - name: Build project
+        run: dotnet build "OverblikPlusBackend.sln" --configuration Release --no-restore
 
-    - name: Run tests
-      run: dotnet test "OverblikPlusBackend.sln" --no-restore --verbosity normal
+      - name: Run tests
+        run: dotnet test "OverblikPlusBackend.sln" --no-restore --verbosity normal
+
+      - name: Publish project
+        run: dotnet publish "OverblikPlusBackend.sln" --configuration Release --output ./out
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: <OverblikPlus>       # Replace with your Azure Web App name
+          slot-name: "production"                   
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./out
