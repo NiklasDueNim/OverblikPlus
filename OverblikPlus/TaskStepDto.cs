@@ -7,4 +7,6 @@ public class TaskStepDto
     public string Text { get; set; } 
 
     public int StepNumber { get; set; }
+    
+    public bool RequiresQrCodeScan { get; set; }
 }

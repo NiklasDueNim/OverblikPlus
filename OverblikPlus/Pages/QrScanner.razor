@@ -1,0 +1,34 @@
+@inject IJSRuntime JS
+@code {
+    [Parameter] public EventCallback<string> OnScanCompleted { get; set; }
+
+    private bool isScanning;
+
+    public async Task StartScanning()
+    {
+        if (!isScanning)
+        {
+            isScanning = true;
+            await JS.InvokeVoidAsync("startScanning");
+        }
+    }
+
+    public async Task StopScanning()
+    {
+        await JS.InvokeVoidAsync("stopScanning");
+        isScanning = false;
+    }
+
+    [JSInvokable]
+    public async Task OnQrCodeScanned(string result)
+    {
+        await StopScanning();
+        await OnScanCompleted.InvokeAsync(result);
+    }
+}
+
+<div id="qr-scanner" style="display: @(isScanning ? "block" : "none");">
+    <video id="video" style="width: 100%; height: auto;"></video>
+    <p id="result"></p>
+    <button @onclick="StopScanning">Annuller</button>
+</div>

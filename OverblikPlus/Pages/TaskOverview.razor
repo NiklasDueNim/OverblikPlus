@@ -4,20 +4,18 @@
 <h3>Mine Opgaver</h3>
 
 <TaskList Tasks="Tasks" />
+<QrScanner @ref="qrScanner" OnScanCompleted="HandleQrCodeScanned" />
 
 @code {
     private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
     private List<TaskStepDto> TaskSteps { get; set; } = new List<TaskStepDto>();
     private int currentStepIndex = 0;
-    
+    private bool isTaskStepViewVisible = false;
+    private QrScanner qrScanner;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadTasks();
-        foreach (var task in Tasks)
-        {
-            Console.WriteLine(task.Image);
-            
-        }
     }
 
     private async Task LoadTasks()
@@ -32,14 +30,37 @@
         var response = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{taskId}/steps");
         TaskSteps = response ?? new List<TaskStepDto>();
         currentStepIndex = 0;
+        isTaskStepViewVisible = TaskSteps.Count > 0;
     }
 
-    private void ShowNextStep()
+    private async Task ShowNextStep()
     {
         if (currentStepIndex < TaskSteps.Count - 1)
         {
             currentStepIndex++;
+            // Check if this step requires QR code scan
+            if (TaskSteps[currentStepIndex].RequiresQrCodeScan)
+            {
+                await qrScanner.StartScanning();
+            }
         }
+        else
+        {
+            CompleteTask();
+        }
+    }
+
+    private void CompleteTask()
+    {
+        TaskSteps.Clear();
+        isTaskStepViewVisible = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleQrCodeScanned(string result)
+    {
+        Console.WriteLine($"QR-kode resultat: {result}");
+        await ShowNextStep();
     }
 }
 
@@ -49,17 +70,17 @@
     {
         <li>
             <p>@task.Name</p>
-            <img src="@task.Image" alt="Task Image"/>
+            <img src="@task.Image" alt="Task Image" style="width:100px; height:100px;" />
             <button @onclick="() => LoadTaskSteps(task.Id)">Se opgave</button>
         </li>
     }
 </ul>
 
-@if (TaskSteps.Count > 0)
+@if (isTaskStepViewVisible && TaskSteps.Count > 0)
 {
     <h3>Trin @TaskSteps[currentStepIndex].StepNumber</h3>
     <div>
-        <img src="@TaskSteps[currentStepIndex].Image" alt="Step Image" />
+        <img src="@TaskSteps[currentStepIndex].Image" alt="Step Image" style="width:150px; height:150px;" />
         <p>@TaskSteps[currentStepIndex].Text</p>
         @if (currentStepIndex < TaskSteps.Count - 1)
         {
