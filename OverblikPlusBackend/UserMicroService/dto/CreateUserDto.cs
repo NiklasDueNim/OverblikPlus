@@ -6,11 +6,11 @@ public class CreateUserDto
     
     public string LastName { get; set; }
     
-    public string CPRNumber { get; set; } // Følsomt data
+    public string CPRNumber { get; set; }
     
-    public string MedicationDetails { get; set; } // Følsomt data
+    public string MedicationDetails { get; set; }
     
-    public string Role { get; set; } // F.eks. "Admin", "User", etc.
+    public string Role { get; set; }
     
-    public string Username { get; set; } // Unikt brugernavn
+    public string Username { get; set; }
 }
