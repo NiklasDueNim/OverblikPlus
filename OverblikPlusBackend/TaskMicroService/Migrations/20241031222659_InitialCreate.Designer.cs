@@ -12,7 +12,7 @@ using TaskMicroService.DataAccess;
 namespace TaskMicroService.Migrations
 {
     [DbContext(typeof(TaskDbContext))]
-    [Migration("20241027110637_InitialCreate")]
+    [Migration("20241031222659_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -39,8 +39,8 @@ namespace TaskMicroService.Migrations
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<byte[]>("ImageUrl")
-                        .HasColumnType("varbinary(max)");
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
@@ -48,6 +48,9 @@ namespace TaskMicroService.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("RequiresQrCodeScan")
+                        .HasColumnType("bit");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");

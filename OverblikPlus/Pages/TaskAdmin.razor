@@ -13,7 +13,7 @@
     <textarea @bind="currentTask.Description"></textarea>
     <br />
     <label>Billede:</label>
-    <input type="file" @onchange="HandleImageUpload" />
+    <InputFile OnChange="HandleImageUpload" />
     <br />
     <button @onclick="SaveTask">@((isEditMode) ? "Opdater Opgave" : "Opret Opgave")</button>
     <button @onclick="CancelEdit" style="display:@(isEditMode ? "inline-block" : "none")">Annuller</button>
@@ -29,6 +29,7 @@
             <h4>@task.Name</h4>
             <p>@task.Description</p>
             <img src="@task.Image" alt="Opgave Billede" style="width:100px; height:100px;" />
+
             <button @onclick="() => EditTask(task)">Rediger</button>
             <button @onclick="() => DeleteTask(task.Id)">Slet</button>
 
@@ -98,18 +99,23 @@
         await LoadTasks();
     }
 
-    private async Task HandleImageUpload(ChangeEventArgs e)
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
     {
-        if (e.Value is IBrowserFile file)
+        if (e.FileCount > 0)
         {
-            using var stream = file.OpenReadStream();
-            var buffer = new byte[file.Size];
-            await stream.ReadAsync(buffer);
-            currentTask.ImageBase64 = Convert.ToBase64String(buffer);
-            //currentTask.ImageBase64 = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
-            Console.WriteLine("Billedet er blevet konverteret til base64"); // Debugging
+            var file = e.GetMultipleFiles(1).FirstOrDefault();
+            if (file != null)
+            {
+                using var stream = file.OpenReadStream(1024 * 1024 * 10); // Max størrelse på f.eks. 10MB
+                var buffer = new byte[file.Size];
+                await stream.ReadAsync(buffer);
+                currentTask.ImageBase64 = Convert.ToBase64String(buffer);
+            }
         }
     }
+
+
+
 
     private void CancelEdit()
     {
