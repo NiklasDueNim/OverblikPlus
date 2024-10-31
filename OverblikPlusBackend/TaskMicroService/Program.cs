@@ -4,7 +4,7 @@ using TaskMicroService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Registrer DbContext og andre services
+
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -20,10 +20,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
-builder.Services.AddAutoMapper(typeof(Program));  // Tilføj AutoMapper for mapping
-builder.Services.AddScoped<ITaskService, TaskService>();  // Registrer TaskMicroService
+builder.Services.AddAutoMapper(typeof(Program));  
+builder.Services.AddScoped<ITaskService, TaskService>();  
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 builder.Services.AddScoped<IImageConversionService, ImageConversionService>();
+builder.Services.AddScoped<BlobStorageService>();
+
 
 
 var app = builder.Build();

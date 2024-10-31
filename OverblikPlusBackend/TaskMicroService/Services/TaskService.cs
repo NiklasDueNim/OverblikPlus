@@ -24,7 +24,7 @@ namespace TaskMicroService.Services
         public async Task<IEnumerable<ReadTaskDto>> GetAllTasks()
         {
             var tasks = await _dbContext.Tasks
-                .Include(t => t.Steps) // Include Steps
+                .Include(t => t.Steps) 
                 .ToListAsync();
 
             var taskDtos = _mapper.Map<List<ReadTaskDto>>(tasks);
