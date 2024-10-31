@@ -3,7 +3,7 @@ using Azure.Storage.Blobs;
 public class BlobStorageService
 {
     private readonly BlobServiceClient _blobServiceClient;
-    private readonly string _containerName = "images"; // Sørg for, at denne container er oprettet i Azure
+    private readonly string _containerName = "images";
 
     public BlobStorageService(IConfiguration configuration)
     {
