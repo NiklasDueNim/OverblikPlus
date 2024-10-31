@@ -1,9 +1,8 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using TaskMicroService.dto;
 using TaskMicroService.DataAccess;
+using TaskMicroService.dto;
 using TaskMicroService.Entities;
-
 
 namespace TaskMicroService.Services
 {
@@ -11,37 +10,35 @@ namespace TaskMicroService.Services
     {
         private readonly TaskDbContext _dbContext;
         private readonly IMapper _mapper;
-        private readonly IImageConversionService _imageConversionService;
-        
+        private readonly BlobStorageService _blobStorageService;
 
-        public TaskService(TaskDbContext dbContext, IMapper mapper, IImageConversionService imageConversionService)
+        public TaskService(TaskDbContext dbContext, IMapper mapper, BlobStorageService blobStorageService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
-            _imageConversionService = imageConversionService;
+            _blobStorageService = blobStorageService;
         }
 
         public async Task<IEnumerable<ReadTaskDto>> GetAllTasks()
         {
             var tasks = await _dbContext.Tasks
-                .Include(t => t.Steps) 
+                .Include(t => t.Steps)
                 .ToListAsync();
 
             var taskDtos = _mapper.Map<List<ReadTaskDto>>(tasks);
 
             foreach (var taskDto in taskDtos)
             {
-                // Assuming the original TaskEntity has ImageUrl as byte[]
-                if (tasks.FirstOrDefault(t => t.Id == taskDto.Id)?.ImageUrl is byte[] imageUrlBytes)
+                var taskEntity = tasks.FirstOrDefault(t => t.Id == taskDto.Id);
+                if (!string.IsNullOrEmpty(taskEntity?.ImageUrl))
                 {
-                    taskDto.Image = _imageConversionService.ConvertToBase64(imageUrlBytes);
+                    taskDto.Image = taskEntity.ImageUrl;
                 }
+                taskDto.RequiresQrCodeScan = taskEntity.RequiresQrCodeScan;
             }
 
             return taskDtos;
         }
-
-
 
         public async Task<ReadTaskDto> GetTaskById(int id)
         {
@@ -51,22 +48,26 @@ namespace TaskMicroService.Services
 
             var taskDto = _mapper.Map<ReadTaskDto>(task);
 
-            if (task?.ImageUrl != null)
+            if (!string.IsNullOrEmpty(task?.ImageUrl))
             {
-                taskDto.Image = _imageConversionService.ConvertToBase64(task.ImageUrl);
+                taskDto.Image = task.ImageUrl;
             }
+            taskDto.RequiresQrCodeScan = task?.RequiresQrCodeScan ?? false;
 
             return taskDto;
         }
-        
+
         public async Task<int> CreateTask(CreateTaskDto createTaskDto)
         {
             var task = _mapper.Map<TaskEntity>(createTaskDto);
-
-            // Konverter base64-streng til byte[] før lagring, hvis billedet er inkluderet
+            
             if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
             {
-                task.ImageUrl = Convert.FromBase64String(createTaskDto.ImageBase64);
+                var imageBytes = Convert.FromBase64String(createTaskDto.ImageBase64);
+                using var stream = new MemoryStream(imageBytes);
+                
+                var blobFileName = $"{Guid.NewGuid()}.jpg"; 
+                task.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
             }
 
             _dbContext.Tasks.Add(task);
@@ -75,12 +76,17 @@ namespace TaskMicroService.Services
             return task.Id;
         }
 
-
         public async Task DeleteTask(int id)
         {
             var task = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
             if (task != null)
             {
+                if (!string.IsNullOrEmpty(task.ImageUrl))
+                {
+                    var blobFileName = task.ImageUrl.Substring(task.ImageUrl.LastIndexOf('/') + 1);
+                    await _blobStorageService.DeleteImageAsync(blobFileName);
+                }
+
                 _dbContext.Tasks.Remove(task);
                 await _dbContext.SaveChangesAsync();
             }
@@ -92,11 +98,20 @@ namespace TaskMicroService.Services
             if (taskEntity != null)
             {
                 _mapper.Map(updateTaskDto, taskEntity);
+                
+                if (!string.IsNullOrEmpty(updateTaskDto.ImageUrl))
+                {
+                    var imageBytes = Convert.FromBase64String(updateTaskDto.ImageUrl);
+                    using var stream = new MemoryStream(imageBytes);
+
+                    var blobFileName = $"{Guid.NewGuid()}.jpg";
+                    taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
+                }
+
                 await _dbContext.SaveChangesAsync();
             }
         }
 
-        // TaskStep relaterede metoder
         public async Task<List<ReadTaskStepDto>> GetStepsForTask(int taskId)
         {
             var steps = await _dbContext.TaskSteps

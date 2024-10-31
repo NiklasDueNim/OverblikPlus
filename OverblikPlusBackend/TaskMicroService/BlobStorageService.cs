@@ -22,12 +22,11 @@ public class BlobStorageService
         return blobClient.Uri.ToString();
     }
 
-    public async Task<Stream> DownloadImageAsync(string fileName)
+    public async Task DeleteImageAsync(string fileName)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
         var blobClient = containerClient.GetBlobClient(fileName);
-
-        var response = await blobClient.DownloadAsync();
-        return response.Value.Content;
+        
+        await blobClient.DeleteIfExistsAsync();
     }
 }

@@ -13,4 +13,6 @@ public class CreateTaskDto
     public DateTime DueDate { get; set; }
     
     public int? UserId { get; set; }
+
+    public bool RequiresQrCodeScan { get; set; } 
 }
