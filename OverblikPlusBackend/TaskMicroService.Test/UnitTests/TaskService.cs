@@ -14,7 +14,7 @@ public class TaskService
         var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
         var mapper = config.CreateMapper();
 
-        var dto = new TaskStepDto
+        var dto = new ReadTaskStepDto()
         {
             Id = 1,
             Image = "https://example.com/image.png",
