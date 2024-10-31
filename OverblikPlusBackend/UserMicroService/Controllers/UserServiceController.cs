@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UserMicroService.dto;
 using UserMicroService.Services;
-using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace UserMicroService.Controllers
 {
