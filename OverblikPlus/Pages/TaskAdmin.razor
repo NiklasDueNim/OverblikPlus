@@ -87,7 +87,7 @@
             Id = task.Id,
             Name = task.Name,
             Description = task.Description,
-            ImageBase64 = task.Image // Sørg for, at billeddata er korrekt
+            ImageBase64 = task.Image
         };
         isEditMode = true;
     }
@@ -100,13 +100,14 @@
 
     private async Task HandleImageUpload(ChangeEventArgs e)
     {
-        if (e.Value is not null)
+        if (e.Value is IBrowserFile file)
         {
-            var file = (IBrowserFile)e.Value;
             using var stream = file.OpenReadStream();
             var buffer = new byte[file.Size];
             await stream.ReadAsync(buffer);
             currentTask.ImageBase64 = Convert.ToBase64String(buffer);
+            //currentTask.ImageBase64 = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
+            Console.WriteLine("Billedet er blevet konverteret til base64"); // Debugging
         }
     }
 
@@ -118,8 +119,7 @@
 
     private async Task AddStep(int taskId)
     {
-        // Logik til tilføjelse af trin for en opgave
-        // fx ved hjælp af et popup-modal
+        // Logik til tilføjelse af trin for en opgave, fx via et modal
     }
 
     private void EditStep(TaskStepDto step)

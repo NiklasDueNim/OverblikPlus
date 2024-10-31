@@ -16,11 +16,8 @@ namespace TaskMicroService.Profiles
             CreateMap<UpdateTaskDto, TaskEntity>();
 
             // TaskStep mapping
-            CreateMap<TaskStep, ReadTaskStepDto>(); // Maps TaskStep to ReadTaskStepDto
+            CreateMap<TaskStep, ReadTaskStepDto>();
             CreateMap<CreateTaskStepDto, TaskStep>();
-
-            // Tilføj hvis du har brug for en opdatering til TaskStep
-            CreateMap<TaskStep, TaskStepDto>();
         }
     }
 }

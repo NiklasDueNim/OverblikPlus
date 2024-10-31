@@ -7,7 +7,7 @@ public class ReadTaskDto
     public string Name { get; set; }
     
     public string Description { get; set; }
-    public List<TaskStepDto>? Steps { get; set; } = new();
+    public List<ReadTaskStepDto>? Steps { get; set; } = new();
     
     public string? Image { get; set; }
 

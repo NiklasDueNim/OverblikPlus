@@ -1,8 +1,20 @@
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using TaskMicroService.DataAccess;
 using TaskMicroService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Konfigurer form- og JSON-størrelser for store filer
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 20 * 1024 * 1024; // 20 MB
+});
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.MaxDepth = 64;
+});
 
 // Registrer DbContext og andre services
 builder.Services.AddDbContext<TaskDbContext>(options =>
@@ -25,7 +37,6 @@ builder.Services.AddScoped<ITaskService, TaskService>();  // Registrer TaskMicro
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 builder.Services.AddScoped<IImageConversionService, ImageConversionService>();
 
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -39,9 +50,8 @@ else
 }
 
 app.UseRouting();
-
 app.UseCors("AllowAllOrigins");
-
 app.UseAuthorization();
+
 app.MapControllers();
 app.Run();
