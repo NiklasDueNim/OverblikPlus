@@ -48,11 +48,17 @@ jobs:
             dotnet publish "$csproj" --configuration Release --output ./out/$(basename "$csproj" .csproj)
           done
 
+      # Login to Azure
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       # Deploy to Azure Web App (ensure publish profile is correctly configured)
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: <OverblikPlus>       # Replace with your Azure Web App name
+          app-name: <OverblikPlus>       
           slot-name: "production"
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./out
