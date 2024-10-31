@@ -71,9 +71,6 @@ namespace UserMicroService.Controllers
             _logger.LogInformation($"User with ID: {userId} created successfully");
             
             return CreatedAtAction(nameof(GetUserById), new { id = userId }, createUserDto );
-
-
-
         }
 
         // PUT /api/userservice/{id}
