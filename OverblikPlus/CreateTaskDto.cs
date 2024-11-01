@@ -9,4 +9,6 @@ public class CreateTaskDto
     public string Description { get; set; }
 
     public string ImageBase64 { get; set; }
+    
+    public bool RequiresQrCodeScan { get; set; }
 }

@@ -6,7 +6,8 @@ public class ReadTaskDto
     public string Name { get; set; }
     public string Description { get; set; }
     public string? Image { get; set; }
-
+    
+    public bool RequiresQrCodeScan { get; set; }
     public List<TaskStepDto> Steps { get; set; } = new List<TaskStepDto>();
 
 }

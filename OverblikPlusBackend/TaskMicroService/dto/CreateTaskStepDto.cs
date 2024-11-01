@@ -7,6 +7,8 @@ namespace TaskMicroService.dto
         public string Text { get; set; }
         
         public int StepNumber { get; set; }
-        public int TaskId { get; set; }  // For at linke til den overordnede Task
+        public int TaskId { get; set; }
+        
+        public bool RequiresQrCodeScan { get; set; } 
     }
 }

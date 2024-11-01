@@ -12,8 +12,8 @@ using TaskMicroService.DataAccess;
 namespace TaskMicroService.Migrations
 {
     [DbContext(typeof(TaskDbContext))]
-    [Migration("20241031222659_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20241101163702_AddRequiresQrCodeScan")]
+    partial class AddRequiresQrCodeScan
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -70,6 +70,9 @@ namespace TaskMicroService.Migrations
 
                     b.Property<byte[]>("ImageUrl")
                         .HasColumnType("varbinary(max)");
+
+                    b.Property<bool>("RequiresQrCodeScan")
+                        .HasColumnType("bit");
 
                     b.Property<int>("StepNumber")
                         .HasColumnType("int");

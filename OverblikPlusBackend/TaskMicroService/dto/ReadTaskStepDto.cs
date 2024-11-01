@@ -10,5 +10,7 @@ namespace TaskMicroService.dto
         public int StepNumber { get; set; }
         
         public int TaskId { get; set; }
+        
+        public bool RequiresQrCodeScan { get; set; } 
     }
 }

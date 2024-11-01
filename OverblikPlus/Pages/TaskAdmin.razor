@@ -4,49 +4,53 @@
 <h3>Administrer Opgaver</h3>
 
 <!-- Formular til oprettelse/ændring af en task -->
-<div style="padding: 20px; border: 1px solid #ccc; border-radius: 5px; max-width: 400px;">
+<div class="task-form">
     <h4>@(isEditMode ? "Rediger Opgave" : "Opret Ny Opgave")</h4>
-    <div style="margin-bottom: 15px;">
+    <div class="form-group">
         <label>Navn:</label>
-        <input @bind="currentTask.Name" style="width: 100%; padding: 5px;" />
+        <input @bind="currentTask.Name" />
     </div>
-    <div style="margin-bottom: 15px;">
+    <div class="form-group">
         <label>Beskrivelse:</label>
-        <textarea @bind="currentTask.Description" style="width: 100%; padding: 5px;"></textarea>
+        <textarea @bind="currentTask.Description"></textarea>
     </div>
-    <div style="margin-bottom: 15px;">
+    <div class="form-group">
         <label>Billede:</label>
         <InputFile OnChange="HandleImageUpload" />
     </div>
-    <div style="margin-bottom: 15px;">
-        <button @onclick="SaveTask" style="margin-right: 10px;">@((isEditMode) ? "Opdater Opgave" : "Opret Opgave")</button>
-        <button @onclick="CancelEdit" style="display:@(isEditMode ? "inline-block" : "none")">Annuller</button>
+    <div class="button-group">
+        <button @onclick="SaveTask">@((isEditMode) ? "Opdater Opgave" : "Opret Opgave")</button>
+        <button @onclick="CancelEdit" class="cancel-button" style="display:@(isEditMode ? "inline-block" : "none")">Annuller</button>
     </div>
 </div>
 
 <hr />
 
 <!-- Liste over opgaver -->
-<ul>
+<ul class="task-list">
     @foreach (var task in Tasks)
     {
-    <li>
+    <li class="task-item">
         <h4>@task.Name</h4>
         <p>@task.Description</p>
-        <img src="@task.Image" alt="Opgave Billede" style="width:100px; height:100px;" />
+        <img src="@task.Image" alt="Opgave Billede" class="task-image" />
 
-        <button @onclick="() => EditTask(task)">Rediger</button>
-        <button @onclick="() => DeleteTask(task.Id)">Slet</button>
+        <div class="button-group">
+            <button @onclick="() => EditTask(task)">Rediger</button>
+            <button @onclick="() => DeleteTask(task.Id)" class="delete-button">Slet</button>
+        </div>
 
         <h5>Trin:</h5>
-        <ul>
+        <ul class="task-step-list">
             @foreach (var step in task.Steps)
             {
-            <li>
+            <li class="task-step-item">
                 <p>@step.Text</p>
-                <img src="@step.Image" alt="Trin Billede" style="width:100px; height:100px;" />
-                <button @onclick="() => EditStep(step)">Rediger Trin</button>
-                <button @onclick="() => DeleteStep(step.Id)">Slet Trin</button>
+                <img src="@step.Image" alt="Trin Billede" class="step-image" />
+                <div class="button-group">
+                    <button @onclick="() => EditStep(step)">Rediger Trin</button>
+                    <button @onclick="() => DeleteStep(step.Id)" class="delete-button">Slet Trin</button>
+                </div>
             </li>
             }
         </ul>
@@ -55,11 +59,37 @@
     }
 </ul>
 
+<!-- Formular til tilføjelse af trin -->
+@if (isAddingStep)
+{
+<div class="task-step-form">
+    <h5>Tilføj et trin</h5>
+    <div class="form-group">
+        <label>Beskrivelse:</label>
+        <textarea @bind="newStep.Text"></textarea>
+    </div>
+    <div class="form-group">
+        <label>Billede:</label>
+        <InputFile OnChange="HandleStepImageUpload" />
+    </div>
+    <div class="form-group">
+        <label>Kræver QR-kode scanning:</label>
+        <input type="checkbox" @bind="newStep.RequiresQrCodeScan" />
+    </div>
+    <div class="button-group">
+        <button @onclick="SaveTaskStep">Tilføj Trin</button>
+        <button @onclick="CancelAddStep" class="cancel-button">Annuller</button>
+    </div>
+</div>
+}
 
 @code {
     private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
     private CreateTaskDto currentTask = new CreateTaskDto();
     private bool isEditMode = false;
+    private bool isAddingStep = false;
+    private CreateTaskStepDto newStep = new CreateTaskStepDto();
+    private int currentTaskIdForStep = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -94,7 +124,8 @@
             Id = task.Id,
             Name = task.Name,
             Description = task.Description,
-            ImageBase64 = task.Image
+            ImageBase64 = task.Image,
+            RequiresQrCodeScan = task.RequiresQrCodeScan
         };
         isEditMode = true;
     }
@@ -120,27 +151,74 @@
         }
     }
 
+    private void AddStep(int taskId)
+    {
+        currentTaskIdForStep = taskId;
+        newStep = new CreateTaskStepDto { TaskId = taskId };
+        isAddingStep = true;
+    }
 
+    private async Task SaveTaskStep()
+    {
+        newStep.TaskId = currentTaskIdForStep;
 
+        // Send trin data til API'et
+        await Http.PostAsJsonAsync($"/api/tasks/{currentTaskIdForStep}/steps", newStep);
 
+        // Opdater listen af trin for den aktuelle opgave
+        await LoadTaskSteps(currentTaskIdForStep);
+
+        // Ryd op efter tilføjelsen
+        isAddingStep = false;
+        newStep = new CreateTaskStepDto();
+    }
+
+    private void CancelAddStep()
+    {
+        isAddingStep = false;
+        newStep = new CreateTaskStepDto();
+    }
+
+    private async Task HandleStepImageUpload(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount > 0)
+        {
+            var file = e.GetMultipleFiles(1).FirstOrDefault();
+            if (file != null)
+            {
+                using var stream = file.OpenReadStream(1024 * 1024 * 10); // Max størrelse på f.eks. 10MB
+                var buffer = new byte[file.Size];
+                await stream.ReadAsync(buffer);
+                newStep.ImageBase64 = Convert.ToBase64String(buffer);
+            }
+        }
+    }
+
+    private async Task LoadTaskSteps(int taskId)
+    {
+        var response = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{taskId}/steps");
+        var task = Tasks.FirstOrDefault(t => t.Id == taskId);
+        if (task != null)
+        {
+            task.Steps = response ?? new List<TaskStepDto>();
+            StateHasChanged();
+        }
+    }
+    
     private void CancelEdit()
     {
         currentTask = new CreateTaskDto();
         isEditMode = false;
     }
 
-    private async Task AddStep(int taskId)
-    {
-        // Logik til tilføjelse af trin for en opgave, fx via et modal
-    }
-
     private void EditStep(TaskStepDto step)
     {
-        // Logik til redigering af et trin
+        // Implementer logik til at redigere trin her
     }
 
     private async Task DeleteStep(int stepId)
     {
-        // Logik til sletning af et trin
+        // Implementer logik til at slette trin her
     }
 }
+

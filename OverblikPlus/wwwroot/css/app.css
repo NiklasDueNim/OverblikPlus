@@ -1,3 +1,4 @@
+/* Standard global styles */
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -6,19 +7,19 @@ h1:focus {
     outline: none;
 }
 
-/* Updating link and button-link colors for better consistency with the new color scheme */
+/* Link and button colors */
 a, .btn-link {
-    color: #4a5568; /* Changed to a dark gray-blue for a professional look */
+    color: #4a5568;
 }
 
-/* Adjusting primary button colors to fit with the new color scheme */
+/* Primary button styles */
 .btn-primary {
     color: #fff;
-    background-color: #4a5568; /* Dark gray-blue */
-    border-color: #2d3748; /* A darker shade of gray-blue for the border */
+    background-color: #4a5568;
+    border-color: #2d3748;
 }
 
-/* Focus styles for interactive elements */
+/* Focus styles */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
     box-shadow: 0 0 0 0.1rem rgba(255, 255, 255, 0.5), 0 0 0 0.2rem rgba(74, 85, 104, 0.5);
 }
@@ -27,22 +28,22 @@ a, .btn-link {
     padding-top: 1.1rem;
 }
 
-/* Styles for form validation states */
+/* Validation styles */
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #48bb78; /* Softer green for validation outline */
+    outline: 1px solid #48bb78;
 }
 
 .invalid {
-    outline: 1px solid #e53e3e; /* Soft red for error outline */
+    outline: 1px solid #e53e3e;
 }
 
 .validation-message {
-    color: #e53e3e; /* Matching the error outline color */
+    color: #e53e3e;
 }
 
 /* Error UI enhancements */
 #blazor-error-ui {
-    background: #fed7d7; /* Lighter red background for error messages */
+    background: #fed7d7;
     bottom: 0;
     box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
     display: none;
@@ -60,7 +61,7 @@ a, .btn-link {
     top: 0.5rem;
 }
 
-/* Progress bar during loading */
+/* Loading progress */
 .loading-progress {
     position: relative;
     display: block;
@@ -71,17 +72,11 @@ a, .btn-link {
 
 .loading-progress circle {
     fill: none;
-    stroke: #cbd5e0; /* Lighter gray for loading circle */
+    stroke: #cbd5e0;
     stroke-width: 0.6rem;
     transform-origin: 50% 50%;
     transform: rotate(-90deg);
 }
-
-/*.loading-progress circle:last-child {*/
-/*    stroke: #4a5568; !* Dark gray-blue for loading progress completion *!*/
-/*    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;*/
-/*    transition: stroke-dasharray 0.05s ease-in-out;*/
-/*}*/
 
 .loading-progress-text {
     position: absolute;
@@ -90,23 +85,20 @@ a, .btn-link {
     inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
 
-/*.loading-progress-text:after {*/
-/*    content: var(--blazor-load-percentage-text, "Loading");*/
-/*}*/
-
-/* Task item and form styles adjustment */
+/* Task item and form styles */
 .task-item img {
-    width: 100%; /* Responsive width for images */
+    width: 100%;
     height: auto;
     margin-right: 15px;
 }
 
 @media (min-width: 768px) {
     .task-item img {
-        width: 120px; /* Fixed width on larger screens */
+        width: 120px;
     }
 }
 
+/* User form styling */
 .user-form {
     max-width: 400px;
     margin: 2rem auto;
@@ -118,15 +110,15 @@ a, .btn-link {
 }
 
 .user-form .form-control:focus {
-    border-color: #4a5568; /* Updated focus border color */
+    border-color: #4a5568;
     box-shadow: 0 0 0 0.2rem rgba(74, 85, 104, 0.25);
 }
 
 .user-form button {
-    background-color: #4a5568; /* Consistent button background color */
+    background-color: #4a5568;
     color: white;
 }
 
 .user-form button:hover {
-    background-color: #2d3748; /* Darker gray-blue for hover state */
+    background-color: #2d3748;
 }

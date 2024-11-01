@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TaskMicroService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class AddRequiresQrCodeScanToTaskStep : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -39,7 +39,8 @@ namespace TaskMicroService.Migrations
                     TaskId = table.Column<int>(type: "int", nullable: false),
                     StepNumber = table.Column<int>(type: "int", nullable: false),
                     ImageUrl = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequiresQrCodeScan = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
