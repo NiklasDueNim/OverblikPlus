@@ -1,21 +1,16 @@
-<h3>Task List</h3>
+@code {
+    [Parameter] public List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
+    [Parameter] public EventCallback<int> OnTaskSelected { get; set; }
+}
+
+<h3>Opgaver for i dag</h3>
 <ul>
     @foreach (var task in Tasks)
     {
-    <li>
-        <a @onclick="() => ShowTaskDetails(task.Id)">
-            @task.Name
-        </a>
-    </li>
+        <li>
+            <p>@task.Name</p>
+            <img src="@task.Image" alt="Task Image" style="width:100px; height:100px;" />
+            <button @onclick="() => OnTaskSelected.InvokeAsync(task.Id)">Se opgave</button>
+        </li>
     }
 </ul>
-
-@code {
-[Parameter]
-public List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
-
-private void ShowTaskDetails(int taskId)
-{
-// Implement detail showing logic here or raise an event
-}
-}

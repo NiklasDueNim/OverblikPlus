@@ -1,82 +1,48 @@
-@page "/tasks"
-@inject HttpClient Http
-
-<h3>Mine Opgaver</h3>
-
-<TaskList Tasks="Tasks" />
-<QrScanner @ref="qrScanner" OnScanCompleted="HandleQrCodeScanned" />
-
 @code {
-    private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
-    private List<TaskStepDto> TaskSteps { get; set; } = new List<TaskStepDto>();
+    [Parameter] public List<TaskStepDto> TaskSteps { get; set; } = new();
+    [Parameter] public EventCallback OnTaskCompleted { get; set; }
+    [Inject] private IJSRuntime JS { get; set; }
+
     private int currentStepIndex = 0;
-    private bool isTaskStepViewVisible = false;
-    private QrScanner qrScanner;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadTasks();
-    }
-
-    private async Task LoadTasks()
-    {
-        var response = await Http.GetFromJsonAsync<List<ReadTaskDto>>("/api/Task");
-        Tasks = response ?? new List<ReadTaskDto>();
-        StateHasChanged();
-    }
-
-    private async Task LoadTaskSteps(int taskId)
-    {
-        var response = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{taskId}/steps");
-        TaskSteps = response ?? new List<TaskStepDto>();
-        currentStepIndex = 0;
-        isTaskStepViewVisible = TaskSteps.Count > 0;
-    }
+    private bool isScanning = false;
 
     private async Task ShowNextStep()
     {
         if (currentStepIndex < TaskSteps.Count - 1)
         {
             currentStepIndex++;
-            // Check if this step requires QR code scan
             if (TaskSteps[currentStepIndex].RequiresQrCodeScan)
             {
-                await qrScanner.StartScanning();
+                await StartScanning();
             }
         }
         else
         {
-            CompleteTask();
+            await OnTaskCompleted.InvokeAsync();
         }
     }
 
-    private void CompleteTask()
+    private async Task StartScanning()
     {
-        TaskSteps.Clear();
-        isTaskStepViewVisible = false;
-        StateHasChanged();
+        isScanning = true;
+        await JS.InvokeVoidAsync("startScanning");
     }
 
-    private async Task HandleQrCodeScanned(string result)
+    [JSInvokable]
+    public async Task OnQrCodeScanned(string result)
     {
         Console.WriteLine($"QR-kode resultat: {result}");
+        isScanning = false;
         await ShowNextStep();
+    }
+
+    public async Task StopScanning()
+    {
+        await JS.InvokeVoidAsync("stopScanning");
     }
 }
 
-<h3>Opgaver for i dag</h3>
-<ul>
-    @foreach (var task in Tasks)
-    {
-        <li>
-            <p>@task.Name</p>
-            <img src="@task.Image" alt="Task Image" style="width:100px; height:100px;" />
-            <button @onclick="() => LoadTaskSteps(task.Id)">Se opgave</button>
-        </li>
-    }
-</ul>
-
-@if (isTaskStepViewVisible && TaskSteps.Count > 0)
+@if (TaskSteps.Count > 0)
 {
     <h3>Trin @TaskSteps[currentStepIndex].StepNumber</h3>
     <div>

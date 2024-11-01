@@ -1,0 +1,29 @@
+@page "/tasks"
+@inject HttpClient Http
+
+<h3>Mine Opgaver</h3>
+
+<TaskList Tasks="ReadTasks" OnTaskSelected="LoadTaskSteps" />
+<TaskStepView TaskSteps="TaskSteps" OnTaskCompleted="CompleteTask" />
+
+<video id="video" style="display:none; width:100%;"></video>
+
+@code {
+    private List<ReadTaskDto> ReadTasks { get; set; } = new List<ReadTaskDto>();
+    private List<TaskStepDto> TaskSteps { get; set; } = new List<TaskStepDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ReadTasks = await Http.GetFromJsonAsync<List<ReadTaskDto>>("/api/Task");
+    }
+
+    private async Task LoadTaskSteps(int taskId)
+    {
+        TaskSteps = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{taskId}/steps");
+    }
+
+    private void CompleteTask()
+    {
+        TaskSteps.Clear();
+    }
+}
