@@ -60,7 +60,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserService.GetUserById(1); // Antager at brugeren er logget ind og har ID 1
+        user = await UserService.GetUserById(58); 
         todaysTasks = await TaskService.GetTasksForTodayAsync();
         //notifications = await NotificationService.GetNotificationsAsync();
        // employees = await EmployeeService.GetEmployeesStatusAsync();

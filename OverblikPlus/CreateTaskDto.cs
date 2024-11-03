@@ -11,4 +11,6 @@ public class CreateTaskDto
     public string ImageBase64 { get; set; }
     
     public bool RequiresQrCodeScan { get; set; }
+
+    public User UserId { get; set; }
 }

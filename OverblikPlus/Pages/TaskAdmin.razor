@@ -18,6 +18,16 @@
         <label>Billede:</label>
         <InputFile OnChange="HandleImageUpload" />
     </div>
+    <div class="form-group">
+        <label for="user">Assign User</label>
+        <select id="user" @bind="currentTask.UserId" class="form-control">
+            <option value="">Select User</option>
+            @foreach (var user in users)
+            {
+            <option value="@user.Id">@user.FirstName @user.LastName</option>
+            }
+        </select>
+    </div>
     <div class="button-group">
         <button @onclick="SaveTask">@((isEditMode) ? "Opdater Opgave" : "Opret Opgave")</button>
         <button @onclick="CancelEdit" class="cancel-button" style="display:@(isEditMode ? "inline-block" : "none")">Annuller</button>
@@ -90,6 +100,7 @@
     private bool isAddingStep = false;
     private CreateTaskStepDto newStep = new CreateTaskStepDto();
     private int currentTaskIdForStep = 0;
+    private List<ReadUserDto> users { get; set; } = new List<ReadUserDto>();
 
     protected override async Task OnInitializedAsync()
     {
