@@ -2,6 +2,7 @@ namespace OverblikPlus;
 
 public class CreateUserDto
 {
+    public int Id { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string CPRNumber { get; set; }  // Should be encrypted before sending.

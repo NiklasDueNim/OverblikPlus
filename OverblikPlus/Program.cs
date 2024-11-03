@@ -9,8 +9,11 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Tilføj HttpClient for at kommunikere med API
+// HttpClient for TaskService
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5032/") });
+
+// HTTPClient for UserService
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5081/") });
 
 // Registrer dine services
 builder.Services.AddScoped<ITaskService, TaskService>();

@@ -27,8 +27,8 @@ public class UserService : IUserService
         response.EnsureSuccessStatusCode();
         
         // Assuming the response contains the created user ID.
-        var userId = await response.Content.ReadFromJsonAsync<int>();
-        return userId;
+        var createdUser= await response.Content.ReadFromJsonAsync<CreateUserDto>();
+        return createdUser.Id;
     }
 
     public async Task UpdateUser(int id, UpdateUserDto updatedUser)

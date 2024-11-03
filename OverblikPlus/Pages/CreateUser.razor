@@ -3,6 +3,20 @@
 
 <h3>Opret Bruger</h3>
 
+@if (!string.IsNullOrEmpty(successMessage))
+{
+<div class="alert alert-success">
+    @successMessage
+</div>
+}
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+<div class="alert alert-danger">
+    @errorMessage
+</div>
+}
+
+
 <EditForm Model="@newUser" OnValidSubmit="@HandleCreateUser" class="user-form">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -41,21 +55,25 @@
 
 @code {
     private CreateUserDto newUser = new CreateUserDto();
+    private string successMessage = string.Empty;
+    private string errorMessage = string.Empty;
 
     [Inject] public IUserService UserService { get; set; }
+    
 
     private async Task HandleCreateUser()
     {
         try
         {
-            Console.WriteLine($"Forsøger at oprette bruger: {newUser.FirstName}, {newUser.LastName}, {newUser.Username}, {newUser.Role}");
             await UserService.CreateUser(newUser);
-            Console.WriteLine("Bruger oprettet succesfuldt.");
+            successMessage = "Bruger oprettet succesfuldt.";
+            errorMessage = string.Empty;
+            newUser = new CreateUserDto();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fejl ved oprettelse af bruger: {ex.Message}");
+            successMessage = string.Empty;
+            errorMessage = $"Fejl ved oprettelse af bruger: {ex.Message}";
         }
     }
-
 }

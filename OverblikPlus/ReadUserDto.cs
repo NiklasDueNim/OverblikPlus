@@ -11,8 +11,7 @@ public class ReadUserDto
     public string Username { get; set; }
         
     public string Role { get; set; }  // F.eks. "Admin", "User", "Staff"
-
-    // Følsomme oplysninger, der muligvis kræver tilladelser
+    
     public string CPRNumber { get; set; }
 
     public string MedicationDetails { get; set; }
