@@ -3,53 +3,62 @@
 @inject IUserService UserService
 @inject ITaskService TaskService
 
-<h1>Velkommen, @user.FirstName @user.LastName!</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">Velkommen, @user.FirstName @user.LastName!</h1>
 
-<h3>Dagens Opgaver</h3>
-<ul>
-    @foreach (var task in todaysTasks)
-    {
-        <li>
-            <input type="checkbox" @bind="task.IsCompleted" />
-            <span>@task.Name</span>
-        </li>
-    }
-</ul>
+    <!-- Dagens Opgaver -->
+    <h3 class="mb-3">Dagens Opgaver</h3>
+    <ul class="list-group mb-4">
+        @foreach (var task in todaysTasks)
+        {
+            <li class="list-group-item d-flex align-items-center">
+                <input type="checkbox" class="form-check-input me-2" @bind="task.IsCompleted" />
+                <span>@task.Name</span>
+            </li>
+        }
+    </ul>
 
-<h3>Notifikationer</h3>
-<ul>
-    @foreach (var notification in notifications)
-    {
-        <li>@notification.Message</li>
-    }
-</ul>
+    <!-- Notifikationer -->
+    <h3 class="mb-3">Notifikationer</h3>
+    <ul class="list-group mb-4">
+        @foreach (var notification in notifications)
+        {
+            <li class="list-group-item">@notification.Message</li>
+        }
+    </ul>
 
-<h3>XP Progress</h3>
-<div class="xp-progress">
-    <div class="xp-progress-bar" style="width: @(xpPercentage)%"></div>
+    <!-- XP Progress -->
+    <h3 class="mb-3">XP Progress</h3>
+    <div class="progress mb-4" style="height: 25px;">
+        <div class="progress-bar" role="progressbar" style="width: @(xpPercentage)%;">
+            @(xpPercentage)%
+        </div>
+    </div>
+
+    <!-- Medarbejder Status -->
+    <h3 class="mb-3">Medarbejder Status</h3>
+    <table class="table table-striped mb-4">
+        <thead>
+            <tr>
+                <th>Medarbejder</th>
+                <th>Gruppe</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in employees)
+            {
+                <tr>
+                    <td>@employee.Name</td>
+                    <td>@employee.Group</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Personlig Kalender -->
+    <h3 class="mb-3">Personlig Kalender</h3>
+    <p>Her kan brugeren se deres kommende aftaler og aktiviteter.</p>
 </div>
-
-<h3>Medarbejder Status</h3>
-<table>
-    <thead>
-    <tr>
-        <th>Medarbejder</th>
-        <th>Gruppe</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var employee in employees)
-    {
-        <tr>
-            <td>@employee.Name</td>
-            <td>@employee.Group</td>
-        </tr>
-    }
-    </tbody>
-</table>
-
-<h3>Personlig Kalender</h3>
-<p>Her kan brugeren se deres kommende aftaler og aktiviteter.</p>
 
 @code {
     private ReadUserDto user = new();
@@ -63,7 +72,7 @@
         user = await UserService.GetUserById(1); 
         todaysTasks = await TaskService.GetAllTasks();
         //notifications = await NotificationService.GetNotificationsAsync();
-       // employees = await EmployeeService.GetEmployeesStatusAsync();
-       // xpPercentage = user.XP / 100.0 * 100; // XP som procent
+        //employees = await EmployeeService.GetEmployeesStatusAsync();
+        //xpPercentage = user.XP / 100.0 * 100; // XP som procent
     }
 }
