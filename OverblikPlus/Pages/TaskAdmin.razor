@@ -177,7 +177,8 @@
                 }
                 else
                 {
-                    Console.WriteLine($"Error updating task: {response.ReasonPhrase}");
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error updating task: {response.ReasonPhrase}, Details: {errorContent}");
                 }
             }
             else
@@ -189,7 +190,8 @@
                 }
                 else
                 {
-                    Console.WriteLine($"Error creating task: {response.ReasonPhrase}");
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error creating task: {response.ReasonPhrase}, Details: {errorContent}");
                 }
             }
 
@@ -202,6 +204,8 @@
             Console.WriteLine($"Error during task creation: {ex.Message}");
         }
     }
+
+
 
 
     private void EditTask(ReadTaskDto task)

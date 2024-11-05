@@ -5,89 +5,103 @@
 
 <h3>Opgave Trin - Trin @currentStep?.StepNumber</h3>
 
-@if (currentStep == null)
+@if (TaskSteps == null || !TaskSteps.Any())
 {
-    <p>Indlæser trin...</p>
+<p>Ingen trin fundet for denne opgave.</p>
+}
+else if (currentStep == null)
+{
+<p>Indlæser trin...</p>
 }
 else
 {
-    <div>
-        <img src="@currentStep.Image" alt="Trin billede" width="300" style="display: block; margin: auto;" />
-        <p style="text-align: center;">@currentStep.Text</p>
-        
-        @if (currentStep.RequiresQrCodeScan)
-        {
-            <button @onclick="StartScanning">Scan QR-kode for at fortsætte</button>
-            <video id="video" width="300" height="200" autoplay style="display: @(isScanning ? "block" : "none");"></video>
-        }
-        else
-        {
-            <button @onclick="ShowNextStep">Næste trin</button>
-        }
-    </div>
+<div>
+    <img src="@currentStep.Image" alt="Trin billede" width="300" style="display: block; margin: auto;" />
+    <p style="text-align: center;">@currentStep.Text</p>
+
+    @if (currentStep.RequiresQrCodeScan)
+    {
+    <button @onclick="StartScanning">Scan QR-kode for at fortsætte</button>
+    <video id="video" width="300" height="200" autoplay style="display: @(isScanning ? "block" : "none");"></video>
+    }
+    else
+    {
+    <button @onclick="ShowNextStep">Næste trin</button>
+    }
+</div>
 }
 
 @code {
-    [Parameter] public int TaskId { get; set; }
+[Parameter] public int TaskId { get; set; }
 
-    private List<TaskStepDto> TaskSteps = new();
-    private TaskStepDto? currentStep;
-    private int currentStepIndex = 0;
-    private bool isScanning = false;
+private List<TaskStepDto> TaskSteps = new();
+private TaskStepDto? currentStep;
+private int currentStepIndex = 0;
+private bool isScanning = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-        // Hent alle trin for opgaven ved start
-        await LoadTaskSteps();
-        currentStep = TaskSteps.FirstOrDefault();
-    }
+protected override async Task OnInitializedAsync()
+{
+await LoadTaskSteps();
 
-    private async Task LoadTaskSteps()
-    {
-        var response = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{TaskId}/steps");
-        TaskSteps = response ?? new List<TaskStepDto>();
-    }
+// Først tjek om vi har trin, og sæt derefter currentStep
+if (TaskSteps.Any())
+{
+currentStep = TaskSteps[currentStepIndex];
+}
+}
 
-    private async Task ShowNextStep()
-    {
-        if (currentStepIndex < TaskSteps.Count - 1)
-        {
-            currentStepIndex++;
-            currentStep = TaskSteps[currentStepIndex];
+private async Task LoadTaskSteps()
+{
+var response = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{TaskId}/steps");
+TaskSteps = response ?? new List<TaskStepDto>();
 
-            // Hvis næste trin kræver QR-kode, start scanning
-            if (currentStep.RequiresQrCodeScan)
-            {
-                await StartScanning();
-            }
-        }
-        else
-        {
-            // Naviger til slutningen eller fuldført side
-            Navigation.NavigateTo("/task-complete");
-        }
-    }
+// Hvis der ikke er nogen trin, kan du evt. logge en besked
+if (!TaskSteps.Any())
+{
+Console.WriteLine($"Ingen trin fundet for task med ID: {TaskId}");
+}
+}
 
-    private async Task StartScanning()
-    {
-        if (!isScanning)
-        {
-            isScanning = true;
-            await JS.InvokeVoidAsync("startScanning");
-        }
-    }
+private async Task ShowNextStep()
+{
+if (currentStepIndex < TaskSteps.Count - 1)
+{
+currentStepIndex++;
+currentStep = TaskSteps[currentStepIndex];
 
-    [JSInvokable]
-    public async Task OnQrCodeScanned(string result)
-    {
-        // Stop scanning og vis næste trin
-        await StopScanning();
-        await ShowNextStep();
-    }
+// Hvis næste trin kræver QR-kode, start scanning
+if (currentStep.RequiresQrCodeScan)
+{
+await StartScanning();
+}
+}
+else
+{
+// Naviger til slutningen eller fuldført side
+Navigation.NavigateTo("/task-complete");
+}
+}
 
-    private async Task StopScanning()
-    {
-        await JS.InvokeVoidAsync("stopScanning");
-        isScanning = false;
-    }
+private async Task StartScanning()
+{
+if (!isScanning)
+{
+isScanning = true;
+await JS.InvokeVoidAsync("startScanning");
+}
+}
+
+[JSInvokable]
+public async Task OnQrCodeScanned(string result)
+{
+// Stop scanning og vis næste trin
+await StopScanning();
+await ShowNextStep();
+}
+
+private async Task StopScanning()
+{
+await JS.InvokeVoidAsync("stopScanning");
+isScanning = false;
+}
 }
