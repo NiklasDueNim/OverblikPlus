@@ -28,9 +28,9 @@
                     <InputFile OnChange="HandleImageUpload" class="form-control" />
                 </div>
                 <div class="mb-3">
-                    <label for="user" class="form-label">Assign User</label>
+                    <label for="user" class="form-label">Tildel opgave til en bruger</label>
                     <select id="user" @bind="currentTask.UserId" class="form-select">
-                        <option value="">Select User</option>
+                        <option value="">Vælg bruger</option>
                         @if (users != null && users.Any())
                         {
                         @foreach (var user in users)
@@ -154,8 +154,8 @@
     {
         try
         {
-            var result = await Http.GetFromJsonAsync<IEnumerable<ReadUserDto>>("/api/UserService/users");
-            users = result?.ToList() ?? new List<ReadUserDto>(); // Konverterer IEnumerable til List
+            var result  = await UserService.GetAllUsers();
+            users = result.ToList();
         }
         catch (Exception ex)
         {
@@ -166,19 +166,43 @@
 
     private async Task SaveTask()
     {
-        if (isEditMode)
+        try
         {
-            await Http.PutAsJsonAsync($"/api/Task/{currentTask.Id}", currentTask);
-        }
-        else
-        {
-            await Http.PostAsJsonAsync("/api/Task", currentTask);
-        }
+            if (isEditMode)
+            {
+                var response = await Http.PutAsJsonAsync($"/api/Task/{currentTask.Id}", currentTask);
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Task updated successfully");
+                }
+                else
+                {
+                    Console.WriteLine($"Error updating task: {response.ReasonPhrase}");
+                }
+            }
+            else
+            {
+                var response = await Http.PostAsJsonAsync("/api/Task", currentTask);
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Task created successfully");
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating task: {response.ReasonPhrase}");
+                }
+            }
 
-        currentTask = new CreateTaskDto();
-        isEditMode = false;
-        await LoadTasks();
+            currentTask = new CreateTaskDto();
+            isEditMode = false;
+            await LoadTasks();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during task creation: {ex.Message}");
+        }
     }
+
 
     private void EditTask(ReadTaskDto task)
     {

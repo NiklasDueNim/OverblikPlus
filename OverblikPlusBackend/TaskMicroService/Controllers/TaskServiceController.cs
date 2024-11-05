@@ -36,11 +36,24 @@ namespace TaskMicroService.Controllers
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
             if (!ModelState.IsValid)
+            {
+                Console.WriteLine("ModelState is invalid");
                 return BadRequest(ModelState);
+            }
 
-            var taskId = await _taskService.CreateTask(createTaskDto);
-            return CreatedAtAction(nameof(GetTaskById), new { id = taskId }, null);
+            try
+            {
+                var taskId = await _taskService.CreateTask(createTaskDto);
+                Console.WriteLine($"Task created with ID: {taskId}");
+                return CreatedAtAction(nameof(GetTaskById), new { id = taskId }, null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating task: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskDto updateTaskDto)
