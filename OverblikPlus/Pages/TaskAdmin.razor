@@ -1,97 +1,134 @@
 @page "/admin/tasks"
+@using OverblikPlus.Services
 @inject HttpClient Http
+@inject IUserService UserService
+@inject ITaskService TaskService
+@inject NavigationManager Navigation
 
-<h3>Administrer Opgaver</h3>
+<div class="container mt-4">
+    <h3 class="mb-4">Administrer Opgaver</h3>
 
-<!-- Formular til oprettelse/ændring af en task -->
-<div class="task-form">
-    <h4>@(isEditMode ? "Rediger Opgave" : "Opret Ny Opgave")</h4>
-    <div class="form-group">
-        <label>Navn:</label>
-        <input @bind="currentTask.Name" />
-    </div>
-    <div class="form-group">
-        <label>Beskrivelse:</label>
-        <textarea @bind="currentTask.Description"></textarea>
-    </div>
-    <div class="form-group">
-        <label>Billede:</label>
-        <InputFile OnChange="HandleImageUpload" />
-    </div>
-    <div class="form-group">
-        <label for="user">Assign User</label>
-        <select id="user" @bind="currentTask.UserId" class="form-control">
-            <option value="">Select User</option>
-            @foreach (var user in users)
-            {
-            <option value="@user.Id">@user.FirstName @user.LastName</option>
-            }
-        </select>
-    </div>
-    <div class="button-group">
-        <button @onclick="SaveTask">@((isEditMode) ? "Opdater Opgave" : "Opret Opgave")</button>
-        <button @onclick="CancelEdit" class="cancel-button" style="display:@(isEditMode ? "inline-block" : "none")">Annuller</button>
-    </div>
-</div>
-
-<hr />
-
-<!-- Liste over opgaver -->
-<ul class="task-list">
-    @foreach (var task in Tasks)
-    {
-    <li class="task-item">
-        <h4>@task.Name</h4>
-        <p>@task.Description</p>
-        <img src="@task.Image" alt="Opgave Billede" class="task-image" />
-
-        <div class="button-group">
-            <button @onclick="() => EditTask(task)">Rediger</button>
-            <button @onclick="() => DeleteTask(task.Id)" class="delete-button">Slet</button>
+    <!-- Formular til oprettelse/ændring af en task -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="card-title">@(isEditMode ? "Rediger Opgave" : "Opret Ny Opgave")</h4>
         </div>
-
-        <h5>Trin:</h5>
-        <ul class="task-step-list">
-            @foreach (var step in task.Steps)
-            {
-            <li class="task-step-item">
-                <p>@step.Text</p>
-                <img src="@step.Image" alt="Trin Billede" class="step-image" />
-                <div class="button-group">
-                    <button @onclick="() => EditStep(step)">Rediger Trin</button>
-                    <button @onclick="() => DeleteStep(step.Id)" class="delete-button">Slet Trin</button>
+        <div class="card-body">
+            <form>
+                <div class="mb-3">
+                    <label for="taskName" class="form-label">Navn:</label>
+                    <input id="taskName" @bind="currentTask.Name" class="form-control" />
                 </div>
+                <div class="mb-3">
+                    <label for="taskDescription" class="form-label">Beskrivelse:</label>
+                    <textarea id="taskDescription" @bind="currentTask.Description" class="form-control"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="taskImage" class="form-label">Billede:</label>
+                    <InputFile OnChange="HandleImageUpload" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label for="user" class="form-label">Assign User</label>
+                    <select id="user" @bind="currentTask.UserId" class="form-select">
+                        <option value="">Select User</option>
+                        @if (users != null && users.Any())
+                        {
+                        @foreach (var user in users)
+                        {
+                        <option value="@user.Id">@user.FirstName @user.LastName</option>
+                        }
+                        }
+                        else
+                        {
+                        <option>No users available. Please try again later.</option>
+                        }
+                    </select>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary me-2" @onclick="SaveTask">@((isEditMode) ? "Opdater Opgave" : "Opret Opgave")</button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Annuller</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <hr />
+
+    <!-- Liste over opgaver -->
+    <div class="task-list mb-4">
+        <h4>Liste over Opgaver</h4>
+        <ul class="list-group">
+            @foreach (var task in Tasks)
+            {
+            <li class="list-group-item mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5>@task.Name</h5>
+                        <p>@task.Description</p>
+                        @if (!string.IsNullOrEmpty(task.Image))
+                        {
+                        <img src="@task.Image" alt="Opgave Billede" class="img-thumbnail" style="width: 150px; height: auto;" />
+                        }
+                    </div>
+                    <div>
+                        <button class="btn btn-primary me-2" @onclick="() => EditTask(task)">Rediger</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteTask(task.Id)">Slet</button>
+                    </div>
+                </div>
+                <div>
+                    <h6>Trin:</h6>
+                    <ul class="list-group">
+                        @foreach (var step in task.Steps)
+                        {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@step.Text</span>
+                            @if (!string.IsNullOrEmpty(step.Image))
+                            {
+                            <img src="@step.Image" alt="Trin Billede" class="img-thumbnail" style="width: 100px; height: auto;" />
+                            }
+                            <div>
+                                <button class="btn btn-secondary me-2" @onclick="() => EditStep(step)">Rediger Trin</button>
+                                <button class="btn btn-danger" @onclick="() => DeleteStep(step.Id)">Slet Trin</button>
+                            </div>
+                        </li>
+                        }
+                    </ul>
+                </div>
+                <button class="btn btn-success mt-2" @onclick="() => AddStep(task.Id)">Tilføj Trin</button>
             </li>
             }
         </ul>
-        <button @onclick="() => AddStep(task.Id)">Tilføj Trin</button>
-    </li>
-    }
-</ul>
+    </div>
 
-<!-- Formular til tilføjelse af trin -->
-@if (isAddingStep)
-{
-<div class="task-step-form">
-    <h5>Tilføj et trin</h5>
-    <div class="form-group">
-        <label>Beskrivelse:</label>
-        <textarea @bind="newStep.Text"></textarea>
+    <!-- Formular til tilføjelse af trin -->
+    @if (isAddingStep)
+    {
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Tilføj et trin</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label for="stepText" class="form-label">Beskrivelse:</label>
+                <textarea id="stepText" @bind="newStep.Text" class="form-control"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="stepImage" class="form-label">Billede:</label>
+                <InputFile OnChange="HandleStepImageUpload" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label for="requiresQrCode" class="form-label">Kræver QR-kode scanning:</label>
+                <input type="checkbox" id="requiresQrCode" @bind="newStep.RequiresQrCodeScan" class="form-check-input" />
+            </div>
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-primary me-2" @onclick="SaveTaskStep">Tilføj Trin</button>
+                <button class="btn btn-secondary" @onclick="CancelAddStep">Annuller</button>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <label>Billede:</label>
-        <InputFile OnChange="HandleStepImageUpload" />
-    </div>
-    <div class="form-group">
-        <label>Kræver QR-kode scanning:</label>
-        <input type="checkbox" @bind="newStep.RequiresQrCodeScan" />
-    </div>
-    <div class="button-group">
-        <button @onclick="SaveTaskStep">Tilføj Trin</button>
-        <button @onclick="CancelAddStep" class="cancel-button">Annuller</button>
-    </div>
+    }
 </div>
-}
+
 
 @code {
     private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
@@ -105,12 +142,27 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadTasks();
+        await LoadUsers();
     }
 
     private async Task LoadTasks()
     {
-        Tasks = await Http.GetFromJsonAsync<List<ReadTaskDto>>("/api/Task");
+        Tasks = await TaskService.GetAllTasks();
     }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<IEnumerable<ReadUserDto>>("/api/UserService/users");
+            users = result?.ToList() ?? new List<ReadUserDto>(); // Konverterer IEnumerable til List
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading users: {ex.Message}");
+        }
+    }
+
 
     private async Task SaveTask()
     {
@@ -136,7 +188,8 @@
             Name = task.Name,
             Description = task.Description,
             ImageBase64 = task.Image,
-            RequiresQrCodeScan = task.RequiresQrCodeScan
+            RequiresQrCodeScan = task.RequiresQrCodeScan,
+            UserId = task.UserId
         };
         isEditMode = true;
     }

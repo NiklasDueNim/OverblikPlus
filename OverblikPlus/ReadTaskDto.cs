@@ -10,4 +10,8 @@ public class ReadTaskDto
     public bool RequiresQrCodeScan { get; set; }
     public List<TaskStepDto> Steps { get; set; } = new List<TaskStepDto>();
 
+    public int UserId { get; set; }
+    
+    public bool IsCompleted { get; set; }
+
 }

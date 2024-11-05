@@ -48,8 +48,17 @@ else
 
     private async Task LoadUsers()
     {
-        users = await UserService.GetAllUsers();
+        try
+        {
+            users = await UserService.GetAllUsers();
+            Console.WriteLine($"Loaded {users.Count()} users.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading users: {ex.Message}");
+        }
     }
+
 
     private async Task EditUser(int userId)
     {

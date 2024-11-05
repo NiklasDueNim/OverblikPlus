@@ -13,8 +13,18 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<ReadUserDto>> GetAllUsers()
     {
-        return await _httpClient.GetFromJsonAsync<IEnumerable<ReadUserDto>>("api/UserService/users");
+        try
+        {
+            var users = await _httpClient.GetFromJsonAsync<IEnumerable<ReadUserDto>>("api/UserService/users");
+            return users ?? new List<ReadUserDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving users: {ex.Message}");
+            return new List<ReadUserDto>();
+        }
     }
+
 
     public async Task<ReadUserDto> GetUserById(int id)
     {

@@ -10,7 +10,7 @@ builder.Services.AddDbContext<TaskDbContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins",
+    options.AddPolicy("AllowAll",
         builder => builder.AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader());
@@ -42,7 +42,7 @@ else
 
 app.UseRouting();
 
-app.UseCors("AllowAllOrigins");
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 app.MapControllers();

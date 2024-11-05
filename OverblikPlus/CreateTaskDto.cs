@@ -12,5 +12,5 @@ public class CreateTaskDto
     
     public bool RequiresQrCodeScan { get; set; }
 
-    public User UserId { get; set; }
+    public int UserId { get; set; }
 }

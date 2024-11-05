@@ -53,15 +53,15 @@
 
 @code {
     private ReadUserDto user = new();
-    private List<TaskDto> todaysTasks = new();
+    private List<ReadTaskDto> todaysTasks = new();
     private List<NotificationDto> notifications = new();
     private List<EmployeeDto> employees = new();
     private double xpPercentage = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserService.GetUserById(58); 
-        todaysTasks = await TaskService.GetTasksForTodayAsync();
+        user = await UserService.GetUserById(1); 
+        todaysTasks = await TaskService.GetAllTasks();
         //notifications = await NotificationService.GetNotificationsAsync();
        // employees = await EmployeeService.GetEmployeesStatusAsync();
        // xpPercentage = user.XP / 100.0 * 100; // XP som procent

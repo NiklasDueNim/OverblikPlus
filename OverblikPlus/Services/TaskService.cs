@@ -11,18 +11,18 @@ public class TaskService : ITaskService
         _httpClient = httpClient;
     }
 
-    public Task<List<TaskDto>> GetAllTasksAsync()
+    public async Task<List<ReadTaskDto>> GetAllTasks()
     {
-        throw new NotImplementedException();
+        return await _httpClient.GetFromJsonAsync<List<ReadTaskDto>>("api/Task");
     }
 
-    public Task<List<TaskDto>> GetTasksForUserAsync(int userId)
+    public async Task<List<ReadTaskDto>> GetTasksForUserAsync(int userId)
     {
-        throw new NotImplementedException();
+        return await _httpClient.GetFromJsonAsync<List<ReadTaskDto>>($"api/Task/user/{userId}");
     }
 
-    public async Task<List<TaskDto>> GetTasksForTodayAsync()
+    public async Task<List<ReadTaskDto>> GetTasksForTodayAsync()
     {
-        return await _httpClient.GetFromJsonAsync<List<TaskDto>>("api/tasks/today");
+        return await _httpClient.GetFromJsonAsync<List<ReadTaskDto>>("api/Task/today");
     }
 }
