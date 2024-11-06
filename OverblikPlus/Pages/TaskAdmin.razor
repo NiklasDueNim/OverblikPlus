@@ -1,13 +1,12 @@
 @page "/admin/tasks"
-@using OverblikPlus.Dtos
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.TaskSteps
 @using OverblikPlus.Dtos.User
-@using OverblikPlus.Services
 @using OverblikPlus.Services.Interfaces
 @inject HttpClient Http
 @inject IUserService UserService
 @inject ITaskService TaskService
+@inject ITaskStepService TaskStepService
 @inject NavigationManager Navigation
 
 <div class="container mt-4">
@@ -143,8 +142,8 @@
     private CreateTaskStepDto newStep = new CreateTaskStepDto();
     private int currentTaskIdForStep = 0;
     private List<ReadUserDto> users { get; set; } = new List<ReadUserDto>();
-    private TaskStepDto? currentStepToEdit;
-    private bool isEditStepMode = false; 
+    private ReadTaskStepDto? currentStepToEdit;
+    private bool isEditStepMode = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -161,7 +160,7 @@
     {
         try
         {
-            var result  = await UserService.GetAllUsers();
+            var result = await UserService.GetAllUsers();
             users = result.ToList();
         }
         catch (Exception ex)
@@ -211,7 +210,7 @@
             Console.WriteLine($"Error during task creation: {ex.Message}");
         }
     }
-    
+
 
     private void EditTask(ReadTaskDto task)
     {
@@ -258,11 +257,11 @@
     private async Task SaveTaskStep()
     {
         newStep.TaskId = currentTaskIdForStep;
-        
+
         await Http.PostAsJsonAsync($"/api/tasks/{currentTaskIdForStep}/steps", newStep);
-        
+
         await LoadTaskSteps(currentTaskIdForStep);
-        
+
         isAddingStep = false;
         newStep = new CreateTaskStepDto();
     }
@@ -290,25 +289,24 @@
 
     private async Task LoadTaskSteps(int taskId)
     {
-        var response = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{taskId}/steps");
+        var response = await Http.GetFromJsonAsync<List<ReadTaskStepDto>>($"/api/tasks/{taskId}/steps");
         var task = Tasks.FirstOrDefault(t => t.Id == taskId);
         if (task != null)
         {
-            task.Steps = response ?? new List<TaskStepDto>();
+            task.Steps = response ?? new List<ReadTaskStepDto>();
             StateHasChanged();
         }
     }
-    
+
     private void CancelEdit()
     {
         currentTask = new CreateTaskDto();
         isEditMode = false;
     }
-    
-    private void EditStep(TaskStepDto step)
+
+    private void EditStep(ReadTaskStepDto step)
     {
-        // Indsæt step til redigering og aktivér redigeringsmode
-        currentStepToEdit = new TaskStepDto
+        currentStepToEdit = new ReadTaskStepDto
         {
             Id = step.Id,
             TaskId = step.TaskId,
@@ -323,19 +321,18 @@
     {
         if (currentStepToEdit != null)
         {
-            // Kald til TaskStepService for at opdatere trin
             var success = await TaskStepService.UpdateTaskStep(currentStepToEdit.TaskId, currentStepToEdit.Id, new UpdateTaskStepDto
             {
                 Text = currentStepToEdit.Text,
-                ImageBase64 = currentStepToEdit.Image, // Base64 forudsat; afhænger af Image-håndtering
+                ImageBase64 = currentStepToEdit.Image,
                 RequiresQrCodeScan = currentStepToEdit.RequiresQrCodeScan
             });
 
             if (success)
             {
                 Console.WriteLine("Step updated successfully");
-                await LoadTaskSteps(currentStepToEdit.TaskId); // Opdater trinene i UI'et
-                CancelEditStep(); // Annuller redigeringstilstand
+                await LoadTaskSteps(currentStepToEdit.TaskId);
+                CancelEditStep();
             }
             else
             {
@@ -346,14 +343,12 @@
 
     private void CancelEditStep()
     {
-        // Nulstil redigeringstilstand og fjern nuværende trin
         currentStepToEdit = null;
         isEditStepMode = false;
     }
 
     private async Task DeleteStep(int stepId)
     {
-        // Find trinets opgave-id for at kunne opdatere UI'et efter sletning
         var taskId = Tasks.FirstOrDefault(task => task.Steps.Any(step => step.Id == stepId))?.Id;
 
         if (taskId.HasValue)
@@ -362,7 +357,7 @@
             if (success)
             {
                 Console.WriteLine("Step deleted successfully");
-                await LoadTaskSteps(taskId.Value); // Opdater listen over trin for den relevante opgave
+                await LoadTaskSteps(taskId.Value);
             }
             else
             {
@@ -370,5 +365,5 @@
             }
         }
 
+    }
 }
-

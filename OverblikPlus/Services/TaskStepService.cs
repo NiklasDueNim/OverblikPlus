@@ -46,12 +46,12 @@ namespace OverblikPlus.Services
             }
         }
         
-        public async Task<List<TaskStepDto>> GetStepsForTask(int taskId) =>
-            await ExecuteGetRequest<List<TaskStepDto>>($"/api/tasks/{taskId}/steps") ?? new List<TaskStepDto>();
+        public async Task<List<ReadTaskStepDto>> GetStepsForTask(int taskId) =>
+            await ExecuteGetRequest<List<ReadTaskStepDto>>($"/api/tasks/{taskId}/steps") ?? new List<ReadTaskStepDto>();
 
     
-        public async Task<TaskStepDto?> GetTaskStep(int taskId, int stepNumber) =>
-            await ExecuteGetRequest<TaskStepDto>($"/api/tasks/{taskId}/steps/{stepNumber}");
+        public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepNumber) =>
+            await ExecuteGetRequest<ReadTaskStepDto>($"/api/tasks/{taskId}/steps/{stepNumber}");
 
         
         public async Task<bool> CreateTaskStep(CreateTaskStepDto newStep)
