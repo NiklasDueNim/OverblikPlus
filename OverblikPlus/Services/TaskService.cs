@@ -13,7 +13,7 @@ public class TaskService : ITaskService
 
     public async Task<List<ReadTaskDto>> GetAllTasks()
     {
-        return await _httpClient.GetFromJsonAsync<List<ReadTaskDto>>("api/Task");
+        return await _httpClient.GetFromJsonAsync<List<ReadTaskDto>>("/api/Task");
     }
 
     public async Task<List<ReadTaskDto>> GetTasksForUserAsync(int userId)
