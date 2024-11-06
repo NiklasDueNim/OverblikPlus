@@ -28,8 +28,4 @@
       <_ContentIncludedByDefault Remove="OverblikPlus.Tests\OverblikPlus.Tests\obj\project.packagespec.json" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Components\" />
-    </ItemGroup>
-
 </Project>
