@@ -17,7 +17,7 @@ builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
 
 builder.Services.AddHttpClient<IUserService, UserService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5102");
+    client.BaseAddress = new Uri("http://localhost:8081");
 });
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));

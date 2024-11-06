@@ -2,19 +2,15 @@
 
 services:
   taskmicroservice:
-    build:
-      context: .
-      dockerfile: OverblikPlusBackend/TaskMicroService/Dockerfile
+    image: overblikplusregistry.azurecr.io/4semester-taskmicroservice:latest
     ports:
-      - "5101:8080" # Extern port : Intern container port
+      - "5101:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;
 
   usermicroservice:
-    build:
-      context: .
-      dockerfile: OverblikPlusBackend/UserMicroService/Dockerfile
+    image: overblikplusregistry.azurecr.io/4semester-usermicroservice:latest
     ports:
       - "5102:8080"
     environment:
