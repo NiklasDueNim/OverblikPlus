@@ -18,8 +18,7 @@ namespace TaskMicroService.Services
             _mapper = mapper;
             _imageConversionService = imageConversionService;
         }
-
-        // Get all steps for a specific task by TaskId
+        
         public async Task<List<ReadTaskStepDto>> GetStepsForTask(int taskId)
         {
             var steps = await _dbContext.TaskSteps
@@ -27,10 +26,8 @@ namespace TaskMicroService.Services
                 .OrderBy(s => s.StepNumber)
                 .ToListAsync();
 
-            // Mapper TaskStep til ReadTaskStepDto
             var stepDtos = _mapper.Map<List<ReadTaskStepDto>>(steps);
 
-            // Konvertere hver TaskStep's ImageUrl (byte[]) til en Base64-string og sæt den til Image-feltet i ReadTaskStepDto
             foreach (var stepDto in stepDtos)
             {
                 var originalStep = steps.FirstOrDefault(s => s.Id == stepDto.Id);
@@ -43,12 +40,7 @@ namespace TaskMicroService.Services
             return stepDtos;
         }
 
-
-
-
-
-
-        // Get a specific step by TaskId and StepNumber
+        
         public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepNumber)
         {
             var taskStep = await _dbContext.TaskSteps
@@ -56,16 +48,14 @@ namespace TaskMicroService.Services
 
             return taskStep != null ? _mapper.Map<ReadTaskStepDto>(taskStep) : null;
         }
-
-        // Create a new TaskStep
+        
         public async Task<int> CreateTaskStep(CreateTaskStepDto createStepDto)
         {
             var taskStep = _mapper.Map<TaskStep>(createStepDto);
-
-            // Konverter base64-streng til byte[], før du gemmer, hvis billedet er inkluderet
+            
             if (!string.IsNullOrEmpty(createStepDto.ImageBase64))
             {
-                taskStep.ImageUrl = Convert.FromBase64String(createStepDto.ImageBase64); // Brug ImageUrl her
+                taskStep.ImageUrl = Convert.FromBase64String(createStepDto.ImageBase64);
             }
 
             _dbContext.TaskSteps.Add(taskStep);
@@ -74,8 +64,7 @@ namespace TaskMicroService.Services
             return taskStep.Id;
         }
 
-
-        // Update an existing TaskStep
+        
         public async Task UpdateTaskStep(int taskId, int stepNumber, UpdateTaskStepDto updateStepDto)
         {
             var taskStep = await _dbContext.TaskSteps
@@ -83,12 +72,12 @@ namespace TaskMicroService.Services
 
             if (taskStep != null)
             {
-                _mapper.Map(updateStepDto, taskStep); // Map updated fields from DTO to the existing entity
+                _mapper.Map(updateStepDto, taskStep); 
                 await _dbContext.SaveChangesAsync();
             }
         }
 
-        // Delete a specific TaskStep by TaskId and StepNumber
+
         public async Task DeleteTaskStep(int taskId, int stepNumber)
         {
             var taskStep = await _dbContext.TaskSteps

@@ -12,7 +12,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5101");
+    client.BaseAddress = new Uri("https://overblikplus-task-api.azurewebsites.net");
 });
 
 builder.Services.AddHttpClient<IUserService, UserService>(client =>
