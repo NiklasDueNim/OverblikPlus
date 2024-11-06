@@ -3,6 +3,7 @@
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.TaskSteps
 @using OverblikPlus.Dtos.User
+@using OverblikPlus.Services
 @using OverblikPlus.Services.Interfaces
 @inject HttpClient Http
 @inject IUserService UserService
@@ -142,6 +143,8 @@
     private CreateTaskStepDto newStep = new CreateTaskStepDto();
     private int currentTaskIdForStep = 0;
     private List<ReadUserDto> users { get; set; } = new List<ReadUserDto>();
+    private TaskStepDto? currentStepToEdit;
+    private bool isEditStepMode = false; 
 
     protected override async Task OnInitializedAsync()
     {
@@ -301,13 +304,71 @@
         currentTask = new CreateTaskDto();
         isEditMode = false;
     }
-
+    
     private void EditStep(TaskStepDto step)
     {
+        // Indsæt step til redigering og aktivér redigeringsmode
+        currentStepToEdit = new TaskStepDto
+        {
+            Id = step.Id,
+            TaskId = step.TaskId,
+            Text = step.Text,
+            Image = step.Image,
+            RequiresQrCodeScan = step.RequiresQrCodeScan
+        };
+        isEditStepMode = true;
+    }
+
+    private async Task SaveEditedStep()
+    {
+        if (currentStepToEdit != null)
+        {
+            // Kald til TaskStepService for at opdatere trin
+            var success = await TaskStepService.UpdateTaskStep(currentStepToEdit.TaskId, currentStepToEdit.Id, new UpdateTaskStepDto
+            {
+                Text = currentStepToEdit.Text,
+                ImageBase64 = currentStepToEdit.Image, // Base64 forudsat; afhænger af Image-håndtering
+                RequiresQrCodeScan = currentStepToEdit.RequiresQrCodeScan
+            });
+
+            if (success)
+            {
+                Console.WriteLine("Step updated successfully");
+                await LoadTaskSteps(currentStepToEdit.TaskId); // Opdater trinene i UI'et
+                CancelEditStep(); // Annuller redigeringstilstand
+            }
+            else
+            {
+                Console.WriteLine("Failed to update step.");
+            }
+        }
+    }
+
+    private void CancelEditStep()
+    {
+        // Nulstil redigeringstilstand og fjern nuværende trin
+        currentStepToEdit = null;
+        isEditStepMode = false;
     }
 
     private async Task DeleteStep(int stepId)
     {
-    }
+        // Find trinets opgave-id for at kunne opdatere UI'et efter sletning
+        var taskId = Tasks.FirstOrDefault(task => task.Steps.Any(step => step.Id == stepId))?.Id;
+
+        if (taskId.HasValue)
+        {
+            var success = await TaskStepService.DeleteTaskStep(taskId.Value, stepId);
+            if (success)
+            {
+                Console.WriteLine("Step deleted successfully");
+                await LoadTaskSteps(taskId.Value); // Opdater listen over trin for den relevante opgave
+            }
+            else
+            {
+                Console.WriteLine("Failed to delete step.");
+            }
+        }
+
 }
 
