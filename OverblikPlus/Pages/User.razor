@@ -1,6 +1,6 @@
 @page "/user/{id:int}"
-@using OverblikPlus.Services
-@inject IUserService userService
+@using OverblikPlus.Services.Interfaces
+@inject IUserService UserService
 
 <h3>Brugerprofil</h3>
 
@@ -11,7 +11,7 @@
 else
 {
     <p>Username: @user.Username</p>
-    //<p>Navn: @user.FirstName @user.LastName</p>
+    <p>Navn: @user.FirstName @user.LastName</p>
     <p>Rolle: @user.Role</p>
 }
 
@@ -21,6 +21,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        user = await userService.GetUserById(Id);
+        user = await UserService.GetUserById(Id);
     }
 }

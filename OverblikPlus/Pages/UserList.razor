@@ -1,5 +1,5 @@
 @page "/user-list"
-@using OverblikPlus.Services
+@using OverblikPlus.Services.Interfaces
 @inject IUserService UserService
 
 <h3>Liste over brugere</h3>
@@ -62,7 +62,7 @@ else
 
     private async Task EditUser(int userId)
     {
-        // Implement edit user logic or navigate to the edit page
+        
     }
 
     private async Task DeleteUser(int userId)

@@ -1,12 +1,11 @@
 @page "/"
-@using OverblikPlus.Services
+@using OverblikPlus.Services.Interfaces
 @inject IUserService UserService
 @inject ITaskService TaskService
 
 <div class="container mt-4">
     <h1 class="mb-4">Velkommen, @user.FirstName @user.LastName!</h1>
-
-    <!-- Dagens Opgaver -->
+    
     <h3 class="mb-3">Dagens Opgaver</h3>
     <ul class="list-group mb-4">
         @foreach (var task in todaysTasks)
@@ -17,8 +16,7 @@
             </li>
         }
     </ul>
-
-    <!-- Notifikationer -->
+    
     <h3 class="mb-3">Notifikationer</h3>
     <ul class="list-group mb-4">
         @foreach (var notification in notifications)
@@ -27,15 +25,15 @@
         }
     </ul>
 
-    <!-- XP Progress -->
+   
     <h3 class="mb-3">XP Progress</h3>
     <div class="progress mb-4" style="height: 25px;">
         <div class="progress-bar" role="progressbar" style="width: @(xpPercentage)%;">
             @(xpPercentage)%
         </div>
     </div>
-
-    <!-- Medarbejder Status -->
+    
+    
     <h3 class="mb-3">Medarbejder Status</h3>
     <table class="table table-striped mb-4">
         <thead>
@@ -54,8 +52,7 @@
             }
         </tbody>
     </table>
-
-    <!-- Personlig Kalender -->
+    
     <h3 class="mb-3">Personlig Kalender</h3>
     <p>Her kan brugeren se deres kommende aftaler og aktiviteter.</p>
 </div>

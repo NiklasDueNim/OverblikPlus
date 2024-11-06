@@ -1,5 +1,5 @@
 @page "/admin/tasks"
-@using OverblikPlus.Services
+@using OverblikPlus.Services.Interfaces
 @inject HttpClient Http
 @inject IUserService UserService
 @inject ITaskService TaskService
@@ -233,7 +233,7 @@
             var file = e.GetMultipleFiles(1).FirstOrDefault();
             if (file != null)
             {
-                using var stream = file.OpenReadStream(1024 * 1024 * 10); // Max størrelse på f.eks. 10MB
+                using var stream = file.OpenReadStream(1024 * 1024 * 10);
                 var buffer = new byte[file.Size];
                 await stream.ReadAsync(buffer);
                 currentTask.ImageBase64 = Convert.ToBase64String(buffer);
@@ -251,14 +251,11 @@
     private async Task SaveTaskStep()
     {
         newStep.TaskId = currentTaskIdForStep;
-
-        // Send trin data til API'et
+        
         await Http.PostAsJsonAsync($"/api/tasks/{currentTaskIdForStep}/steps", newStep);
-
-        // Opdater listen af trin for den aktuelle opgave
+        
         await LoadTaskSteps(currentTaskIdForStep);
-
-        // Ryd op efter tilføjelsen
+        
         isAddingStep = false;
         newStep = new CreateTaskStepDto();
     }
@@ -276,7 +273,7 @@
             var file = e.GetMultipleFiles(1).FirstOrDefault();
             if (file != null)
             {
-                using var stream = file.OpenReadStream(1024 * 1024 * 10); // Max størrelse på f.eks. 10MB
+                using var stream = file.OpenReadStream(1024 * 1024 * 10);
                 var buffer = new byte[file.Size];
                 await stream.ReadAsync(buffer);
                 newStep.ImageBase64 = Convert.ToBase64String(buffer);
@@ -303,12 +300,10 @@
 
     private void EditStep(TaskStepDto step)
     {
-        // Implementer logik til at redigere trin her
     }
 
     private async Task DeleteStep(int stepId)
     {
-        // Implementer logik til at slette trin her
     }
 }
 

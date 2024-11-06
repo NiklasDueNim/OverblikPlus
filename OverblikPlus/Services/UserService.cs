@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using OverblikPlus;
-using OverblikPlus.Services;
+using OverblikPlus.Services.Interfaces;
 
 public class UserService : IUserService
 {

@@ -1,4 +1,4 @@
-namespace OverblikPlus.Services
+namespace OverblikPlus.Services.Interfaces
 {
     public interface ITaskService
     {
