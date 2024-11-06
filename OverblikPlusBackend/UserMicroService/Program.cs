@@ -21,8 +21,8 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder => builder.AllowAnyOrigin()
+    options.AddPolicy("AllowSpecificOrigin",
+        builder => builder.WithOrigins("https://overblikplus.dk")
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
@@ -48,7 +48,7 @@ else
 
 app.UseRouting();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowSpecificOrigin");
 
 app.UseAuthorization();
 app.MapControllers();

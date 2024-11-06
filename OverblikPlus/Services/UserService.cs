@@ -36,7 +36,6 @@ public class UserService : IUserService
         var response = await _httpClient.PostAsJsonAsync("api/UserService", newUser);
         response.EnsureSuccessStatusCode();
         
-        // Assuming the response contains the created user ID.
         var createdUser= await response.Content.ReadFromJsonAsync<CreateUserDto>();
         return createdUser.Id;
     }

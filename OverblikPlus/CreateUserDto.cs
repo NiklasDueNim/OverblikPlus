@@ -5,8 +5,8 @@ public class CreateUserDto
     public int Id { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
-    public string CPRNumber { get; set; }  // Should be encrypted before sending.
-    public string MedicationDetails { get; set; }  // Same as above.
-    public string Role { get; set; }  // Example: "Admin", "User", "Staff".
+    public string CPRNumber { get; set; }
+    public string MedicationDetails { get; set; } 
+    public string Role { get; set; }
     public string Username { get; set; }
 }

@@ -43,7 +43,7 @@ protected override async Task OnInitializedAsync()
 {
 await LoadTaskSteps();
 
-// Først tjek om vi har trin, og sæt derefter currentStep
+
 if (TaskSteps.Any())
 {
 currentStep = TaskSteps[currentStepIndex];
@@ -55,7 +55,7 @@ private async Task LoadTaskSteps()
 var response = await Http.GetFromJsonAsync<List<TaskStepDto>>($"/api/tasks/{TaskId}/steps");
 TaskSteps = response ?? new List<TaskStepDto>();
 
-// Hvis der ikke er nogen trin, kan du evt. logge en besked
+
 if (!TaskSteps.Any())
 {
 Console.WriteLine($"Ingen trin fundet for task med ID: {TaskId}");
@@ -69,7 +69,7 @@ if (currentStepIndex < TaskSteps.Count - 1)
 currentStepIndex++;
 currentStep = TaskSteps[currentStepIndex];
 
-// Hvis næste trin kræver QR-kode, start scanning
+
 if (currentStep.RequiresQrCodeScan)
 {
 await StartScanning();
@@ -77,7 +77,7 @@ await StartScanning();
 }
 else
 {
-// Naviger til slutningen eller fuldført side
+
 Navigation.NavigateTo("/task-complete");
 }
 }
@@ -94,7 +94,7 @@ await JS.InvokeVoidAsync("startScanning");
 [JSInvokable]
 public async Task OnQrCodeScanned(string result)
 {
-// Stop scanning og vis næste trin
+
 await StopScanning();
 await ShowNextStep();
 }
