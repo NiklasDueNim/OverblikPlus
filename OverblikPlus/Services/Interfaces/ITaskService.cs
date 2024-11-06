@@ -1,3 +1,6 @@
+using OverblikPlus.Dtos;
+using OverblikPlus.Dtos.Tasks;
+
 namespace OverblikPlus.Services.Interfaces
 {
     public interface ITaskService

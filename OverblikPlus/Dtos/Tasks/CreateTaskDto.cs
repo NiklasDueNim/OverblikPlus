@@ -1,4 +1,4 @@
-namespace OverblikPlus;
+namespace OverblikPlus.Dtos.Tasks;
 
 public class CreateTaskDto
 {

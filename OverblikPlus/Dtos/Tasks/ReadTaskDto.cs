@@ -1,4 +1,6 @@
-namespace OverblikPlus;
+using OverblikPlus.Dtos.TaskSteps;
+
+namespace OverblikPlus.Dtos.Tasks;
 
 public class ReadTaskDto
 {

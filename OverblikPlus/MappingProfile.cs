@@ -1,4 +1,7 @@
 using AutoMapper;
+using OverblikPlus.Dtos;
+using OverblikPlus.Dtos.User;
+using OverblikPlus.Entities;
 
 namespace OverblikPlus
 {

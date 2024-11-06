@@ -1,3 +1,6 @@
+using OverblikPlus.Dtos;
+using OverblikPlus.Dtos.User;
+
 namespace OverblikPlus.Services.Interfaces;
 
 public interface IUserService
