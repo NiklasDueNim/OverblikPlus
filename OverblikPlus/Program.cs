@@ -17,8 +17,9 @@ builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
 
 builder.Services.AddHttpClient<IUserService, UserService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8081");
+    client.BaseAddress = new Uri("https://overblikplus-user-api.azurewebsites.net");
 });
+
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
