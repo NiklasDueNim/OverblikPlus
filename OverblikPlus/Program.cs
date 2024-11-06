@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using OverblikPlus;
+using OverblikPlus.Services;
 using OverblikPlus.Services.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -9,6 +10,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 
 builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
 {

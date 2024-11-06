@@ -1,0 +1,81 @@
+using System.Net.Http.Json;
+using OverblikPlus.Dtos.TaskSteps;
+using OverblikPlus.Services.Interfaces;
+
+namespace OverblikPlus.Services
+{
+    public class TaskStepService : ITaskStepService
+    {
+        private readonly HttpClient _httpClient;
+
+        public TaskStepService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+        
+        private async Task<T?> ExecuteGetRequest<T>(string url)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<T>(url);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during GET request to {url}: {ex.Message}");
+                return default;
+            }
+        }
+        
+        
+        private async Task<bool> ExecuteNonQueryRequest(Func<Task<HttpResponseMessage>> httpRequest, string errorMessage)
+        {
+            try
+            {
+                var response = await httpRequest();
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"{errorMessage}. Status Code: {response.StatusCode}, Details: {errorContent}");
+                }
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{errorMessage}: {ex.Message}");
+                return false;
+            }
+        }
+        
+        public async Task<List<TaskStepDto>> GetStepsForTask(int taskId) =>
+            await ExecuteGetRequest<List<TaskStepDto>>($"/api/tasks/{taskId}/steps") ?? new List<TaskStepDto>();
+
+    
+        public async Task<TaskStepDto?> GetTaskStep(int taskId, int stepNumber) =>
+            await ExecuteGetRequest<TaskStepDto>($"/api/tasks/{taskId}/steps/{stepNumber}");
+
+        
+        public async Task<bool> CreateTaskStep(CreateTaskStepDto newStep)
+        {
+            return await ExecuteNonQueryRequest(
+                () => _httpClient.PostAsJsonAsync($"/api/tasks/{newStep.TaskId}/steps", newStep),
+                $"Error creating step for task {newStep.TaskId}"
+            );
+        }
+        
+        public async Task<bool> UpdateTaskStep(int taskId, int stepNumber, UpdateTaskStepDto updatedStep)
+        {
+            return await ExecuteNonQueryRequest(
+                () => _httpClient.PutAsJsonAsync($"/api/tasks/{taskId}/steps/{stepNumber}", updatedStep),
+                $"Error updating step {stepNumber} for task {taskId}"
+            );
+        }
+        
+        public async Task<bool> DeleteTaskStep(int taskId, int stepNumber)
+        {
+            return await ExecuteNonQueryRequest(
+                () => _httpClient.DeleteAsync($"/api/tasks/{taskId}/steps/{stepNumber}"),
+                $"Error deleting step {stepNumber} for task {taskId}"
+            );
+        }
+    }
+}

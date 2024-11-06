@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
-using OverblikPlus;
-using OverblikPlus.Dtos;
 using OverblikPlus.Dtos.User;
 using OverblikPlus.Services.Interfaces;
+
+namespace OverblikPlus.Services;
 
 public class UserService : IUserService
 {
