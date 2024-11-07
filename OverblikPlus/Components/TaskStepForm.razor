@@ -15,7 +15,7 @@
         </div>
         <div class="mb-3">
             <label for="stepNumber" class="form-label">Trin Nummer:</label>
-            <input type="number" id="stepNumber" @bind="Step.Id" class="form-control" />
+            <input type="number" id="stepNumber" @bind="Step.StepNumber" class="form-control" />
         </div>
 
         <div class="mb-3">
@@ -30,23 +30,22 @@
 </div>
 
 @code {
-    [Parameter] public UpdateTaskStepDto Step { get; set; } = new UpdateTaskStepDto();
-    [Parameter] public EventCallback OnSave { get; set; }
-    [Parameter] public EventCallback OnCancel { get; set; }
+[Parameter] public TaskStepFormModel Step { get; set; } = new TaskStepFormModel();
+[Parameter] public EventCallback OnSave { get; set; }
+[Parameter] public EventCallback OnCancel { get; set; }
 
-    private async Task HandleImageUpload(InputFileChangeEventArgs e)
-    {
-        if (e.FileCount > 0)
-        {
-            var file = e.File;
-            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-            var buffer = new byte[file.Size];
-            await stream.ReadAsync(buffer);
-            Step.ImageBase64 = Convert.ToBase64String(buffer);
-        }
-    }
+private async Task HandleImageUpload(InputFileChangeEventArgs e)
+{
+if (e.FileCount > 0)
+{
+var file = e.File;
+using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+var buffer = new byte[file.Size];
+await stream.ReadAsync(buffer);
+Step.ImageBase64 = Convert.ToBase64String(buffer);
+}
+}
 
-    private async Task Save() => await OnSave.InvokeAsync();
-    
-    private async Task Cancel() => await OnCancel.InvokeAsync();
+private async Task Save() => await OnSave.InvokeAsync();
+private async Task Cancel() => await OnCancel.InvokeAsync();
 }

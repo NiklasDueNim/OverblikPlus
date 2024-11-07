@@ -16,6 +16,16 @@ namespace OverblikPlus
             CreateMap<User, ReadUserDto>();
             CreateMap<CreateUserDto, User>();
             CreateMap<UpdateUserDto, User>();
+            
+            
+            CreateMap<TaskFormModel, CreateTaskDto>();
+            CreateMap<TaskFormModel, UpdateTaskDto>();
+            CreateMap<ReadTaskDto, TaskFormModel>();
+
+            CreateMap<TaskStepFormModel, CreateTaskStepDto>();
+            CreateMap<TaskStepFormModel, UpdateTaskStepDto>();
+            CreateMap<ReadTaskStepDto, TaskStepFormModel>();
+
         }
     }
 }

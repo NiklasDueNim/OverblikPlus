@@ -13,10 +13,13 @@
 <div class="container mt-4">
     <h3 class="mb-4">Administrer Opgaver</h3>
 
+    <!-- Knap til at oprette en ny opgave -->
+    <button class="btn btn-success mb-3" @onclick="CreateTask">Opret Ny Opgave</button>
+
     @if (isTaskFormVisible)
     {
         <TaskForm Title="@(isEditMode ? "Rediger Opgave" : "Opret Ny Opgave")" 
-                  Task="currentTask" 
+                  Task="taskFormModel" 
                   Users="users" 
                   OnSave="SaveTask" 
                   OnCancel="CancelTaskForm" />
@@ -40,14 +43,12 @@
 @code {
     private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
     private List<ReadUserDto> users = new List<ReadUserDto>();
-    private CreateTaskDto newTask = new CreateTaskDto();
-    private UpdateTaskDto currentTask = new UpdateTaskDto();
+    private TaskFormModel taskFormModel = new TaskFormModel();
     private bool isEditMode = false;
     private bool isTaskFormVisible = false;
     private bool isStepFormVisible = false;
-    private UpdateTaskStepDto currentStep = new UpdateTaskStepDto(); 
+    private TaskStepFormModel currentStep = new TaskStepFormModel(); 
     private bool isEditStepMode = false;
-    private List<ReadTaskStepDto> stepsForCurrentTask = new List<ReadTaskStepDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,41 +66,50 @@
         users = (await UserService.GetAllUsers()).ToList();
     }
 
+    private void CreateTask()
+    {
+        taskFormModel = new TaskFormModel();
+        isEditMode = false;
+        isTaskFormVisible = true;
+    }
+
     private void EditTask(ReadTaskDto task)
     {
-        currentTask = Mapper.Map<UpdateTaskDto>(task);
+        taskFormModel = Mapper.Map<TaskFormModel>(task);
         isEditMode = true;
         isTaskFormVisible = true;
     }
 
     private async Task SaveTask()
     {
-        if (isEditMode)
+        try
         {
-            await TaskService.UpdateTask(currentTask.Id, currentTask);
-        }
-        else
-        {
-            var newTaskDto = new CreateTaskDto 
+            if (isEditMode)
             {
-                Name = currentTask.Name,
-                Description = currentTask.Description,
-                ImageBase64 = currentTask.ImageBase64,
-                UserId = currentTask.UserId ?? 0
-            };
-
-            await TaskService.CreateTask(newTaskDto);
+                Console.WriteLine($"Opdaterer opgave med ID {taskFormModel.Id}");
+                var updateTaskDto = Mapper.Map<UpdateTaskDto>(taskFormModel);
+                await TaskService.UpdateTask(updateTaskDto.Id, updateTaskDto);
+            }
+            else
+            {
+                Console.WriteLine("Opretter ny opgave");
+                var createTaskDto = Mapper.Map<CreateTaskDto>(taskFormModel);
+                await TaskService.CreateTask(createTaskDto);
+            }
+        
+            await LoadTasks();
+            isTaskFormVisible = false;
+            ResetForm();
         }
-    
-        await LoadTasks();
-        isTaskFormVisible = false;
-        ResetForm();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl i SaveTask: {ex.Message}");
+        }
     }
-
 
     private void ResetForm()
     {
-        currentTask = new UpdateTaskDto();
+        taskFormModel = new TaskFormModel();
         isEditMode = false;
     }
 
@@ -117,64 +127,48 @@
 
     private void AddStep(int taskId)
     {
-        currentStep = new UpdateTaskStepDto { TaskId = taskId };
-        isStepFormVisible = true;
+        currentStep = new TaskStepFormModel { TaskId = taskId };
         isEditStepMode = false;
+        isStepFormVisible = true;
     }
-
-    private async Task SaveStep()
-    {
-        if (isEditStepMode)
-        {
-            await TaskStepService.UpdateTaskStep(currentStep.TaskId, currentStep.Id, currentStep);
-        }
-        else
-        {
-            var createStepDto = new CreateTaskStepDto
-            {
-                TaskId = currentStep.TaskId,
-                Text = currentStep.Text,
-                RequiresQrCodeScan = currentStep.RequiresQrCodeScan
-            };
-        
-            await TaskStepService.CreateTaskStep(createStepDto);
-        }
-
-        await UpdateTaskSteps(currentStep.TaskId);
-        isStepFormVisible = false;
-        ResetStepForm();
-    }
-    
-    private async Task LoadTaskSteps(int taskId)
-    {
-        stepsForCurrentTask = await TaskStepService.GetStepsForTask(taskId);
-        StateHasChanged();
-    }
-    
-    private async Task UpdateTaskSteps(int taskId)
-    {
-        var updatedSteps = await TaskStepService.GetStepsForTask(taskId);
-        var task = Tasks.FirstOrDefault(t => t.Id == taskId);
-        if (task != null)
-        {
-            task.Steps = updatedSteps;
-            StateHasChanged();
-        }
-    }
-
-
 
     private void EditStep(ReadTaskStepDto step)
     {
-        currentStep = Mapper.Map<UpdateTaskStepDto>(step);
-        currentStep.TaskId = step.TaskId;
+        currentStep = Mapper.Map<TaskStepFormModel>(step);
         isEditStepMode = true;
         isStepFormVisible = true;
     }
 
+    private async Task SaveStep()
+    {
+        try
+        {
+            if (isEditStepMode)
+            {
+                Console.WriteLine($"Opdaterer trin ID {currentStep.Id} for opgave ID {currentStep.TaskId}");
+                var updateStepDto = Mapper.Map<UpdateTaskStepDto>(currentStep);
+                await TaskStepService.UpdateTaskStep(updateStepDto.TaskId, updateStepDto.Id, updateStepDto);
+            }
+            else
+            {
+                Console.WriteLine($"Opretter nyt trin for opgave ID {currentStep.TaskId}");
+                var createStepDto = Mapper.Map<CreateTaskStepDto>(currentStep);
+                await TaskStepService.CreateTaskStep(createStepDto);
+            }
+
+            await UpdateTaskSteps(currentStep.TaskId);
+            isStepFormVisible = false;
+            ResetStepForm();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl i SaveStep: {ex.Message}");
+        }
+    }
+
     private void ResetStepForm()
     {
-        currentStep = new UpdateTaskStepDto();
+        currentStep = new TaskStepFormModel();
         isEditStepMode = false;
     }
 
@@ -184,12 +178,32 @@
         ResetStepForm();
     }
 
+    private async Task UpdateTaskSteps(int taskId)
+    {
+        var updatedSteps = await TaskStepService.GetStepsForTask(taskId);
+        var index = Tasks.FindIndex(t => t.Id == taskId);
+        if (index >= 0)
+        {
+            var task = Tasks[index];
+            Tasks[index] = new ReadTaskDto
+            {
+                Id = task.Id,
+                Name = task.Name,
+                Description = task.Description,
+                Image = task.Image,
+                UserId = task.UserId,
+                Steps = updatedSteps
+            };
+            StateHasChanged();
+        }
+    }
+
     private async Task DeleteStep(int taskId, int stepId)
     {
         await TaskStepService.DeleteTaskStep(taskId, stepId);
         await UpdateTaskSteps(taskId);
     }
-    
+
     private Task OnDeleteStepHandler(int stepId)
     {
         var task = Tasks.FirstOrDefault(t => t.Steps.Any(s => s.Id == stepId));

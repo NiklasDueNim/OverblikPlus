@@ -11,6 +11,7 @@ namespace OverblikPlus.Services
         public TaskStepService(HttpClient httpClient)
         {
             _httpClient = httpClient;
+            Console.WriteLine($"TaskStepService BaseAddress: {_httpClient.BaseAddress}");
         }
         
         private async Task<T?> ExecuteGetRequest<T>(string url)
