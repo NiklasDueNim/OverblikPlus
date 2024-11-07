@@ -54,21 +54,31 @@ currentStep = TaskSteps[currentStepIndex];
 
 private async Task LoadTaskSteps()
 {
-    var response = await Http.GetFromJsonAsync<List<ReadTaskStepDto>>($"/api/tasks/{TaskId}/steps");
-    TaskSteps = response ?? new List<ReadTaskStepDto>();
-
-    Console.WriteLine($"Hentede {TaskSteps.Count} trin for task med ID: {TaskId}");
-
-    if (TaskSteps.Any())
+    try
     {
-        currentStep = TaskSteps[currentStepIndex];
-        Console.WriteLine($"Nuværende trin tekst: {currentStep.Text}");
+        Console.WriteLine($"Forsøger at hente trin for TaskId: {TaskId}");
+        var response = await Http.GetFromJsonAsync<List<ReadTaskStepDto>>($"/api/tasks/{TaskId}/steps");
+        TaskSteps = response ?? new List<ReadTaskStepDto>();
+
+        Console.WriteLine($"Hentede {TaskSteps.Count} trin for TaskId: {TaskId}");
+
+        if (TaskSteps.Any())
+        {
+            currentStep = TaskSteps[currentStepIndex];
+            Console.WriteLine($"Første trin: {currentStep.Text}");
+        }
+        else
+        {
+            Console.WriteLine("Ingen trin fundet");
+        }
     }
-    else
+    catch (Exception ex)
     {
-        Console.WriteLine($"Ingen trin fundet for task med ID: {TaskId}");
+        Console.WriteLine($"Fejl ved hentning af trin: {ex.Message}");
     }
 }
+
+
 
 
 private async Task ShowNextStep()

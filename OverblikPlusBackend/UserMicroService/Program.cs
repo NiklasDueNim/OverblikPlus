@@ -22,7 +22,7 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("https://overblikplus.dk")
+        builder => builder.WithOrigins("https://overblikplus.dk", "http://localhost:5226", "http://localhost:5032")
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
