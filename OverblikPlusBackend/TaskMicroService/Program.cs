@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using TaskMicroService.DataAccess;
 using TaskMicroService.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddApplicationInsightsTelemetry(builder.Configuration["ApplicationInsights:ConnectionString"]);
 
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

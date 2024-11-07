@@ -40,7 +40,6 @@
 
 protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("Im here now");
         employees = await Http.GetFromJsonAsync<List<Employee>>("sample-data/employees.json");
         Console.WriteLine("Im not here");
         Console.WriteLine(employees.Count);

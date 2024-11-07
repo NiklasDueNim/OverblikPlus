@@ -61,6 +61,7 @@ namespace TaskMicroService.Controllers
         [HttpDelete("{stepId}")]
         public async Task<IActionResult> DeleteTaskStep(int taskId, int stepId)
         {
+            Console.WriteLine($"Deleting step {stepId} for task {taskId}");
             var existingStep = await _taskStepService.GetTaskStep(taskId, stepId);
             if (existingStep == null)
                 return NotFound();
