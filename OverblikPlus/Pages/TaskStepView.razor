@@ -54,35 +54,43 @@ currentStep = TaskSteps[currentStepIndex];
 
 private async Task LoadTaskSteps()
 {
-var response = await Http.GetFromJsonAsync<List<ReadTaskStepDto>>($"/api/tasks/{TaskId}/steps");
-TaskSteps = response ?? new List<ReadTaskStepDto>();
+    var response = await Http.GetFromJsonAsync<List<ReadTaskStepDto>>($"/api/tasks/{TaskId}/steps");
+    TaskSteps = response ?? new List<ReadTaskStepDto>();
 
+    Console.WriteLine($"Hentede {TaskSteps.Count} trin for task med ID: {TaskId}");
 
-if (!TaskSteps.Any())
-{
-Console.WriteLine($"Ingen trin fundet for task med ID: {TaskId}");
+    if (TaskSteps.Any())
+    {
+        currentStep = TaskSteps[currentStepIndex];
+        Console.WriteLine($"Nuværende trin tekst: {currentStep.Text}");
+    }
+    else
+    {
+        Console.WriteLine($"Ingen trin fundet for task med ID: {TaskId}");
+    }
 }
-}
+
 
 private async Task ShowNextStep()
 {
-if (currentStepIndex < TaskSteps.Count - 1)
-{
-currentStepIndex++;
-currentStep = TaskSteps[currentStepIndex];
+    if (currentStepIndex < TaskSteps.Count - 1)
+    {
+        currentStepIndex++;
+        currentStep = TaskSteps[currentStepIndex];
 
+        // Start scanning, hvis det kræves for det næste trin
+        if (currentStep.RequiresQrCodeScan)
+        {
+            await StartScanning();
+        }
+    }
+    else
+    {
+        // Naviger til afslutningssiden, når sidste trin er nået
+        Navigation.NavigateTo("/task-complete");
+    }
+}
 
-if (currentStep.RequiresQrCodeScan)
-{
-await StartScanning();
-}
-}
-else
-{
-
-Navigation.NavigateTo("/task-complete");
-}
-}
 
 private async Task StartScanning()
 {
