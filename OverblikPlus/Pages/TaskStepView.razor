@@ -3,7 +3,7 @@
 @using OverblikPlus.Services.Interfaces
 @inject ITaskStepService TaskStepService
 @inject NavigationManager Navigation
-@inject IJSRuntime JS
+@inject IJSRuntime Js
 
 
 <h3>Opgave Trin - Trin @(currentStepIndex + 1) af @TaskSteps.Count</h3>
@@ -99,7 +99,7 @@ else
         if (!isScanning)
         {
             isScanning = true;
-            await JS.InvokeVoidAsync("startScanning"); // JavaScript funktion til QR-kode scanning
+            await Js.InvokeVoidAsync("startScanning"); // JavaScript funktion til QR-kode scanning
         }
     }
 
@@ -112,7 +112,7 @@ else
 
     private async Task StopScanning()
     {
-        await JS.InvokeVoidAsync("stopScanning");
+        await Js.InvokeVoidAsync("stopScanning");
         isScanning = false;
     }
 }
