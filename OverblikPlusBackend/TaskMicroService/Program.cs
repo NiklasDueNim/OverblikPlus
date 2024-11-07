@@ -13,7 +13,7 @@ builder.Services.AddDbContext<TaskDbContext>(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("https://overblikplus.dk")
+        builder => builder.WithOrigins("https://overblikplus.dk", "http://localhost:5226/")
             .AllowAnyMethod()
             .AllowAnyHeader());
 });

@@ -36,7 +36,39 @@
 
     @if (isStepFormVisible)
     {
-        <TaskStepForm Step="currentStep" OnSave="SaveStep" OnCancel="CancelStepForm" />
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-labelledby="addStepModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@((isEditStepMode ? "Rediger Trin" : "Tilføj Trin"))</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CancelStepForm"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formular for trin -->
+                    <div class="mb-3">
+                        <label for="stepText" class="form-label">Beskrivelse:</label>
+                        <textarea id="stepText" @bind="currentStep.Text" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="stepImage" class="form-label">Billede:</label>
+                        <InputFile OnChange="HandleImageUpload" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="stepNumber" class="form-label">Trin Nummer:</label>
+                        <input type="number" id="stepNumber" @bind="currentStep.StepNumber" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="requiresQrCode" class="form-label">Kræver QR-kode scanning:</label>
+                        <input type="checkbox" id="requiresQrCode" @bind="currentStep.RequiresQrCodeScan" class="form-check-input" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelStepForm">Annuller</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveStep">Gem</button>
+                </div>
+            </div>
+        </div>
+    </div>
     }
 </div>
 
@@ -216,6 +248,18 @@
         {
             Console.WriteLine("Kunne ikke finde opgaven for det givne trin");
             return Task.CompletedTask;
+        }
+    }
+    
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount > 0)
+        {
+            var file = e.File;
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // Max størrelse: 10 MB
+            var buffer = new byte[file.Size];
+            await stream.ReadAsync(buffer);
+            currentStep.ImageBase64 = Convert.ToBase64String(buffer);
         }
     }
 }
