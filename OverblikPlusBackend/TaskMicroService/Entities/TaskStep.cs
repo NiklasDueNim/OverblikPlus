@@ -6,7 +6,7 @@ public class TaskStep
     public int TaskId { get; set; }
     public int StepNumber { get; set; }
     
-    public byte[]? ImageUrl { get; set; } = Array.Empty<byte>();
+    public string? ImageUrl { get; set; } = String.Empty;
     
     public string Text { get; set; } = string.Empty;
 
