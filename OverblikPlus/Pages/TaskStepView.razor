@@ -1,11 +1,12 @@
 @page "/task-step-view/{TaskId:int}"
-@using OverblikPlus.Dtos
 @using OverblikPlus.Dtos.TaskSteps
 @using OverblikPlus.Services.Interfaces
 @inject ITaskStepService TaskStepService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
-<h3>Opgave Trin - Trin @(currentStepIndex + 1)</h3>
+
+<h3>Opgave Trin - Trin @(currentStepIndex + 1) af @TaskSteps.Count</h3>
 
 @if (TaskSteps == null || !TaskSteps.Any())
 {
@@ -17,17 +18,21 @@ else if (currentStep == null)
 }
 else
 {
-    <div>
-        <img src="@currentStep.ImageUrl" alt="Trin billede" width="300" style="display: block; margin: auto;" />
-        <p style="text-align: center;">@currentStep.Text</p>
-        
-        @if (currentStepIndex < TaskSteps.Count - 1)
+    <div class="text-center">
+        @if (!string.IsNullOrEmpty(currentStep.ImageUrl))
         {
-            <button @onclick="ShowNextStep">Næste trin</button>
+            <img src="@currentStep.ImageUrl" alt="Trin billede" width="300" class="mb-3" />
+        }
+        <p>@currentStep.Text</p>
+
+        @if (currentStep.RequiresQrCodeScan)
+        {
+            <button class="btn btn-secondary" @onclick="StartScanning">Scan QR-kode for at fortsætte</button>
+            <video id="video" width="300" height="200" autoplay style="display: @(isScanning ? "block" : "none");"></video>
         }
         else
         {
-            <p>Du har nået det sidste trin.</p>
+            <button class="btn btn-primary" @onclick="ShowNextStep">Næste trin</button>
         }
     </div>
 }
@@ -35,9 +40,10 @@ else
 @code {
     [Parameter] public int TaskId { get; set; }
 
-    private List<ReadTaskStepDto> TaskSteps = new();
+    private List<ReadTaskStepDto> TaskSteps { get; set; } = new();
     private ReadTaskStepDto? currentStep;
     private int currentStepIndex = 0;
+    private bool isScanning = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -54,10 +60,12 @@ else
         try
         {
             TaskSteps = await TaskStepService.GetStepsForTask(TaskId) ?? new List<ReadTaskStepDto>();
-            
-            Console.WriteLine($"Hentede {TaskSteps.Count} trin for task med ID: {TaskId}");
 
-            if (!TaskSteps.Any())
+            if (TaskSteps.Any())
+            {
+                currentStep = TaskSteps[currentStepIndex];
+            }
+            else
             {
                 Console.WriteLine($"Ingen trin fundet for task med ID: {TaskId}");
             }
@@ -68,12 +76,43 @@ else
         }
     }
 
-    private void ShowNextStep()
+    private async Task ShowNextStep()
     {
         if (currentStepIndex < TaskSteps.Count - 1)
         {
             currentStepIndex++;
             currentStep = TaskSteps[currentStepIndex];
+
+            if (currentStep.RequiresQrCodeScan)
+            {
+                await StartScanning();
+            }
         }
+        else
+        {
+            Navigation.NavigateTo("/task-complete");
+        }
+    }
+
+    private async Task StartScanning()
+    {
+        if (!isScanning)
+        {
+            isScanning = true;
+            await JS.InvokeVoidAsync("startScanning"); // JavaScript funktion til QR-kode scanning
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnQrCodeScanned(string result)
+    {
+        await StopScanning();
+        await ShowNextStep();
+    }
+
+    private async Task StopScanning()
+    {
+        await JS.InvokeVoidAsync("stopScanning");
+        isScanning = false;
     }
 }
