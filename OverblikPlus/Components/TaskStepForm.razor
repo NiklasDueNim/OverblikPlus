@@ -1,5 +1,52 @@
-<h3>TaskStepForm</h3>
+@using OverblikPlus.Dtos.TaskSteps
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>@(Step.Id == 0 ? "Tilføj Trin" : "Rediger Trin")</h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <label for="stepText" class="form-label">Beskrivelse:</label>
+            <textarea id="stepText" @bind="Step.Text" class="form-control"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="stepImage" class="form-label">Billede:</label>
+            <InputFile OnChange="HandleImageUpload" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label for="stepNumber" class="form-label">Trin Nummer:</label>
+            <input type="number" id="stepNumber" @bind="Step.Id" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label for="requiresQrCode" class="form-label">Kræver QR-kode scanning:</label>
+            <input type="checkbox" id="requiresQrCode" @bind="Step.RequiresQrCodeScan" class="form-check-input" />
+        </div>
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-primary me-2" @onclick="Save">Gem</button>
+            <button class="btn btn-secondary" @onclick="Cancel">Annuller</button>
+        </div>
+    </div>
+</div>
 
 @code {
+    [Parameter] public UpdateTaskStepDto Step { get; set; } = new UpdateTaskStepDto();
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount > 0)
+        {
+            var file = e.File;
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            var buffer = new byte[file.Size];
+            await stream.ReadAsync(buffer);
+            Step.ImageBase64 = Convert.ToBase64String(buffer);
+        }
+    }
+
+    private async Task Save() => await OnSave.InvokeAsync();
     
+    private async Task Cancel() => await OnCancel.InvokeAsync();
 }

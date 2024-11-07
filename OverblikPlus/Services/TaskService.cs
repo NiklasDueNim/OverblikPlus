@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using OverblikPlus.Dtos;
 using OverblikPlus.Dtos.Tasks;
 using OverblikPlus.Services.Interfaces;
 
@@ -28,67 +27,46 @@ public class TaskService : ITaskService
         }
     }
 
+    private async Task<bool> ExecuteNonQueryRequest(Func<Task<HttpResponseMessage>> requestFunc, string actionDescription)
+    {
+        try
+        {
+            var response = await requestFunc();
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error during {actionDescription}. Status Code: {response.StatusCode}, Details: {errorContent}");
+            }
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception during {actionDescription}: {ex.Message}");
+            return false;
+        }
+    }
+
     public async Task<List<ReadTaskDto>> GetAllTasks() =>
         await ExecuteGetRequest<List<ReadTaskDto>>("/api/Task");
 
     public async Task<List<ReadTaskDto>> GetTasksForUserAsync(int userId) =>
         await ExecuteGetRequest<List<ReadTaskDto>>($"api/Task/user/{userId}");
     
+    public async Task<ReadTaskDto> GetTaskById(int taskId) =>
+        await ExecuteGetRequest<ReadTaskDto>($"/api/Task/{taskId}");
 
-    
-    public async Task<ReadTaskDto> GetTaskById(int taskId)
-    {
-        try
-        {
-            return await _httpClient.GetFromJsonAsync<ReadTaskDto>($"/api/Task/{taskId}")
-                   ?? throw new InvalidOperationException("Task not found");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error fetching task by ID: {ex.Message}");
-            throw;
-        }
-    }
-    
-    public async Task<bool> CreateTask(CreateTaskDto newTask)
-    {
-        try
-        {
-            var response = await _httpClient.PostAsJsonAsync("/api/Task", newTask);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error creating task: {ex.Message}");
-            return false;
-        }
-    }
-    
-    public async Task<bool> UpdateTask(int taskId, UpdateTaskDto updatedTask)
-    {
-        try
-        {
-            var response = await _httpClient.PutAsJsonAsync($"/api/Task/{taskId}", updatedTask);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error updating task: {ex.Message}");
-            return false;
-        }
-    }
-    
-    public async Task<bool> DeleteTask(int taskId)
-    {
-        try
-        {
-            var response = await _httpClient.DeleteAsync($"/api/Task/{taskId}");
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error deleting task: {ex.Message}");
-            return false;
-        }
-    }
+    public async Task<bool> CreateTask(CreateTaskDto newTask) =>
+        await ExecuteNonQueryRequest(
+            () => _httpClient.PostAsJsonAsync("/api/Task", newTask),
+            "task creation");
+
+    public async Task<bool> UpdateTask(int taskId, UpdateTaskDto updatedTask) =>
+        await ExecuteNonQueryRequest(
+            () => _httpClient.PutAsJsonAsync($"/api/Task/{taskId}", updatedTask),
+            "task update");
+
+    public async Task<bool> DeleteTask(int taskId) =>
+        await ExecuteNonQueryRequest(
+            () => _httpClient.DeleteAsync($"/api/Task/{taskId}"),
+            "task deletion");
 }

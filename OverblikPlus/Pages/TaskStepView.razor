@@ -5,7 +5,7 @@
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
 
-<h3>Opgave Trin - Trin @currentStep?.StepNumber</h3>
+<h3>Opgave Trin - Trin @(currentStepIndex + 1)</h3>
 
 @if (TaskSteps == null || !TaskSteps.Any())
 {
@@ -18,7 +18,7 @@ else if (currentStep == null)
 else
 {
 <div>
-    <img src="@currentStep.Image" alt="Trin billede" width="300" style="display: block; margin: auto;" />
+    <img src="@currentStep.ImageUrl" alt="Trin billede" width="300" style="display: block; margin: auto;" />
     <p style="text-align: center;">@currentStep.Text</p>
 
     @if (currentStep.RequiresQrCodeScan)

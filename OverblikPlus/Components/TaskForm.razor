@@ -1,9 +1,6 @@
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.User
 
-
-<h3>TaskForm</h3>
-
 <div class="card mb-4">
     <div class="card-header">
         <h4 class="card-title">@Title</h4>
@@ -28,32 +25,37 @@
                     <option value="">Vælg bruger</option>
                     @foreach (var user in Users)
                     {
-                    <option value="@user.Id">@user.FirstName @user.LastName</option>
+                        <option value="@user.Id">@user.FirstName @user.LastName</option>
                     }
                 </select>
             </div>
             <div class="d-flex justify-content-end">
-                <button type="button" class="btn btn-primary me-2" @onclick="OnSave">Gem</button>
-                <button type="button" class="btn btn-secondary" @onclick="OnCancel">Annuller</button>
+                <button type="button" class="btn btn-primary me-2" @onclick="Save">Gem</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Annuller</button>
             </div>
         </form>
     </div>
 </div>
 
 @code {
-[Parameter] public string Title { get; set; }
-[Parameter] public CreateTaskDto Task { get; set; }
-[Parameter] public EventCallback OnSave { get; set; }
-[Parameter] public EventCallback OnCancel { get; set; }
-[Parameter] public List<ReadUserDto> Users { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public UpdateTaskDto Task { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public List<ReadUserDto> Users { get; set; }
 
-private async Task HandleImageUpload(InputFileChangeEventArgs e)
-{
-// Logic to handle file upload and bind image to Task.ImageBase64
-}
-}
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount > 0)
+        {
+            var file = e.File;
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            var buffer = new byte[file.Size];
+            await stream.ReadAsync(buffer);
+            Task.ImageBase64 = Convert.ToBase64String(buffer);
+        }
+    }
 
-
-@code {
-    
+    private async Task Save() => await OnSave.InvokeAsync();
+    private async Task Cancel() => await OnCancel.InvokeAsync();
 }

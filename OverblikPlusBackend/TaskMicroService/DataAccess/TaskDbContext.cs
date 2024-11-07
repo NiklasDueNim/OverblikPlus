@@ -15,20 +15,19 @@ namespace TaskMicroService.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<TaskEntity>()
-                .HasMany(t => t.Steps) // En Task har mange Steps
-                .WithOne(s => s.Task)   // Et Step hører til én Task
-                .HasForeignKey(s => s.TaskId)  // Fremmednøgle på TaskId
-                .OnDelete(DeleteBehavior.Cascade); // Sletter Steps, hvis Task slettes
+                .HasMany(t => t.Steps) 
+                .WithOne(s => s.Task)
+                .HasForeignKey(s => s.TaskId)  
+                .OnDelete(DeleteBehavior.Cascade);
+
             
             modelBuilder.Entity<TaskStep>()
                 .HasOne(ts => ts.Task)
                 .WithMany(t => t.Steps)
                 .HasForeignKey(ts => ts.TaskId)
-                .OnDelete(DeleteBehavior.Cascade); // Ensure TaskSteps are deleted with their parent Task
-
+                .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }
-
     }
 }

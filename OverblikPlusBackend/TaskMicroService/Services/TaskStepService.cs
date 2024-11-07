@@ -41,10 +41,10 @@ namespace TaskMicroService.Services
         }
 
         
-        public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepNumber)
+        public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepId)
         {
             var taskStep = await _dbContext.TaskSteps
-                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.StepNumber == stepNumber);
+                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.Id == stepId);
 
             return taskStep != null ? _mapper.Map<ReadTaskStepDto>(taskStep) : null;
         }
@@ -65,10 +65,10 @@ namespace TaskMicroService.Services
         }
 
         
-        public async Task UpdateTaskStep(int taskId, int stepNumber, UpdateTaskStepDto updateStepDto)
+        public async Task UpdateTaskStep(int taskId, int stepId, UpdateTaskStepDto updateStepDto)
         {
             var taskStep = await _dbContext.TaskSteps
-                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.StepNumber == stepNumber);
+                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.Id == stepId);
 
             if (taskStep != null)
             {
@@ -78,10 +78,10 @@ namespace TaskMicroService.Services
         }
 
 
-        public async Task DeleteTaskStep(int taskId, int stepNumber)
+        public async Task DeleteTaskStep(int taskId, int stepId)
         {
             var taskStep = await _dbContext.TaskSteps
-                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.StepNumber == stepNumber);
+                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.Id == stepId);
 
             if (taskStep != null)
             {

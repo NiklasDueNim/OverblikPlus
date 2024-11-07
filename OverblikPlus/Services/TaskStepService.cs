@@ -50,8 +50,8 @@ namespace OverblikPlus.Services
             await ExecuteGetRequest<List<ReadTaskStepDto>>($"/api/tasks/{taskId}/steps") ?? new List<ReadTaskStepDto>();
 
     
-        public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepNumber) =>
-            await ExecuteGetRequest<ReadTaskStepDto>($"/api/tasks/{taskId}/steps/{stepNumber}");
+        public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepId) =>
+            await ExecuteGetRequest<ReadTaskStepDto>($"/api/tasks/{taskId}/steps/{stepId}");
 
         
         public async Task<bool> CreateTaskStep(CreateTaskStepDto newStep)
@@ -62,19 +62,19 @@ namespace OverblikPlus.Services
             );
         }
         
-        public async Task<bool> UpdateTaskStep(int taskId, int stepNumber, UpdateTaskStepDto updatedStep)
+        public async Task<bool> UpdateTaskStep(int taskId, int stepId, UpdateTaskStepDto updatedStep)
         {
             return await ExecuteNonQueryRequest(
-                () => _httpClient.PutAsJsonAsync($"/api/tasks/{taskId}/steps/{stepNumber}", updatedStep),
-                $"Error updating step {stepNumber} for task {taskId}"
+                () => _httpClient.PutAsJsonAsync($"/api/tasks/{taskId}/steps/{stepId}", updatedStep),
+                $"Error updating step {stepId} for task {taskId}"
             );
         }
         
-        public async Task<bool> DeleteTaskStep(int taskId, int stepNumber)
+        public async Task<bool> DeleteTaskStep(int taskId, int stepId)
         {
             return await ExecuteNonQueryRequest(
-                () => _httpClient.DeleteAsync($"/api/tasks/{taskId}/steps/{stepNumber}"),
-                $"Error deleting step {stepNumber} for task {taskId}"
+                () => _httpClient.DeleteAsync($"/api/tasks/{taskId}/steps/{stepId}"),
+                $"Error deleting step {stepId} for task {taskId}"
             );
         }
     }

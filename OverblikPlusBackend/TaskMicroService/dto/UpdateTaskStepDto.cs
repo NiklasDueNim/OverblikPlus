@@ -2,8 +2,11 @@ namespace TaskMicroService.dto
 {
     public class UpdateTaskStepDto
     {
-        public string? ImageUrl { get; set; } 
-        public string? Text { get; set; }      
-        public int? StepNumber { get; set; }   
+        public int Id { get; set; }
+        public int TaskId { get; set; }
+        public string Text { get; set; }
+        public bool RequiresQrCodeScan { get; set; }
+        public string? ImageBase64 { get; set; }
     }
+
 }

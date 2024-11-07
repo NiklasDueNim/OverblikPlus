@@ -22,10 +22,10 @@ namespace TaskMicroService.Controllers
             return Ok(steps);
         }
 
-        [HttpGet("{stepNumber}")]
-        public async Task<IActionResult> GetTaskStep(int taskId, int stepNumber)
+        [HttpGet("{stepId}")]
+        public async Task<IActionResult> GetTaskStep(int taskId, int stepId)
         {
-            var step = await _taskStepService.GetTaskStep(taskId, stepNumber);
+            var step = await _taskStepService.GetTaskStep(taskId, stepId);
             if (step == null)
                 return NotFound();
 
@@ -38,34 +38,34 @@ namespace TaskMicroService.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            createStepDto.TaskId = taskId; // Indstil TaskId i DTO'en
-            var stepNumber = await _taskStepService.CreateTaskStep(createStepDto);
-            return CreatedAtAction(nameof(GetTaskStep), new { taskId = taskId, stepNumber = stepNumber }, null);
+            createStepDto.TaskId = taskId;
+            var stepId = await _taskStepService.CreateTaskStep(createStepDto);
+            return CreatedAtAction(nameof(GetTaskStep), new { taskId = taskId, stepId = stepId }, null);
         }
 
 
-        [HttpPut("{stepNumber}")]
-        public async Task<IActionResult> UpdateTaskStep(int taskId, int stepNumber, [FromBody] UpdateTaskStepDto updateStepDto)
+        [HttpPut("{stepId}")]
+        public async Task<IActionResult> UpdateTaskStep(int taskId, int stepId, [FromBody] UpdateTaskStepDto updateStepDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var existingStep = await _taskStepService.GetTaskStep(taskId, stepNumber);
+            var existingStep = await _taskStepService.GetTaskStep(taskId, stepId);
             if (existingStep == null)
                 return NotFound();
 
-            await _taskStepService.UpdateTaskStep(taskId, stepNumber, updateStepDto);
+            await _taskStepService.UpdateTaskStep(taskId, stepId, updateStepDto);
             return NoContent();
         }
 
-        [HttpDelete("{stepNumber}")]
-        public async Task<IActionResult> DeleteTaskStep(int taskId, int stepNumber)
+        [HttpDelete("{stepId}")]
+        public async Task<IActionResult> DeleteTaskStep(int taskId, int stepId)
         {
-            var existingStep = await _taskStepService.GetTaskStep(taskId, stepNumber);
+            var existingStep = await _taskStepService.GetTaskStep(taskId, stepId);
             if (existingStep == null)
                 return NotFound();
 
-            await _taskStepService.DeleteTaskStep(taskId, stepNumber);
+            await _taskStepService.DeleteTaskStep(taskId, stepId);
             return NoContent();
         }
     }

@@ -1,149 +1,53 @@
 @page "/admin/tasks"
+@using AutoMapper
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.TaskSteps
 @using OverblikPlus.Dtos.User
 @using OverblikPlus.Services.Interfaces
-@inject HttpClient Http
-@inject IUserService UserService
+@using OverblikPlus.Components
 @inject ITaskService TaskService
+@inject IUserService UserService
 @inject ITaskStepService TaskStepService
-@inject NavigationManager Navigation
+@inject IMapper Mapper
 
 <div class="container mt-4">
     <h3 class="mb-4">Administrer Opgaver</h3>
 
-    <!-- Formular til oprettelse/ændring af en task -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h4 class="card-title">@(isEditMode ? "Rediger Opgave" : "Opret Ny Opgave")</h4>
-        </div>
-        <div class="card-body">
-            <form>
-                <div class="mb-3">
-                    <label for="taskName" class="form-label">Navn:</label>
-                    <input id="taskName" @bind="currentTask.Name" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label for="taskDescription" class="form-label">Beskrivelse:</label>
-                    <textarea id="taskDescription" @bind="currentTask.Description" class="form-control"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="taskImage" class="form-label">Billede:</label>
-                    <InputFile OnChange="HandleImageUpload" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label for="user" class="form-label">Tildel opgave til en bruger</label>
-                    <select id="user" @bind="currentTask.UserId" class="form-select">
-                        <option value="">Vælg bruger</option>
-                        @if (users != null && users.Any())
-                        {
-                        @foreach (var user in users)
-                        {
-                        <option value="@user.Id">@user.FirstName @user.LastName</option>
-                        }
-                        }
-                        else
-                        {
-                        <option>No users available. Please try again later.</option>
-                        }
-                    </select>
-                </div>
-                <div class="d-flex justify-content-end">
-                    <button type="button" class="btn btn-primary me-2" @onclick="SaveTask">@((isEditMode) ? "Opdater Opgave" : "Opret Opgave")</button>
-                    <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Annuller</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    @if (isTaskFormVisible)
+    {
+        <TaskForm Title="@(isEditMode ? "Rediger Opgave" : "Opret Ny Opgave")" 
+                  Task="currentTask" 
+                  Users="users" 
+                  OnSave="SaveTask" 
+                  OnCancel="CancelTaskForm" />
+    }
 
     <hr />
 
-    <!-- Liste over opgaver -->
-    <div class="task-list mb-4">
-        <h4>Liste over Opgaver</h4>
-        <ul class="list-group">
-            @foreach (var task in Tasks)
-            {
-            <li class="list-group-item mb-2">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5>@task.Name</h5>
-                        <p>@task.Description</p>
-                        @if (!string.IsNullOrEmpty(task.Image))
-                        {
-                        <img src="@task.Image" alt="Opgave Billede" class="img-thumbnail" style="width: 150px; height: auto;" />
-                        }
-                    </div>
-                    <div>
-                        <button class="btn btn-primary me-2" @onclick="() => EditTask(task)">Rediger</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteTask(task.Id)">Slet</button>
-                    </div>
-                </div>
-                <div>
-                    <h6>Trin:</h6>
-                    <ul class="list-group">
-                        @foreach (var step in task.Steps)
-                        {
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>@step.Text</span>
-                            @if (!string.IsNullOrEmpty(step.Image))
-                            {
-                            <img src="@step.Image" alt="Trin Billede" class="img-thumbnail" style="width: 100px; height: auto;" />
-                            }
-                            <div>
-                                <button class="btn btn-secondary me-2" @onclick="() => EditStep(step)">Rediger Trin</button>
-                                <button class="btn btn-danger" @onclick="() => DeleteStep(step.Id)">Slet Trin</button>
-                            </div>
-                        </li>
-                        }
-                    </ul>
-                </div>
-                <button class="btn btn-success mt-2" @onclick="() => AddStep(task.Id)">Tilføj Trin</button>
-            </li>
-            }
-        </ul>
-    </div>
+    <TaskOverviewComponent Tasks="Tasks" 
+                           OnEditTask="EditTask" 
+                           OnDeleteTask="DeleteTask" 
+                           OnAddStep="AddStep" 
+                           OnEditStep="EditStep" 
+                           OnDeleteStep="OnDeleteStepHandler" />
 
-    <!-- Formular til tilføjelse af trin -->
-    @if (isAddingStep)
+    @if (isStepFormVisible)
     {
-    <div class="card mt-4">
-        <div class="card-header">
-            <h5>Tilføj et trin</h5>
-        </div>
-        <div class="card-body">
-            <div class="mb-3">
-                <label for="stepText" class="form-label">Beskrivelse:</label>
-                <textarea id="stepText" @bind="newStep.Text" class="form-control"></textarea>
-            </div>
-            <div class="mb-3">
-                <label for="stepImage" class="form-label">Billede:</label>
-                <InputFile OnChange="HandleStepImageUpload" class="form-control" />
-            </div>
-            <div class="mb-3">
-                <label for="requiresQrCode" class="form-label">Kræver QR-kode scanning:</label>
-                <input type="checkbox" id="requiresQrCode" @bind="newStep.RequiresQrCodeScan" class="form-check-input" />
-            </div>
-            <div class="d-flex justify-content-end">
-                <button class="btn btn-primary me-2" @onclick="SaveTaskStep">Tilføj Trin</button>
-                <button class="btn btn-secondary" @onclick="CancelAddStep">Annuller</button>
-            </div>
-        </div>
-    </div>
+        <TaskStepForm Step="currentStep" OnSave="SaveStep" OnCancel="CancelStepForm" />
     }
 </div>
 
-
 @code {
     private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
-    private CreateTaskDto currentTask = new CreateTaskDto();
+    private List<ReadUserDto> users = new List<ReadUserDto>();
+    private CreateTaskDto newTask = new CreateTaskDto();
+    private UpdateTaskDto currentTask = new UpdateTaskDto();
     private bool isEditMode = false;
-    private bool isAddingStep = false;
-    private CreateTaskStepDto newStep = new CreateTaskStepDto();
-    private int currentTaskIdForStep = 0;
-    private List<ReadUserDto> users { get; set; } = new List<ReadUserDto>();
-    private ReadTaskStepDto? currentStepToEdit;
+    private bool isTaskFormVisible = false;
+    private bool isStepFormVisible = false;
+    private UpdateTaskStepDto currentStep = new UpdateTaskStepDto(); 
     private bool isEditStepMode = false;
+    private List<ReadTaskStepDto> stepsForCurrentTask = new List<ReadTaskStepDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -157,213 +61,147 @@
     }
 
     private async Task LoadUsers()
-    {
-        try
-        {
-            var result = await UserService.GetAllUsers();
-            users = result.ToList();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading users: {ex.Message}");
-        }
+    { 
+        users = (await UserService.GetAllUsers()).ToList();
     }
-
-
-    private async Task SaveTask()
-    {
-        try
-        {
-            if (isEditMode)
-            {
-                var response = await Http.PutAsJsonAsync($"/api/Task/{currentTask.Id}", currentTask);
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine("Task updated successfully");
-                }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error updating task: {response.ReasonPhrase}, Details: {errorContent}");
-                }
-            }
-            else
-            {
-                var response = await Http.PostAsJsonAsync("/api/Task", currentTask);
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine("Task created successfully");
-                }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error creating task: {response.ReasonPhrase}, Details: {errorContent}");
-                }
-            }
-
-            currentTask = new CreateTaskDto();
-            isEditMode = false;
-            await LoadTasks();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error during task creation: {ex.Message}");
-        }
-    }
-
 
     private void EditTask(ReadTaskDto task)
     {
-        currentTask = new CreateTaskDto
-        {
-            Id = task.Id,
-            Name = task.Name,
-            Description = task.Description,
-            ImageBase64 = task.Image,
-            RequiresQrCodeScan = task.RequiresQrCodeScan,
-            UserId = task.UserId
-        };
+        currentTask = Mapper.Map<UpdateTaskDto>(task);
         isEditMode = true;
+        isTaskFormVisible = true;
+    }
+
+    private async Task SaveTask()
+    {
+        if (isEditMode)
+        {
+            await TaskService.UpdateTask(currentTask.Id, currentTask);
+        }
+        else
+        {
+            var newTaskDto = new CreateTaskDto 
+            {
+                Name = currentTask.Name,
+                Description = currentTask.Description,
+                ImageBase64 = currentTask.ImageBase64,
+                UserId = currentTask.UserId ?? 0
+            };
+
+            await TaskService.CreateTask(newTaskDto);
+        }
+    
+        await LoadTasks();
+        isTaskFormVisible = false;
+        ResetForm();
+    }
+
+
+    private void ResetForm()
+    {
+        currentTask = new UpdateTaskDto();
+        isEditMode = false;
+    }
+
+    private void CancelTaskForm()
+    {
+        isTaskFormVisible = false;
+        ResetForm();
     }
 
     private async Task DeleteTask(int taskId)
     {
-        await Http.DeleteAsync($"/api/Task/{taskId}");
+        await TaskService.DeleteTask(taskId);
         await LoadTasks();
-    }
-
-    private async Task HandleImageUpload(InputFileChangeEventArgs e)
-    {
-        if (e.FileCount > 0)
-        {
-            var file = e.GetMultipleFiles(1).FirstOrDefault();
-            if (file != null)
-            {
-                using var stream = file.OpenReadStream(1024 * 1024 * 10);
-                var buffer = new byte[file.Size];
-                await stream.ReadAsync(buffer);
-                currentTask.ImageBase64 = Convert.ToBase64String(buffer);
-            }
-        }
     }
 
     private void AddStep(int taskId)
     {
-        currentTaskIdForStep = taskId;
-        newStep = new CreateTaskStepDto { TaskId = taskId };
-        isAddingStep = true;
+        currentStep = new UpdateTaskStepDto { TaskId = taskId };
+        isStepFormVisible = true;
+        isEditStepMode = false;
     }
 
-    private async Task SaveTaskStep()
+    private async Task SaveStep()
     {
-        newStep.TaskId = currentTaskIdForStep;
-
-        await Http.PostAsJsonAsync($"/api/tasks/{currentTaskIdForStep}/steps", newStep);
-
-        await LoadTaskSteps(currentTaskIdForStep);
-
-        isAddingStep = false;
-        newStep = new CreateTaskStepDto();
-    }
-
-    private void CancelAddStep()
-    {
-        isAddingStep = false;
-        newStep = new CreateTaskStepDto();
-    }
-
-    private async Task HandleStepImageUpload(InputFileChangeEventArgs e)
-    {
-        if (e.FileCount > 0)
+        if (isEditStepMode)
         {
-            var file = e.GetMultipleFiles(1).FirstOrDefault();
-            if (file != null)
-            {
-                using var stream = file.OpenReadStream(1024 * 1024 * 10);
-                var buffer = new byte[file.Size];
-                await stream.ReadAsync(buffer);
-                newStep.ImageBase64 = Convert.ToBase64String(buffer);
-            }
+            await TaskStepService.UpdateTaskStep(currentStep.TaskId, currentStep.Id, currentStep);
         }
-    }
+        else
+        {
+            var createStepDto = new CreateTaskStepDto
+            {
+                TaskId = currentStep.TaskId,
+                Text = currentStep.Text,
+                RequiresQrCodeScan = currentStep.RequiresQrCodeScan
+            };
+        
+            await TaskStepService.CreateTaskStep(createStepDto);
+        }
 
+        await UpdateTaskSteps(currentStep.TaskId);
+        isStepFormVisible = false;
+        ResetStepForm();
+    }
+    
     private async Task LoadTaskSteps(int taskId)
     {
-        var response = await Http.GetFromJsonAsync<List<ReadTaskStepDto>>($"/api/tasks/{taskId}/steps");
+        stepsForCurrentTask = await TaskStepService.GetStepsForTask(taskId);
+        StateHasChanged();
+    }
+    
+    private async Task UpdateTaskSteps(int taskId)
+    {
+        var updatedSteps = await TaskStepService.GetStepsForTask(taskId);
         var task = Tasks.FirstOrDefault(t => t.Id == taskId);
         if (task != null)
         {
-            task.Steps = response ?? new List<ReadTaskStepDto>();
+            task.Steps = updatedSteps;
             StateHasChanged();
         }
     }
 
-    private void CancelEdit()
-    {
-        currentTask = new CreateTaskDto();
-        isEditMode = false;
-    }
+
 
     private void EditStep(ReadTaskStepDto step)
     {
-        currentStepToEdit = new ReadTaskStepDto
-        {
-            Id = step.Id,
-            TaskId = step.TaskId,
-            Text = step.Text,
-            Image = step.Image,
-            RequiresQrCodeScan = step.RequiresQrCodeScan
-        };
+        currentStep = Mapper.Map<UpdateTaskStepDto>(step);
+        currentStep.TaskId = step.TaskId;
         isEditStepMode = true;
+        isStepFormVisible = true;
     }
 
-    private async Task SaveEditedStep()
+    private void ResetStepForm()
     {
-        if (currentStepToEdit != null)
-        {
-            var success = await TaskStepService.UpdateTaskStep(currentStepToEdit.TaskId, currentStepToEdit.Id, new UpdateTaskStepDto
-            {
-                Text = currentStepToEdit.Text,
-                ImageBase64 = currentStepToEdit.Image,
-                RequiresQrCodeScan = currentStepToEdit.RequiresQrCodeScan
-            });
-
-            if (success)
-            {
-                Console.WriteLine("Step updated successfully");
-                await LoadTaskSteps(currentStepToEdit.TaskId);
-                CancelEditStep();
-            }
-            else
-            {
-                Console.WriteLine("Failed to update step.");
-            }
-        }
-    }
-
-    private void CancelEditStep()
-    {
-        currentStepToEdit = null;
+        currentStep = new UpdateTaskStepDto();
         isEditStepMode = false;
     }
 
-    private async Task DeleteStep(int stepId)
+    private void CancelStepForm()
     {
-        var taskId = Tasks.FirstOrDefault(task => task.Steps.Any(step => step.Id == stepId))?.Id;
+        isStepFormVisible = false;
+        ResetStepForm();
+    }
 
-        if (taskId.HasValue)
+    private async Task DeleteStep(int taskId, int stepId)
+    {
+        await TaskStepService.DeleteTaskStep(taskId, stepId);
+        await UpdateTaskSteps(taskId);
+    }
+    
+    private Task OnDeleteStepHandler(int stepId)
+    {
+        var task = Tasks.FirstOrDefault(t => t.Steps.Any(s => s.Id == stepId));
+        if (task != null)
         {
-            var success = await TaskStepService.DeleteTaskStep(taskId.Value, stepId);
-            if (success)
-            {
-                Console.WriteLine("Step deleted successfully");
-                await LoadTaskSteps(taskId.Value);
-            }
-            else
-            {
-                Console.WriteLine("Failed to delete step.");
-            }
+            int taskId = task.Id;
+            return DeleteStep(taskId, stepId);
         }
-
+        else
+        {
+            Console.WriteLine("Kunne ikke finde opgaven for det givne trin");
+            return Task.CompletedTask;
+        }
     }
 }

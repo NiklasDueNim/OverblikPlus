@@ -8,16 +8,25 @@ namespace TaskMicroService.Profiles
     {
         public MappingProfile()
         {
-            // Task mapping
+            // Task mappings
             CreateMap<TaskEntity, ReadTaskDto>()
-                .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.Steps)); // Maps Steps collection
+                .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.Steps));
 
             CreateMap<CreateTaskDto, TaskEntity>();
             CreateMap<UpdateTaskDto, TaskEntity>();
 
-            // TaskStep mapping
+            // TaskStep mappings
             CreateMap<TaskStep, ReadTaskStepDto>();
-            CreateMap<CreateTaskStepDto, TaskStep>();
+
+            CreateMap<CreateTaskStepDto, TaskStep>()
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src =>
+                    !string.IsNullOrEmpty(src.ImageBase64) ? Convert.FromBase64String(src.ImageBase64) : null));
+
+            // Add this mapping with custom logic for ImageUrl
+            CreateMap<UpdateTaskStepDto, TaskStep>()
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom((src, dest) =>
+                    !string.IsNullOrEmpty(src.ImageBase64) ? Convert.FromBase64String(src.ImageBase64) : dest.ImageUrl))
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

@@ -1,9 +1,6 @@
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.TaskSteps
 
-
-<h3>TaskList</h3>
-
 <ul class="list-group">
     @foreach (var task in Tasks)
     {
@@ -35,9 +32,4 @@
 [Parameter] public EventCallback<int> OnAddStep { get; set; }
 [Parameter] public EventCallback<ReadTaskStepDto> OnEditStep { get; set; }
 [Parameter] public EventCallback<int> OnDeleteStep { get; set; }
-}
-
-
-@code {
-    
 }
