@@ -21,8 +21,9 @@ else
     <div class="text-center">
         @if (!string.IsNullOrEmpty(currentStep.ImageUrl))
         {
-            <img src="@currentStep.ImageUrl" alt="Trin billede" width="300" class="mb-3" />
+        <img src="data:image/jpeg;base64,@currentStep.ImageUrl" alt="Trin billede" width="300" class="mb-3" />
         }
+
         <p>@currentStep.Text</p>
 
         @if (currentStep.RequiresQrCodeScan)
