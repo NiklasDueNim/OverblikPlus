@@ -12,10 +12,11 @@ builder.Services.AddDbContext<TaskDbContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("https://overblikplus.dk")
+    options.AddPolicy("AllowSpecificOrigin", builder =>
+        builder.WithOrigins("https://overblikplus.dk")
             .AllowAnyMethod()
-            .AllowAnyHeader());
+            .AllowAnyHeader()
+            .AllowCredentials()); // hvis nødvendigt
 });
 
 builder.Services.AddEndpointsApiExplorer();
