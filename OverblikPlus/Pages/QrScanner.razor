@@ -6,22 +6,29 @@
 
     public async Task StartScanning()
     {
+        Console.WriteLine("StartScanning called in TaskStepView.");
+
         if (!isScanning)
         {
             isScanning = true;
             await JS.InvokeVoidAsync("startScanning");
+            Console.WriteLine("JavaScript scanning started.");
+
         }
     }
 
     public async Task StopScanning()
     {
+        Console.WriteLine("StopScanning called in TaskStepView.");
         await JS.InvokeVoidAsync("stopScanning");
         isScanning = false;
+        Console.WriteLine("JavaScript scanning stopped.");
     }
 
     [JSInvokable]
     public async Task OnQrCodeScanned(string result)
     {
+        Console.WriteLine("QR code scanned in TaskStepView: " + result);
         await StopScanning();
         await OnScanCompleted.InvokeAsync(result);
     }
