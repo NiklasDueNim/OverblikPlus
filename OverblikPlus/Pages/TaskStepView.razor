@@ -1,4 +1,4 @@
-@page "/task-step-view/{TaskId:int}"
+@page "/task-step-view/{TaskId:int}/step/{StepId:int}"
 @using OverblikPlus.Dtos.TaskSteps
 @using OverblikPlus.Services.Interfaces
 @inject ITaskStepService TaskStepService
@@ -41,6 +41,7 @@ else
 
 @code {
     [Parameter] public int TaskId { get; set; }
+    [Parameter] public int StepId { get; set; }
 
     private List<ReadTaskStepDto> TaskSteps { get; set; } = new();
     private ReadTaskStepDto? currentStep;
@@ -53,6 +54,11 @@ else
 
         if (TaskSteps.Any())
         {
+            currentStepIndex = TaskSteps.FindIndex(step => step.Id == StepId);
+            if (currentStepIndex == -1)
+            {
+                currentStepIndex = 0; // Fallback if StepId not found
+            }
             currentStep = TaskSteps[currentStepIndex];
         }
     }
@@ -78,11 +84,7 @@ else
         {
             currentStepIndex++;
             currentStep = TaskSteps[currentStepIndex];
-
-            if (currentStep.RequiresQrCodeScan)
-            {
-                await StartScanning();
-            }
+            Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{currentStep.Id}");
         }
         else
         {

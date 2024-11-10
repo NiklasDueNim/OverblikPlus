@@ -1,8 +1,9 @@
 @page "/tasks"
-@using OverblikPlus.Dtos
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Services.Interfaces
 @inject ITaskService TaskService
+@inject ITaskStepService TaskStepService
+
 @inject NavigationManager Navigation
 
 <div class="container mt-4">
@@ -22,7 +23,9 @@
                     }
                 </div>
                 <div class="ml-auto">
-                    <button class="btn btn-primary" @onclick="() => StartTask(task.Id)">Se opgave trin for trin</button>
+                    <button class="btn btn-primary" @onclick="() => StartTask(task.Id)">
+                        Se opgave trin for trin
+                    </button>
                 </div>
             </li>
         }
@@ -41,9 +44,21 @@
     {
         Tasks = await TaskService.GetAllTasks();
     }
-
-    private void StartTask(int taskId)
+    
+    private async Task StartTask(int taskId)
     {
-        Navigation.NavigateTo($"/task-step-view/{taskId}");
+        // Fetch the steps for the task
+        var steps = await TaskStepService.GetStepsForTask(taskId);
+
+        if (steps?.Any() == true)
+        {
+            var firstStepId = steps.First().Id;
+            Navigation.NavigateTo($"/task-step-view/{taskId}/step/{firstStepId}");
+        }
+        else
+        {
+            Console.WriteLine($"No steps found for task with ID {taskId}");
+        }
     }
 }
+

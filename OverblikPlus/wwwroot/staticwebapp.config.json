@@ -2,7 +2,7 @@
   "routes": [
     {
       "route": "/task-step-view/*",
-      "serve": "/index.html",
+      "rewrite": "/index.html",
       "statusCode": 200
     }
   ],
