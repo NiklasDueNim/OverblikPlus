@@ -64,18 +64,6 @@ else
             TaskSteps = await TaskStepService.GetStepsForTask(TaskId) ?? new List<ReadTaskStepDto>();
 
             Console.WriteLine("Antal trin hentet: " + TaskSteps.Count);
-
-            if (TaskSteps.Any())
-            {
-                currentStep = TaskSteps[currentStepIndex];
-                Console.WriteLine("Indlæser første trin:");
-                Console.WriteLine("Tekst: " + currentStep.Text);
-                Console.WriteLine("Image URL: " + currentStep.Image);
-            }
-            else
-            {
-                Console.WriteLine($"Ingen trin fundet for task med ID: {TaskId}");
-            }
         }
         catch (Exception ex)
         {
