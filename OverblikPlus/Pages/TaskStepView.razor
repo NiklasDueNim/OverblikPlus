@@ -59,6 +59,11 @@ else
                 Console.WriteLine($"Step with StepId {StepId} not found for TaskId {TaskId}.");
                 Navigation.NavigateTo("/tasks");
             }
+            else
+            {
+                Console.WriteLine($"Loaded step with Id: {currentStep.Id}, navigating to next step.");
+                ShowNextStep();
+            }
         }
         catch (Exception ex)
         {
