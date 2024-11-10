@@ -9,4 +9,6 @@ public class ReadTaskStepDto
     public string Image { get; set; }
     public string Text { get; set; } 
     public bool RequiresQrCodeScan { get; set; }
+
+    public int NextStepId { get; set; }
 }
