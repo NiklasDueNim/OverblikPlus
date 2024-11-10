@@ -26,20 +26,26 @@ namespace TaskMicroService.Services
                 .Where(s => s.TaskId == taskId)
                 .OrderBy(s => s.StepNumber)
                 .ToListAsync();
-
+            
             var stepDtos = _mapper.Map<List<ReadTaskStepDto>>(steps);
 
-            foreach (var stepDto in stepDtos)
+            
+            for (int i = 0; i < stepDtos.Count; i++)
             {
+                var stepDto = stepDtos[i];
                 var originalStep = steps.FirstOrDefault(s => s.Id == stepDto.Id);
+
                 if (originalStep?.ImageUrl != null)
                 {
                     stepDto.Image = originalStep.ImageUrl;
                 }
+                
+                stepDto.NextStepId = (i < stepDtos.Count - 1) ? stepDtos[i + 1].Id : null;
             }
 
             return stepDtos;
         }
+
 
         public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepId)
         {
@@ -56,26 +62,19 @@ namespace TaskMicroService.Services
 
         public async Task<int> CreateTaskStep(CreateTaskStepDto createStepDto)
         {
-            // Mapper DTO til TaskStep-entitet
             var taskStep = _mapper.Map<TaskStep>(createStepDto);
-    
-            // Tjekker om der er et billede i base64-format
+            
             if (!string.IsNullOrEmpty(createStepDto.ImageBase64))
             {
-                // Konverter base64-streng til byte-array
                 var imageBytes = Convert.FromBase64String(createStepDto.ImageBase64);
-        
-                // Opretter en MemoryStream fra byte-arrayet
+                
                 using var stream = new MemoryStream(imageBytes);
-        
-                // Genererer et unikt navn til blob-filen
+                
                 var blobFileName = $"{Guid.NewGuid()}.jpg";
-        
-                // Uploader billedet til blob storage og får URL'en til filen
+                
                 taskStep.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
             }
-
-            // Tilføjer det nye task step til databasen
+            
             _dbContext.TaskSteps.Add(taskStep);
             await _dbContext.SaveChangesAsync();
 
@@ -90,19 +89,16 @@ namespace TaskMicroService.Services
 
             if (taskStep != null)
             {
-                // Map de andre properties
                 _mapper.Map(updateStepDto, taskStep);
 
                 if (!string.IsNullOrEmpty(updateStepDto.ImageBase64))
                 {
-                    // Slet gammelt billede, hvis det eksisterer
                     if (!string.IsNullOrEmpty(taskStep.ImageUrl))
                     {
                         var oldBlobFileName = taskStep.ImageUrl.Substring(taskStep.ImageUrl.LastIndexOf('/') + 1);
                         await _blobStorageService.DeleteImageAsync(oldBlobFileName);
                     }
-
-                    // Konverter base64 til stream og upload til blob storage
+                    
                     var imageBytes = Convert.FromBase64String(updateStepDto.ImageBase64);
                     using var stream = new MemoryStream(imageBytes);
 

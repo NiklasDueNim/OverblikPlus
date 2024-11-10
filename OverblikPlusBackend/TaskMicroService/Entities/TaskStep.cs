@@ -11,5 +11,7 @@ public class TaskStep
     public string Text { get; set; } = string.Empty;
 
     public bool RequiresQrCodeScan { get; set; }
+    
+    public int? NextStepId { get; set; }
     public TaskEntity Task { get; set; }
 }

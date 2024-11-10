@@ -5,13 +5,9 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
 
-<h3>Opgave Trin - Trin @(currentStepIndex + 1) af @TaskSteps.Count</h3>
+<h3>Opgave Trin - Trin @currentStep?.StepNumber</h3>
 
-@if (TaskSteps == null || !TaskSteps.Any())
-{
-    <p>Ingen trin fundet for denne opgave.</p>
-}
-else if (currentStep == null)
+@if (currentStep == null)
 {
     <p>Indlæser trin...</p>
 }
@@ -43,68 +39,48 @@ else
     [Parameter] public int TaskId { get; set; }
     [Parameter] public int StepId { get; set; }
 
-    private List<ReadTaskStepDto> TaskSteps { get; set; } = new();
     private ReadTaskStepDto? currentStep;
-    private int currentStepIndex = 0;
     private bool isScanning = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        await LoadTaskSteps();
-
-        if (TaskSteps.Any())
-        {
-            currentStepIndex = TaskSteps.FindIndex(step => step.Id == StepId);
-            if (currentStepIndex == -1)
-            {
-                Console.WriteLine($"StepId {StepId} not found. Defaulting to the first step.");
-                currentStepIndex = 0; // Fallback to the first step
-            }
-            currentStep = TaskSteps[currentStepIndex];
-            Console.WriteLine("Current StepId set to: " + currentStep.Id);
-        }
-        else
-        {
-            Console.WriteLine("No steps found for TaskId: " + TaskId);
-        }
-
+        await LoadCurrentStep();
     }
 
-    private async Task LoadTaskSteps()
+    private async Task LoadCurrentStep()
     {
         try
         {
-            Console.WriteLine("Kalder GetStepsForTask for TaskId: " + TaskId);
-            TaskSteps = await TaskStepService.GetStepsForTask(TaskId) ?? new List<ReadTaskStepDto>();
+            Console.WriteLine($"Loading step with TaskId: {TaskId} and StepId: {StepId}");
+            currentStep = await TaskStepService.GetTaskStep(TaskId, StepId);
 
-            Console.WriteLine("Antal trin hentet: " + TaskSteps.Count);
+            if (currentStep == null)
+            {
+                Console.WriteLine($"Step with StepId {StepId} not found for TaskId {TaskId}.");
+                Navigation.NavigateTo("/tasks");
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fejl ved hentning af trin: {ex.Message}");
+            Console.WriteLine($"Error loading step: {ex.Message}");
         }
     }
 
-    private async Task ShowNextStep()
+    private void ShowNextStep()
     {
-        if (currentStepIndex < TaskSteps.Count - 1)
+        if (currentStep?.NextStepId != null)
         {
-            currentStepIndex++;
-            currentStep = TaskSteps[currentStepIndex];
-            Console.WriteLine("Navigating to next step: " + currentStep.Id);
-            Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{currentStep.Id}");
+            Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{currentStep.NextStepId}");
         }
         else
         {
-            Console.WriteLine("All steps completed. Returning to task list.");
+            Console.WriteLine("No more steps. Returning to task list.");
             Navigation.NavigateTo("/tasks");
         }
     }
 
     public async Task StartScanning()
     {
-        Console.WriteLine("StartScanning kaldt i TaskStepView");
-
         if (!isScanning)
         {
             isScanning = true;
@@ -122,6 +98,6 @@ else
     public async Task OnQrCodeScanned(string result)
     {
         await StopScanning();
-        await ShowNextStep();
+        ShowNextStep();
     }
 }

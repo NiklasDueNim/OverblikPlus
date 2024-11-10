@@ -48,8 +48,7 @@
     private async Task StartTask(int taskId)
     {
         var steps = await TaskStepService.GetStepsForTask(taskId);
-
-        if (steps?.Any() == true)
+        if (steps.Any())
         {
             var firstStepId = steps.First().Id;
             Navigation.NavigateTo($"/task-step-view/{taskId}/step/{firstStepId}");
@@ -59,5 +58,6 @@
             Console.WriteLine($"No steps found for task with ID {taskId}");
         }
     }
+
 }
 

@@ -11,6 +11,8 @@ namespace TaskMicroService.dto
         
         public int TaskId { get; set; }
         
-        public bool RequiresQrCodeScan { get; set; } 
+        public bool RequiresQrCodeScan { get; set; }
+
+        public int? NextStepId { get; set; }
     }
 }
