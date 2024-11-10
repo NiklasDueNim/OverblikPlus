@@ -5,7 +5,6 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
 
-
 <h3>Opgave Trin - Trin @(currentStepIndex + 1) af @TaskSteps.Count</h3>
 
 @if (TaskSteps == null || !TaskSteps.Any())
@@ -23,13 +22,15 @@ else
         {
             <img src="@currentStep.Image" alt="Trin billede" width="300" class="mb-3" />
         }
-
         <p>@currentStep.Text</p>
 
         @if (currentStep.RequiresQrCodeScan)
         {
             <button class="btn btn-secondary" @onclick="StartScanning">Scan QR-kode for at fortsætte</button>
-            <video id="video" width="300" height="200" autoplay style="display: @(isScanning ? "block" : "none");"></video>
+            <div id="qr-scanner" style="display: @(isScanning ? "block" : "none");">
+                <video id="video" style="width: 100%; height: auto;"></video>
+                <button @onclick="StopScanning">Annuller</button>
+            </div>
         }
         else
         {
@@ -85,11 +86,11 @@ else
         }
         else
         {
-            Navigation.NavigateTo("/tasks");
+            Navigation.NavigateTo("/task-complete");
         }
     }
 
-    private async Task StartScanning()
+    public async Task StartScanning()
     {
         if (!isScanning)
         {
@@ -98,16 +99,16 @@ else
         }
     }
 
+    public async Task StopScanning()
+    {
+        await Js.InvokeVoidAsync("stopScanning");
+        isScanning = false;
+    }
+
     [JSInvokable]
     public async Task OnQrCodeScanned(string result)
     {
         await StopScanning();
         await ShowNextStep();
-    }
-
-    private async Task StopScanning()
-    {
-        await Js.InvokeVoidAsync("stopScanning");
-        isScanning = false;
     }
 }
