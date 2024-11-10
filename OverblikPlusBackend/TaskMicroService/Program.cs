@@ -16,7 +16,7 @@ builder.Services.AddCors(options =>
         builder.WithOrigins("https://overblikplus.dk")
             .AllowAnyMethod()
             .AllowAnyHeader()
-            .AllowCredentials()); // hvis nødvendigt
+            .AllowCredentials());
 });
 
 builder.Services.AddEndpointsApiExplorer();
