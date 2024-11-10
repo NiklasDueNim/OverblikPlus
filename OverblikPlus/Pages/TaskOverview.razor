@@ -47,7 +47,6 @@
     
     private async Task StartTask(int taskId)
     {
-        // Fetch the steps for the task
         var steps = await TaskStepService.GetStepsForTask(taskId);
 
         if (steps?.Any() == true)
