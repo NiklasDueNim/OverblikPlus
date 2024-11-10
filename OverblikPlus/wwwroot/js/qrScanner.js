@@ -3,6 +3,7 @@ let isScanning = false;
 
 window.startScanning = function () {
     if (isScanning) return;
+    console.log("Starter scanning...");
     isScanning = true;
 
     const videoElement = document.getElementById("video");
@@ -14,6 +15,7 @@ window.startScanning = function () {
 
     codeReader.decodeFromVideoDevice(null, 'video', async (result, err) => {
         if (result) {
+            console.log("QR-kode fundet:", result.text);
             await DotNet.invokeMethodAsync("TaskMicroService", "OnQrCodeScanned", result.text);
             stopScanning();
         }
@@ -24,6 +26,7 @@ window.startScanning = function () {
 };
 
 window.stopScanning = function () {
+    console.log("Stopper scanning...");
     codeReader.reset();
     isScanning = false;
     const videoElement = document.getElementById("video");
