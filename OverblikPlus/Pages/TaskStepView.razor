@@ -28,9 +28,8 @@ else
 
         @if (currentStep.RequiresQrCodeScan)
         {
-            //<button class="btn btn-secondary" @onclick="StartScanning">Scan QR-kode for at fortsætte</button>
+            <button class="btn btn-secondary" @onclick="StartScanning">Scan QR-kode for at fortsætte</button>
             <video id="video" width="300" height="200" autoplay style="display: @(isScanning ? "block" : "none");"></video>
-            <button id="startScanButton" onclick="startScanning()">Start Scan</button>
         }
         else
         {
