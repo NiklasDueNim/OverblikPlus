@@ -57,10 +57,17 @@ else
             currentStepIndex = TaskSteps.FindIndex(step => step.Id == StepId);
             if (currentStepIndex == -1)
             {
-                currentStepIndex = 0; // Fallback if StepId not found
+                Console.WriteLine($"StepId {StepId} not found. Defaulting to the first step.");
+                currentStepIndex = 0; // Fallback to the first step
             }
             currentStep = TaskSteps[currentStepIndex];
+            Console.WriteLine("Current StepId set to: " + currentStep.Id);
         }
+        else
+        {
+            Console.WriteLine("No steps found for TaskId: " + TaskId);
+        }
+
     }
 
     private async Task LoadTaskSteps()
