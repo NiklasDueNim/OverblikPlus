@@ -118,7 +118,6 @@ namespace TaskMicroService.Services
 
             if (taskStep != null)
             {
-                // Slet billede fra blob storage, hvis det eksisterer
                 if (!string.IsNullOrEmpty(taskStep.ImageUrl))
                 {
                     var blobFileName = taskStep.ImageUrl.Split('/').Last();
