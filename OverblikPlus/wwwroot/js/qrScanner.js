@@ -6,23 +6,25 @@ window.startScanning = function () {
     console.log("Starter scanning...");
     isScanning = true;
 
-    const videoElement = document.getElementById("video");
-    if (!videoElement) {
-        console.error("Videoelementet blev ikke fundet!");
-        return;
-    }
-    videoElement.style.display = "block";
+    setTimeout(() => {
+        const videoElement = document.getElementById("video");
+        if (!videoElement) {
+            console.error("Videoelementet blev ikke fundet!");
+            return;
+        }
+        videoElement.style.display = "block";
 
-    codeReader.decodeFromVideoDevice(null, 'video', async (result, err) => {
-        if (result) {
-            console.log("QR-kode fundet:", result.text);
-            await DotNet.invokeMethodAsync("TaskMicroService", "OnQrCodeScanned", result.text);
-            stopScanning();
-        }
-        if (err && !(err instanceof ZXing.NotFoundException)) {
-            console.error("Fejl:", err);
-        }
-    });
+        codeReader.decodeFromVideoDevice(null, 'video', async (result, err) => {
+            if (result) {
+                console.log("QR-kode fundet:", result.text);
+                await DotNet.invokeMethodAsync("TaskMicroService", "OnQrCodeScanned", result.text);
+                stopScanning();
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error("Fejl:", err);
+            }
+        });
+    }, 500);
 };
 
 window.stopScanning = function () {
