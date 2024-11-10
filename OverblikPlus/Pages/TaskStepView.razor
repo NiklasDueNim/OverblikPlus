@@ -19,10 +19,10 @@ else if (currentStep == null)
 else
 {
     <div class="text-center">
-        @if (!string.IsNullOrEmpty(currentStep.ImageUrl))
+        @if (!string.IsNullOrEmpty(currentStep.Image))
         {
-            <img src="@currentStep.ImageUrl" alt="Trin billede" width="300" class="mb-3" />
-            <p>URL: @currentStep.ImageUrl</p>
+            <img src="@currentStep.Image" alt="Trin billede" width="300" class="mb-3" />
+            <p>URL: @currentStep.Image</p>
         }
 
         <p>@currentStep.Text</p>
@@ -71,7 +71,7 @@ else
                 currentStep = TaskSteps[currentStepIndex];
                 Console.WriteLine("Indlæser første trin:");
                 Console.WriteLine("Tekst: " + currentStep.Text);
-                Console.WriteLine("Image URL: " + currentStep.ImageUrl);
+                Console.WriteLine("Image URL: " + currentStep.Image);
             }
             else
             {
