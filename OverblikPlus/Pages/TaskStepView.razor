@@ -68,6 +68,8 @@ else
 
     private void ShowNextStep()
     {
+        Console.WriteLine($"Navigating to NextStepId: {currentStep?.NextStepId}");
+
         if (currentStep?.NextStepId != null)
         {
             Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{currentStep.NextStepId}");
