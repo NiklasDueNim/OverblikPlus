@@ -21,7 +21,8 @@ else
     <div class="text-center">
         @if (!string.IsNullOrEmpty(currentStep.ImageUrl))
         {
-        <img src="data:image/jpeg;base64,@currentStep.ImageUrl" alt="Trin billede" width="300" class="mb-3" />
+            <img src="@currentStep.ImageUrl" alt="Trin billede" width="300" class="mb-3" />
+            <p>URL: @currentStep.ImageUrl</p>
         }
 
         <p>@currentStep.Text</p>
@@ -60,11 +61,17 @@ else
     {
         try
         {
+            Console.WriteLine("Kalder GetStepsForTask for TaskId: " + TaskId);
             TaskSteps = await TaskStepService.GetStepsForTask(TaskId) ?? new List<ReadTaskStepDto>();
+
+            Console.WriteLine("Antal trin hentet: " + TaskSteps.Count);
 
             if (TaskSteps.Any())
             {
                 currentStep = TaskSteps[currentStepIndex];
+                Console.WriteLine("Indlæser første trin:");
+                Console.WriteLine("Tekst: " + currentStep.Text);
+                Console.WriteLine("Image URL: " + currentStep.ImageUrl);
             }
             else
             {
@@ -100,7 +107,7 @@ else
         if (!isScanning)
         {
             isScanning = true;
-            await Js.InvokeVoidAsync("startScanning"); // JavaScript funktion til QR-kode scanning
+            await Js.InvokeVoidAsync("startScanning");
         }
     }
 

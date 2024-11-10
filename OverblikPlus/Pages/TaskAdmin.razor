@@ -260,6 +260,13 @@
             var buffer = new byte[file.Size];
             await stream.ReadAsync(buffer);
             currentStep.ImageBase64 = Convert.ToBase64String(buffer);
+            
+            Console.WriteLine("Billedet er blevet konverteret til base64 og gemt i ImageBase64.");
+
+        }
+        else
+        {
+            Console.WriteLine("Ingen fil valgt");
         }
     }
 }
