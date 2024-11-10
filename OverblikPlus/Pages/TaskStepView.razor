@@ -91,10 +91,12 @@ else
         {
             currentStepIndex++;
             currentStep = TaskSteps[currentStepIndex];
+            Console.WriteLine("Navigating to next step: " + currentStep.Id);
             Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{currentStep.Id}");
         }
         else
         {
+            Console.WriteLine("All steps completed. Returning to task list.");
             Navigation.NavigateTo("/tasks");
         }
     }
