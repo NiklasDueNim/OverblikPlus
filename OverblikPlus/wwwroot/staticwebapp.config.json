@@ -2,8 +2,7 @@
   "routes": [
     {
       "route": "/task-step-view/*",
-      "rewrite": "/index.html",
-      "statusCode": 200
+      "rewrite": "/index.html"
     }
   ],
   "navigationFallback": {
