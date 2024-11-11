@@ -39,47 +39,38 @@ else
     [Parameter] public int TaskId { get; set; }
     [Parameter] public int StepId { get; set; }
 
+    private List<ReadTaskStepDto> TaskSteps { get; set; } = new List<ReadTaskStepDto>();
     private ReadTaskStepDto? currentStep;
     private bool isScanning = false;
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine($"Parameters set: TaskId = {TaskId}, StepId = {StepId}");
+        TaskSteps = await TaskStepService.GetStepsForTask(TaskId);
         await LoadCurrentStep();
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadCurrentStep();
+    }
 
     private async Task LoadCurrentStep()
     {
-        try
+        currentStep = TaskSteps.FirstOrDefault(step => step.Id == StepId);
+        if (currentStep == null)
         {
-            Console.WriteLine($"Loading step with TaskId: {TaskId} and StepId: {StepId}");
-            currentStep = await TaskStepService.GetTaskStep(TaskId, StepId);
-
-            if (currentStep == null)
-            {
-                Console.WriteLine($"Step with StepId {StepId} not found for TaskId {TaskId}.");
-                Navigation.NavigateTo("/tasks");
-            }
-            else
-            {
-                Console.WriteLine($"Loaded step with Id: {currentStep.Id}, navigating to next step.");
-                ShowNextStep();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading step: {ex.Message}");
+            Console.WriteLine($"Step with ID {StepId} not found for Task {TaskId}.");
+            Navigation.NavigateTo("/tasks");
         }
     }
 
     private void ShowNextStep()
     {
-        Console.WriteLine($"Navigating to NextStepId: {currentStep?.NextStepId}");
-
-        if (currentStep?.NextStepId != null)
+        var currentIndex = TaskSteps.FindIndex(step => step.Id == StepId);
+        if (currentIndex != -1 && currentIndex < TaskSteps.Count - 1)
         {
-            Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{currentStep.NextStepId}", forceLoad: true);
+            var nextStepId = TaskSteps[currentIndex + 1].Id;
+            Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{nextStepId}");
         }
         else
         {
