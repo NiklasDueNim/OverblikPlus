@@ -59,13 +59,23 @@ else
 
     private async Task LoadCurrentStep()
     {
+        TaskSteps = await TaskStepService.GetStepsForTask(TaskId);
+        for (int i = 0; i < TaskSteps.Count; i++)
+        {
+            TaskSteps[i].StepNumber = i + 1;  // Setting StepNumber based on index
+        }
         currentStep = TaskSteps.FirstOrDefault(step => step.Id == StepId);
         if (currentStep == null)
         {
             Console.WriteLine($"Step with ID {StepId} not found for Task {TaskId}.");
             Navigation.NavigateTo("/tasks");
         }
+        else
+        {
+            Console.WriteLine($"Loaded Step: ID = {currentStep.Id}, StepNumber = {currentStep.StepNumber}");
+        }
     }
+
 
     private void ShowNextStep()
     {
