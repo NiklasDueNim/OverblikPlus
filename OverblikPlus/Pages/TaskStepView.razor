@@ -62,7 +62,7 @@ else
         TaskSteps = await TaskStepService.GetStepsForTask(TaskId);
         for (int i = 0; i < TaskSteps.Count; i++)
         {
-            TaskSteps[i].StepNumber = i + 1;  // Setting StepNumber based on index
+            TaskSteps[i].StepNumber = i + 1;
         }
         currentStep = TaskSteps.FirstOrDefault(step => step.Id == StepId);
         if (currentStep == null)
