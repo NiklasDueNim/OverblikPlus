@@ -28,7 +28,6 @@ builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
 });
 
 
-
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 await builder.Build().RunAsync();

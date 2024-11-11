@@ -10,5 +10,5 @@ public class ReadTaskStepDto
     public string Text { get; set; } 
     public bool RequiresQrCodeScan { get; set; }
 
-    public int NextStepId { get; set; }
+    public int? NextStepId { get; set; }
 }
