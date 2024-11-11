@@ -23,9 +23,11 @@
                     }
                 </div>
                 <div class="ml-auto">
-                    <button class="btn btn-primary" @onclick="() => StartTask(task.Id)">
+                    <button class="btn btn-primary" @onclick="@(() => StartTask(task.Id))">
                         Se opgave trin for trin
                     </button>
+                    <button @onclick="TestClick">Test Console Output</button>
+
                 </div>
             </li>
         }
@@ -62,6 +64,11 @@
         {
             Console.WriteLine($"No steps found for task with ID {taskId}");
         }
+    }
+    
+    private void TestClick()
+    {
+        Console.WriteLine("TestClick button clicked");
     }
 
 }
