@@ -33,6 +33,9 @@ else
             <button class="btn btn-primary" @onclick="ShowNextStep">Næste trin</button>
         }
     </div>
+    <div>
+        <button @onclick="TestClick">Test Console Output</button>
+    </div>
 }
 
 @code {
@@ -100,5 +103,10 @@ else
     {
         await StopScanning();
         ShowNextStep();
+    }
+    
+    private void TestClick()
+    {
+        Console.WriteLine("TestClick button clicked");
     }
 }

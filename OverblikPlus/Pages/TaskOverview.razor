@@ -27,9 +27,6 @@
                         Se opgave trin for trin
                     </button>
                 </div>
-                <div>
-                    <button @onclick="TestClick">Test Console Output</button>
-                </div>
             </li>
         }
     </ul>
@@ -66,11 +63,5 @@
             Console.WriteLine($"No steps found for task with ID {taskId}");
         }
     }
-    
-    private void TestClick()
-    {
-        Console.WriteLine("TestClick button clicked");
-    }
-
 }
 
