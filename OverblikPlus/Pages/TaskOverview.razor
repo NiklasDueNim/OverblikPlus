@@ -53,6 +53,7 @@
         if (steps.Any())
         {
             var firstStepId = steps.First().Id;
+            Console.WriteLine("Bliver denne kaldt?");
             Console.WriteLine($"Navigating to first step with ID {firstStepId} for task {taskId}");
 
             Navigation.NavigateTo($"/task-step-view/{taskId}/step/{firstStepId}");

@@ -66,6 +66,7 @@ else
 
     private void ShowNextStep()
     {
+        Console.WriteLine("Bliver dette kaldt?");
         var currentIndex = TaskSteps.FindIndex(step => step.Id == StepId);
         if (currentIndex != -1 && currentIndex < TaskSteps.Count - 1)
         {
