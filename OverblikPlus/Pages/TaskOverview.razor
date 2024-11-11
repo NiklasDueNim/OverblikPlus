@@ -47,10 +47,14 @@
     
     private async Task StartTask(int taskId)
     {
+        Console.WriteLine($"StartTask called with taskId: {taskId}");
+
         var steps = await TaskStepService.GetStepsForTask(taskId);
         if (steps.Any())
         {
             var firstStepId = steps.First().Id;
+            Console.WriteLine($"Navigating to first step with ID {firstStepId} for task {taskId}");
+
             Navigation.NavigateTo($"/task-step-view/{taskId}/step/{firstStepId}");
         }
         else
