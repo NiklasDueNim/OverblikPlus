@@ -79,7 +79,7 @@ else
 
         if (currentStep?.NextStepId != null)
         {
-            Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{currentStep.NextStepId}");
+            Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{currentStep.NextStepId}", forceLoad: true);
         }
         else
         {
