@@ -20,24 +20,20 @@ namespace UserMicroService.Services
             _mapper = mapper;
         }
 
-        // Henter alle brugere fra databasen og mapper dem til ReadUserDto
         public async Task<IEnumerable<ReadUserDto>> GetAllUsersAsync()
         {
             var users = await _dbContext.Users.ToListAsync();
             return _mapper.Map<List<ReadUserDto>>(users);
         }
-
-        // Henter en bruger fra databasen ved hjælp af ID, og dekrypterer følsomme data, hvis nødvendigt
         public async Task<ReadUserDto> GetUserById(int id, string userRole)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
             {
-                return null; // Eller throw en exception afhængig af, hvordan du vil håndtere ikke-eksisterende brugere
+                return null;
             }
-
-            // Dekrypter følsomme data, hvis rollen tillader det
+            
             if ((userRole == "Admin" || userRole == "Staff") && !string.IsNullOrEmpty(user.CPRNumber))
             {
                 user.CPRNumber = EncryptionHelper.Decrypt(user.CPRNumber);
@@ -59,8 +55,7 @@ namespace UserMicroService.Services
             }
 
             var user = _mapper.Map<UserEntity>(createUserDto);
-
-            // Log værdier før kryptering
+            
             Console.WriteLine($"Before encryption: FirstName = {user.FirstName}, CPRNumber = {user.CPRNumber}, MedicationDetails = {user.MedicationDetails}");
 
             if (!string.IsNullOrEmpty(user.CPRNumber))
@@ -79,10 +74,7 @@ namespace UserMicroService.Services
             return user.Id;
         }
 
-
-
-
-        // Sletter en bruger fra databasen baseret på ID
+        
         public async Task DeleteUserAsync(int id)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
@@ -98,17 +90,14 @@ namespace UserMicroService.Services
             }
         }
 
-        // Opdaterer en eksisterende bruger i databasen baseret på ID og DTO, og krypterer opdaterede følsomme data
         public async Task UpdateUserAsync(int id, UpdateUserDto updateUserDto)
         {
             var userEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
 
             if (userEntity != null)
             {
-                // Mapper opdaterede værdier fra DTO til eksisterende entitet
                 _mapper.Map(updateUserDto, userEntity);
 
-                // Krypter opdaterede følsomme data
                 if (!string.IsNullOrEmpty(userEntity.CPRNumber))
                 {
                     userEntity.CPRNumber = EncryptionHelper.Encrypt(userEntity.CPRNumber);

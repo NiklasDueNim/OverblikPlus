@@ -1,21 +1,21 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using UserMicroService.DataAccess;
 using UserMicroService.Helpers;
 using UserMicroService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Hent krypteringsnøglen fra appsettings
 string encryptionKey = builder.Configuration.GetSection("EncryptionSettings:EncryptionKey").Value;
 if (string.IsNullOrEmpty(encryptionKey))
 {
     throw new InvalidOperationException("Encryption key is missing in appsettings.");
 }
 
-// Sæt krypteringsnøglen
 EncryptionHelper.SetEncryptionKey(encryptionKey);
 
-// Registrer DbContext og andre services
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -27,12 +27,32 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
@@ -50,6 +70,8 @@ app.UseRouting();
 
 app.UseCors("AllowOverblikPlus");
 
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 app.Run();
