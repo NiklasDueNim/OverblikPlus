@@ -8,8 +8,8 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<UserEntity, ReadUserDto>();   // Til at læse brugere
-        CreateMap<CreateUserDto, UserEntity>(); // Til at oprette brugere
-        CreateMap<UpdateUserDto, UserEntity>(); // Til at opdatere brugere
+        CreateMap<CreateUserDto, ApplicationUser>();
+        CreateMap<ApplicationUser, ReadUserDto>();
+        CreateMap<UpdateUserDto, ApplicationUser>();
     }
 }

@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using UserMicroService.dto;
 using UserMicroService.Services;
+using Microsoft.Extensions.Logging;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace UserMicroService.Controllers
 {
@@ -80,7 +83,7 @@ namespace UserMicroService.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _userService.GetUserById(id, "Admin"); // Assuming only admins can update
+            var user = await _userService.GetUserById(id, "Admin");
             if (user == null)
             {
                 _logger.LogWarning($"User with ID: {id} not found for update");
@@ -98,7 +101,7 @@ namespace UserMicroService.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUserAsync(int id)
         {
-            var user = await _userService.GetUserById(id, "Admin"); // Assuming only admins can delete
+            var user = await _userService.GetUserById(id, "Admin");
             if (user == null)
             {
                 _logger.LogWarning($"User with ID: {id} not found for deletion");

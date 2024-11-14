@@ -6,7 +6,7 @@ namespace UserMicroService.Services
     {
         Task<IEnumerable<ReadUserDto>> GetAllUsersAsync();
         Task<ReadUserDto> GetUserById(int id, string userRole);
-        Task<int> CreateUserAsync(CreateUserDto createUserDto);
+        Task<string> CreateUserAsync(CreateUserDto createUserDto);
         Task DeleteUserAsync(int id);
         Task UpdateUserAsync(int id, UpdateUserDto updateUserDto);
     }

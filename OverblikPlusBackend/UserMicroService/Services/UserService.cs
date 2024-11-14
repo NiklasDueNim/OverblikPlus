@@ -1,88 +1,68 @@
-using UserMicroService.dto;
 using AutoMapper;
-using UserMicroService.DataAccess;
+using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using UserMicroService.dto;
 using UserMicroService.Entities;
 using UserMicroService.Helpers;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace UserMicroService.Services
 {
     public class UserService : IUserService
     {
-        private readonly UserDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
 
-        public UserService(UserDbContext dbContext, IMapper mapper)
+        public UserService(UserManager<ApplicationUser> userManager, IMapper mapper)
         {
-            _dbContext = dbContext;
+            _userManager = userManager;
             _mapper = mapper;
         }
 
         public async Task<IEnumerable<ReadUserDto>> GetAllUsersAsync()
         {
-            var users = await _dbContext.Users.ToListAsync();
+            var users = await _userManager.Users.ToListAsync();
             return _mapper.Map<List<ReadUserDto>>(users);
         }
+
         public async Task<ReadUserDto> GetUserById(int id, string userRole)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
-
-            if (user == null)
-            {
-                return null;
-            }
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null) return null;
             
-            if ((userRole == "Admin" || userRole == "Staff") && !string.IsNullOrEmpty(user.CPRNumber))
+            if (userRole == "Admin" || userRole == "Staff")
             {
-                user.CPRNumber = EncryptionHelper.Decrypt(user.CPRNumber);
-            }
-
-            if ((userRole == "Admin" || userRole == "Staff") && !string.IsNullOrEmpty(user.MedicationDetails))
-            {
-                user.MedicationDetails = EncryptionHelper.Decrypt(user.MedicationDetails);
+                user.Medication = EncryptionHelper.Decrypt(user.Medication);
             }
 
             return _mapper.Map<ReadUserDto>(user);
         }
 
-        public async Task<int> CreateUserAsync(CreateUserDto createUserDto)
+        public async Task<string> CreateUserAsync(CreateUserDto createUserDto)
         {
-            if (createUserDto == null)
-            {
-                throw new ArgumentNullException(nameof(createUserDto), "CreateUserDto cannot be null");
-            }
-
-            var user = _mapper.Map<UserEntity>(createUserDto);
+            var user = _mapper.Map<ApplicationUser>(createUserDto);
             
-            Console.WriteLine($"Before encryption: FirstName = {user.FirstName}, CPRNumber = {user.CPRNumber}, MedicationDetails = {user.MedicationDetails}");
+            user.Medication = EncryptionHelper.Encrypt(createUserDto.Medication);
 
-            if (!string.IsNullOrEmpty(user.CPRNumber))
+            var result = await _userManager.CreateAsync(user, createUserDto.Password);
+
+            if (!result.Succeeded)
             {
-                user.CPRNumber = EncryptionHelper.Encrypt(user.CPRNumber);
+                throw new Exception("Failed to create user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
             }
-
-            if (!string.IsNullOrEmpty(user.MedicationDetails))
-            {
-                user.MedicationDetails = EncryptionHelper.Encrypt(user.MedicationDetails);
-            }
-
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
 
             return user.Id;
         }
 
-        
         public async Task DeleteUserAsync(int id)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            var user = await _userManager.FindByIdAsync(id.ToString());
 
             if (user != null)
             {
-                _dbContext.Users.Remove(user);
-                await _dbContext.SaveChangesAsync();
+                await _userManager.DeleteAsync(user);
             }
             else
             {
@@ -92,23 +72,12 @@ namespace UserMicroService.Services
 
         public async Task UpdateUserAsync(int id, UpdateUserDto updateUserDto)
         {
-            var userEntity = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+            var user = await _userManager.FindByIdAsync(id.ToString());
 
-            if (userEntity != null)
+            if (user != null)
             {
-                _mapper.Map(updateUserDto, userEntity);
-
-                if (!string.IsNullOrEmpty(userEntity.CPRNumber))
-                {
-                    userEntity.CPRNumber = EncryptionHelper.Encrypt(userEntity.CPRNumber);
-                }
-
-                if (!string.IsNullOrEmpty(userEntity.MedicationDetails))
-                {
-                    userEntity.MedicationDetails = EncryptionHelper.Encrypt(userEntity.MedicationDetails);
-                }
-
-                await _dbContext.SaveChangesAsync();
+                _mapper.Map(updateUserDto, user);
+                await _userManager.UpdateAsync(user);
             }
             else
             {

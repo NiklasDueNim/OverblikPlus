@@ -5,10 +5,8 @@ using UserMicroService.Entities;
 
 namespace UserMicroService.DataAccess;
 
-public class UserDbContext : IdentityDbContext<IdentityUser>
+public class UserDbContext : IdentityDbContext<ApplicationUser>
 {
-    public DbSet<UserEntity> Users { get; set; }
-    
     public UserDbContext(DbContextOptions<UserDbContext> options) : base(options)
     {
     }

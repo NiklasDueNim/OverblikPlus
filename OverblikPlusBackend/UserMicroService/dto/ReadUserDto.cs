@@ -1,8 +1,10 @@
+using System.Reflection.Metadata.Ecma335;
+
 namespace UserMicroService.dto;
 
 public class ReadUserDto
 {
-    public int Id { get; set; }
+    public string Id { get; set; }
     
     public string FirstName { get; set; }
     
@@ -11,4 +13,7 @@ public class ReadUserDto
     public string Username { get; set; }
     
     public string Role { get; set; }
+
+    public string Goals { get; set; }
+        
 }

@@ -1,16 +1,23 @@
-namespace UserMicroService.dto;
-
-public class CreateUserDto
+namespace UserMicroService.dto
 {
-    public string FirstName { get; set; }
-    
-    public string LastName { get; set; }
-    
-    public string CPRNumber { get; set; }
-    
-    public string MedicationDetails { get; set; }
-    
-    public string Role { get; set; }
-    
-    public string Username { get; set; }
+    public class CreateUserDto
+    {
+        public string FirstName { get; set; }
+        
+        public string LastName { get; set; }
+        
+        public DateTime DateOfBirth { get; set; }
+        
+        public string? Medication { get; set; }
+
+        public string Role { get; set; }
+        
+        public string? Goals { get; set; }
+        
+        public string Username { get; set; }
+        
+        public string Password { get; set; }
+        
+        public string Email { get; set; }
+    }
 }
