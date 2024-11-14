@@ -27,9 +27,9 @@ namespace UserMicroService.Services
             return _mapper.Map<List<ReadUserDto>>(users);
         }
 
-        public async Task<ReadUserDto> GetUserById(int id, string userRole)
+        public async Task<ReadUserDto> GetUserById(string id, string userRole)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null) return null;
             
             if (userRole == "Admin" || userRole == "Staff")
@@ -61,9 +61,9 @@ namespace UserMicroService.Services
             return user.Id;
         }
 
-        public async Task DeleteUserAsync(int id)
+        public async Task DeleteUserAsync(string id)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _userManager.FindByIdAsync(id);
 
             if (user != null)
             {
@@ -75,9 +75,9 @@ namespace UserMicroService.Services
             }
         }
 
-        public async Task UpdateUserAsync(int id, UpdateUserDto updateUserDto)
+        public async Task UpdateUserAsync(string id, UpdateUserDto updateUserDto)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _userManager.FindByIdAsync(id);
 
             if (user != null)
             {

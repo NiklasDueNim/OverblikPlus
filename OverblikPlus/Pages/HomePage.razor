@@ -70,12 +70,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Retrieve the current user ID from the AuthStateProvider
+        
         var userId = await AuthStateProvider.GetUserIdAsync();
+        Console.WriteLine($"First Name: {user.FirstName}, Last Name {user.FirstName}");
         
         if (!string.IsNullOrEmpty(userId))
         {
             user = await UserService.GetUserById(userId); 
+            StateHasChanged();
             todaysTasks = await TaskService.GetAllTasks();
             // notifications = await NotificationService.GetNotificationsAsync();
             // employees = await EmployeeService.GetEmployeesStatusAsync();

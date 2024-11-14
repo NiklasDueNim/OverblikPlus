@@ -22,7 +22,7 @@ namespace UserMicroService.Controllers
 
         // GET /api/userservice/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(int id)
+        public async Task<IActionResult> GetUserById(string id)
         {
             _logger.LogInformation($"GetUserById called with ID: {id}");
 
@@ -75,7 +75,7 @@ namespace UserMicroService.Controllers
 
         // PUT /api/userservice/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUserAsync(int id, [FromBody] UpdateUserDto updateUserDto)
+        public async Task<IActionResult> UpdateUserAsync(string id, [FromBody] UpdateUserDto updateUserDto)
         {
             if (!ModelState.IsValid)
             {
@@ -99,7 +99,7 @@ namespace UserMicroService.Controllers
 
         // DELETE /api/userservice/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserAsync(int id)
+        public async Task<IActionResult> DeleteUserAsync(string id)
         {
             var user = await _userService.GetUserById(id, "Admin");
             if (user == null)

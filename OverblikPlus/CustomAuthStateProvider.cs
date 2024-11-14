@@ -61,7 +61,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
 
         var claims = ParseClaimsFromJwt(_jwtToken);
-        var userIdClaim = claims.FirstOrDefault(c => c.Type == "sub")?.Value; // Adjust the claim type if needed
+        var userIdClaim = claims.FirstOrDefault(c => c.Type == "sub")?.Value; 
 
         return Task.FromResult(userIdClaim);
     }

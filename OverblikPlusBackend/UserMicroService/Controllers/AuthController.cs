@@ -18,6 +18,11 @@ namespace UserMicroService.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
+            if (loginDto == null)
+            {
+                return BadRequest("Login data is required.");
+            }
+            
             var token = await _authService.AuthenticateAsync(loginDto);
             if (token == null)
             {
