@@ -27,28 +27,34 @@ public class UserService : IUserService
         }
     }
 
-
-    public async Task<ReadUserDto> GetUserById(int id)
+    public async Task<ReadUserDto> GetUserById(string id)
     {
         return await _httpClient.GetFromJsonAsync<ReadUserDto>($"api/UserService/{id}");
     }
 
-    public async Task<int> CreateUser(CreateUserDto newUser)
+    public async Task<string> CreateUser(CreateUserDto newUser)
     {
         var response = await _httpClient.PostAsJsonAsync("api/UserService", newUser);
         response.EnsureSuccessStatusCode();
         
-        var createdUser= await response.Content.ReadFromJsonAsync<CreateUserDto>();
-        return createdUser.Id;
+        // Assuming the API returns the created user's ID as a JSON response like: { "id": "some-id" }
+        var createdUser = await response.Content.ReadFromJsonAsync<ReadUserDto>();
+        
+        if (createdUser != null)
+        {
+            return createdUser.Id;
+        }
+
+        throw new Exception("User creation failed or response was not as expected.");
     }
 
-    public async Task UpdateUser(int id, UpdateUserDto updatedUser)
+    public async Task UpdateUser(string id, UpdateUserDto updatedUser)
     {
         var response = await _httpClient.PutAsJsonAsync($"api/UserService/{id}", updatedUser);
         response.EnsureSuccessStatusCode();
     }
 
-    public async Task DeleteUser(int id)
+    public async Task DeleteUser(string id)
     {
         var response = await _httpClient.DeleteAsync($"api/UserService/{id}");
         response.EnsureSuccessStatusCode();

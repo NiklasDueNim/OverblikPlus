@@ -52,4 +52,17 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
             default: return base64;
         }
     }
+    
+    public Task<string> GetUserIdAsync()
+    {
+        if (string.IsNullOrEmpty(_jwtToken))
+        {
+            return Task.FromResult<string>(null);
+        }
+
+        var claims = ParseClaimsFromJwt(_jwtToken);
+        var userIdClaim = claims.FirstOrDefault(c => c.Type == "sub")?.Value; // Adjust the claim type if needed
+
+        return Task.FromResult(userIdClaim);
+    }
 }

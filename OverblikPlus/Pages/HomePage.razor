@@ -7,6 +7,7 @@
 @using OverblikPlus.Services.Interfaces
 @inject IUserService UserService
 @inject ITaskService TaskService
+@inject CustomAuthStateProvider AuthStateProvider
 
 <div class="container mt-4">
     <h1 class="mb-4">Velkommen, @user.FirstName @user.LastName!</h1>
@@ -30,14 +31,12 @@
         }
     </ul>
 
-   
-    <h3 class="mb-3">XP Progress</h3>
+    <h3 class="mb-3">Fremgangen med dine opgaver</h3>
     <div class="progress mb-4" style="height: 25px;">
         <div class="progress-bar" role="progressbar" style="width: @(xpPercentage)%;">
             @(xpPercentage)%
         </div>
     </div>
-    
     
     <h3 class="mb-3">Medarbejder Status</h3>
     <table class="table table-striped mb-4">
@@ -71,10 +70,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserService.GetUserById(1); 
-        todaysTasks = await TaskService.GetAllTasks();
-        //notifications = await NotificationService.GetNotificationsAsync();
-        //employees = await EmployeeService.GetEmployeesStatusAsync();
-        //xpPercentage = user.XP / 100.0 * 100; // XP som procent
+        // Retrieve the current user ID from the AuthStateProvider
+        var userId = await AuthStateProvider.GetUserIdAsync();
+        
+        if (!string.IsNullOrEmpty(userId))
+        {
+            user = await UserService.GetUserById(userId); 
+            todaysTasks = await TaskService.GetAllTasks();
+            // notifications = await NotificationService.GetNotificationsAsync();
+            // employees = await EmployeeService.GetEmployeesStatusAsync();
+            // xpPercentage = user.XP / 100.0 * 100; // XP as a percentage
+        }
     }
 }

@@ -62,12 +62,12 @@ else
     }
 
 
-    private async Task EditUser(int userId)
+    private async Task EditUser(string userId)
     {
         
     }
 
-    private async Task DeleteUser(int userId)
+    private async Task DeleteUser(string userId)
     {
         await UserService.DeleteUser(userId);
         await LoadUsers();
