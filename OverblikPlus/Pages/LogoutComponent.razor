@@ -1,0 +1,16 @@
+@using OverblikPlus.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+
+<button @onclick="Logout">Logout</button>
+
+
+@code {
+    
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/");
+    }
+}
