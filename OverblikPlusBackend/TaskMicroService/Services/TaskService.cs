@@ -57,6 +57,29 @@ namespace TaskMicroService.Services
             return taskDto;
         }
 
+        public async Task<IEnumerable<ReadTaskDto>> GetTasksByUserId(string userId)
+        {
+            var tasks = await _dbContext.Tasks
+                .Include(t => t.Steps)
+                .Where(t => t.UserId == userId)
+                .ToListAsync();
+            
+            var taskDtos = _mapper.Map<List<ReadTaskDto>>(tasks);
+            
+            foreach (var taskDto in taskDtos)
+            {
+                var taskEntity = tasks.FirstOrDefault(t => t.Id == taskDto.Id);
+                if (!string.IsNullOrEmpty(taskEntity?.ImageUrl))
+                {
+                    taskDto.Image = taskEntity.ImageUrl;
+                }
+                taskDto.RequiresQrCodeScan = taskEntity.RequiresQrCodeScan;
+            }
+
+            return taskDtos;
+        }
+
+
         public async Task<int> CreateTask(CreateTaskDto createTaskDto)
         {
             var task = _mapper.Map<TaskEntity>(createTaskDto);

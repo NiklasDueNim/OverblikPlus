@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using TaskMicroService.Services;
 using TaskMicroService.dto;
@@ -14,6 +15,18 @@ namespace TaskMicroService.Controllers
         {
             _taskService = taskService;
         }
+
+        private string GetCurrentUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+
+        private string GetCurrentUserRole()
+        {
+            return User.FindFirstValue(ClaimTypes.Role);
+        }
+        
+        
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskById(int id)
@@ -52,6 +65,21 @@ namespace TaskMicroService.Controllers
                 Console.WriteLine($"Error creating task: {ex.Message}");
                 return StatusCode(500, "Internal server error");
             }
+        }
+
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetTasksByUserId(string userId)
+        {
+            var currentUserId = GetCurrentUserId();
+            var currentUserRole = GetCurrentUserRole();
+
+            if (currentUserId != userId && currentUserRole != "Admin" && currentUserRole != "Staff")
+            {
+                return Unauthorized();
+            }
+
+            var tasks = await _taskService.GetTasksByUserId(userId);
+            return Ok(tasks);
         }
 
 
