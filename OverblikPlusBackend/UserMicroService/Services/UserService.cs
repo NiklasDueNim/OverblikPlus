@@ -43,8 +43,13 @@ namespace UserMicroService.Services
         public async Task<string> CreateUserAsync(CreateUserDto createUserDto)
         {
             var user = _mapper.Map<ApplicationUser>(createUserDto);
-            
-            user.Medication = EncryptionHelper.Encrypt(createUserDto.Medication);
+
+            Console.WriteLine($"Medication = {createUserDto.Medication}");
+
+            if (!string.IsNullOrEmpty(createUserDto.Medication))
+            {
+                user.Medication = EncryptionHelper.Encrypt(createUserDto.Medication);
+            }
 
             var result = await _userManager.CreateAsync(user, createUserDto.Password);
 

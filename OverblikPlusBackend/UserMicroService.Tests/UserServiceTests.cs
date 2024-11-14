@@ -5,22 +5,18 @@ using UserMicroService.Entities;
 using Xunit;
 using AutoMapper;
 using UserMicroService.dto;
+using System.Threading.Tasks;
+using System;
+using Microsoft.Extensions.Options;
+using UserMicroService.Helpers;
 
 public class UserServiceTests
 {
-    private UserManager<ApplicationUser> GetMockUserManager()
+    private Mock<UserManager<ApplicationUser>> GetMockUserManager()
     {
         var store = new Mock<IUserStore<ApplicationUser>>();
-        return new UserManager<ApplicationUser>(
-            store.Object,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
+        return new Mock<UserManager<ApplicationUser>>(
+            store.Object, null, null, null, null, null, null, null, null
         );
     }
 
@@ -28,12 +24,12 @@ public class UserServiceTests
     public async Task CreateUser_ShouldReturnUserIdAsync()
     {
         // Arrange
-        var userManager = GetMockUserManager();
-        var mapper = new Mock<IMapper>();
-        var userService = new UserService(userManager, mapper.Object);
+        var userManagerMock = GetMockUserManager();
+        var mapperMock = new Mock<IMapper>();
+        var userService = new UserService(userManagerMock.Object, mapperMock.Object);
 
-        // Sæt op mapperen til at mappe korrekt
-        mapper.Setup(m => m.Map<ApplicationUser>(It.IsAny<CreateUserDto>()))
+        // Set up the mapper to map correctly
+        mapperMock.Setup(m => m.Map<ApplicationUser>(It.IsAny<CreateUserDto>()))
             .Returns((CreateUserDto dto) => new ApplicationUser
             {
                 FirstName = dto.FirstName,
@@ -41,6 +37,7 @@ public class UserServiceTests
                 DateOfBirth = dto.DateOfBirth,
                 Medication = dto.Medication,
                 Goals = dto.Goals,
+                Role = dto.Role,
                 UserName = dto.Username,
                 Email = dto.Email
             });
@@ -52,15 +49,22 @@ public class UserServiceTests
             DateOfBirth = DateTime.Now,
             Medication = "None",
             Goals = "Complete project",
+            Role = "User",
             Username = "johndoe",
             Password = "Password123!",
             Email = "john.doe@example.com"
         };
 
+        // Mock the UserManager's CreateAsync to return a successful result
+        userManagerMock
+            .Setup(um => um.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+
         // Act
         var result = await userService.CreateUserAsync(createUserDto);
 
         // Assert
-        Assert.True(result > 0); // Ensure that a user ID is returned
+        Assert.False(string.IsNullOrEmpty(result)); // Ensure that a valid user ID (string) is returned
     }
+
 }
