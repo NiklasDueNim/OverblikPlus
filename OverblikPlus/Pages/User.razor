@@ -1,8 +1,8 @@
-@page "/user/{id}"
-@using OverblikPlus.Dtos
+@page "/user/{userId}"
 @using OverblikPlus.Dtos.User
 @using OverblikPlus.Services.Interfaces
 @inject IUserService UserService
+@inject CustomAuthStateProvider AuthStateProvider
 
 <h3>Brugerprofil</h3>
 
@@ -18,11 +18,19 @@ else
 }
 
 @code {
-    [Parameter] public string Id { get; set; }
+    [Parameter] public string userId { get; set; }
     private ReadUserDto user;
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserService.GetUserById(Id);
+        if (string.IsNullOrEmpty(userId))
+        {
+            userId = await AuthStateProvider.GetUserIdAsync();
+        }
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            user = await UserService.GetUserById(userId);
+        }
     }
 }

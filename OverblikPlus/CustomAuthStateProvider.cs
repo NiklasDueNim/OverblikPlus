@@ -9,6 +9,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     public async Task SetTokenAsync(string token)
     {
+        Console.WriteLine("JWT Token" + token);
         _jwtToken = token;
         var authState = GetAuthenticationStateAsync();
         NotifyAuthenticationStateChanged(authState);
@@ -61,7 +62,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
 
         var claims = ParseClaimsFromJwt(_jwtToken);
-        var userIdClaim = claims.FirstOrDefault(c => c.Type == "sub")?.Value; 
+        var userIdClaim = claims.FirstOrDefault(c => c.Type == "nameid")?.Value; 
 
         return Task.FromResult(userIdClaim);
     }

@@ -29,8 +29,22 @@ public class UserService : IUserService
 
     public async Task<ReadUserDto> GetUserById(string id)
     {
-        return await _httpClient.GetFromJsonAsync<ReadUserDto>($"api/UserService/{id}");
+        try
+        {
+            var user = await _httpClient.GetFromJsonAsync<ReadUserDto>($"api/UserService/{id}");
+            if (user == null)
+            {
+                Console.WriteLine($"User with ID {id} not found.");
+            }
+            return user;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving user with ID {id}: {ex.Message}");
+            return null;
+        }
     }
+
 
     public async Task<string> CreateUser(CreateUserDto newUser)
     {
