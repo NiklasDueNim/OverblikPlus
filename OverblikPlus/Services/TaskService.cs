@@ -49,7 +49,7 @@ public class TaskService : ITaskService
     public async Task<List<ReadTaskDto>> GetAllTasks() =>
         await ExecuteGetRequest<List<ReadTaskDto>>("/api/Task");
 
-    public async Task<List<ReadTaskDto>> GetTasksForUserAsync(int userId) =>
+    public async Task<List<ReadTaskDto>> GetTasksForUserAsync(string userId) =>
         await ExecuteGetRequest<List<ReadTaskDto>>($"api/Task/user/{userId}");
     
     public async Task<ReadTaskDto> GetTaskById(int taskId) =>

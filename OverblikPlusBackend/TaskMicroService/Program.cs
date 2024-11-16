@@ -43,6 +43,17 @@ else
     app.UseHttpsRedirection();
 }
 
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = "https://overblikplus-user-api.azurewebsites.net"; // URL til din identitetsudbyder
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateAudience = false // Konfigurer som nødvendigt
+        };
+    });
+
+
 app.UseRouting();
 
 app.UseCors("AllowSpecificOrigin");
