@@ -12,5 +12,5 @@ public class CreateTaskDto
 
     public int StepNumber { get; set; }
 
-    public int UserId { get; set; }
+    public string UserId { get; set; }
 }

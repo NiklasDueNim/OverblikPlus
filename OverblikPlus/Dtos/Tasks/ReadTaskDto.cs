@@ -12,7 +12,7 @@ public class ReadTaskDto
     public bool RequiresQrCodeScan { get; set; }
     public List<ReadTaskStepDto> Steps { get; set; } = new List<ReadTaskStepDto>();
 
-    public int UserId { get; set; }
+    public string UserId { get; set; }
     
     public bool IsCompleted { get; set; }
 

@@ -12,5 +12,5 @@ public class UpdateTaskDto
         
         public bool RequiresQrCodeScan { get; set; } 
         
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
 }
