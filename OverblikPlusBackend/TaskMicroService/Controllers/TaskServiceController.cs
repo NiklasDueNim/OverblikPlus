@@ -26,8 +26,8 @@ namespace TaskMicroService.Controllers
         {
             return User.FindFirstValue(ClaimTypes.Role);
         }
-        
-        
+
+        // Get a specific task by ID
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskById(int id)
@@ -35,11 +35,21 @@ namespace TaskMicroService.Controllers
             var taskDto = await _taskService.GetTaskById(id);
             if (taskDto == null)
                 return NotFound();
-            
+
+            var currentUserRole = GetCurrentUserRole();
+            var currentUserId = GetCurrentUserId();
+
+            // Check access permissions
+            if (taskDto.UserId != currentUserId && currentUserRole != "Admin" && currentUserRole != "Staff")
+            {
+                return Forbid(); // Forbid if the user doesn't have permission to view this task.
+            }
+
             return Ok(taskDto);
         }
 
-        [Authorize]
+        // Get all tasks - Only Admin or Staff can access all tasks
+        [Authorize(Roles = "Admin,Staff")]
         [HttpGet]
         public async Task<IActionResult> GetAllTasks()
         {
@@ -47,7 +57,25 @@ namespace TaskMicroService.Controllers
             return Ok(tasks);
         }
 
+        // Get tasks by user ID - Allow only Admin, Staff, or the specific user
         [Authorize]
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetTasksByUserId(string userId)
+        {
+            var currentUserId = GetCurrentUserId();
+            var currentUserRole = GetCurrentUserRole();
+
+            if (currentUserId != userId && currentUserRole != "Admin" && currentUserRole != "Staff")
+            {
+                return Forbid(); // Return forbidden if user doesn't have permission.
+            }
+
+            var tasks = await _taskService.GetTasksByUserId(userId);
+            return Ok(tasks);
+        }
+
+        // Create a task - Only Admin or Staff can create tasks
+        [Authorize(Roles = "Admin,Staff")]
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
@@ -70,24 +98,8 @@ namespace TaskMicroService.Controllers
             }
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetTasksByUserId(string userId)
-        {
-            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
-
-            if (currentUserId != userId && currentUserRole != "Admin" && currentUserRole != "Staff")
-            {
-                return Unauthorized();
-            }
-
-            var tasks = await _taskService.GetTasksByUserId(userId);
-            return Ok(tasks);
-        }
-
-        
-        
-        [Authorize]
+        // Update a task - Only Admin or Staff can update tasks
+        [Authorize(Roles = "Admin,Staff")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskDto updateTaskDto)
         {
@@ -109,6 +121,14 @@ namespace TaskMicroService.Controllers
             var existingTask = await _taskService.GetTaskById(id);
             if (existingTask == null)
                 return NotFound();
+
+            var currentUserId = GetCurrentUserId();
+            var currentUserRole = GetCurrentUserRole();
+
+            if (existingTask.UserId != currentUserId && currentUserRole != "Admin" && currentUserRole != "Staff")
+            {
+                return Forbid();
+            }
 
             await _taskService.DeleteTask(id);
             return NoContent();
