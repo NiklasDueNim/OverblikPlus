@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskMicroService.Services;
 using TaskMicroService.dto;
@@ -27,7 +28,7 @@ namespace TaskMicroService.Controllers
         }
         
         
-
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskById(int id)
         {
@@ -38,6 +39,7 @@ namespace TaskMicroService.Controllers
             return Ok(taskDto);
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllTasks()
         {
@@ -45,6 +47,7 @@ namespace TaskMicroService.Controllers
             return Ok(tasks);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
@@ -70,8 +73,8 @@ namespace TaskMicroService.Controllers
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetTasksByUserId(string userId)
         {
-            var currentUserId = GetCurrentUserId();
-            var currentUserRole = GetCurrentUserRole();
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
             if (currentUserId != userId && currentUserRole != "Admin" && currentUserRole != "Staff")
             {
@@ -82,7 +85,9 @@ namespace TaskMicroService.Controllers
             return Ok(tasks);
         }
 
-
+        
+        
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskDto updateTaskDto)
         {
@@ -97,6 +102,7 @@ namespace TaskMicroService.Controllers
             return NoContent();
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
