@@ -153,8 +153,25 @@
 
     private async Task DeleteTask(int taskId)
     {
-        await TaskService.DeleteTask(taskId);
-        await LoadTasks();
+        try
+        {
+            bool succes = await TaskService.DeleteTask(taskId);
+            if (succes)
+            {
+                Console.WriteLine("Opgaven er slettet");
+                await LoadTasks();
+            }
+            else
+            {
+                Console.WriteLine("Du har ikke tilladelse til at slette denne opgave");
+            }
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     private void AddStep(int taskId)
