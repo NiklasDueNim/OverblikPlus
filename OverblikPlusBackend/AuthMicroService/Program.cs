@@ -10,16 +10,13 @@ using AuthMicroService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure DbContext for AuthMicroService (independent database)
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure Identity (independent for AuthMicroService)
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AuthDbContext>()
     .AddDefaultTokenProviders();
 
-// Configure JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -39,7 +36,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOverblikPlus", corsBuilder =>
@@ -48,7 +44,6 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
-// Add services to the container
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
@@ -56,7 +51,6 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
-// Seed Data: Create roles (Admin, Staff, User) when the app starts
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -70,7 +64,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
