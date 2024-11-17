@@ -1,40 +1,77 @@
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
+using OverblikPlus.Services;
 
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
     private string _jwtToken;
+    private string _refreshToken;
 
-    public async Task SetTokenAsync(string token)
+    public async Task SetTokenAsync(string token, string refreshToken)
     {
-        Console.WriteLine("JWT Token" + token);
         _jwtToken = token;
-        var authState = GetAuthenticationStateAsync();
-        NotifyAuthenticationStateChanged(authState);
+        _refreshToken = refreshToken;
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
     public async Task RemoveTokenAsync()
     {
         _jwtToken = null;
-        var authState = GetAuthenticationStateAsync();
-        NotifyAuthenticationStateChanged(authState);
+        _refreshToken = null;
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var identity = string.IsNullOrEmpty(_jwtToken) 
-            ? new ClaimsIdentity() 
+        var identity = string.IsNullOrEmpty(_jwtToken)
+            ? new ClaimsIdentity()
             : new ClaimsIdentity(ParseClaimsFromJwt(_jwtToken), "jwt");
 
         return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
     }
 
-    public Task<string> GetTokenAsync()
+    public Task<string> GetTokenAsync() => Task.FromResult(_jwtToken);
+
+    public Task<string> GetRefreshTokenAsync() => Task.FromResult(_refreshToken);
+    
+    public async Task<bool> RefreshTokenAsync()
     {
-        return Task.FromResult(_jwtToken);
+        var refreshToken = await GetRefreshTokenAsync();
+        if (string.IsNullOrEmpty(refreshToken)) return false;
+
+        // Brug en HttpClient til at kontakte backend og få en ny token
+        var httpClient = new HttpClient { BaseAddress = new Uri("https://overblikplus-auth-api.azurewebsites.net") };
+        var response = await httpClient.PostAsJsonAsync("api/Auth/refresh", new { refreshToken });
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            if (result != null)
+            {
+                await SetTokenAsync(result.Token, result.RefreshToken);
+                return true;
+            }
+        }
+
+        return false;
     }
+    
+    public Task<string> GetUserIdAsync()
+    {
+        if (string.IsNullOrEmpty(_jwtToken))
+        {
+            return Task.FromResult<string>(null);
+        }
+
+        var claims = ParseClaimsFromJwt(_jwtToken);
+        var userIdClaim = claims.FirstOrDefault(c => c.Type == "nameid")?.Value;
+
+        return Task.FromResult(userIdClaim);
+    }
+
+
 
     private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     {
@@ -52,18 +89,5 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
             case 3: return base64 + "=";
             default: return base64;
         }
-    }
-    
-    public Task<string> GetUserIdAsync()
-    {
-        if (string.IsNullOrEmpty(_jwtToken))
-        {
-            return Task.FromResult<string>(null);
-        }
-
-        var claims = ParseClaimsFromJwt(_jwtToken);
-        var userIdClaim = claims.FirstOrDefault(c => c.Type == "nameid")?.Value; 
-
-        return Task.FromResult(userIdClaim);
     }
 }

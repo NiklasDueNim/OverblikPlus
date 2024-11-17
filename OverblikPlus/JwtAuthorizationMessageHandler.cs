@@ -20,16 +20,23 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        // Tjek om URL'en er i de autoriserede URL'er
-        if (_authorizedUrls.Contains(request.RequestUri?.GetLeftPart(UriPartial.Authority)))
+        var token = await _authStateProvider.GetTokenAsync();
+
+        if (!string.IsNullOrEmpty(token))
         {
-            var token = await _authStateProvider.GetTokenAsync();
-            if (!string.IsNullOrEmpty(token))
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+        else
+        {
+            var refreshed = await _authStateProvider.RefreshTokenAsync();
+            if (refreshed)
             {
+                token = await _authStateProvider.GetTokenAsync();
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
         }
 
         return await base.SendAsync(request, cancellationToken);
     }
+
 }
