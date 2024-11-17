@@ -1,6 +1,3 @@
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthMicroService;
