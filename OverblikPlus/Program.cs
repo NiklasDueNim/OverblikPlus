@@ -9,16 +9,26 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 
+
 builder.Services.AddHttpClient<AuthService>(client =>
 {
-    client.BaseAddress = new Uri("https://overblikplus-user-api.azurewebsites.net");
+    client.BaseAddress = new Uri("https://overblikplus-auth-api.azurewebsites.net");
 });
 
-builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider => new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())
-    .ConfigureHandler(authorizedUrls: new[] { "https://overblikplus-task-api.azurewebsites.net", "https://overblikplus-user-api.azurewebsites.net" }));
+
+builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
+    new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())
+        .ConfigureHandler(authorizedUrls: new[]
+        {
+            "https://overblikplus-task-api.azurewebsites.net",
+            "https://overblikplus-user-api.azurewebsites.net",
+            "https://overblikplus-auth-api.azurewebsites.net"
+        }));
+
 
 builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
 {
@@ -34,12 +44,6 @@ builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
 {
     client.BaseAddress = new Uri("https://overblikplus-task-api.azurewebsites.net");
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
-
-builder.Services.AddScoped<CustomAuthStateProvider>();
-builder.Services.AddHttpClient<CustomAuthStateProvider>(client =>
-{
-    client.BaseAddress = new Uri("https://overblikplus-auth-api.azurewebsites.net");
-});
 
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
