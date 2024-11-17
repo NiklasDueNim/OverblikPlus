@@ -33,7 +33,8 @@ namespace AuthMicroService.Services
             var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
             if (!result.Succeeded) throw new UnauthorizedAccessException("Invalid login attempt.");
 
-            var user = await _userManager.FindByNameAsync(loginDto.Email);
+            var user = await _userManager.FindByEmailAsync(loginDto.Email); // Brug FindByEmailAsync
+            if (user == null) throw new UnauthorizedAccessException("User not found.");
 
             var jwtToken = GenerateJwtToken(user);
             var refreshToken = GenerateRefreshToken(user.Id);
@@ -42,12 +43,13 @@ namespace AuthMicroService.Services
             return jwtToken;
         }
 
+
         public async Task<RegistrationResult> RegisterAsync(RegisterDto registerDto)
         {
             var user = new ApplicationUser
             {
-                UserName = registerDto.Username,
                 Email = registerDto.Email,
+                UserName = registerDto.Email // Brug Email som UserName
             };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -59,9 +61,10 @@ namespace AuthMicroService.Services
             return new RegistrationResult { Success = true };
         }
 
+
         public async Task<bool> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
         {
-            var user = await _userManager.FindByNameAsync(changePasswordDto.Username);
+            var user = await _userManager.FindByEmailAsync(changePasswordDto.Email); // Brug FindByEmailAsync
             if (user == null)
             {
                 throw new ArgumentException("User not found.");
@@ -76,6 +79,7 @@ namespace AuthMicroService.Services
 
             return true;
         }
+
 
         public Task LogoutAsync()
         {
