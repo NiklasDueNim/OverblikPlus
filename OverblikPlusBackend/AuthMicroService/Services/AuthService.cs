@@ -51,7 +51,8 @@ namespace AuthMicroService.Services
                 Email = registerDto.Email,
                 UserName = registerDto.Email,
                 FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName
+                LastName = registerDto.LastName,
+                Role = registerDto.Role
             };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);

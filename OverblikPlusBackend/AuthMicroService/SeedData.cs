@@ -6,6 +6,8 @@ public class SeedData
 {
     public static async Task InitializeRoles(IServiceProvider serviceProvider)
     {
+        Console.WriteLine("Seeding roles...");
+
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
         string[] roleNames = { "Admin", "Staff", "User" };
