@@ -35,6 +35,13 @@ builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
     client.BaseAddress = new Uri("https://overblikplus-task-api.azurewebsites.net");
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
+builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddHttpClient<CustomAuthStateProvider>(client =>
+{
+    client.BaseAddress = new Uri("https://overblikplus-auth-api.azurewebsites.net");
+});
+
+
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();
 
