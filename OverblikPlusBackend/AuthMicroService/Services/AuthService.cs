@@ -49,7 +49,9 @@ namespace AuthMicroService.Services
             var user = new ApplicationUser
             {
                 Email = registerDto.Email,
-                UserName = registerDto.Email // Brug Email som UserName
+                UserName = registerDto.Email,
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName
             };
 
             var result = await _userManager.CreateAsync(user, registerDto.Password);
