@@ -30,10 +30,10 @@ namespace AuthMicroService.Services
 
         public async Task<string> LoginAsync(LoginDto loginDto)
         {
-            var result = await _signInManager.PasswordSignInAsync(loginDto.Username, loginDto.Password, false, false);
+            var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
             if (!result.Succeeded) throw new UnauthorizedAccessException("Invalid login attempt.");
 
-            var user = await _userManager.FindByNameAsync(loginDto.Username);
+            var user = await _userManager.FindByNameAsync(loginDto.Email);
 
             var jwtToken = GenerateJwtToken(user);
             var refreshToken = GenerateRefreshToken(user.Id);

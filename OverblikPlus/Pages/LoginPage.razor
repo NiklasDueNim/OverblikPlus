@@ -5,25 +5,25 @@
 
 <h3>Login</h3>
 
-<input @bind="username" placeholder="Brugernavn" />
+<input @bind="email" placeholder="Email" />
 <input @bind="password" type="password" placeholder="Adgangskode" />
 <button @onclick="Login">Login</button>
 
 @code {
     
-    private string username;
+    private string email;
     private string password;
     
     private async Task Login()
     {
-        var success = await AuthService.LoginAsync(username, password);
+        var success = await AuthService.LoginAsync(email, password);
         if (success)
         {
             Navigation.NavigateTo("/");
         }
         else
         {
-            // Håndter fejllogin
+            Console.WriteLine("Fejl ved login");
         }
     }
 
