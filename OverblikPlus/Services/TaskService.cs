@@ -69,4 +69,10 @@ public class TaskService : ITaskService
         await ExecuteNonQueryRequest(
             () => _httpClient.DeleteAsync($"/api/Task/{taskId}"),
             "task deletion");
+    
+    public async Task<List<ReadTaskDto>> GetTasksForCurrentUserAsync()
+    {
+        return await ExecuteGetRequest<List<ReadTaskDto>>("api/Task/user-tasks");
+    }
+
 }

@@ -17,8 +17,11 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     public async Task SetTokenAsync(string token, string refreshToken)
     {
+        Console.WriteLine($"SetTokenAsync called. JWT: {token}, RefreshToken: {refreshToken}");
         _jwtToken = token;
         _refreshToken = refreshToken;
+        Console.WriteLine($"SetTokenAsync called. JWT: {_jwtToken}, RefreshToken: {_refreshToken}");
+
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
@@ -40,7 +43,19 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
     }
 
-    public Task<string> GetTokenAsync() => Task.FromResult(_jwtToken);
+    public Task<string> GetTokenAsync()
+    {
+        if (string.IsNullOrEmpty(_jwtToken))
+        {
+            Console.WriteLine("JWT token is missing in GetTokenAsync.");
+        }
+        else
+        {
+            Console.WriteLine($"JWT token found in GetTokenAsync: {_jwtToken}");
+        }
+        return Task.FromResult(_jwtToken);
+    }
+
 
     public Task<string> GetRefreshTokenAsync() => Task.FromResult(_refreshToken);
 
@@ -49,19 +64,19 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         var refreshToken = await GetRefreshTokenAsync();
         if (string.IsNullOrEmpty(refreshToken))
         {
-            Console.WriteLine("Refresh token is missing.");
+            Console.WriteLine("Refresh token is missing in RefreshTokenAsync.");
             return false;
         }
 
         try
         {
             var response = await _httpClient.PostAsJsonAsync("api/Auth/refresh", new { refreshToken });
-
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
                 if (result != null)
                 {
+                    Console.WriteLine($"Token refreshed. New JWT: {result.Token}, New RefreshToken: {result.RefreshToken}");
                     await SetTokenAsync(result.Token, result.RefreshToken);
                     return true;
                 }
@@ -78,6 +93,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
         return false;
     }
+
 
     public Task<string> GetUserIdAsync()
     {
@@ -100,11 +116,26 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     {
-        var payload = jwt.Split('.')[1];
-        var jsonBytes = Convert.FromBase64String(AddPadding(payload));
-        var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
-        return keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString()));
+        try
+        {
+            var payload = jwt.Split('.')[1];
+            var jsonBytes = Convert.FromBase64String(AddPadding(payload));
+            var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
+
+            foreach (var kvp in keyValuePairs)
+            {
+                Console.WriteLine($"Claim: {kvp.Key} = {kvp.Value}");
+            }
+
+            return keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString()));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error parsing claims from JWT: {ex.Message}");
+            return Enumerable.Empty<Claim>();
+        }
     }
+
 
     private string AddPadding(string base64)
     {
@@ -115,6 +146,18 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
             default: return base64;
         }
     }
+    
+    public async Task<string> GetRoleAsync()
+    {
+        if (string.IsNullOrEmpty(_jwtToken))
+        {
+            return null;
+        }
+
+        var claims = ParseClaimsFromJwt(_jwtToken);
+        return claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+    }
+
 
     private bool IsTokenExpired(string jwt)
     {

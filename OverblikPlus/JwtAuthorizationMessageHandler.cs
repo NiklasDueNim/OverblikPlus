@@ -10,8 +10,7 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
         _authStateProvider = authStateProvider;
         _authorizedUrls = new HashSet<string>();
     }
-
-    // Metode til at konfigurere autoriserede URL'er
+    
     public JwtAuthorizationMessageHandler ConfigureHandler(IEnumerable<string> authorizedUrls)
     {
         _authorizedUrls = new HashSet<string>(authorizedUrls, StringComparer.OrdinalIgnoreCase);
@@ -21,13 +20,18 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var token = await _authStateProvider.GetTokenAsync();
+        Console.WriteLine($"JWT token in handler: {token}");
+
 
         if (!string.IsNullOrEmpty(token))
         {
+            Console.WriteLine($"Using JWT: {token}");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
         else
         {
+            Console.WriteLine("No JWT available");
+
             var refreshed = await _authStateProvider.RefreshTokenAsync();
             if (refreshed)
             {

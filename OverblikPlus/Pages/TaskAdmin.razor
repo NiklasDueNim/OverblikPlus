@@ -9,6 +9,8 @@
 @inject IUserService UserService
 @inject ITaskStepService TaskStepService
 @inject IMapper Mapper
+@inject CustomAuthStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 
 <div class="container mt-4">
     <h3 class="mb-4">Administrer Opgaver</h3>
@@ -84,6 +86,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var role = await AuthStateProvider.GetRoleAsync();
+        if (role != "Admin" && role != "Staff")
+        {
+            Navigation.NavigateTo("/unauthorized");
+            return;
+        }
+
         await LoadTasks();
         await LoadUsers();
     }

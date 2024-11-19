@@ -3,8 +3,8 @@
 @using OverblikPlus.Services.Interfaces
 @inject ITaskService TaskService
 @inject ITaskStepService TaskStepService
-
 @inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
 
 <div class="container mt-4">
     <h3 class="mb-4">Mine Opgaver</h3>
@@ -42,8 +42,13 @@
 
     private async Task LoadTasks()
     {
-        Tasks = await TaskService.GetAllTasks();
+        var userId = await AuthStateProvider.GetUserIdAsync();
+        if (!string.IsNullOrEmpty(userId))
+        {
+            Tasks = await TaskService.GetTasksForUserAsync(userId);
+        }
     }
+
     
     private async Task StartTask(int taskId)
     {

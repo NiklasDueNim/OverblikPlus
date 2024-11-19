@@ -15,23 +15,45 @@ public class AuthService
         _authStateProvider = (CustomAuthStateProvider)authStateProvider;
     }
 
-    public async Task<bool> LoginAsync(string email, string password)
+    public async Task<bool> LoginAsync(string Email, string Password)
     {
-        var loginDto = new { email, password };
-        var response = await _httpClient.PostAsJsonAsync("api/Auth/login", loginDto);
-
-        if (response.IsSuccessStatusCode)
+        var loginDto = new { Email, Password };
+        Console.WriteLine("Sending login request...");
+    
+        try
         {
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-            if (result != null)
+            var response = await _httpClient.PostAsJsonAsync("api/Auth/login", loginDto);
+
+            Console.WriteLine($"Login response status: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
             {
-                await _authStateProvider.SetTokenAsync(result.Token, result.RefreshToken);
-                return true;
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (result != null)
+                {
+                    Console.WriteLine($"Login successful. Token: {result.Token}");
+                    await _authStateProvider.SetTokenAsync(result.Token, result.RefreshToken);
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("Login response is null.");
+                }
             }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Login failed. Status: {response.StatusCode}, Error: {errorContent}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception during login: {ex.Message}");
         }
 
         return false;
     }
+
 
 
     public async Task LogoutAsync()

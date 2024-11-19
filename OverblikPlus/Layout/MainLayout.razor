@@ -1,12 +1,32 @@
-﻿@inherits LayoutComponentBase
+﻿@using OverblikPlus.Services
+@inherits LayoutComponentBase
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
+
 <div class="page">
     <div class="sidebar">
-        <NavMenu/>
+        <NavMenu />
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div class="top-row px-4 d-flex justify-content-between align-items-center">
+            <div></div> <!-- Tom div for at sikre spacing -->
+
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    Brugernavn
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                    <li><a class="dropdown-item" href="/profile">Profil</a></li>
+                    <li><a class="dropdown-item" href="/settings">Indstillinger</a></li>
+                    @if (isAdminOrStaff)
+                    {
+                    <li><a class="dropdown-item" href="/user-overview">Bruger Oversigt</a></li>
+                    }
+                    <li><button class="dropdown-item" @onclick="Logout">Log ud</button></li>
+                </ul>
+            </div>
         </div>
 
         <article class="content px-4">
@@ -14,3 +34,19 @@
         </article>
     </main>
 </div>
+
+@code {
+private bool isAdminOrStaff;
+
+protected override async Task OnInitializedAsync()
+{
+var role = await AuthStateProvider.GetRoleAsync();
+isAdminOrStaff = role == "Admin" || role == "Staff";
+}
+
+private async Task Logout()
+{
+await AuthService.LogoutAsync();
+Navigation.NavigateTo("/login");
+}
+}

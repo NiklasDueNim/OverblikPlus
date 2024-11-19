@@ -79,7 +79,8 @@
         {
             user = await UserService.GetUserById(userId); 
             StateHasChanged();
-            todaysTasks = await TaskService.GetAllTasks();
+            todaysTasks = await TaskService.GetTasksForUserAsync(userId);
+
             // notifications = await NotificationService.GetNotificationsAsync();
             // employees = await EmployeeService.GetEmployeesStatusAsync();
             // xpPercentage = user.XP / 100.0 * 100; // XP as a percentage

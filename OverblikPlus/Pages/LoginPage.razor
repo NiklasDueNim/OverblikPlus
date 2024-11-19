@@ -1,22 +1,23 @@
-@page "/Login"
+@page "/login"
+@using OverblikPlus.Dtos.Auth
 @using OverblikPlus.Services
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
 <h3>Login</h3>
+<input @bind="loginDto.Email" placeholder="Email" />
+<input @bind="loginDto.Password" type="password" placeholder="Adgangskode" />
+<button @onclick="Login" class="btn btn-primary">Log ind</button>
 
-<input @bind="email" placeholder="Email" />
-<input @bind="password" type="password" placeholder="Adgangskode" />
-<button @onclick="Login">Login</button>
+<h3>Ny bruger?</h3>
+<button @onclick="NavigateToRegister" class="btn btn-secondary">Registrer</button>
 
 @code {
-    
-    private string email;
-    private string password;
-    
+    private LoginDto loginDto = new LoginDto();
+
     private async Task Login()
     {
-        var success = await AuthService.LoginAsync(email, password);
+        var success = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
         if (success)
         {
             Navigation.NavigateTo("/");
@@ -27,4 +28,8 @@
         }
     }
 
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo("/create-user");
+    }
 }

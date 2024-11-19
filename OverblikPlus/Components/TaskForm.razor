@@ -1,5 +1,6 @@
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.User
+@inject CustomAuthStateProvider AuthStateProvider
 
 <div class="card mb-4">
     <div class="card-header">
@@ -19,16 +20,21 @@
                 <label for="taskImage" class="form-label">Billede:</label>
                 <InputFile OnChange="HandleImageUpload" class="form-control" />
             </div>
+
             <div class="mb-3">
+                @if (isAdminOrStaff)
+                {
                 <label for="user" class="form-label">Tildel opgave til en bruger</label>
                 <select id="user" @bind="Task.UserId" class="form-select">
                     <option value="">Vælg bruger</option>
                     @foreach (var user in Users)
                     {
-                        <option value="@user.Id">@user.FirstName @user.LastName</option>
+                    <option value="@user.Id">@user.FirstName @user.LastName</option>
                     }
                 </select>
+                }
             </div>
+
             <div class="d-flex justify-content-end">
                 <button type="button" class="btn btn-primary me-2" @onclick="Save">Gem</button>
                 <button type="button" class="btn btn-secondary" @onclick="Cancel">Annuller</button>
@@ -43,6 +49,13 @@
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public List<ReadUserDto> Users { get; set; }
+    private bool isAdminOrStaff;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var role = await AuthStateProvider.GetRoleAsync();
+        isAdminOrStaff = role == "Admin" || role == "Staff";
+    }
 
     private async Task HandleImageUpload(InputFileChangeEventArgs e)
     {
