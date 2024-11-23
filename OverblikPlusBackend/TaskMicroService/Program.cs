@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TaskMicroService.DataAccess;
@@ -12,15 +13,6 @@ builder.Services.AddApplicationInsightsTelemetry(builder.Configuration["Applicat
 
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowOverblikPlus", builder =>
-        builder.WithOrigins("https://overblikplus.dk, http://localhost:5226")
-            .AllowAnyMethod()
-            .AllowAnyHeader());
-});
 
 
 builder.Services.AddEndpointsApiExplorer();
@@ -43,8 +35,12 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {

@@ -10,7 +10,6 @@ using UserMicroService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Set encryption key
 string encryptionKey = builder.Configuration.GetSection("EncryptionSettings:EncryptionKey").Value;
 if (string.IsNullOrEmpty(encryptionKey))
 {
@@ -18,16 +17,13 @@ if (string.IsNullOrEmpty(encryptionKey))
 }
 EncryptionHelper.SetEncryptionKey(encryptionKey);
 
-// Configure DbContext with Identity
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure Identity with ApplicationUser and IdentityRole
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>()
     .AddDefaultTokenProviders();
 
-// Configure JWT authentication
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
