@@ -26,10 +26,11 @@ builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 builder.Services.AddScoped<IImageConversionService, ImageConversionService>();
 builder.Services.AddScoped<BlobStorageService>();
 
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowOverblikPlus",
-        builder => builder.WithOrigins("https://overblikplus.dk, http://localhost:5226")
+    options.AddPolicy("AllowOverblikPlus", builder =>
+        builder.WithOrigins("https://overblikplus.dk", "http://localhost:5226") // Korrekt liste
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
@@ -54,6 +55,13 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+
+builder.Services.AddLogging(config =>
+{
+    config.AddConsole();
+    config.AddDebug();
+});
+
 var app = builder.Build();
 
 
@@ -69,8 +77,11 @@ else
 
 app.UseRouting();
 
+app.UseCors("AllowOverblikPlus");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();
