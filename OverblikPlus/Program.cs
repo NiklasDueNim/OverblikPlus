@@ -9,41 +9,39 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-
 builder.Services.AddSingleton<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 
-
 builder.Services.AddHttpClient<AuthService>(client =>
 {
-    client.BaseAddress = new Uri(" http://localhost:5137");
+    client.BaseAddress = new Uri("http://localhost:5137");
 });
 
 
-// builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
-//     new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())
-//         .ConfigureHandler(authorizedUrls: new[]
-//         {
-//             "http://localhost:5032",
-//             "https://overblikplus-user-api.azurewebsites.net",
-//             "https://overblikplus-auth-api.azurewebsites.net"
-//         }));
+builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
+    new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())
+        .ConfigureHandler(authorizedUrls: new[]
+        {
+            "http://localhost:5081",
+            "http://localhost:5032",
+            "http://localhost:5137"
+        }));
 
 
 builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
 {
     client.BaseAddress = new Uri("http://localhost:5032");
-});//.AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
+}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddHttpClient<IUserService, UserService>(client =>
 {
-    client.BaseAddress = new Uri("https://overblikplus-user-api.azurewebsites.net");
-});//.AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
+    client.BaseAddress = new Uri("http://localhost:5081");
+}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
 {
-    client.BaseAddress = new Uri("https://overblikplus-task-api.azurewebsites.net");
-});//.AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
+    client.BaseAddress = new Uri("http://localhost:5032");
+}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
