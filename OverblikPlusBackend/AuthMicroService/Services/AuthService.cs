@@ -28,21 +28,20 @@ namespace AuthMicroService.Services
             _dbContext = dbContext;
         }
 
-        public async Task<string> LoginAsync(LoginDto loginDto)
+        public async Task<(string Token, string RefreshToken)> LoginAsync(LoginDto loginDto)
         {
             var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
             if (!result.Succeeded) throw new UnauthorizedAccessException("Invalid login attempt.");
 
-            var user = await _userManager.FindByEmailAsync(loginDto.Email); // Brug FindByEmailAsync
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null) throw new UnauthorizedAccessException("User not found.");
 
             var jwtToken = GenerateJwtToken(user);
             var refreshToken = GenerateRefreshToken(user.Id);
             await SaveRefreshTokenAsync(refreshToken);
 
-            return jwtToken;
+            return (jwtToken, refreshToken.Token); // Returner både JWT og RefreshToken som en tuple
         }
-
 
         public async Task<RegistrationResult> RegisterAsync(RegisterDto registerDto)
         {
@@ -64,25 +63,18 @@ namespace AuthMicroService.Services
             return new RegistrationResult { Success = true };
         }
 
-
         public async Task<bool> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
         {
-            var user = await _userManager.FindByEmailAsync(changePasswordDto.Email); // Brug FindByEmailAsync
+            var user = await _userManager.FindByEmailAsync(changePasswordDto.Email);
             if (user == null)
-            {
                 throw new ArgumentException("User not found.");
-            }
 
             var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
-
             if (!result.Succeeded)
-            {
                 throw new InvalidOperationException(string.Join(", ", result.Errors.Select(e => e.Description)));
-            }
 
             return true;
         }
-
 
         public Task LogoutAsync()
         {
@@ -94,14 +86,10 @@ namespace AuthMicroService.Services
             var storedToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(t => t.Token == token);
 
             if (storedToken == null || storedToken.IsUsed || storedToken.IsRevoked)
-            {
                 throw new UnauthorizedAccessException("Invalid or expired refresh token.");
-            }
 
             if (storedToken.ExpiryDate < DateTime.UtcNow)
-            {
                 throw new UnauthorizedAccessException("Refresh token has expired.");
-            }
 
             storedToken.IsUsed = true;
             _dbContext.RefreshTokens.Update(storedToken);
@@ -109,9 +97,7 @@ namespace AuthMicroService.Services
 
             var user = await _userManager.FindByIdAsync(storedToken.UserId);
             if (user == null)
-            {
                 throw new UnauthorizedAccessException("User not found.");
-            }
 
             var newJwtToken = GenerateJwtToken(user);
             var newRefreshToken = GenerateRefreshToken(user.Id);
@@ -145,7 +131,8 @@ namespace AuthMicroService.Services
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.Email),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim("nameid", user.Id)
+                new Claim("nameid", user.Id),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
