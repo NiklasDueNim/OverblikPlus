@@ -17,8 +17,12 @@ public class TaskService : ITaskService
     {
         try
         {
-            var result = await _httpClient.GetFromJsonAsync<T>(uri);
-            return result ?? throw new InvalidOperationException("No data received.");
+            var nytest = new HttpClient() { BaseAddress = new Uri("http://localhost:5032") };
+            var test = await nytest.GetStringAsync(uri);
+
+            throw new Exception("MANI was here");
+            // var result = await _httpClient.GetFromJsonAsync<T>(uri);
+            // return result ?? throw new InvalidOperationException("No data received.");
         }
         catch (Exception ex)
         {

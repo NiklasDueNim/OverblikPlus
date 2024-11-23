@@ -78,12 +78,12 @@ namespace TaskMicroService.Controllers
             var currentUserId = GetCurrentUserId();
             var currentUserRole = GetCurrentUserRole();
 
-            if (currentUserId != userId && currentUserRole != "Admin" && currentUserRole != "Staff")
-            {
-                return Forbid();
-            }
+            // if (currentUserId != userId && currentUserRole != "Admin" && currentUserRole != "Staff")
+            // {
+            //     return Forbid();
+            // }
 
-            var tasks = await _taskService.GetTasksByUserId(userId);
+            var tasks = (await _taskService.GetTasksByUserId(userId)).ToList();
             return Ok(tasks);
         }
 

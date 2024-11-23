@@ -17,7 +17,7 @@ builder.Services.AddDbContext<TaskDbContext>(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOverblikPlus", builder =>
-        builder.WithOrigins("https://overblikplus.dk")
+        builder.WithOrigins("https://overblikplus.dk, http://localhost:5226")
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
@@ -33,6 +33,14 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 builder.Services.AddScoped<IImageConversionService, ImageConversionService>();
 builder.Services.AddScoped<BlobStorageService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowOverblikPlus",
+        builder => builder.WithOrigins("https://overblikplus.dk, http://localhost:5226")
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
 
 
 builder.Services.AddAuthentication("Bearer")
@@ -64,7 +72,8 @@ else
 }
 
 app.UseRouting();
-app.UseCors("AllowOverblikPlus");
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
