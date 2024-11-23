@@ -29,8 +29,8 @@ builder.Services.AddScoped<BlobStorageService>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowOverblikPlus", builder =>
-        builder.WithOrigins("https://overblikplus.dk", "http://localhost:5226") // Korrekt liste
+    options.AddPolicy("AllowOverblikPlus",
+        policy => policy.AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader());
 });

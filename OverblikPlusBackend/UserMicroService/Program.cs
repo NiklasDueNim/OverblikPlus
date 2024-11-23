@@ -46,7 +46,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOverblikPlus",
-        builder => builder.WithOrigins("https://overblikplus.dk, http://localhost:5226")
+        policy => policy.AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader());
 });

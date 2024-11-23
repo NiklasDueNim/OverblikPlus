@@ -16,13 +16,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowBlazorClient", policy =>
-    {
-        policy.WithOrigins("http://localhost:5226", "https://overblikplus.dk")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+    options.AddPolicy("AllowOverblikPlus",
+        policy => policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
     });
-});
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -50,7 +48,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
-app.UseCors("AllowBlazorClient");
+app.UseCors("AllowOverblikPlus");
 
 if (app.Environment.IsDevelopment())
 {

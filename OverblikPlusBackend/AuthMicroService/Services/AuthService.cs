@@ -40,7 +40,7 @@ namespace AuthMicroService.Services
             var refreshToken = GenerateRefreshToken(user.Id);
             await SaveRefreshTokenAsync(refreshToken);
 
-            return (jwtToken, refreshToken.Token); // Returner både JWT og RefreshToken som en tuple
+            return (jwtToken, refreshToken.Token); 
         }
 
         public async Task<RegistrationResult> RegisterAsync(RegisterDto registerDto)
@@ -129,7 +129,7 @@ namespace AuthMicroService.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.Email),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("nameid", user.Id),
                 new Claim(ClaimTypes.Role, user.Role)
