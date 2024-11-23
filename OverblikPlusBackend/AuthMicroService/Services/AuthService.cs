@@ -28,7 +28,7 @@ namespace AuthMicroService.Services
             _dbContext = dbContext;
         }
 
-        public async Task<string> LoginAsync(LoginDto loginDto)
+        public async Task<(string, string)> LoginAsync(LoginDto loginDto)
         {
             var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
             if (!result.Succeeded) throw new UnauthorizedAccessException("Invalid login attempt.");
@@ -40,7 +40,7 @@ namespace AuthMicroService.Services
             var refreshToken = GenerateRefreshToken(user.Id);
             await SaveRefreshTokenAsync(refreshToken);
 
-            return jwtToken;
+            return (jwtToken, refreshToken.Token);
         }
 
 
@@ -48,13 +48,13 @@ namespace AuthMicroService.Services
         {
             var user = new ApplicationUser
             {
-                Email = registerDto.Email,
-                UserName = registerDto.Email,
                 FirstName = registerDto.FirstName,
                 LastName = registerDto.LastName,
+                Email = registerDto.Email,
+                UserName = registerDto.Email,
                 Role = registerDto.Role
             };
-
+            
             var result = await _userManager.CreateAsync(user, registerDto.Password);
             if (!result.Succeeded)
                 return new RegistrationResult { Success = false, Errors = result.Errors.Select(e => e.Description) };
@@ -143,9 +143,10 @@ namespace AuthMicroService.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.Email),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim("nameid", user.Id)
+                new Claim("nameid", user.Id),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

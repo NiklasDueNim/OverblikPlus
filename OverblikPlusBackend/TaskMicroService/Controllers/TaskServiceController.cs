@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskMicroService.Services;
@@ -17,17 +16,7 @@ namespace TaskMicroService.Controllers
             _taskService = taskService;
         }
 
-        private string GetCurrentUserId()
-        {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier);
-        }
-
-        private string GetCurrentUserRole()
-        {
-            return User.FindFirstValue(ClaimTypes.Role);
-        }
-
-        // [Authorize]
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskById(int id)
         {
@@ -35,60 +24,28 @@ namespace TaskMicroService.Controllers
             if (taskDto == null)
                 return NotFound();
 
-            var currentUserRole = GetCurrentUserRole();
-            var currentUserId = GetCurrentUserId();
-
-            if (taskDto.UserId != currentUserId && currentUserRole != "Admin" && currentUserRole != "Staff")
-            {
-                return Forbid();
-            }
-
             return Ok(taskDto);
         }
 
         
-        // [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Staff")]
         [HttpGet]
         public async Task<IActionResult> GetAllTasks()
         {
             var tasks = await _taskService.GetAllTasks();
             return Ok(tasks);
         }
-
         
-        // [Authorize]
-        [HttpGet("user-tasks")]
-        public async Task<IActionResult> GetTasksForLoggedInUser()
-        {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId))
-            {
-                return Unauthorized("User ID not found in token.");
-            }
-
-            var tasks = await _taskService.GetTasksByUserId(currentUserId);
-            return Ok(tasks);
-        }
-
-        
-        // [Authorize]
+        [Authorize(Roles = "User")]
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetTasksByUserId(string userId)
         {
-            var currentUserId = GetCurrentUserId();
-            var currentUserRole = GetCurrentUserRole();
-
-            if (currentUserId != userId && currentUserRole != "Admin" && currentUserRole != "Staff")
-            {
-                return Forbid();
-            }
-
             var tasks = await _taskService.GetTasksByUserId(userId);
             return Ok(tasks);
         }
 
         
-        // [Authorize(Roles = "Admin,Staff")]
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
@@ -111,7 +68,7 @@ namespace TaskMicroService.Controllers
             }
         }
 
-        // [Authorize(Roles = "Admin,Staff")]
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskDto updateTaskDto)
         {
@@ -126,21 +83,13 @@ namespace TaskMicroService.Controllers
             return NoContent();
         }
 
-        // [Authorize]
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
             var existingTask = await _taskService.GetTaskById(id);
             if (existingTask == null)
                 return NotFound();
-
-            var currentUserId = GetCurrentUserId();
-            var currentUserRole = GetCurrentUserRole();
-
-            if (existingTask.UserId != currentUserId && currentUserRole != "Admin" && currentUserRole != "Staff")
-            {
-                return Forbid();
-            }
 
             await _taskService.DeleteTask(id);
             return NoContent();

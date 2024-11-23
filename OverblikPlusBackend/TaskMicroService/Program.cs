@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TaskMicroService.DataAccess;
@@ -13,29 +14,11 @@ builder.Services.AddApplicationInsightsTelemetry(builder.Configuration["Applicat
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowOverblikPlus", builder =>
-        builder.WithOrigins("https://overblikplus.dk")
-            .AllowAnyMethod()
-            .AllowAnyHeader());
-});
-
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-
-builder.Services.AddControllers();
-builder.Services.AddAutoMapper(typeof(Program));
-builder.Services.AddScoped<ITaskService, TaskService>();
-builder.Services.AddScoped<ITaskStepService, TaskStepService>();
-builder.Services.AddScoped<IImageConversionService, ImageConversionService>();
-builder.Services.AddScoped<BlobStorageService>();
-
-
-builder.Services.AddAuthentication("Bearer")
+builder.Services.AddAuthentication(options => 
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer("Bearer", options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -50,8 +33,25 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
-var app = builder.Build();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowOverblikPlus",
+        policy => policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddControllers();
+builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ITaskStepService, TaskStepService>();
+builder.Services.AddScoped<IImageConversionService, ImageConversionService>();
+builder.Services.AddScoped<BlobStorageService>();
+
+var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
@@ -64,8 +64,11 @@ else
 }
 
 app.UseRouting();
+
 app.UseCors("AllowOverblikPlus");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 app.Run();

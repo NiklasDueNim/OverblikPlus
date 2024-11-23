@@ -43,7 +43,7 @@ namespace UserMicroService.Services
         public async Task<string> CreateUserAsync(CreateUserDto createUserDto)
         {
             var user = _mapper.Map<ApplicationUser>(createUserDto);
-
+            user.UserName = user.FirstName + user.LastName;
             Console.WriteLine($"Medication = {createUserDto.Medication}");
 
             if (!string.IsNullOrEmpty(createUserDto.Medication))

@@ -27,33 +27,27 @@ public class UserServiceTests
             {
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
-                DateOfBirth = dto.DateOfBirth,
                 Medication = dto.Medication,
-                Goals = dto.Goals,
                 Role = dto.Role,
-                UserName = dto.Username,
                 Email = dto.Email
             });
-
+        
         var createUserDto = new CreateUserDto
         {
             FirstName = "John",
             LastName = "Doe",
-            DateOfBirth = DateTime.Now,
             Medication = "None",
-            Goals = "Complete project",
             Role = "User",
-            Username = "johndoe",
             Password = "Password123!",
             Email = "john.doe@example.com"
         };
-
+        
         userManagerMock
             .Setup(um => um.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
-
+        
         var result = await userService.CreateUserAsync(createUserDto);
-
+        
         
         Assert.False(string.IsNullOrEmpty(result));
     }

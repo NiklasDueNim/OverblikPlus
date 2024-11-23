@@ -10,13 +10,13 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 
-builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddSingleton<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 
 
 builder.Services.AddHttpClient<AuthService>(client =>
 {
-    client.BaseAddress = new Uri("https://overblikplus-auth-api.azurewebsites.net");
+    client.BaseAddress = new Uri("http://localhost:5137");
 });
 
 
@@ -24,20 +24,20 @@ builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
     new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())
         .ConfigureHandler(authorizedUrls: new[]
         {
-            "https://overblikplus-task-api.azurewebsites.net",
-            "https://overblikplus-user-api.azurewebsites.net",
-            "https://overblikplus-auth-api.azurewebsites.net"
+            "http://localhost:5081",
+            "http://localhost:5032",
+            "http://localhost:5137"
         }));
 
 
 builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
 {
-    client.BaseAddress = new Uri("https://overblikplus-task-api.azurewebsites.net");
+    client.BaseAddress = new Uri("http://localhost:5032");
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddHttpClient<IUserService, UserService>(client =>
 {
-    client.BaseAddress = new Uri("https://overblikplus-user-api.azurewebsites.net");
+    client.BaseAddress = new Uri("http://localhost:5081");
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
