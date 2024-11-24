@@ -42,7 +42,7 @@ builder.Services.AddHttpClient<IUserService, UserService>(client =>
 
 builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
 {
-    client.BaseAddress = new Uri("https://overblikplus-task-api.azurewebsites.net");
+    client.BaseAddress = new Uri("http://localhost:5032");
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 

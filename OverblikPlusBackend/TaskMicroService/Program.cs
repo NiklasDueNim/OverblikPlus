@@ -32,7 +32,7 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
-
+// TODO implementere korrekt cors
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOverblikPlus",
@@ -48,7 +48,7 @@ builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
-builder.Services.AddScoped<IImageConversionService, ImageConversionService>();
+builder.Services.AddScoped<IImageConversionService, ImageConversionService>(); // TODO slette denne
 builder.Services.AddScoped<BlobStorageService>();
 
 var app = builder.Build();

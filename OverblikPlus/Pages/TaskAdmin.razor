@@ -87,11 +87,11 @@
     protected override async Task OnInitializedAsync()
     {
         var role = await AuthStateProvider.GetRoleAsync();
-        if (role != "Admin" && role != "Staff")
-        {
-            Navigation.NavigateTo("/unauthorized");
-            return;
-        }
+        // if (role != "Admin" && role != "Staff")
+        // {
+        //     Navigation.NavigateTo("/unauthorized");
+        //     return;
+        // }
 
         await LoadTasks();
         await LoadUsers();
@@ -99,8 +99,18 @@
 
     private async Task LoadTasks()
     {
-        Tasks = await TaskService.GetAllTasks();
+        var role = await AuthStateProvider.GetRoleAsync();
+        if (role == "Admin" || role == "Staff")
+        {
+            Tasks = await TaskService.GetAllTasks();
+        }
+        else if (role == "User")
+        {
+            var currentUserId = await AuthStateProvider.GetUserIdAsync();
+            Tasks = await TaskService.GetTasksForUserAsync(currentUserId);
+        }
     }
+
 
     private async Task LoadUsers()
     { 

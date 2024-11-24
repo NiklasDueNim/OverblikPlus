@@ -84,12 +84,17 @@ namespace TaskMicroService.Services
         public async Task<int> CreateTask(CreateTaskDto createTaskDto)
         {
             var task = _mapper.Map<TaskEntity>(createTaskDto);
-            
+
+            if (string.IsNullOrEmpty(task.UserId))
+            {
+                throw new Exception("UserId is not set for the task.");
+            }
+    
             if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
             {
                 var imageBytes = Convert.FromBase64String(createTaskDto.ImageBase64);
                 using var stream = new MemoryStream(imageBytes);
-                
+        
                 var blobFileName = $"{Guid.NewGuid()}.jpg"; 
                 task.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
             }
@@ -99,6 +104,7 @@ namespace TaskMicroService.Services
 
             return task.Id;
         }
+
 
         public async Task DeleteTask(int id)
         {
