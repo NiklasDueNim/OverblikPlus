@@ -51,7 +51,6 @@ public class UserService : IUserService
         var response = await _httpClient.PostAsJsonAsync("api/UserService", newUser);
         response.EnsureSuccessStatusCode();
         
-        // Assuming the API returns the created user's ID as a JSON response like: { "id": "some-id" }
         var createdUser = await response.Content.ReadFromJsonAsync<ReadUserDto>();
         
         if (createdUser != null)

@@ -6,11 +6,9 @@ namespace UserMicroService.dto
         
         public string LastName { get; set; }
         
-        
         public string? Medication { get; set; }
 
         public string Role { get; set; }
-        
         
         public string Password { get; set; }
         

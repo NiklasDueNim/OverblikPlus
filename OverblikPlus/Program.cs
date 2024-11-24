@@ -13,31 +13,22 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddSingleton<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 
-
-builder.Services.AddHttpClient<AuthService>(client =>
+builder.Services.AddHttpClient<IUserService, UserService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5137");
-});
-
+    client.BaseAddress = new Uri("http://localhost:5081");
+}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
     new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())
         .ConfigureHandler(authorizedUrls: new[]
         {
             "http://localhost:5081",
-            "http://localhost:5032",
-            "http://localhost:5137"
+            "http://localhost:5032"
         }));
-
 
 builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
 {
     client.BaseAddress = new Uri("http://localhost:5032");
-}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
-
-builder.Services.AddHttpClient<IUserService, UserService>(client =>
-{
-    client.BaseAddress = new Uri("http://localhost:5081");
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
@@ -45,8 +36,13 @@ builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
     client.BaseAddress = new Uri("http://localhost:5032");
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5081");
+}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();
 
 await builder.Build().RunAsync();
+

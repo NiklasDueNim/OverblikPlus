@@ -1,6 +1,6 @@
-﻿@using OverblikPlus.Services
+﻿@using OverblikPlus.Services.Interfaces
 @inherits LayoutComponentBase
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
 
@@ -11,7 +11,7 @@
 
     <main>
         <div class="top-row px-4 d-flex justify-content-between align-items-center">
-            <div></div> <!-- Tom div for at sikre spacing -->
+            <div></div>
 
             <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">

@@ -1,10 +1,11 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using OverblikPlus.Dtos.User;
+using OverblikPlus.Services.Interfaces;
 
 namespace OverblikPlus.Services;
 
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly HttpClient _httpClient;
     private readonly CustomAuthStateProvider _authStateProvider;
@@ -19,10 +20,10 @@ public class AuthService
     {
         var loginDto = new { Email, Password };
         Console.WriteLine("Sending login request...");
-    
+
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/Auth/login", loginDto);
+            var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginDto);
 
             Console.WriteLine($"Login response status: {response.StatusCode}");
 
@@ -54,39 +55,25 @@ public class AuthService
         return false;
     }
 
-
-
     public async Task LogoutAsync()
     {
-        var response = await _httpClient.PostAsync("api/Auth/logout", null);
-
-        if (response.IsSuccessStatusCode)
-        {
-            await _authStateProvider.RemoveTokenAsync();
-            Console.WriteLine("User logged out successfully.");
-        }
-        else
-        {
-            Console.WriteLine($"Logout failed: {response.StatusCode}");
-        }
+        await _authStateProvider.RemoveTokenAsync();
+        Console.WriteLine("User logged out successfully.");
     }
 
-    
     public async Task<bool> RegisterAsync(CreateUserDto createUserDto)
     {
-        var response = await _httpClient.PostAsJsonAsync("api/Auth/register", createUserDto);
+        var response = await _httpClient.PostAsJsonAsync("api/auth/register", createUserDto);
 
         if (response.IsSuccessStatusCode)
         {
             return true;
         }
-        
+
         var errorContent = await response.Content.ReadAsStringAsync();
         Console.WriteLine($"Registration failed: {errorContent}");
         return false;
     }
-
-
 
     public async Task<bool> RefreshTokenAsync()
     {
@@ -97,7 +84,7 @@ public class AuthService
             return false;
         }
 
-        var response = await _httpClient.PostAsJsonAsync("api/Auth/refresh", new { refreshToken });
+        var response = await _httpClient.PostAsJsonAsync("api/auth/refresh", new { refreshToken });
 
         if (response.IsSuccessStatusCode)
         {
@@ -112,9 +99,8 @@ public class AuthService
         Console.WriteLine($"Failed to refresh token. Status code: {response.StatusCode}");
         return false;
     }
-
-
 }
+
 
 public class LoginResponse
 {
