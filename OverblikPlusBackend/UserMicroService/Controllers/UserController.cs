@@ -1,20 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using UserMicroService.dto;
 using UserMicroService.Services;
-using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace UserMicroService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserServiceController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly ILogger<UserServiceController> _logger;
+        private readonly ILogger<UserController> _logger;
 
-        public UserServiceController(IUserService userService, ILogger<UserServiceController> logger)
+        public UserController(IUserService userService, ILogger<UserController> logger)
         {
             _userService = userService;
             _logger = logger;

@@ -17,7 +17,7 @@ public class UserService : IUserService
     {
         try
         {
-            var users = await _httpClient.GetFromJsonAsync<IEnumerable<ReadUserDto>>("api/UserService/users");
+            var users = await _httpClient.GetFromJsonAsync<IEnumerable<ReadUserDto>>("api/User/users");
             return users ?? new List<ReadUserDto>();
         }
         catch (Exception ex)
@@ -31,7 +31,7 @@ public class UserService : IUserService
     {
         try
         {
-            var user = await _httpClient.GetFromJsonAsync<ReadUserDto>($"api/UserService/{id}");
+            var user = await _httpClient.GetFromJsonAsync<ReadUserDto>($"api/User/{id}");
             if (user == null)
             {
                 Console.WriteLine($"User with ID {id} not found.");
@@ -48,7 +48,7 @@ public class UserService : IUserService
 
     public async Task<string> CreateUser(CreateUserDto newUser)
     {
-        var response = await _httpClient.PostAsJsonAsync("api/UserService", newUser);
+        var response = await _httpClient.PostAsJsonAsync("api/User", newUser);
         response.EnsureSuccessStatusCode();
         
         var createdUser = await response.Content.ReadFromJsonAsync<ReadUserDto>();
@@ -63,13 +63,13 @@ public class UserService : IUserService
 
     public async Task UpdateUser(string id, UpdateUserDto updatedUser)
     {
-        var response = await _httpClient.PutAsJsonAsync($"api/UserService/{id}", updatedUser);
+        var response = await _httpClient.PutAsJsonAsync($"api/User/{id}", updatedUser);
         response.EnsureSuccessStatusCode();
     }
 
     public async Task DeleteUser(string id)
     {
-        var response = await _httpClient.DeleteAsync($"api/UserService/{id}");
+        var response = await _httpClient.DeleteAsync($"api/User/{id}");
         response.EnsureSuccessStatusCode();
     }
 }
