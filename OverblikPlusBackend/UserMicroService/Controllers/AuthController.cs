@@ -4,8 +4,8 @@ using UserMicroService.Services;
 
 namespace UserMicroService.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -18,17 +18,24 @@ namespace UserMicroService.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            if (loginDto == null)
-            {
-                return BadRequest("Login data is required.");
-            }
-            
-            var token = await _authService.AuthenticateAsync(loginDto);
-            if (token == null)
-            {
-                return Unauthorized();
-            }
-            return Ok(new { Token = token });
+            var token = await _authService.LoginAsync(loginDto);
+            return Ok(new { Token = token.Item1, RefreshToken = token.Item2 });
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        {
+            var result = await _authService.RegisterAsync(registerDto);
+            if (!result.Success) return BadRequest(result.Errors);
+
+            return Ok("User registered successfully.");
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken([FromBody] string token)
+        {
+            var newToken = await _authService.RefreshTokenAsync(token);
+            return Ok(new { Token = newToken });
         }
     }
 }
