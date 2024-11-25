@@ -23,7 +23,7 @@ public class AuthService : IAuthService
 
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/auth/login", loginDto);
+            var response = await _httpClient.PostAsJsonAsync("api/Auth/login", loginDto);
 
             Console.WriteLine($"Login response status: {response.StatusCode}");
 
@@ -63,7 +63,7 @@ public class AuthService : IAuthService
 
     public async Task<bool> RegisterAsync(CreateUserDto createUserDto)
     {
-        var response = await _httpClient.PostAsJsonAsync("api/auth/register", createUserDto);
+        var response = await _httpClient.PostAsJsonAsync("api/Auth/register", createUserDto);
 
         if (response.IsSuccessStatusCode)
         {
@@ -84,7 +84,7 @@ public class AuthService : IAuthService
             return false;
         }
 
-        var response = await _httpClient.PostAsJsonAsync("api/auth/refresh", new { refreshToken });
+        var response = await _httpClient.PostAsJsonAsync("api/Auth/refresh", new { refreshToken });
 
         if (response.IsSuccessStatusCode)
         {
