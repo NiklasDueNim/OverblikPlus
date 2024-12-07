@@ -2,42 +2,56 @@
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Services.Interfaces
 @inject ITaskService TaskService
-@inject ITaskStepService TaskStepService
-@inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
 
 <div class="container mt-4">
-    <h3 class="mb-4">Mine Opgaver</h3>
+    <h1 class="mb-4">Oversigt over opgaver</h1>
 
-    <!-- List of Tasks -->
-    <ul class="list-group">
-        @foreach (var task in Tasks)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <h5>@task.Name</h5>
-                    <p class="mb-1">@task.Description</p>
-                    @if (!string.IsNullOrEmpty(task.Image))
-                    {
-                        <img src="@task.Image" alt="Task Image" class="img-thumbnail" style="max-width: 120px; max-height: 120px; object-fit: cover;" />
-                    }
-                </div>
-                <div class="ml-auto">
-                    <button class="btn btn-primary" @onclick="@(() => StartTask(task.Id))">
-                        Se opgave trin for trin
-                    </button>
-                </div>
-            </li>
-        }
-    </ul>
+    <!-- Date Navigation -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <button class="btn btn-secondary" @onclick="ShowPreviousDay">
+            Forrige Dag
+        </button>
+        <h4>@SelectedDate.ToString("dddd, dd MMMM yyyy")</h4>
+        <button class="btn btn-secondary" @onclick="ShowNextDay">
+            Næste Dag
+        </button>
+    </div>
+
+    <!-- Task List for the Selected Day -->
+    @if (FilteredTasks.Any())
+    {
+        <ul class="list-group">
+            @foreach (var task in FilteredTasks)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5>@task.Name</h5>
+                        <p class="mb-1">@task.Description</p>
+                        @if (!string.IsNullOrEmpty(task.Image))
+                        {
+                            <img src="@task.Image" alt="Task Image" class="img-thumbnail" style="max-width: 120px; max-height: 120px; object-fit: cover;" />
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>Ingen opgaver for denne dag.</p>
+    }
 </div>
 
 @code {
-    private List<ReadTaskDto> Tasks { get; set; } = new List<ReadTaskDto>();
+    private List<ReadTaskDto> AllTasks { get; set; } = new();
+    private List<ReadTaskDto> FilteredTasks { get; set; } = new();
+    private DateTime SelectedDate { get; set; } = DateTime.Today;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadTasks();
+        FilterTasksByDate();
     }
 
     private async Task LoadTasks()
@@ -45,27 +59,38 @@
         var userId = await AuthStateProvider.GetUserIdAsync();
         if (!string.IsNullOrEmpty(userId))
         {
-            Tasks = await TaskService.GetTasksForUserAsync(userId);
-        }
-    }
-
-    
-    private async Task StartTask(int taskId)
-    {
-        Console.WriteLine($"StartTask called with taskId: {taskId}");
-
-        var steps = await TaskStepService.GetStepsForTask(taskId);
-        if (steps.Any())
-        {
-            var firstStepId = steps.First().Id;
-            Console.WriteLine($"Navigating to first step with ID {firstStepId} for task {taskId}");
-
-            Navigation.NavigateTo($"/task-step-view/{taskId}/step/{firstStepId}");
+            AllTasks = await TaskService.GetTasksForUserAsync(userId);
+            Console.WriteLine($"Loaded {AllTasks.Count} tasks for user {userId}");
+            
+            foreach (var task in AllTasks)
+            {
+                Console.WriteLine($"Task: {task.Name}, NextOccurrence: {task.NextOccurrence}");
+            }
         }
         else
         {
-            Console.WriteLine($"No steps found for task with ID {taskId}");
+            Console.WriteLine("User ID is null or empty.");
         }
     }
-}
 
+    private void FilterTasksByDate()
+    {
+        FilteredTasks = AllTasks
+            .Where(task => task.NextOccurrence.Date == SelectedDate.Date)
+            .ToList();
+
+        Console.WriteLine($"Filtered {FilteredTasks.Count} tasks for date {SelectedDate.Date}");
+    }
+
+    private void ShowPreviousDay()
+    {
+        SelectedDate = SelectedDate.AddDays(-1);
+        FilterTasksByDate();
+    }
+
+    private void ShowNextDay()
+    {
+        SelectedDate = SelectedDate.AddDays(1);
+        FilterTasksByDate();
+    }
+}

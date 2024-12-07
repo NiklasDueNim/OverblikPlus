@@ -1,5 +1,4 @@
 @page "/"
-
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.User
 @using OverblikPlus.Services.Interfaces
@@ -8,22 +7,61 @@
 @inject CustomAuthStateProvider AuthStateProvider
 
 <div class="container mt-4">
-    <h1 class="mb-4">Velkommen, @user.FirstName @user.LastName!</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Velkommen, @user.FirstName @user.LastName!</h1>
+        <select @bind="taskViewMode" class="form-select w-auto">
+            <option value="Single">Én opgave ad gangen</option>
+            <option value="List">Listevisning</option>
+        </select>
+    </div>
 
-    <h3 class="mb-3">Dagens Opgaver</h3>
-    <ul class="list-group mb-4">
-        @foreach (var task in todaysTasks)
-        {
-            <li class="list-group-item d-flex align-items-center">
-                <input
-                    type="checkbox"
-                    class="form-check-input me-2"
-                    checked="@task.IsCompleted"
-                    @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)" />
-                <span>@task.Name</span>
-            </li>
-        }
-    </ul>
+    @if (taskViewMode == "Single")
+    {
+        <div class="card mb-4">
+            @if (todaysTasks.Count > 0)
+            {
+                var currentTask = todaysTasks[currentTaskIndex];
+                <div class="card-header">
+                    <h4>@currentTask.Name</h4>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(currentTask.Image))
+                    {
+                        <img src="@currentTask.Image" alt="Task Image" class="img-fluid mb-3" style="max-width: 100%; height: auto;" />
+                    }
+                    <p>@currentTask.Description</p>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-success" @onclick="() => CompleteTask(currentTask.Id)">Færdiggør</button>
+                        <button class="btn btn-secondary" @onclick="NextTask">Næste</button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p>Ingen opgaver for i dag!</p>
+            }
+        </div>
+    }
+    else if (taskViewMode == "List")
+    {
+        <ul class="list-group mb-4">
+            @foreach (var task in todaysTasks)
+            {
+                <li class="list-group-item d-flex align-items-center">
+                    @if (!string.IsNullOrEmpty(task.Image))
+                    {
+                        <img src="@task.Image" alt="Task Image" class="img-thumbnail me-3" style="max-width: 50px; max-height: 50px;" />
+                    }
+                    <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        checked="@task.IsCompleted"
+                        @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)" />
+                    <span>@task.Name</span>
+                </li>
+            }
+        </ul>
+    }
 
     <h3 class="mb-3">Fremgangen med dine opgaver</h3>
     <div class="progress mb-4" style="height: 25px;">
@@ -37,47 +75,31 @@
     private ReadUserDto user = new();
     private List<ReadTaskDto> todaysTasks = new();
     private double taskCompletionPercentage = 0;
+    private string taskViewMode = "Single"; // Default view mode
+    private int currentTaskIndex = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            await RefreshTasks();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error during initialization: {ex.Message}");
-        }
+        await RefreshTasks();
     }
 
     private async Task RefreshTasks()
     {
-        try
+        var userId = await AuthStateProvider.GetUserIdAsync();
+        if (!string.IsNullOrEmpty(userId))
         {
-            var userId = await AuthStateProvider.GetUserIdAsync();
-            Console.WriteLine($"User ID: {userId}");
+            user = await UserService.GetUserById(userId);
+            var allTasks = await TaskService.GetTasksForUserAsync(userId);
 
-            if (!string.IsNullOrEmpty(userId))
-            {
-                user = await UserService.GetUserById(userId);
-                Console.WriteLine($"User loaded: {user.FirstName} {user.LastName}");
+            // Filter tasks for today
+            todaysTasks = allTasks.Where(task =>
+                string.IsNullOrEmpty(task.RecurrenceType) || task.RecurrenceType == "None" ||
+                task.NextOccurrence.Date == DateTime.Today).ToList();
 
-                var allTasks = await TaskService.GetTasksForUserAsync(userId);
-                Console.WriteLine($"All tasks loaded: {allTasks.Count} tasks retrieved.");
-                
-                todaysTasks = allTasks.Where(task =>
-                    string.IsNullOrEmpty(task.RecurrenceType) || task.RecurrenceType == "None" ||
-                    task.NextOccurrence.Date == DateTime.Today).ToList();
-
-                UpdateProgress();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error refreshing tasks: {ex.Message}");
+            currentTaskIndex = 0; // Reset index when tasks are reloaded
+            UpdateProgress();
         }
     }
-
 
     private void UpdateProgress()
     {
@@ -91,38 +113,27 @@
             taskCompletionPercentage = 0;
         }
 
-        LogTaskStatus();
-
-        Console.WriteLine($"Progress updated: {taskCompletionPercentage}% completed.");
         StateHasChanged();
+    }
+
+    private void NextTask()
+    {
+        currentTaskIndex = (currentTaskIndex + 1) % todaysTasks.Count;
+    }
+
+    private async Task CompleteTask(int taskId)
+    {
+        await TaskService.MarkTaskAsCompleted(taskId);
+        await RefreshTasks();
     }
 
     private async Task OnTaskStatusChanged(int taskId, bool isCompleted)
     {
-        try
+        if (isCompleted)
         {
-            Console.WriteLine($"Task status changed. Task ID: {taskId}, IsCompleted: {isCompleted}");
-
-            if (isCompleted)
-            {
-                Console.WriteLine($"Marking task {taskId} as completed...");
-                await TaskService.MarkTaskAsCompleted(taskId);
-                Console.WriteLine($"Task {taskId} marked as completed.");
-            }
-
-            await RefreshTasks();
+            await TaskService.MarkTaskAsCompleted(taskId);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error updating task status: {ex.Message}");
-        }
-    }
 
-    private void LogTaskStatus()
-    {
-        foreach (var task in todaysTasks)
-        {
-            Console.WriteLine($"Task Id {task.Id}, IsCompleted: {task.IsCompleted}");
-        }
+        await RefreshTasks();
     }
 }
