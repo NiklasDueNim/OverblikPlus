@@ -1,4 +1,3 @@
-using OverblikPlus.Dtos;
 using OverblikPlus.Dtos.Tasks;
 
 namespace OverblikPlus.Services.Interfaces
@@ -15,5 +14,6 @@ namespace OverblikPlus.Services.Interfaces
         Task<bool> UpdateTask(int taskId, UpdateTaskDto updatedTask);
         
         Task<bool> DeleteTask(int taskId);
+        Task MarkTaskAsCompleted(int taskId);
     }
 }

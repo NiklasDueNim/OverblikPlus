@@ -74,5 +74,12 @@ public class TaskService : ITaskService
     {
         return await ExecuteGetRequest<List<ReadTaskDto>>("api/Task/user-tasks");
     }
+    
+    public async Task MarkTaskAsCompleted(int taskId)
+    {
+        var response = await _httpClient.PutAsync($"/api/task/{taskId}/complete", null);
+        response.EnsureSuccessStatusCode();
+    }
+
 
 }

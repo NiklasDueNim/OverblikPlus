@@ -12,4 +12,6 @@ public class ReadTaskDto
     public bool RequiresQrCodeScan { get; set; }
 
     public string UserId { get; set; }
+    
+    public bool isCompleted { get; set; }
 }

@@ -2,6 +2,7 @@
 @using OverblikPlus.Dtos.TaskSteps
 @using OverblikPlus.Services.Interfaces
 @inject ITaskStepService TaskStepService
+@inject ITaskService TaskService
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
 
@@ -85,7 +86,7 @@ else
         else
         {
             Console.WriteLine("No more steps. Returning to task list.");
-            await TaskStepService.MarkTaskAsCompleted(TaskId);
+            await TaskService.MarkTaskAsCompleted(TaskId);
             Navigation.NavigateTo("/tasks");
         }
     }

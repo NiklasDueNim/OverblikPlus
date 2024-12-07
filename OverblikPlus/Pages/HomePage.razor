@@ -1,6 +1,5 @@
 @page "/"
-@using OverblikPlus.Dtos.Employee
-@using OverblikPlus.Dtos.Notification
+
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.User
 @using OverblikPlus.Services.Interfaces
@@ -10,23 +9,19 @@
 
 <div class="container mt-4">
     <h1 class="mb-4">Velkommen, @user.FirstName @user.LastName!</h1>
-    
+
     <h3 class="mb-3">Dagens Opgaver</h3>
     <ul class="list-group mb-4">
         @foreach (var task in todaysTasks)
         {
-            <li class="list-group-item d-flex align-items-center">
-                <input type="checkbox" class="form-check-input me-2" @bind="task.IsCompleted" @bind:event="onchange" />
-                <span>@task.Name</span>
-            </li>
-        }
-    </ul>
-    
-    <h3 class="mb-3">Notifikationer</h3>
-    <ul class="list-group mb-4">
-        @foreach (var notification in notifications)
-        {
-            <li class="list-group-item">@notification.Message</li>
+        <li class="list-group-item d-flex align-items-center">
+            <input
+                type="checkbox"
+                class="form-check-input me-2"
+                checked="@task.IsCompleted"
+                @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)" />
+            <span>@task.Name</span>
+        </li>
         }
     </ul>
 
@@ -36,66 +31,85 @@
             @(taskCompletionPercentage)%
         </div>
     </div>
-    
-    <h3 class="mb-3">Personale på arbejde</h3>
-    <table class="table table-striped mb-4">
-        <thead>
-            <tr>
-                <th>Medarbejder</th>
-                <th>Gruppe</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var employee in employees)
-            {
-                <tr>
-                    <td>@employee.Name</td>
-                    <td>@employee.Group</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    
-    <h3 class="mb-3">Personlig Kalender</h3>
-    <p>Her kan brugeren se deres kommende aftaler og aktiviteter.</p>
 </div>
 
 @code {
-    private ReadUserDto user = new();
-    private List<ReadTaskDto> todaysTasks = new();
-    private List<NotificationDto> notifications = new();
-    private List<EmployeeDto> employees = new();
-    private double taskCompletionPercentage = 0;
+private ReadUserDto user = new();
+private List<ReadTaskDto> todaysTasks = new();
+private double taskCompletionPercentage = 0;
 
     protected override async Task OnInitializedAsync()
-    {
-        
-        var userId = await AuthStateProvider.GetUserIdAsync();
-        Console.WriteLine($"First Name: {user.FirstName}, Last Name {user.FirstName}");
-        Console.WriteLine($"User Id from token: {userId}");
-        
-        if (!string.IsNullOrEmpty(userId))
+    { 
+        try
         {
-            user = await UserService.GetUserById(userId); 
-            StateHasChanged();
-            todaysTasks = await TaskService.GetTasksForUserAsync(userId);
-            
-            taskCompletionPercentage = todaysTasks.Count > 0
-                ? todaysTasks.Count(t => t.IsCompleted) * 100.0 / todaysTasks.Count
-                : 0;
+            var userId = await AuthStateProvider.GetUserIdAsync();
+            Console.WriteLine($"User ID: {userId}");
 
-            // notifications = await NotificationService.GetNotificationsAsync();
-            // employees = await EmployeeService.GetEmployeesStatusAsync();
+            if (!string.IsNullOrEmpty(userId))
+            {
+                user = await UserService.GetUserById(userId);
+                Console.WriteLine($"User loaded: {user.FirstName} {user.LastName}");
+
+                todaysTasks = await TaskService.GetTasksForUserAsync(userId);
+                Console.WriteLine($"Tasks loaded: {todaysTasks.Count} tasks retrieved.");
+
+                UpdateProgress();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during initialization: {ex.Message}");
         }
     }
-    
-    private void UpdateProgress()
-    {
-        taskCompletionPercentage = todaysTasks.Count > 0
-            ? todaysTasks.Count(t => t.IsCompleted) * 100.0 / todaysTasks.Count
-            : 0;
 
-        StateHasChanged();
+    private void UpdateProgress()
+        {
+            if (todaysTasks.Count > 0)
+            {
+                 var completedTasks = todaysTasks.Count(t => t.IsCompleted);
+                 taskCompletionPercentage = (double)completedTasks / todaysTasks.Count * 100;
+            }
+            else
+            {
+                taskCompletionPercentage = 0;
+            }
+            
+            LogTaskStatus();
+
+            Console.WriteLine($"Progress updated: {taskCompletionPercentage}% completed.");
+            StateHasChanged();
+        }
+
+    private async Task OnTaskStatusChanged(int taskId, bool isCompleted)
+    {
+        try
+        {
+            Console.WriteLine($"Task status changed. Task ID: {taskId}, IsCompleted: {isCompleted}");
+
+            if (isCompleted)
+            {
+                Console.WriteLine($"Marking task {taskId} as completed...");
+                await TaskService.MarkTaskAsCompleted(taskId);
+                Console.WriteLine($"Task {taskId} marked as completed.");
+            }
+
+            todaysTasks = await TaskService.GetTasksForUserAsync(user.Id);
+            Console.WriteLine($"Tasks reloaded: {todaysTasks.Count} tasks retrieved.");
+
+            UpdateProgress();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating task status: {ex.Message}");
+        }
     }
 
+    private void LogTaskStatus()
+    {
+        foreach (var task in todaysTasks)
+        {
+            Console.WriteLine($"Task Id {task.Id}, task completed {task.IsCompleted}");
+            
+        }
+    }
 }

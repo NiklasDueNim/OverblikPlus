@@ -78,12 +78,5 @@ namespace OverblikPlus.Services
                 $"Error deleting step {stepId} for task {taskId}"
             );
         }
-
-        public async Task MarkTaskAsCompleted(int taskId)
-        {
-            var response = await _httpClient.PutAsync($"/api/task/{taskId}/complete", null);
-            response.EnsureSuccessStatusCode();
-        }
-
     }
 }
