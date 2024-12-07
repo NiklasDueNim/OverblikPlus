@@ -141,5 +141,16 @@ namespace TaskMicroService.Services
                 await _dbContext.SaveChangesAsync();
             }
         }
+        
+        public async Task MarkTaskAsCompleted(int taskId)
+        {
+            var task = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
+
+            if (task != null)
+            {
+                task.IsCompleted = true;
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

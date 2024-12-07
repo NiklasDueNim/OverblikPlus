@@ -74,9 +74,8 @@ else
     }
 
 
-    private void ShowNextStep()
+    private async void ShowNextStep()
     {
-        Console.WriteLine("Bliver dette kaldt?");
         var currentIndex = TaskSteps.FindIndex(step => step.Id == StepId);
         if (currentIndex != -1 && currentIndex < TaskSteps.Count - 1)
         {
@@ -86,6 +85,7 @@ else
         else
         {
             Console.WriteLine("No more steps. Returning to task list.");
+            await TaskStepService.MarkTaskAsCompleted(TaskId);
             Navigation.NavigateTo("/tasks");
         }
     }

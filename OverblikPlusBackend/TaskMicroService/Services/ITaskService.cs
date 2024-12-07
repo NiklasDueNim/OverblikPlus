@@ -11,5 +11,6 @@ namespace TaskMicroService.Services
         Task<int> CreateTask(CreateTaskDto createTaskDto);
         Task DeleteTask(int id);
         Task UpdateTask(int id, UpdateTaskDto updateTaskDto);
+        Task MarkTaskAsCompleted(int taskId);
     }
 }

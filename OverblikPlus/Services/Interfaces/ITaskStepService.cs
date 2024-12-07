@@ -9,5 +9,6 @@ namespace OverblikPlus.Services.Interfaces
         Task<bool> CreateTaskStep(CreateTaskStepDto newStep);
         Task<bool> UpdateTaskStep(int taskId, int stepId, UpdateTaskStepDto updatedStep);
         Task<bool> DeleteTaskStep(int taskId, int stepId);
+        Task MarkTaskAsCompleted(int taskId);
     }
 }

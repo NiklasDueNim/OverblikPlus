@@ -113,5 +113,12 @@ namespace TaskMicroService.Controllers
             await _taskService.DeleteTask(id);
             return NoContent();
         }
+        
+        [HttpPut("{taskId}/complete")]
+        public async Task<IActionResult> MarkTaskAsCompleted(int taskId)
+        {
+            await _taskService.MarkTaskAsCompleted(taskId);
+            return NoContent();
+        }
     }
 }
