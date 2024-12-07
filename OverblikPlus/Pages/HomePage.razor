@@ -1,5 +1,4 @@
 @page "/"
-@using OverblikPlus.Dtos
 @using OverblikPlus.Dtos.Employee
 @using OverblikPlus.Dtos.Notification
 @using OverblikPlus.Dtos.Tasks
@@ -17,7 +16,7 @@
         @foreach (var task in todaysTasks)
         {
             <li class="list-group-item d-flex align-items-center">
-                <input type="checkbox" class="form-check-input me-2" @bind="task.IsCompleted" />
+                <input type="checkbox" class="form-check-input me-2" @bind="task.IsCompleted" @bind:event="onchange" />
                 <span>@task.Name</span>
             </li>
         }
@@ -33,12 +32,12 @@
 
     <h3 class="mb-3">Fremgangen med dine opgaver</h3>
     <div class="progress mb-4" style="height: 25px;">
-        <div class="progress-bar" role="progressbar" style="width: @(xpPercentage)%;">
-            @(xpPercentage)%
+        <div class="progress-bar bg-success" role="progressbar" style="width: @(taskCompletionPercentage)%;">
+            @(taskCompletionPercentage)%
         </div>
     </div>
     
-    <h3 class="mb-3">Medarbejder Status</h3>
+    <h3 class="mb-3">Personale på arbejde</h3>
     <table class="table table-striped mb-4">
         <thead>
             <tr>
@@ -66,7 +65,7 @@
     private List<ReadTaskDto> todaysTasks = new();
     private List<NotificationDto> notifications = new();
     private List<EmployeeDto> employees = new();
-    private double xpPercentage = 0;
+    private double taskCompletionPercentage = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,10 +79,23 @@
             user = await UserService.GetUserById(userId); 
             StateHasChanged();
             todaysTasks = await TaskService.GetTasksForUserAsync(userId);
+            
+            taskCompletionPercentage = todaysTasks.Count > 0
+                ? todaysTasks.Count(t => t.IsCompleted) * 100.0 / todaysTasks.Count
+                : 0;
 
             // notifications = await NotificationService.GetNotificationsAsync();
             // employees = await EmployeeService.GetEmployeesStatusAsync();
-            // xpPercentage = user.XP / 100.0 * 100; // XP as a percentage
         }
     }
+    
+    private void UpdateProgress()
+    {
+        taskCompletionPercentage = todaysTasks.Count > 0
+            ? todaysTasks.Count(t => t.IsCompleted) * 100.0 / todaysTasks.Count
+            : 0;
+
+        StateHasChanged();
+    }
+
 }
