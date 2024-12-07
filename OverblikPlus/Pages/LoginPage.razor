@@ -4,27 +4,51 @@
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
-<h3>Login</h3>
-<input @bind="loginDto.Email" placeholder="Email" />
-<input @bind="loginDto.Password" type="password" placeholder="Adgangskode" />
-<button @onclick="Login" class="btn btn-primary">Log ind</button>
-
-<h3>Ny bruger?</h3>
-<button @onclick="NavigateToRegister" class="btn btn-secondary">Registrer</button>
-
-@code {
-    private LoginDto loginDto = new LoginDto();
-
-    private async Task Login()
-    {
-        var success = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
-        if (success)
+<div class="login-container">
+    <h3>Login</h3>
+    <input @bind="loginDto.Email" placeholder="Email" />
+    <input @bind="loginDto.Password" type="password" placeholder="Adgangskode" />
+    
+    <!-- Disable button while loading -->
+    <button @onclick="Login" class="btn btn-primary" disabled="@isLoading">
+        @if (isLoading)
         {
-            Navigation.NavigateTo("/");
+            <span>Logger ind...</span>
         }
         else
         {
-            Console.WriteLine("Fejl ved login");
+            <span>Log ind</span>
+        }
+    </button>
+
+    <h3>Ny bruger?</h3>
+    <button @onclick="NavigateToRegister" class="btn btn-secondary" disabled="@isLoading">
+        Registrer
+    </button>
+</div>
+
+@code {
+    private LoginDto loginDto = new LoginDto();
+    private bool isLoading = false; // Tracks loading state
+
+    private async Task Login()
+    {
+        isLoading = true; // Start loading
+        try
+        {
+            var success = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
+            if (success)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                Console.WriteLine("Fejl ved login");
+            }
+        }
+        finally
+        {
+            isLoading = false; // Stop loading
         }
     }
 
