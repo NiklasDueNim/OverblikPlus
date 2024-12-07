@@ -45,7 +45,7 @@
                 </select>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3" style="display:@(Task.RecurrenceType == "None" ? "none" : "block")">
                 <label for="recurrenceInterval" class="form-label">Gentagelsesinterval:</label>
                 <input id="recurrenceInterval" type="number" @bind="Task.RecurrenceInterval" class="form-control" min="1" />
             </div>
