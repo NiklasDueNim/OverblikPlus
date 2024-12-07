@@ -98,6 +98,17 @@ namespace TaskMicroService.Services
                 var blobFileName = $"{Guid.NewGuid()}.jpg"; 
                 task.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
             }
+            
+            if (!string.IsNullOrEmpty(createTaskDto.RecurrenceType) && createTaskDto.RecurrenceType != "None")
+            {
+                task.RecurrenceType = createTaskDto.RecurrenceType;
+                task.RecurrenceInterval = createTaskDto.RecurrenceInterval;
+                task.NextOccurrence = createTaskDto.StartDate;
+            }
+            else
+            {
+                task.RecurrenceType = "None";
+            }
 
             _dbContext.Tasks.Add(task);
             await _dbContext.SaveChangesAsync();
