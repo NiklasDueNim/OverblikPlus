@@ -1,8 +1,10 @@
-﻿@using OverblikPlus.Services.Interfaces
+﻿@using OverblikPlus.Dtos.User
+@using OverblikPlus.Services.Interfaces
 @inherits LayoutComponentBase
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
+@inject IUserService UserService
 
 <div class="page">
     <div class="sidebar">
@@ -10,38 +12,55 @@
     </div>
 
     <main>
-        <div class="top-row px-4 d-flex justify-content-between align-items-center">
-            <div></div>
-
-            <div class="dropdown">
+        <!-- Topbar -->
+        <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light shadow-sm">
+            <h4 class="m-0">OverblikPlus</h4>
+            <div class="dropdown ms-auto">
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    Brugernavn
+                    @user.FirstName @user.LastName
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                    <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i> Profil</a></li>
-                    <li><a class="dropdown-item" href="/settings">Indstillinger</a></li>
-                    @if (isAdminOrStaff)
-                    {
-                    <li><a class="dropdown-item" href="/user-overview">Bruger Oversigt</a></li>
-                    }
-                    <li><button class="dropdown-item" @onclick="Logout">Log ud</button></li>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="dropdownMenuButton">
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="/profile">
+                            <i class="fas fa-user me-2"></i> Profil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="/settings">
+                            <i class="fas fa-cog me-2"></i> Indstillinger
+                        </a>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center text-danger" @onclick="Logout">
+                            <i class="fas fa-sign-out-alt me-2"></i> Log ud
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
-
+        
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
 
+
 @code {
-    private bool isAdminOrStaff;
+
+
+    private ReadUserDto user = new();
 
     protected override async Task OnInitializedAsync()
     {
-        var role = await AuthStateProvider.GetRoleAsync();
-        isAdminOrStaff = role == "Admin" || role == "Staff";
+        var userId = await AuthStateProvider.GetUserIdAsync();
+        if (!string.IsNullOrEmpty(userId))
+        {
+            user = await UserService.GetUserById(userId);
+        }
     }
 
     private async Task Logout()
