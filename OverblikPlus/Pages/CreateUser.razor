@@ -1,5 +1,4 @@
 @page "/create-user"
-@using OverblikPlus.Dtos
 @using OverblikPlus.Dtos.User
 @using OverblikPlus.Services.Interfaces
 
@@ -32,11 +31,6 @@
         <label for="lastName">Efternavn</label>
         <InputText id="lastName" @bind-Value="newUser.LastName" class="form-control" />
     </div>
-    <div class="form-group">
-        <label for="MedicationDetails">Medicin</label>
-        <InputText id="role" @bind-Value="newUser.MedicationDetails" class="form-control" />
-    </div>
-
     <div class="form-group">
         <label for="email">Email</label>
         <InputText id="email" @bind-Value="newUser.Email" class="form-control" />

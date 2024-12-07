@@ -13,32 +13,32 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Hjem
+                <i class="fas fa-home"></i> Hjem
             </NavLink>
         </div>
         @if (isAdminOrStaff)
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="employee-status">
-                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Personale
+                    <i class="fas fa-users"></i> Personale
                 </NavLink>
             </div>
         }
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="tasks">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Dagens Opgaver
+                <i class="fas fa-tasks"></i> Dagens Opgaver
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href=@($"user/{userId}")>
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Brugerprofil
+                <i class="fas fa-user"></i> Brugerprofil
             </NavLink>
         </div>
         @if (isAdminOrStaff)
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="create-user">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Opret Bruger
+                    <i class="fas fa-user-plus"></i> Opret Bruger
                 </NavLink>
             </div>
         }
@@ -46,26 +46,25 @@
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="user-list">
-                    <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Bruger Oversigt
+                    <i class="fas fa-users-cog"></i> Bruger Oversigt
                 </NavLink>
             </div>
         }
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="scan">
-                <span class="bi bi-list-nested-nav-menu"></span> Scan QR-kode
+                <i class="fas fa-qrcode"></i> Scan QR-kode
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="admin/tasks">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Opret Opgaver
+                <i class="fas fa-plus-circle"></i> Opret Opgaver
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Login">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Login
+                <i class="fas fa-sign-in-alt"></i> Login
             </NavLink>
         </div>
-        
     </nav>
 </div>
 
@@ -78,7 +77,6 @@
     private async Task ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
-
     }
 
     protected override async Task OnInitializedAsync()

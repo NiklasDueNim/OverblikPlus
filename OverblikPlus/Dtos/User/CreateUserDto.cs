@@ -9,9 +9,7 @@ public class CreateUserDto
 
     [Required(ErrorMessage = "Efternavn er påkrævet.")]
     public string LastName { get; set; }
-
-    public string MedicationDetails { get; set; }
-
+    
     [Required(ErrorMessage = "Email er påkrævet.")]
     [EmailAddress(ErrorMessage = "Ugyldig email.")]
     public string Email { get; set; }
