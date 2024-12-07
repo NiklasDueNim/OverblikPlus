@@ -15,5 +15,10 @@ public class ReadTaskDto
     public string? UserId { get; set; }
     
     public bool IsCompleted { get; set; }
+    
+    public string RecurrenceType { get; set; }
+    
+    public int RecurrenceInterval { get; set; }
+    public DateTime NextOccurrence { get; set; }
 
 }

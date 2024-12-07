@@ -13,4 +13,10 @@ public class CreateTaskDto
     public int StepNumber { get; set; }
 
     public string? UserId { get; set; }
+    
+    public string RecurrenceType { get; set; }
+    
+    public int RecurrenceInterval { get; set; }
+    
+    public DateTime StartDate { get; set; }
 }

@@ -12,6 +12,8 @@ public class TaskEntity
     
     public string RecurrenceType { get; set; }
     public int RecurrenceInterval { get; set; }
+    
+    public DateTime StartDate { get; set; }
     public DateTime NextOccurrence { get; set; } 
     public string? UserId { get; set; }
     public bool RequiresQrCodeScan { get; set; } 

@@ -56,7 +56,6 @@ namespace TaskMicroService.Services
 
             return taskDto;
         }
-        
 
         public async Task<IEnumerable<ReadTaskDto>> GetTasksByUserId(string userId)
         {
@@ -64,9 +63,9 @@ namespace TaskMicroService.Services
                 .Include(t => t.Steps)
                 .Where(t => t.UserId == userId)
                 .ToListAsync();
-            
+
             var taskDtos = _mapper.Map<List<ReadTaskDto>>(tasks);
-            
+
             foreach (var taskDto in taskDtos)
             {
                 var taskEntity = tasks.FirstOrDefault(t => t.Id == taskDto.Id);
@@ -80,7 +79,6 @@ namespace TaskMicroService.Services
             return taskDtos;
         }
 
-
         public async Task<int> CreateTask(CreateTaskDto createTaskDto)
         {
             var task = _mapper.Map<TaskEntity>(createTaskDto);
@@ -89,21 +87,21 @@ namespace TaskMicroService.Services
             {
                 throw new Exception("UserId is not set for the task.");
             }
-    
+
             if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
             {
                 var imageBytes = Convert.FromBase64String(createTaskDto.ImageBase64);
                 using var stream = new MemoryStream(imageBytes);
-        
-                var blobFileName = $"{Guid.NewGuid()}.jpg"; 
+
+                var blobFileName = $"{Guid.NewGuid()}.jpg";
                 task.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
             }
-            
+
             if (!string.IsNullOrEmpty(createTaskDto.RecurrenceType) && createTaskDto.RecurrenceType != "None")
             {
                 task.RecurrenceType = createTaskDto.RecurrenceType;
                 task.RecurrenceInterval = createTaskDto.RecurrenceInterval;
-                task.NextOccurrence = createTaskDto.StartDate;
+                task.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
             }
             else
             {
@@ -115,7 +113,6 @@ namespace TaskMicroService.Services
 
             return task.Id;
         }
-
 
         public async Task DeleteTask(int id)
         {
@@ -139,7 +136,7 @@ namespace TaskMicroService.Services
             if (taskEntity != null)
             {
                 _mapper.Map(updateTaskDto, taskEntity);
-                
+
                 if (!string.IsNullOrEmpty(updateTaskDto.ImageUrl))
                 {
                     var imageBytes = Convert.FromBase64String(updateTaskDto.ImageUrl);
@@ -152,16 +149,34 @@ namespace TaskMicroService.Services
                 await _dbContext.SaveChangesAsync();
             }
         }
-        
+
         public async Task MarkTaskAsCompleted(int taskId)
         {
-            var task = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == taskId);
+            var task = await _dbContext.Tasks.FindAsync(taskId);
 
-            if (task != null)
+            if (task == null)
+                throw new Exception($"Task with ID {taskId} not found.");
+
+            task.IsCompleted = true;
+
+            if (!string.IsNullOrEmpty(task.RecurrenceType) && task.RecurrenceType != "None")
             {
-                task.IsCompleted = true;
-                await _dbContext.SaveChangesAsync();
+                task.NextOccurrence = CalculateNextOccurrence(task.NextOccurrence, task.RecurrenceType, task.RecurrenceInterval);
+                task.IsCompleted = false;
             }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        private DateTime CalculateNextOccurrence(DateTime startDate, string recurrenceType, int interval)
+        {
+            return recurrenceType switch
+            {
+                "Daily" => startDate.AddDays(interval),
+                "Weekly" => startDate.AddDays(7 * interval),
+                "Monthly" => startDate.AddMonths(interval),
+                _ => throw new Exception("Invalid recurrence type")
+            };
         }
     }
 }

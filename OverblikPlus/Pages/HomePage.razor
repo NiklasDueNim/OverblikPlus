@@ -14,14 +14,14 @@
     <ul class="list-group mb-4">
         @foreach (var task in todaysTasks)
         {
-        <li class="list-group-item d-flex align-items-center">
-            <input
-                type="checkbox"
-                class="form-check-input me-2"
-                checked="@task.IsCompleted"
-                @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)" />
-            <span>@task.Name</span>
-        </li>
+            <li class="list-group-item d-flex align-items-center">
+                <input
+                    type="checkbox"
+                    class="form-check-input me-2"
+                    checked="@task.IsCompleted"
+                    @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)" />
+                <span>@task.Name</span>
+            </li>
         }
     </ul>
 
@@ -34,12 +34,24 @@
 </div>
 
 @code {
-private ReadUserDto user = new();
-private List<ReadTaskDto> todaysTasks = new();
-private double taskCompletionPercentage = 0;
+    private ReadUserDto user = new();
+    private List<ReadTaskDto> todaysTasks = new();
+    private double taskCompletionPercentage = 0;
 
     protected override async Task OnInitializedAsync()
-    { 
+    {
+        try
+        {
+            await RefreshTasks();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during initialization: {ex.Message}");
+        }
+    }
+
+    private async Task RefreshTasks()
+    {
         try
         {
             var userId = await AuthStateProvider.GetUserIdAsync();
@@ -50,35 +62,40 @@ private double taskCompletionPercentage = 0;
                 user = await UserService.GetUserById(userId);
                 Console.WriteLine($"User loaded: {user.FirstName} {user.LastName}");
 
-                todaysTasks = await TaskService.GetTasksForUserAsync(userId);
-                Console.WriteLine($"Tasks loaded: {todaysTasks.Count} tasks retrieved.");
+                var allTasks = await TaskService.GetTasksForUserAsync(userId);
+                Console.WriteLine($"All tasks loaded: {allTasks.Count} tasks retrieved.");
+                
+                todaysTasks = allTasks.Where(task =>
+                    string.IsNullOrEmpty(task.RecurrenceType) || task.RecurrenceType == "None" ||
+                    task.NextOccurrence.Date == DateTime.Today).ToList();
 
                 UpdateProgress();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error during initialization: {ex.Message}");
+            Console.WriteLine($"Error refreshing tasks: {ex.Message}");
         }
     }
 
-    private void UpdateProgress()
-        {
-            if (todaysTasks.Count > 0)
-            {
-                 var completedTasks = todaysTasks.Count(t => t.IsCompleted);
-                 taskCompletionPercentage = (double)completedTasks / todaysTasks.Count * 100;
-            }
-            else
-            {
-                taskCompletionPercentage = 0;
-            }
-            
-            LogTaskStatus();
 
-            Console.WriteLine($"Progress updated: {taskCompletionPercentage}% completed.");
-            StateHasChanged();
+    private void UpdateProgress()
+    {
+        if (todaysTasks.Count > 0)
+        {
+            var completedTasks = todaysTasks.Count(t => t.IsCompleted);
+            taskCompletionPercentage = (double)completedTasks / todaysTasks.Count * 100;
         }
+        else
+        {
+            taskCompletionPercentage = 0;
+        }
+
+        LogTaskStatus();
+
+        Console.WriteLine($"Progress updated: {taskCompletionPercentage}% completed.");
+        StateHasChanged();
+    }
 
     private async Task OnTaskStatusChanged(int taskId, bool isCompleted)
     {
@@ -93,10 +110,7 @@ private double taskCompletionPercentage = 0;
                 Console.WriteLine($"Task {taskId} marked as completed.");
             }
 
-            todaysTasks = await TaskService.GetTasksForUserAsync(user.Id);
-            Console.WriteLine($"Tasks reloaded: {todaysTasks.Count} tasks retrieved.");
-
-            UpdateProgress();
+            await RefreshTasks();
         }
         catch (Exception ex)
         {
@@ -108,8 +122,7 @@ private double taskCompletionPercentage = 0;
     {
         foreach (var task in todaysTasks)
         {
-            Console.WriteLine($"Task Id {task.Id}, task completed {task.IsCompleted}");
-            
+            Console.WriteLine($"Task Id {task.Id}, IsCompleted: {task.IsCompleted}");
         }
     }
 }
