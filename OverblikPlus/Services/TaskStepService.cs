@@ -81,8 +81,9 @@ namespace OverblikPlus.Services
 
         public async Task MarkTaskAsCompleted(int taskId)
         {
-            var response = await _httpClient.PutAsJsonAsync($"/api/tasks/{taskId}/complete", new { IsCompleted = true });
+            var response = await _httpClient.PutAsync($"/api/task/{taskId}/complete", null);
             response.EnsureSuccessStatusCode();
         }
+
     }
 }
