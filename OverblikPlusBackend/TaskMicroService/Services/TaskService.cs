@@ -180,5 +180,15 @@ namespace TaskMicroService.Services
                 _ => throw new Exception("Invalid recurrence type")
             };
         }
+        
+        public async Task<IEnumerable<ReadTaskDto>> GetTasksForDay(string userId, DateTime date)
+        {
+            var tasks = await _dbContext.Tasks
+                .Include(t => t.Steps)
+                .Where(t => t.UserId == userId && t.NextOccurrence.Date == date.Date)
+                .ToListAsync();
+
+            return _mapper.Map<List<ReadTaskDto>>(tasks);
+        }
     }
 }

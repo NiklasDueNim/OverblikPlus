@@ -58,6 +58,55 @@
     font-size: 18px;
 }
 
+/* calendar.css */
+/*.calendar-grid {*/
+/*    display: grid;*/
+/*    grid-template-columns: repeat(7, 1fr);*/
+/*    gap: 5px;*/
+/*}*/
+
+/*.calendar-header {*/
+/*    display: contents;*/
+/*}*/
+
+/*.calendar-cell {*/
+/*    border: 1px solid #ddd;*/
+/*    padding: 10px;*/
+/*    border-radius: 4px;*/
+/*    min-height: 100px;*/
+/*    background-color: #f9f9f9;*/
+/*    text-align: center;*/
+/*    vertical-align: top;*/
+/*}*/
+
+/*.calendar-cell.today {*/
+/*    background-color: #e3f2fd;*/
+/*    border: 2px solid #2196f3;*/
+/*}*/
+
+/*.header-cell {*/
+/*    font-weight: bold;*/
+/*    text-align: center;*/
+/*    background-color: #f0f0f0;*/
+/*    padding: 10px;*/
+/*    border-bottom: 2px solid #ddd;*/
+/*}*/
+
+/*.task-list {*/
+/*    list-style: none;*/
+/*    padding: 0;*/
+/*    margin: 5px 0 0 0;*/
+/*}*/
+
+/*.task-item {*/
+/*    font-size: 12px;*/
+/*    white-space: nowrap;*/
+/*    overflow: hidden;*/
+/*    text-overflow: ellipsis;*/
+/*}*/
+
+
+
 /* Responsive behavior */
 @media (min-width: 641px) {
     .navbar-toggler {

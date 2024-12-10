@@ -15,5 +15,6 @@ namespace OverblikPlus.Services.Interfaces
         
         Task<bool> DeleteTask(int taskId);
         Task MarkTaskAsCompleted(int taskId);
+        Task<List<ReadTaskDto>> GetTasksForDay(string userId, DateTime date);
     }
 }

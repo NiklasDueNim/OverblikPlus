@@ -120,5 +120,20 @@ namespace TaskMicroService.Controllers
             await _taskService.MarkTaskAsCompleted(taskId);
             return NoContent();
         }
+        
+        [HttpGet("user/{userId}/tasks-for-day")]
+        public async Task<ActionResult<IEnumerable<ReadTaskDto>>> GetTasksForDay(string userId, [FromQuery] DateTime date)
+        {
+            try
+            {
+                var tasks = await _taskService.GetTasksForDay(userId, date);
+                return Ok(tasks);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

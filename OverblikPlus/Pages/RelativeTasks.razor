@@ -1,0 +1,56 @@
+@page "/relative-tasks/{userId}"
+@using OverblikPlus.Dtos.Tasks
+@using OverblikPlus.Services.Interfaces
+@inject ITaskService TaskService
+
+<div class="container mt-4">
+    <h3>Opgaver for @SelectedDate.ToShortDateString()</h3>
+    <div class="d-flex justify-content-between mb-3">
+        <button class="btn btn-secondary" @onclick="PreviousDay">Forrige Dag</button>
+        <button class="btn btn-secondary" @onclick="NextDay">Næste Dag</button>
+    </div>
+    <ul class="list-group">
+        @if (Tasks.Count > 0)
+        {
+            @foreach (var task in Tasks)
+            {
+                <li class="list-group-item">
+                    <h5>@task.Name</h5>
+                    <p>@task.Description</p>
+                </li>
+            }
+        }
+        else
+        {
+            <p>Ingen opgaver for denne dag.</p>
+        }
+    </ul>
+</div>
+
+@code {
+    [Parameter] public string UserId { get; set; }
+    private List<ReadTaskDto> Tasks = new();
+    private DateTime SelectedDate = DateTime.Today;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasks();
+    }
+
+    private async Task LoadTasks()
+    {
+        Tasks = await TaskService.GetTasksForDay(UserId, SelectedDate);
+    }
+
+    private async Task PreviousDay()
+    {
+        SelectedDate = SelectedDate.AddDays(-1);
+        await LoadTasks();
+    }
+
+    private async Task NextDay()
+    {
+        SelectedDate = SelectedDate.AddDays(1);
+        await LoadTasks();
+    }
+}

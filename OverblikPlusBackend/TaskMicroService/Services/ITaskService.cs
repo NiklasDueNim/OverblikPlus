@@ -12,5 +12,6 @@ namespace TaskMicroService.Services
         Task DeleteTask(int id);
         Task UpdateTask(int id, UpdateTaskDto updateTaskDto);
         Task MarkTaskAsCompleted(int taskId);
+        Task<IEnumerable<ReadTaskDto>> GetTasksForDay(string userId, DateTime date);
     }
 }

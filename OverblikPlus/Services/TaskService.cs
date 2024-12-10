@@ -80,6 +80,15 @@ public class TaskService : ITaskService
         var response = await _httpClient.PutAsync($"/api/task/{taskId}/complete", null);
         response.EnsureSuccessStatusCode();
     }
+    
+    public async Task<List<ReadTaskDto>> GetTasksForDay(string userId, DateTime date)
+    {
+        var response = await _httpClient.GetAsync($"user/{userId}/tasks-for-day?date={date.ToString("yyyy-MM-dd")}");
+        response.EnsureSuccessStatusCode();
+        var tasks = await response.Content.ReadFromJsonAsync<List<ReadTaskDto>>();
+        return tasks ?? new List<ReadTaskDto>();
+    }
+
 
 
 }
