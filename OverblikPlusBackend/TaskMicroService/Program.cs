@@ -48,8 +48,7 @@ builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
-builder.Services.AddScoped<IImageConversionService, ImageConversionService>(); // TODO slette denne
-builder.Services.AddScoped<BlobStorageService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 var app = builder.Build();
 

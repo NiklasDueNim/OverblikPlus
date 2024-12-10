@@ -22,9 +22,9 @@ namespace TaskMicroService.Profiles
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src =>
                     !string.IsNullOrEmpty(src.ImageBase64) ? Convert.FromBase64String(src.ImageBase64) : null));
 
-            // Add this mapping with custom logic for ImageUrl
+    
             CreateMap<UpdateTaskStepDto, TaskStep>()
-                .ForMember(dest => dest.ImageUrl, opt => opt.Ignore()) // Ignoreres her for at håndtere upload separat
+                .ForMember(dest => dest.ImageUrl, opt => opt.Ignore()) 
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
         }

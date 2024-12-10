@@ -1,6 +1,7 @@
+namespace TaskMicroService.Services;
 using Azure.Storage.Blobs;
 
-public class BlobStorageService
+public class BlobStorageService : IBlobStorageService
 {
     private readonly BlobServiceClient _blobServiceClient;
     private readonly string _containerName = "images";

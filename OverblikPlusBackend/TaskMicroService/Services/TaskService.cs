@@ -10,9 +10,9 @@ namespace TaskMicroService.Services
     {
         private readonly TaskDbContext _dbContext;
         private readonly IMapper _mapper;
-        private readonly BlobStorageService _blobStorageService;
+        private readonly IBlobStorageService _blobStorageService;
 
-        public TaskService(TaskDbContext dbContext, IMapper mapper, BlobStorageService blobStorageService)
+        public TaskService(TaskDbContext dbContext, IMapper mapper, IBlobStorageService blobStorageService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -45,6 +45,11 @@ namespace TaskMicroService.Services
             var task = await _dbContext.Tasks
                 .Include(t => t.Steps)
                 .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (task == null)
+            {
+                return null;
+            }
 
             var taskDto = _mapper.Map<ReadTaskDto>(task);
 
@@ -135,22 +140,27 @@ namespace TaskMicroService.Services
         public async Task UpdateTask(int id, UpdateTaskDto updateTaskDto)
         {
             var taskEntity = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
-            if (taskEntity != null)
+
+            if (taskEntity == null)
             {
-                _mapper.Map(updateTaskDto, taskEntity);
-
-                if (!string.IsNullOrEmpty(updateTaskDto.ImageUrl))
-                {
-                    var imageBytes = Convert.FromBase64String(updateTaskDto.ImageUrl);
-                    using var stream = new MemoryStream(imageBytes);
-
-                    var blobFileName = $"{Guid.NewGuid()}.jpg";
-                    taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
-                }
-
-                await _dbContext.SaveChangesAsync();
+                throw new KeyNotFoundException($"Task with ID {id} not found.");
             }
+
+            _mapper.Map(updateTaskDto, taskEntity);
+
+            if (!string.IsNullOrEmpty(updateTaskDto.ImageUrl))
+            {
+                var imageBytes = Convert.FromBase64String(updateTaskDto.ImageUrl);
+                using var stream = new MemoryStream(imageBytes);
+
+                var blobFileName = $"{Guid.NewGuid()}.jpg";
+                taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
+            }
+            
+            await _dbContext.SaveChangesAsync();
         }
+
+
 
         public async Task MarkTaskAsCompleted(int taskId)
         {
