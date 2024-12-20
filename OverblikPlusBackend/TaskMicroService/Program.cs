@@ -9,6 +9,8 @@ using TaskMicroService.Services.Interfaces;
 using TaskMicroService.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using TaskMicroService.dto;
+using TaskMicroService.Middelwares;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,9 +58,17 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
+builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+// builder.Logging.AddFile("Logs/app-{Date}.log"); // InSight
+
+
 
 var app = builder.Build();
 
@@ -75,6 +85,8 @@ else
 app.UseRouting();
 
 app.UseCors("AllowOverblikPlus");
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
