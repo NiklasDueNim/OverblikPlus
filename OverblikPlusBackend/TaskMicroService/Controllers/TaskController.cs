@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskMicroService.Services;
 using TaskMicroService.dto;
+using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Controllers
 {

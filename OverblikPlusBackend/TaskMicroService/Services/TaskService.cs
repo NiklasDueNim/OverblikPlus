@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskMicroService.DataAccess;
 using TaskMicroService.dto;
 using TaskMicroService.Entities;
+using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services
 {
@@ -113,7 +114,6 @@ namespace TaskMicroService.Services
                 task.RecurrenceType = "None";
                 task.NextOccurrence = createTaskDto.StartDate;
             }
-
             _dbContext.Tasks.Add(task);
             await _dbContext.SaveChangesAsync();
 

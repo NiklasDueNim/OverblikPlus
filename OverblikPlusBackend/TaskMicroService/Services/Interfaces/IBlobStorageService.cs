@@ -1,4 +1,4 @@
-namespace TaskMicroService.Services;
+namespace TaskMicroService.Services.Interfaces;
 
 public interface IBlobStorageService
 {

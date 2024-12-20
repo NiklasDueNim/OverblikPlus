@@ -6,6 +6,7 @@ using TaskMicroService.dto;
 using TaskMicroService.Entities;
 using TaskMicroService.Profiles;
 using TaskMicroService.Services;
+using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Test.UnitTests;
 

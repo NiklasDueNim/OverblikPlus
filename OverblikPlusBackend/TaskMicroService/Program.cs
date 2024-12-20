@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using TaskMicroService.DataAccess;
 using TaskMicroService.Profiles;
 using TaskMicroService.Services;
+using TaskMicroService.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
