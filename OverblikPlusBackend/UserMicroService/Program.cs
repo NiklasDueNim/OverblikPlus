@@ -7,6 +7,7 @@ using UserMicroService.DataAccess;
 using UserMicroService.Entities;
 using UserMicroService.Helpers;
 using UserMicroService.Services;
+using UserMicroService.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
