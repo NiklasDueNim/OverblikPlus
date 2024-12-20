@@ -4,6 +4,7 @@ using Moq;
 using TaskMicroService.DataAccess;
 using TaskMicroService.dto;
 using TaskMicroService.Entities;
+using TaskMicroService.Profiles;
 using TaskMicroService.Services;
 
 namespace TaskMicroService.Test.UnitTests;
@@ -13,7 +14,6 @@ public class TaskServiceTests
     private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<IBlobStorageService> _blobStorageServiceMock;
     private readonly TaskDbContext _dbContext;
-
     private readonly TaskService _taskService;
 
     public TaskServiceTests()
@@ -179,7 +179,6 @@ public class TaskServiceTests
     [Fact]
     public async Task UpdateTask_ShouldUpdateTaskFields()
     {
-        // Arrange
         var now = DateTime.UtcNow;
         var existingTask = new TaskEntity
         {
@@ -200,12 +199,27 @@ public class TaskServiceTests
             Description = "Updated Description",
             RecurrenceType = "Weekly",
             RecurrenceInterval = 2,
-            ImageUrl = Convert.ToBase64String(new byte[] { 0x20, 0x20 })
+            ImageUrl = Convert.ToBase64String(new byte[] { 0x20, 0x20 }),
+            IsCompleted = existingTask.IsCompleted,
+            UserId = existingTask.UserId,           
+            RequiresQrCodeScan = existingTask.RequiresQrCodeScan
         };
 
         _blobStorageServiceMock
             .Setup(b => b.UploadImageAsync(It.IsAny<MemoryStream>(), It.IsAny<string>()))
             .ReturnsAsync("http://example.com/updated-image.jpg");
+
+        _mapperMock.Setup(m => m.Map(updateTaskDto, existingTask))
+            .Callback<UpdateTaskDto, TaskEntity>((src, dest) =>
+            {
+                dest.Name = src.Name;
+                dest.Description = src.Description;
+                dest.RecurrenceType = src.RecurrenceType;
+                dest.RecurrenceInterval = src.RecurrenceInterval;
+                dest.IsCompleted = src.IsCompleted;
+                dest.UserId = src.UserId;
+                dest.RequiresQrCodeScan = src.RequiresQrCodeScan;
+            });
 
         // Act
         await _taskService.UpdateTask(4, updateTaskDto);
@@ -213,18 +227,30 @@ public class TaskServiceTests
         // Assert
         var updatedTask = await _dbContext.Tasks.FindAsync(4);
         Assert.NotNull(updatedTask);
-        Assert.Equal("Updated Task", updatedTask.Name); // Tjek for opdateret navn
-        Assert.Equal("Updated Description", updatedTask.Description); // Tjek for opdateret beskrivelse
-        Assert.Equal("Weekly", updatedTask.RecurrenceType); // Tjek for opdateret RecurrenceType
-        Assert.Equal(2, updatedTask.RecurrenceInterval); // Tjek for opdateret RecurrenceInterval
-        Assert.Equal("http://example.com/updated-image.jpg", updatedTask.ImageUrl); // Tjek for opdateret ImageUrl
+        Assert.Equal("Updated Task", updatedTask.Name);
+        Assert.Equal("Updated Description", updatedTask.Description);
+        Assert.Equal("Weekly", updatedTask.RecurrenceType);
+        Assert.Equal(2, updatedTask.RecurrenceInterval);
+        Assert.Equal("http://example.com/updated-image.jpg", updatedTask.ImageUrl);
+    }
+    
+    
+    [Fact]
+    public void AutoMapper_ShouldMapUpdateTaskDtoToTaskEntity()
+    {
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
+        var mapper = config.CreateMapper();
+
+        var updateTaskDto = new UpdateTaskDto { Name = "Updated Task" };
+        var taskEntity = new TaskEntity { Name = "Old Task" };
+
+        mapper.Map(updateTaskDto, taskEntity);
+
+        Assert.Equal("Updated Task", taskEntity.Name); // Forvent succes her
     }
 
 
 
-
-
-    
     
     [Fact]
     public async Task GetTaskById_ShouldReturnNullIfTaskNotFound()

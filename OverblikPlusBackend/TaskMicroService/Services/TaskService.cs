@@ -140,11 +140,14 @@ namespace TaskMicroService.Services
         public async Task UpdateTask(int id, UpdateTaskDto updateTaskDto)
         {
             var taskEntity = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
-
+    
             if (taskEntity == null)
             {
                 throw new KeyNotFoundException($"Task with ID {id} not found.");
             }
+
+            Console.WriteLine($"Entity State: {_dbContext.Entry(taskEntity).State}");
+            Console.WriteLine($"Task Entity Found: {taskEntity != null}");
 
             _mapper.Map(updateTaskDto, taskEntity);
 
@@ -152,16 +155,14 @@ namespace TaskMicroService.Services
             {
                 var imageBytes = Convert.FromBase64String(updateTaskDto.ImageUrl);
                 using var stream = new MemoryStream(imageBytes);
-
                 var blobFileName = $"{Guid.NewGuid()}.jpg";
                 taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
             }
-            
+
             await _dbContext.SaveChangesAsync();
         }
 
-
-
+        
         public async Task MarkTaskAsCompleted(int taskId)
         {
             var task = await _dbContext.Tasks.FindAsync(taskId);

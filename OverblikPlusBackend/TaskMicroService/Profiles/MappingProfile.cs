@@ -13,8 +13,16 @@ namespace TaskMicroService.Profiles
                 .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.Steps));
 
             CreateMap<CreateTaskDto, TaskEntity>();
-            CreateMap<UpdateTaskDto, TaskEntity>();
-
+            
+            // CreateMap<UpdateTaskDto, TaskEntity>();
+            
+            CreateMap<UpdateTaskDto, TaskEntity>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.StartDate, opt => opt.Ignore())
+                .ForMember(dest => dest.NextOccurrence, opt => opt.Ignore())
+                .ForMember(dest => dest.Steps, opt => opt.Ignore());
+            
+          
             // TaskStep mappings
             CreateMap<TaskStep, ReadTaskStepDto>();
 
