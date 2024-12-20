@@ -15,10 +15,11 @@ namespace TaskMicroService.Services
 
         public TaskService(TaskDbContext dbContext, IMapper mapper, IBlobStorageService blobStorageService)
         {
-            _dbContext = dbContext;
-            _mapper = mapper;
-            _blobStorageService = blobStorageService;
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _blobStorageService = blobStorageService ?? throw new ArgumentNullException(nameof(blobStorageService));
         }
+
 
         public async Task<IEnumerable<ReadTaskDto>> GetAllTasks()
         {

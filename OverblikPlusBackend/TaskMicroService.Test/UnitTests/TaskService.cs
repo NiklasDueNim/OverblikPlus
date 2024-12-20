@@ -7,6 +7,7 @@ using TaskMicroService.Entities;
 using TaskMicroService.Profiles;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
+using TaskMicroService.Common;
 
 namespace TaskMicroService.Test.UnitTests;
 
@@ -32,7 +33,7 @@ public class TaskServiceTests
     }
 
     [Fact]
-    public async Task GetAllTasks_ShouldReturnAllTasks()
+    public async Task GetAllTasks_ShouldReturnSuccessResultWithAllTasks()
     {
         // Arrange
         var task = new TaskEntity
@@ -43,7 +44,6 @@ public class TaskServiceTests
             ImageUrl = "http://example.com/image.jpg",
             RequiresQrCodeScan = true,
             RecurrenceType = "Daily"
-            
         };
         _dbContext.Tasks.Add(task);
         await _dbContext.SaveChangesAsync();
@@ -52,17 +52,18 @@ public class TaskServiceTests
             .Setup(m => m.Map<List<ReadTaskDto>>(It.IsAny<List<TaskEntity>>()))
             .Returns(new List<ReadTaskDto>
             {
-                new ReadTaskDto { Id = 1, Name = "Test Task", Image = "http://example.com/image.jpg", RequiresQrCodeScan = true, RecurrenceType = "Daily"}
+                new ReadTaskDto { Id = 1, Name = "Test Task", Image = "http://example.com/image.jpg", RequiresQrCodeScan = true, RecurrenceType = "Daily" }
             });
 
         // Act
         var result = await _taskService.GetAllTasks();
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal("Test Task", result.First().Name);
-        Assert.Equal("http://example.com/image.jpg", result.First().Image);
-        Assert.True(result.First().RequiresQrCodeScan);
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
+        Assert.Equal("Test Task", result.Data.First().Name);
     }
 
     [Fact]
