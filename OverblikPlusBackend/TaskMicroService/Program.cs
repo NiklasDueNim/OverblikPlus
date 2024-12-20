@@ -6,6 +6,10 @@ using TaskMicroService.DataAccess;
 using TaskMicroService.Profiles;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
+using TaskMicroService.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +56,9 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 
 var app = builder.Build();
 
