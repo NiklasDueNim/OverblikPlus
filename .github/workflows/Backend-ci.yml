@@ -8,6 +8,15 @@ on:
     branches:
       - main
 
+env:
+  DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+  BLOB_STORAGE_CONNECTION_STRING: ${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}
+  APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }}
+  JWT_KEY: ${{ secrets.JWT_KEY }}
+  JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+  JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
+
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
