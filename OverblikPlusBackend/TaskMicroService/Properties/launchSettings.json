@@ -16,9 +16,16 @@
       "launchUrl": "swagger",
       "applicationUrl": "http://localhost:5032",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=StrongPwd123;Encrypt=False;",
+        "BLOB_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=overblikplusdev;AccountKey=DEV-STORAGE-KEY;EndpointSuffix=core.windows.net",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=DEV-INSTRUMENTATION-KEY",
+        "JWT_KEY": "DevSecretKeyForJWT123456",
+        "JWT_ISSUER": "http://localhost",
+        "JWT_AUDIENCE": "http://localhost"
       }
     },
+
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
@@ -26,7 +33,13 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7019;http://localhost:5032",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=StrongPwd123;Encrypt=False;",
+        "BLOB_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=overblikplusdev;AccountKey=DEV-STORAGE-KEY;EndpointSuffix=core.windows.net",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=DEV-INSTRUMENTATION-KEY",
+        "JWT_KEY": "DevSecretKeyForJWT123456",
+        "JWT_ISSUER": "http://localhost",
+        "JWT_AUDIENCE": "http://localhost"
       }
     },
 
@@ -37,7 +50,13 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7100;http://localhost:5100",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "DB_CONNECTION_STRING": "${{ secrets.DB_CONNECTION_STRING }}",
+        "BLOB_STORAGE_CONNECTION_STRING": "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }}",
+        "JWT_KEY": "${{ secrets.JWT_KEY }}",
+        "JWT_ISSUER": "${{ secrets.JWT_ISSUER }}",
+        "JWT_AUDIENCE": "${{ secrets.JWT_AUDIENCE }}"
       }
     },
 
@@ -46,7 +65,13 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=StrongPwd123;Encrypt=False;",
+        "BLOB_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=overblikplusdev;AccountKey=DEV-STORAGE-KEY;EndpointSuffix=core.windows.net",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=DEV-INSTRUMENTATION-KEY",
+        "JWT_KEY": "DevSecretKeyForJWT123456",
+        "JWT_ISSUER": "http://localhost",
+        "JWT_AUDIENCE": "http://localhost"
       }
     }
   }
