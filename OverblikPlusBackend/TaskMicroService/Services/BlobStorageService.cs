@@ -8,10 +8,9 @@ public class BlobStorageService : IBlobStorageService
     private readonly BlobServiceClient _blobServiceClient;
     private readonly string _containerName = "images";
 
-    public BlobStorageService(IConfiguration configuration)
+    public BlobStorageService(BlobServiceClient blobServiceClient)
     {
-        var connectionString = configuration.GetConnectionString("BlobStorage");
-        _blobServiceClient = new BlobServiceClient(connectionString);
+        _blobServiceClient = blobServiceClient;
     }
 
     public async Task<string> UploadImageAsync(Stream imageStream, string fileName)

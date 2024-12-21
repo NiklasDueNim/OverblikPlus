@@ -1,4 +1,5 @@
 using System.Text;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -63,6 +64,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
+builder.Services.AddSingleton(x =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("BlobStorage");
+    return new BlobServiceClient(connectionString);
+});
+
 // ---- CORS CONFIGURATION ----
 builder.Services.AddCors(options =>
 {
@@ -92,6 +100,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+
 
 // ---- VALIDATORS ----
 builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();

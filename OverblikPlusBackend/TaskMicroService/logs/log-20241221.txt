@@ -1,0 +1,61 @@
+2024-12-21 18:34:16.925 +01:00 [DBG] Registered model binder providers, in the following order: ["Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BinderTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ServicesModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.HeaderModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FloatingPointTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.EnumTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CancellationTokenModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FormFileModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FormCollectionModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.KeyValuePairModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DictionaryModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ArrayModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider"]
+2024-12-21 18:34:17.000 +01:00 [INF] Starting the application in Development mode
+2024-12-21 18:34:17.002 +01:00 [DBG] Hosting starting
+2024-12-21 18:34:17.005 +01:00 [INF] User profile is available. Using '/Users/niklasduenim/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+2024-12-21 18:34:17.008 +01:00 [DBG] Reading data from file '/Users/niklasduenim/.aspnet/DataProtection-Keys/key-ee6a32d3-3ffa-4995-afbd-980d9ec7f057.xml'.
+2024-12-21 18:34:17.010 +01:00 [DBG] Reading data from file '/Users/niklasduenim/.aspnet/DataProtection-Keys/key-2021700c-2881-4773-b4e0-da6beed604be.xml'.
+2024-12-21 18:34:17.011 +01:00 [DBG] Found key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057}.
+2024-12-21 18:34:17.013 +01:00 [DBG] Found key {2021700c-2881-4773-b4e0-da6beed604be}.
+2024-12-21 18:34:17.015 +01:00 [DBG] Considering key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057} with expiration date 2025-02-10 19:43:16Z as default key.
+2024-12-21 18:34:17.016 +01:00 [DBG] Forwarded activator type request from Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer, Microsoft.AspNetCore.DataProtection, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60 to Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer, Microsoft.AspNetCore.DataProtection, Culture=neutral, PublicKeyToken=adb9793829ddae60
+2024-12-21 18:34:17.018 +01:00 [DBG] Using managed symmetric algorithm 'System.Security.Cryptography.Aes'.
+2024-12-21 18:34:17.018 +01:00 [DBG] Using managed keyed hash algorithm 'System.Security.Cryptography.HMACSHA256'.
+2024-12-21 18:34:17.020 +01:00 [DBG] Using key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057} as the default key.
+2024-12-21 18:34:17.020 +01:00 [DBG] Key ring with default key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057} was loaded during application startup.
+2024-12-21 18:34:17.095 +01:00 [INF] Now listening on: http://localhost:5032
+2024-12-21 18:34:17.095 +01:00 [DBG] Loaded hosting startup assembly TaskMicroService
+2024-12-21 18:34:17.095 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2024-12-21 18:34:17.095 +01:00 [INF] Hosting environment: Development
+2024-12-21 18:34:17.095 +01:00 [INF] Content root path: /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlusBackend/TaskMicroService
+2024-12-21 18:34:17.096 +01:00 [DBG] Hosting started
+2024-12-21 18:35:36.814 +01:00 [DBG] Registered model binder providers, in the following order: ["Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BinderTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ServicesModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.HeaderModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FloatingPointTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.EnumTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CancellationTokenModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FormFileModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FormCollectionModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.KeyValuePairModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DictionaryModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ArrayModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider"]
+2024-12-21 18:35:36.873 +01:00 [INF] Starting the application in Development mode
+2024-12-21 18:35:36.875 +01:00 [DBG] Hosting starting
+2024-12-21 18:35:36.878 +01:00 [INF] User profile is available. Using '/Users/niklasduenim/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+2024-12-21 18:35:36.880 +01:00 [DBG] Reading data from file '/Users/niklasduenim/.aspnet/DataProtection-Keys/key-ee6a32d3-3ffa-4995-afbd-980d9ec7f057.xml'.
+2024-12-21 18:35:36.882 +01:00 [DBG] Reading data from file '/Users/niklasduenim/.aspnet/DataProtection-Keys/key-2021700c-2881-4773-b4e0-da6beed604be.xml'.
+2024-12-21 18:35:36.883 +01:00 [DBG] Found key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057}.
+2024-12-21 18:35:36.884 +01:00 [DBG] Found key {2021700c-2881-4773-b4e0-da6beed604be}.
+2024-12-21 18:35:36.886 +01:00 [DBG] Considering key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057} with expiration date 2025-02-10 19:43:16Z as default key.
+2024-12-21 18:35:36.887 +01:00 [DBG] Forwarded activator type request from Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer, Microsoft.AspNetCore.DataProtection, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60 to Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer, Microsoft.AspNetCore.DataProtection, Culture=neutral, PublicKeyToken=adb9793829ddae60
+2024-12-21 18:35:36.888 +01:00 [DBG] Using managed symmetric algorithm 'System.Security.Cryptography.Aes'.
+2024-12-21 18:35:36.889 +01:00 [DBG] Using managed keyed hash algorithm 'System.Security.Cryptography.HMACSHA256'.
+2024-12-21 18:35:36.890 +01:00 [DBG] Using key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057} as the default key.
+2024-12-21 18:35:36.890 +01:00 [DBG] Key ring with default key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057} was loaded during application startup.
+2024-12-21 18:35:36.950 +01:00 [INF] Now listening on: http://localhost:5032
+2024-12-21 18:35:36.950 +01:00 [DBG] Loaded hosting startup assembly TaskMicroService
+2024-12-21 18:35:36.950 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2024-12-21 18:35:36.950 +01:00 [INF] Hosting environment: Development
+2024-12-21 18:35:36.950 +01:00 [INF] Content root path: /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlusBackend/TaskMicroService
+2024-12-21 18:35:36.950 +01:00 [DBG] Hosting started
+2024-12-21 18:41:19.909 +01:00 [DBG] Config reload token fired. Checking for changes...
+2024-12-21 18:42:34.701 +01:00 [DBG] Registered model binder providers, in the following order: ["Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BinderTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ServicesModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.HeaderModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FloatingPointTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.EnumTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CancellationTokenModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ByteArrayModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FormFileModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.FormCollectionModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.KeyValuePairModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DictionaryModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ArrayModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinderProvider","Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider"]
+2024-12-21 18:42:34.773 +01:00 [INF] Starting the application in Development mode
+2024-12-21 18:42:34.775 +01:00 [DBG] Hosting starting
+2024-12-21 18:42:34.778 +01:00 [INF] User profile is available. Using '/Users/niklasduenim/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+2024-12-21 18:42:34.780 +01:00 [DBG] Reading data from file '/Users/niklasduenim/.aspnet/DataProtection-Keys/key-ee6a32d3-3ffa-4995-afbd-980d9ec7f057.xml'.
+2024-12-21 18:42:34.782 +01:00 [DBG] Reading data from file '/Users/niklasduenim/.aspnet/DataProtection-Keys/key-2021700c-2881-4773-b4e0-da6beed604be.xml'.
+2024-12-21 18:42:34.784 +01:00 [DBG] Found key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057}.
+2024-12-21 18:42:34.785 +01:00 [DBG] Found key {2021700c-2881-4773-b4e0-da6beed604be}.
+2024-12-21 18:42:34.788 +01:00 [DBG] Considering key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057} with expiration date 2025-02-10 19:43:16Z as default key.
+2024-12-21 18:42:34.789 +01:00 [DBG] Forwarded activator type request from Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer, Microsoft.AspNetCore.DataProtection, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60 to Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer, Microsoft.AspNetCore.DataProtection, Culture=neutral, PublicKeyToken=adb9793829ddae60
+2024-12-21 18:42:34.790 +01:00 [DBG] Using managed symmetric algorithm 'System.Security.Cryptography.Aes'.
+2024-12-21 18:42:34.790 +01:00 [DBG] Using managed keyed hash algorithm 'System.Security.Cryptography.HMACSHA256'.
+2024-12-21 18:42:34.792 +01:00 [DBG] Using key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057} as the default key.
+2024-12-21 18:42:34.793 +01:00 [DBG] Key ring with default key {ee6a32d3-3ffa-4995-afbd-980d9ec7f057} was loaded during application startup.
+2024-12-21 18:42:34.868 +01:00 [INF] Now listening on: http://localhost:5032
+2024-12-21 18:42:34.868 +01:00 [DBG] Loaded hosting startup assembly TaskMicroService
+2024-12-21 18:42:34.868 +01:00 [INF] Application started. Press Ctrl+C to shut down.
+2024-12-21 18:42:34.868 +01:00 [INF] Hosting environment: Development
+2024-12-21 18:42:34.868 +01:00 [INF] Content root path: /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlusBackend/TaskMicroService
+2024-12-21 18:42:34.868 +01:00 [DBG] Hosting started
