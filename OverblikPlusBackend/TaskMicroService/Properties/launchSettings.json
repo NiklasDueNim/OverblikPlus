@@ -17,9 +17,9 @@
       "applicationUrl": "http://localhost:5032",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=StrongPwd123;Encrypt=False;",
-        "BLOB_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=overblikplusdev;AccountKey=DEV-STORAGE-KEY;EndpointSuffix=core.windows.net",
-        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=DEV-INSTRUMENTATION-KEY",
+        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;",
+        "BlobStorage": "DefaultEndpointsProtocol=https;AccountName=overblikplusimages;AccountKey=HVV7L9Fartr+YKIAowP4sQGqxQUGrJdZlZ0IZKHxDm3Xl5DMp7CnJ7PGvQOPoIwbKXVISaMfawGW+ASt8dMZ8A==;EndpointSuffix=core.windows.net",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=42c842dc-b6d1-4498-a8d0-92578a260c8e",
         "JWT_KEY": "DevSecretKeyForJWT123456",
         "JWT_ISSUER": "http://localhost",
         "JWT_AUDIENCE": "http://localhost"
@@ -34,9 +34,9 @@
       "applicationUrl": "https://localhost:7019;http://localhost:5032",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=StrongPwd123;Encrypt=False;",
-        "BLOB_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=overblikplusdev;AccountKey=DEV-STORAGE-KEY;EndpointSuffix=core.windows.net",
-        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=DEV-INSTRUMENTATION-KEY",
+        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;",
+        "BlobStorage": "DefaultEndpointsProtocol=https;AccountName=overblikplusimages;AccountKey=HVV7L9Fartr+YKIAowP4sQGqxQUGrJdZlZ0IZKHxDm3Xl5DMp7CnJ7PGvQOPoIwbKXVISaMfawGW+ASt8dMZ8A==;EndpointSuffix=core.windows.net",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=42c842dc-b6d1-4498-a8d0-92578a260c8e",
         "JWT_KEY": "DevSecretKeyForJWT123456",
         "JWT_ISSUER": "http://localhost",
         "JWT_AUDIENCE": "http://localhost"
@@ -53,7 +53,7 @@
         "ASPNETCORE_ENVIRONMENT": "Production",
         "DB_CONNECTION_STRING": "${{ secrets.DB_CONNECTION_STRING }}",
         "BLOB_STORAGE_CONNECTION_STRING": "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}",
-        "APPLICATIONINSIGHTS_CONNECTION_STRING": "${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }}",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=42c842dc-b6d1-4498-a8d0-92578a260c8e",
         "JWT_KEY": "${{ secrets.JWT_KEY }}",
         "JWT_ISSUER": "${{ secrets.JWT_ISSUER }}",
         "JWT_AUDIENCE": "${{ secrets.JWT_AUDIENCE }}"
@@ -66,9 +66,9 @@
       "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=StrongPwd123;Encrypt=False;",
-        "BLOB_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=overblikplusdev;AccountKey=DEV-STORAGE-KEY;EndpointSuffix=core.windows.net",
-        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=DEV-INSTRUMENTATION-KEY",
+        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;",
+        "BLOB_STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;AccountName=overblikplusimages;AccountKey=HVV7L9Fartr+YKIAowP4sQGqxQUGrJdZlZ0IZKHxDm3Xl5DMp7CnJ7PGvQOPoIwbKXVISaMfawGW+ASt8dMZ8A==;EndpointSuffix=core.windows.net",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=42c842dc-b6d1-4498-a8d0-92578a260c8e",
         "JWT_KEY": "DevSecretKeyForJWT123456",
         "JWT_ISSUER": "http://localhost",
         "JWT_AUDIENCE": "http://localhost"

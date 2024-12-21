@@ -38,9 +38,10 @@ builder.Services.AddApplicationInsightsTelemetry(options =>
     options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
 });
 
-// ---- DATABASE CONFIGURATION ----
+//---- DATABASE CONFIGURATION ----
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 // ---- JWT AUTHENTICATION ----
 var jwtKey = builder.Configuration["Jwt:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY");
