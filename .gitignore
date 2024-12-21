@@ -9,3 +9,4 @@ debug/
 .idea
 /out/
 OverblikPlusBackend/TaskMicroService/logs/dev-log-20241221.txt
+*.txt
