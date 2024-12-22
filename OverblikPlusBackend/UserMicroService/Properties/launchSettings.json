@@ -14,9 +14,13 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:5081",
+      "applicationUrl": "http://localhost:5102",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=Password1!;Encrypt=False;",
+        "JWT_KEY": "DevSecretKeyForJWT123456",
+        "JWT_ISSUER": "http://localhost",
+        "JWT_AUDIENCE": "http://localhost"
       }
     },
     "https": {
@@ -26,15 +30,25 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7094",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=Password1!;Encrypt=False;",
+        "JWT_KEY": "DevSecretKeyForJWT123456",
+        "JWT_ISSUER": "http://localhost",
+        "JWT_AUDIENCE": "http://localhost"
       }
     },
-    "IIS Express": {
-      "commandName": "IISExpress",
+    "Production": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
+      "applicationUrl": "https://localhost:5102",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Production",
+        "DB_CONNECTION_STRING": "${{ secrets.DB_CONNECTION_STRING }}",
+        "JWT_KEY": "${{ secrets.JWT_KEY }}",
+        "JWT_ISSUER": "${{ secrets.JWT_ISSUER }}",
+        "JWT_AUDIENCE": "${{ secrets.JWT_AUDIENCE }}"
       }
     }
   }

@@ -11,39 +11,52 @@ using UserMicroService.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string encryptionKey = builder.Configuration.GetSection("EncryptionSettings:EncryptionKey").Value;
+// --- LOAD ENVIRONMENT VARIABLES ---
+var configuration = builder.Configuration;
+
+// ---- ENCRYPTION CONFIGURATION ----
+string encryptionKey = configuration["EncryptionSettings:EncryptionKey"];
 if (string.IsNullOrEmpty(encryptionKey))
 {
-    throw new InvalidOperationException("Encryption key is missing in appsettings.");
+    throw new InvalidOperationException("Encryption key is missing.");
 }
 EncryptionHelper.SetEncryptionKey(encryptionKey);
 
+// ---- DATABASE CONFIGURATION ----
+var connectionString = configuration["DB_CONNECTION_STRING"];
 builder.Services.AddDbContext<UserDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
+// ---- IDENTITY CONFIGURATION ----
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
+// ---- JWT AUTHENTICATION ----
+var jwtKey = configuration["JWT_KEY"];
+var jwtIssuer = configuration["JWT_ISSUER"];
+var jwtAudience = configuration["JWT_AUDIENCE"];
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
+// ---- CORS CONFIGURATION ----
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOverblikPlus",
@@ -52,16 +65,18 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
+// ---- SERVICES ----
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// ---- BUILD APPLICATION ----
 var app = builder.Build();
 
+// ---- CONFIGURE MIDDLEWARE ----
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -73,11 +88,9 @@ else
 }
 
 app.UseRouting();
-
 app.UseCors("AllowOverblikPlus");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+
 app.Run();
