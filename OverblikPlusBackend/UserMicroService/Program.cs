@@ -15,12 +15,20 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 // ---- ENCRYPTION CONFIGURATION ----
-string encryptionKey = configuration["EncryptionSettings:EncryptionKey"];
-if (string.IsNullOrEmpty(encryptionKey))
+// Hent Encryption Key fra miljøvariabler eller appsettings.json
+string encryptionKey = Environment.GetEnvironmentVariable("ENCRYPTION_KEY") 
+                       ?? configuration["EncryptionSettings:EncryptionKey"];
+
+// Valider længden af nøglen
+if (string.IsNullOrEmpty(encryptionKey) || 
+    (encryptionKey.Length != 16 && encryptionKey.Length != 24 && encryptionKey.Length != 32))
 {
-    throw new InvalidOperationException("Encryption key is missing.");
+    throw new InvalidOperationException("Encryption key is missing or has invalid length. It must be 16, 24, or 32 characters long.");
 }
+
+// Sæt nøglen
 EncryptionHelper.SetEncryptionKey(encryptionKey);
+
 
 // ---- DATABASE CONFIGURATION ----
 var connectionString = configuration["DB_CONNECTION_STRING"];

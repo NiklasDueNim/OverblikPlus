@@ -17,7 +17,7 @@
       "applicationUrl": "http://localhost:5102",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=Password1!;Encrypt=False;",
+        "DB_CONNECTION_STRING": "Server=localhost;Database=Overblikplus_Dev;User Id=sa;Password=reallyString;Encrypt=False;",
         "JWT_KEY": "DevSecretKeyForJWT123456",
         "JWT_ISSUER": "http://localhost",
         "JWT_AUDIENCE": "http://localhost"
