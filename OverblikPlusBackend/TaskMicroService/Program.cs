@@ -13,38 +13,41 @@ using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
 using TaskMicroService.Validators;
 using TaskMicroService.Middelwares;
+using DotNetEnv;
 
 // ---- ENVIRONMENT LOGGING ----
+DotNetEnv.Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 var environment = builder.Environment.EnvironmentName;
 
 // ---- SERILOG CONFIGURATION ----
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration) // Henter settings fra appsettings.json
+    .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .WriteTo.Console() // Log til konsol
-    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day) // Log til fil
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
     .WriteTo.ApplicationInsights(
-        builder.Configuration["ApplicationInsights:ConnectionString"], 
-        TelemetryConverter.Traces) // Log til Application Insights
+        Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING"), 
+        TelemetryConverter.Traces)
     .CreateLogger();
 
-// Brug Serilog
 builder.Host.UseSerilog();
 
 // ---- APPLICATION INSIGHTS ----
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {
-    options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+    options.ConnectionString = Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
 });
 
-//---- DATABASE CONFIGURATION ----
+// ---- DATABASE CONFIGURATION ----
+var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 builder.Services.AddDbContext<TaskDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+    options.UseSqlServer(dbConnectionString));
 
 // ---- JWT AUTHENTICATION ----
-var jwtKey = builder.Configuration["Jwt:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY");
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -59,17 +62,17 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 });
 
-
+// ---- Blob Storage ----
+var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONNECTION_STRING");
 builder.Services.AddSingleton(x =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("BlobStorage");
-    return new BlobServiceClient(connectionString);
+    return new BlobServiceClient(blobConnectionString);
 });
 
 // ---- CORS CONFIGURATION ----
@@ -102,7 +105,6 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
-
 // ---- VALIDATORS ----
 builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
 builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
@@ -113,18 +115,14 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 var app = builder.Build();
 
 // ---- MIDDLEWARE CONFIGURATION ----
-
-// Swagger i Development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// HTTPS Redirect
 app.UseHttpsRedirection();
 
-// CORS afhængigt af miljø
 if (app.Environment.IsDevelopment())
 {
     app.UseCors("AllowAll");
@@ -134,14 +132,9 @@ else
     app.UseCors("AllowProduction");
 }
 
-// Exception Middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-// Authentication og Authorization
 app.UseAuthentication();
 app.UseAuthorization();
-
-// Routing
 app.MapControllers();
 
 // ---- START APP ----
@@ -156,5 +149,5 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush(); // Sørg for at flush logs
+    Log.CloseAndFlush();
 }
