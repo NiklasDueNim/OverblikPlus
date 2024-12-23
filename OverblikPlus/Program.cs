@@ -12,7 +12,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // --- HENT MILJØVARIABLER ELLER DEFAULT VÆRDIER ---
 // Bestem API-base-URL'er afhængigt af miljø
 var taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL") ?? "http://localhost:5101";
-var userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL") ?? "http://localhost:5081";
+var userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL") ?? "http://localhost:5102";
 
 // --- AUTHENTICATION OG JWT CONFIGURATION ---
 // Tilføj authentication state provider
