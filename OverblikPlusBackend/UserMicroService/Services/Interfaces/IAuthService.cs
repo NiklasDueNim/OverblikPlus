@@ -1,6 +1,6 @@
 using UserMicroService.dto;
 
-namespace UserMicroService.Services;
+namespace UserMicroService.Services.Interfaces;
 
 public interface IAuthService
 {

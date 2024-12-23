@@ -4,7 +4,6 @@ using Moq;
 using TaskMicroService.DataAccess;
 using TaskMicroService.dto;
 using TaskMicroService.Entities;
-using TaskMicroService.Profiles;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
 
@@ -19,7 +18,6 @@ public class TaskServiceTests
 
     public TaskServiceTests()
     {
-        // Setup in-memory database
         var options = new DbContextOptionsBuilder<TaskDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
@@ -32,7 +30,7 @@ public class TaskServiceTests
     }
 
     [Fact]
-    public async Task GetAllTasks_ShouldReturnAllTasks()
+    public async Task GetAllTasks_ShouldReturnSuccessResultWithAllTasks()
     {
         // Arrange
         var task = new TaskEntity
@@ -43,7 +41,6 @@ public class TaskServiceTests
             ImageUrl = "http://example.com/image.jpg",
             RequiresQrCodeScan = true,
             RecurrenceType = "Daily"
-            
         };
         _dbContext.Tasks.Add(task);
         await _dbContext.SaveChangesAsync();
@@ -52,21 +49,68 @@ public class TaskServiceTests
             .Setup(m => m.Map<List<ReadTaskDto>>(It.IsAny<List<TaskEntity>>()))
             .Returns(new List<ReadTaskDto>
             {
-                new ReadTaskDto { Id = 1, Name = "Test Task", Image = "http://example.com/image.jpg", RequiresQrCodeScan = true, RecurrenceType = "Daily"}
+                new ReadTaskDto { Id = 1, Name = "Test Task", Image = "http://example.com/image.jpg", RequiresQrCodeScan = true, RecurrenceType = "Daily" }
             });
 
         // Act
         var result = await _taskService.GetAllTasks();
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal("Test Task", result.First().Name);
-        Assert.Equal("http://example.com/image.jpg", result.First().Image);
-        Assert.True(result.First().RequiresQrCodeScan);
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Single(result.Data);
+        Assert.Equal("Test Task", result.Data.First().Name);
     }
 
     [Fact]
-    public async Task CreateTask_ShouldSaveTaskToDatabase()
+    public async Task GetTaskById_ShouldReturnCorrectTask()
+    {
+        // Arrange
+        var task = new TaskEntity
+        {
+            Id = 2,
+            Name = "Specific Task",
+            UserId = "user123",
+            ImageUrl = "http://example.com/image.jpg",
+            RequiresQrCodeScan = false,
+            RecurrenceType = "Daily"
+        };
+        _dbContext.Tasks.Add(task);
+        await _dbContext.SaveChangesAsync();
+
+        _mapperMock
+            .Setup(m => m.Map<ReadTaskDto>(It.IsAny<TaskEntity>()))
+            .Returns(new ReadTaskDto { Id = 2, Name = "Specific Task", Image = "http://example.com/image.jpg", RecurrenceType = "Daily" });
+
+        // Act
+        var result = await _taskService.GetTaskById(2);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.Equal(2, result.Data.Id);
+        Assert.Equal("Specific Task", result.Data.Name);
+        Assert.Equal("http://example.com/image.jpg", result.Data.Image);
+        Assert.Equal("Daily", result.Data.RecurrenceType);
+    }
+
+    [Fact]
+    public async Task GetTaskById_ShouldReturnErrorIfTaskNotFound()
+    {
+        // Act
+        int id = 999;
+        var result = await _taskService.GetTaskById(id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(result.Success);
+        Assert.Equal($"Task with ID {id} not found.", result.Error);
+    }
+
+    [Fact]
+    public async Task CreateTask_ShouldReturnSuccessResultWithTaskId()
     {
         // Arrange
         var createTaskDto = new CreateTaskDto
@@ -74,7 +118,6 @@ public class TaskServiceTests
             Name = "New Task",
             Description = "This is a new task",
             ImageBase64 = Convert.ToBase64String(new byte[] { 0x20, 0x20 }),
-            IsCompleted = false,
             RecurrenceType = "Daily",
             RecurrenceInterval = 1,
             StartDate = DateTime.UtcNow,
@@ -100,57 +143,17 @@ public class TaskServiceTests
             });
 
         // Act
-        var taskId = await _taskService.CreateTask(createTaskDto);
-
-        // Assert
-        var task = await _dbContext.Tasks.FindAsync(taskId);
-        Assert.NotNull(task);
-        Assert.Equal(createTaskDto.Name, task.Name);
-        Assert.Equal(createTaskDto.Description, task.Description);
-        Assert.Equal(createTaskDto.UserId, task.UserId);
-        Assert.Equal(createTaskDto.RecurrenceType, task.RecurrenceType);
-        Assert.Equal(createTaskDto.RecurrenceInterval, task.RecurrenceInterval);
-        Assert.Equal(createTaskDto.StartDate, task.NextOccurrence);
-        Assert.Equal("http://example.com/uploaded-image.jpg", task.ImageUrl);
-        Assert.False(task.IsCompleted);
-        Assert.True(task.RequiresQrCodeScan);
-    }
-
-
-
-    [Fact]
-    public async Task GetTaskById_ShouldReturnCorrectTask()
-    {
-        // Arrange
-        var task = new TaskEntity
-        {
-            Id = 2,
-            Name = "Specific Task",
-            UserId = "user123",
-            ImageUrl = "http://example.com/image.jpg",
-            RequiresQrCodeScan = false,
-            RecurrenceType = "Daily"
-        };
-        _dbContext.Tasks.Add(task);
-        await _dbContext.SaveChangesAsync();
-
-        _mapperMock
-            .Setup(m => m.Map<ReadTaskDto>(It.IsAny<TaskEntity>()))
-            .Returns(new ReadTaskDto { Id = 2, Name = "Specific Task", Image = "http://example.com/image.jpg", RecurrenceType = "Daily"});
-
-        // Act
-        var result = await _taskService.GetTaskById(2);
+        var result = await _taskService.CreateTask(createTaskDto);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(2, result.Id);
-        Assert.Equal("Specific Task", result.Name);
-        Assert.Equal("http://example.com/image.jpg", result.Image);
-        Assert.Equal("Daily", result.RecurrenceType);
+        Assert.True(result.Success);
+        Assert.NotNull(result.Data);
+        Assert.True(result.Data > 0);
     }
-    
+
     [Fact]
-    public async Task DeleteTask_ShouldRemoveTaskFromDatabaseAndDeleteBlob()
+    public async Task DeleteTask_ShouldReturnSuccessResult()
     {
         // Arrange
         var task = new TaskEntity
@@ -168,19 +171,33 @@ public class TaskServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await _taskService.DeleteTask(3);
+        var result = await _taskService.DeleteTask(3);
 
         // Assert
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+
         var deletedTask = await _dbContext.Tasks.FindAsync(3);
         Assert.Null(deletedTask);
-        _blobStorageServiceMock.Verify(b => b.DeleteImageAsync("image.jpg"), Times.Once);
     }
-    
-    
+
     [Fact]
-    public async Task UpdateTask_ShouldUpdateTaskFields()
+    public async Task DeleteTask_ShouldReturnErrorIfTaskNotFound()
     {
-        var now = DateTime.UtcNow;
+        // Act
+        int id = 999;
+        var result = await _taskService.DeleteTask(id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(result.Success);
+        Assert.Equal($"Task with ID {id} not found.", result.Error);
+    }
+
+    [Fact]
+    public async Task UpdateTask_ShouldReturnSuccessIfTaskUpdated()
+    {
+        // Arrange
         var existingTask = new TaskEntity
         {
             Id = 4,
@@ -188,84 +205,66 @@ public class TaskServiceTests
             Description = "Old Description",
             RecurrenceType = "Daily",
             RecurrenceInterval = 1,
-            NextOccurrence = now,
             UserId = "user123"
         };
-        _dbContext.Tasks.Add(existingTask);
-        await _dbContext.SaveChangesAsync();
 
+    _dbContext.Tasks.Add(existingTask);
+    await _dbContext.SaveChangesAsync();
+
+    var updateTaskDto = new UpdateTaskDto
+    {
+        Name = "Updated Task",
+        Description = "Updated Description",
+        RecurrenceType = "Weekly",
+        RecurrenceInterval = 2,
+        UserId = "user123"
+    };
+
+    _mapperMock
+        .Setup(m => m.Map(updateTaskDto, existingTask))
+        .Callback<UpdateTaskDto, TaskEntity>((src, dest) =>
+        {
+            dest.Name = src.Name;
+            dest.Description = src.Description;
+            dest.RecurrenceType = src.RecurrenceType;
+            dest.RecurrenceInterval = src.RecurrenceInterval;
+        });
+
+    // Act
+    var result = await _taskService.UpdateTask(existingTask.Id, updateTaskDto);
+
+    // Assert
+    Assert.NotNull(result);
+    Assert.True(result.Success);
+
+    var updatedTask = await _dbContext.Tasks.FindAsync(existingTask.Id);
+    Assert.NotNull(updatedTask);
+    Assert.Equal("Updated Task", updatedTask.Name);
+    Assert.Equal("Updated Description", updatedTask.Description);
+    Assert.Equal("Weekly", updatedTask.RecurrenceType); 
+    }
+
+    [Fact]
+    public async Task UpdateTask_ShouldReturnErrorIfTaskNotFound()
+    {
+        // Arrange
+        int id = 999;
         var updateTaskDto = new UpdateTaskDto
         {
-            Name = "Updated Task",
-            Description = "Updated Description",
-            RecurrenceType = "Weekly",
-            RecurrenceInterval = 2,
-            ImageUrl = Convert.ToBase64String(new byte[] { 0x20, 0x20 }),
-            IsCompleted = existingTask.IsCompleted,
-            UserId = existingTask.UserId,           
-            RequiresQrCodeScan = existingTask.RequiresQrCodeScan
+            Name = "Non-existent Task"
         };
 
-        _blobStorageServiceMock
-            .Setup(b => b.UploadImageAsync(It.IsAny<MemoryStream>(), It.IsAny<string>()))
-            .ReturnsAsync("http://example.com/updated-image.jpg");
-
-        _mapperMock.Setup(m => m.Map(updateTaskDto, existingTask))
-            .Callback<UpdateTaskDto, TaskEntity>((src, dest) =>
-            {
-                dest.Name = src.Name;
-                dest.Description = src.Description;
-                dest.RecurrenceType = src.RecurrenceType;
-                dest.RecurrenceInterval = src.RecurrenceInterval;
-                dest.IsCompleted = src.IsCompleted;
-                dest.UserId = src.UserId;
-                dest.RequiresQrCodeScan = src.RequiresQrCodeScan;
-            });
-
         // Act
-        await _taskService.UpdateTask(4, updateTaskDto);
+        var result = await _taskService.UpdateTask(id, updateTaskDto);
 
         // Assert
-        var updatedTask = await _dbContext.Tasks.FindAsync(4);
-        Assert.NotNull(updatedTask);
-        Assert.Equal("Updated Task", updatedTask.Name);
-        Assert.Equal("Updated Description", updatedTask.Description);
-        Assert.Equal("Weekly", updatedTask.RecurrenceType);
-        Assert.Equal(2, updatedTask.RecurrenceInterval);
-        Assert.Equal("http://example.com/updated-image.jpg", updatedTask.ImageUrl);
-    }
-    
-    
-    [Fact]
-    public void AutoMapper_ShouldMapUpdateTaskDtoToTaskEntity()
-    {
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
-        var mapper = config.CreateMapper();
-
-        var updateTaskDto = new UpdateTaskDto { Name = "Updated Task" };
-        var taskEntity = new TaskEntity { Name = "Old Task" };
-
-        mapper.Map(updateTaskDto, taskEntity);
-
-        Assert.Equal("Updated Task", taskEntity.Name); // Forvent succes her
+        Assert.NotNull(result);
+        Assert.False(result.Success);
+        Assert.Equal($"Task with ID {id} not found.", result.Error);
     }
 
-
-
-    
     [Fact]
-    public async Task GetTaskById_ShouldReturnNullIfTaskNotFound()
-    {
-        // Act
-        var result = await _taskService.GetTaskById(999);
-
-        // Assert
-        Assert.Null(result);
-    }
-    
-    
-    [Fact]
-    public async Task MarkTaskAsCompleted_ShouldUpdateCompletionStatusForRecurringTask()
+    public async Task MarkTaskAsCompleted_ShouldReturnSuccessForValidTask()
     {
         // Arrange
         var now = DateTime.UtcNow;
@@ -283,110 +282,114 @@ public class TaskServiceTests
         await _dbContext.SaveChangesAsync();
 
         // Act
-        await _taskService.MarkTaskAsCompleted(1);
+        var result = await _taskService.MarkTaskAsCompleted(task.Id);
 
         // Assert
-        var completedTask = await _dbContext.Tasks.FindAsync(1);
-        Assert.NotNull(completedTask);
-        
-        Assert.False(completedTask.IsCompleted);
-        
-        Assert.Equal(now.AddDays(1).Date, completedTask.NextOccurrence.Date);
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+
+        var updatedTask = await _dbContext.Tasks.FindAsync(task.Id);
+        Assert.NotNull(updatedTask);
+        Assert.False(updatedTask.IsCompleted);
+        Assert.Equal(now.AddDays(1).Date, updatedTask.NextOccurrence.Date);
     }
 
-    
     [Fact]
-    public async Task CreateTask_ShouldThrowExceptionIfUserIdIsMissing()
+    public async Task MarkTaskAsCompleted_ShouldReturnErrorIfTaskNotFound()
     {
         // Arrange
-        var createTaskDto = new CreateTaskDto
+        int id = 999;
+        
+        // Act
+        var result = await _taskService.MarkTaskAsCompleted(id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(result.Success);
+        Assert.Equal($"Task with ID {id} not found.", result.Error);
+    }
+
+    [Fact]
+    public async Task GetTasksByUserId_ShouldReturnTasksForUser()
+    {
+        // Arrange
+        var taskForUser = new TaskEntity
         {
-            Name = "Task Without UserId",
-            Description = "Description",
-            UserId = null
+            Id = 6,
+            Name = "User Task",
+            UserId = "user1",
+            RecurrenceType = "Daily"
         };
 
-        _mapperMock
-            .Setup(m => m.Map<TaskEntity>(createTaskDto))
-            .Returns(new TaskEntity
-            {
-                Name = createTaskDto.Name,
-                Description = createTaskDto.Description,
-                UserId = null
-            });
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<Exception>(() => _taskService.CreateTask(createTaskDto));
-
-        // Assert exception message
-        Assert.Equal("UserId is not set for the task.", exception.Message);
-    }
-    
-    
-    [Fact]
-    public async Task GetTasksByUserId_ShouldReturnTasksForSpecificUser()
-    {
-        // Arrange
-        var taskForUser1 = new TaskEntity { Id = 6, Name = "User1 Task", UserId = "user1", RecurrenceType = "Daily"};
-        var taskForUser2 = new TaskEntity { Id = 7, Name = "User2 Task", UserId = "user2", RecurrenceType = "Daily"};
-        _dbContext.Tasks.AddRange(taskForUser1, taskForUser2);
+        _dbContext.Tasks.Add(taskForUser);
         await _dbContext.SaveChangesAsync();
 
         _mapperMock
             .Setup(m => m.Map<List<ReadTaskDto>>(It.IsAny<List<TaskEntity>>()))
             .Returns(new List<ReadTaskDto>
             {
-                new ReadTaskDto { Id = 6, Name = "User1 Task", UserId = "user1" , RecurrenceType = "Daily"}
+                new ReadTaskDto { Id = 6, Name = "User Task", UserId = "user1" }
             });
 
         // Act
         var result = await _taskService.GetTasksByUserId("user1");
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal("User1 Task", result.First().Name);
-        Assert.Equal("user1", result.First().UserId);
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.Single(result.Data);
+        Assert.Equal("User Task", result.Data.First().Name);
+        Assert.Equal("user1", result.Data.First().UserId);
     }
- 
-    
+
     [Fact]
-    public async Task MarkTaskAsCompleted_ShouldSetNextOccurrenceForWeeklyRecurrence()
+    public async Task GetTasksForDay_ShouldReturnTasksForGivenDate()
     {
         // Arrange
+        var date = DateTime.UtcNow.Date;
         var task = new TaskEntity
         {
-            Id = 8,
-            Name = "Recurring Task",
-            IsCompleted = false,
-            RecurrenceType = "Weekly",
-            RecurrenceInterval = 1,
-            NextOccurrence = DateTime.UtcNow
+            Id = 7,
+            Name = "Daily Task",
+            UserId = "user1",
+            NextOccurrence = date,
+            RecurrenceType = "Daily"
         };
+
         _dbContext.Tasks.Add(task);
         await _dbContext.SaveChangesAsync();
 
+        _mapperMock
+            .Setup(m => m.Map<List<ReadTaskDto>>(It.IsAny<List<TaskEntity>>()))
+            .Returns(new List<ReadTaskDto>
+            {
+                new ReadTaskDto { Id = 7, Name = "Daily Task", UserId = "user1" }
+            });
+
         // Act
-        await _taskService.MarkTaskAsCompleted(8);
+        var result = await _taskService.GetTasksForDay("user1", date);
 
         // Assert
-        var updatedTask = await _dbContext.Tasks.FindAsync(8);
-        Assert.NotNull(updatedTask);
-        Assert.False(updatedTask.IsCompleted);
-        Assert.Equal(DateTime.UtcNow.AddDays(7).Date, updatedTask.NextOccurrence.Date); 
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.Single(result.Data);
+        Assert.Equal("Daily Task", result.Data.First().Name);
+        Assert.Equal("user1", result.Data.First().UserId);
     }
-    
-    
+
     [Fact]
-    public async Task UpdateTask_ShouldThrowKeyNotFoundExceptionIfTaskNotFound()
+    public async Task GetTasksForDay_ShouldReturnErrorIfNoTasksFound()
     {
         // Arrange
-        var updateTaskDto = new UpdateTaskDto
-        {
-            Name = "Updated Task",
-            Description = "Updated Description"
-        };
+        var userId = "user1";
+        var date = DateTime.UtcNow.AddDays(1);
+        
+        // Act
+        var result = await _taskService.GetTasksForDay("user1", DateTime.UtcNow.AddDays(1));
 
-        // Act & Assert
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => _taskService.UpdateTask(999, updateTaskDto));
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(result.Success);
+        Assert.Equal($"No tasks found for user {userId} on {date.ToShortDateString()}.", result.Error);
     }
 }

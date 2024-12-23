@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using UserMicroService.DataAccess;
 using UserMicroService.dto;
 using UserMicroService.Entities;
+using UserMicroService.Services.Interfaces;
 
 namespace UserMicroService.Services
 {

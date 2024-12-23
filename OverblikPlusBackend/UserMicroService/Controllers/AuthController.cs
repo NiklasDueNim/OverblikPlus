@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using UserMicroService.dto;
 using UserMicroService.Services;
+using UserMicroService.Services.Interfaces;
 
 namespace UserMicroService.Controllers
 {

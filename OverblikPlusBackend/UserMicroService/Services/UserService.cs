@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using UserMicroService.dto;
 using UserMicroService.Entities;
 using UserMicroService.Helpers;
+using UserMicroService.Services.Interfaces;
 
 namespace UserMicroService.Services
 {

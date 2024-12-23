@@ -3,12 +3,26 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using UserMicroService.DataAccess;
 using UserMicroService.Entities;
 using UserMicroService.Helpers;
 using UserMicroService.Services;
+using UserMicroService.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.ApplicationInsights(
+        Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING"), 
+        TelemetryConverter.Traces)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 string encryptionKey = builder.Configuration.GetSection("EncryptionSettings:EncryptionKey").Value;
 if (string.IsNullOrEmpty(encryptionKey))
@@ -17,8 +31,10 @@ if (string.IsNullOrEmpty(encryptionKey))
 }
 EncryptionHelper.SetEncryptionKey(encryptionKey);
 
+var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;";
+
 builder.Services.AddDbContext<UserDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(dbConnectionString));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>()
@@ -63,13 +79,14 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 else
 {
     app.UseHttpsRedirection();
 }
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseRouting();
 
