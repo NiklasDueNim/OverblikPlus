@@ -62,9 +62,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOverblikPlus",
-        policy => policy.AllowAnyOrigin()
+        policy => policy.WithOrigins("https://overblikplus.dk", "http://localhost:5226")
             .AllowAnyMethod()
-            .AllowAnyHeader());
+            .AllowAnyHeader()
+            .AllowCredentials());
 });
 
 builder.Services.AddEndpointsApiExplorer();

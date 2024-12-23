@@ -72,9 +72,10 @@ var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONN
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowOverblikPlus",
-                policy => policy.AllowAnyOrigin()
+                policy => policy.WithOrigins("https://overblikplus.dk", "http://localhost:5226")
                     .AllowAnyMethod()
-                    .AllowAnyHeader());
+                    .AllowAnyHeader()
+                    .AllowCredentials());
         });
 
 // ---- SERVICES ----
@@ -109,6 +110,7 @@ var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONN
         app.UseSwagger();
         app.UseSwaggerUI();
 
+        app.UseCors("AllowOverblikPlus");
         app.UseMiddleware<ExceptionHandlingMiddleware>();
         app.UseAuthentication();
         app.UseAuthorization();
