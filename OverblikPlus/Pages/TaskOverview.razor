@@ -56,31 +56,52 @@
 
     private async Task LoadTasks()
     {
-        var userId = await AuthStateProvider.GetUserIdAsync();
-        if (!string.IsNullOrEmpty(userId))
+        try
         {
-            AllTasks = await TaskService.GetTasksForUserAsync(userId);
-            Console.WriteLine($"Loaded {AllTasks.Count} tasks for user {userId}");
-            
-            foreach (var task in AllTasks)
+            var userId = await AuthStateProvider.GetUserIdAsync();
+            if (!string.IsNullOrEmpty(userId))
             {
-                Console.WriteLine($"Task: {task.Name}, NextOccurrence: {task.NextOccurrence}");
+                var result = await TaskService.GetTasksForUserAsync(userId);
+                
+                if (result.Success)
+                {
+                    AllTasks = result.Data ?? new List<ReadTaskDto>();
+                    Console.WriteLine($"Loaded {AllTasks.Count} tasks for user {userId}");
+
+                    foreach (var task in AllTasks)
+                    {
+                        Console.WriteLine($"Task: {task.Name}, NextOccurrence: {task.NextOccurrence}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Error loading tasks: {result.Error}");
+                    AllTasks = new List<ReadTaskDto>();
+                }
+            }
+            else
+            {
+                Console.WriteLine("User ID is null or empty.");
+                AllTasks = new List<ReadTaskDto>();
             }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("User ID is null or empty.");
+            Console.WriteLine($"Unexpected error: {ex.Message}");
+            AllTasks = new List<ReadTaskDto>();
         }
     }
 
     private void FilterTasksByDate()
     {
         FilteredTasks = AllTasks
-            .Where(task => task.NextOccurrence.Date == SelectedDate.Date)
+            .Where(task => !task.NextOccurrence.HasValue ||
+                           task.NextOccurrence.Value.Date == SelectedDate.Date)
             .ToList();
 
         Console.WriteLine($"Filtered {FilteredTasks.Count} tasks for date {SelectedDate.Date}");
     }
+
 
     private void ShowPreviousDay()
     {

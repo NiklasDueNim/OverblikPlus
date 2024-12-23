@@ -39,7 +39,17 @@
 
     private async Task LoadTasks()
     {
-        Tasks = await TaskService.GetTasksForDay(UserId, SelectedDate);
+        var result = await TaskService.GetTasksForDay(UserId, SelectedDate);
+        if (result.Success)
+        {
+            Tasks = result.Data;
+        }
+        else
+        {
+            Console.WriteLine($"Error: {result.Error}");
+            Tasks = new List<ReadTaskDto>();
+        }
+
     }
 
     private async Task PreviousDay()
