@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskMicroService.Common;
 using TaskMicroService.dto;
 using TaskMicroService.Services.Interfaces;
 
@@ -11,129 +13,130 @@ namespace TaskMicroService.Controllers
     public class TaskController : ControllerBase
     {
         private readonly ITaskService _taskService;
+        private readonly ILogger<TaskController> _logger;
+        private readonly IValidator<CreateTaskDto> _createTaskValidator;
+        private readonly IValidator<UpdateTaskDto> _updateTaskValidator;
 
-        public TaskController(ITaskService taskService)
+        public TaskController(
+            ITaskService taskService, 
+            ILogger<TaskController> logger,
+            IValidator<CreateTaskDto> createTaskValidator, 
+            IValidator<UpdateTaskDto> updateTaskValidator)
         {
-            _taskService = taskService;
+            _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _createTaskValidator = createTaskValidator ?? throw new ArgumentNullException(nameof(createTaskValidator));
+            _updateTaskValidator = updateTaskValidator ?? throw new ArgumentNullException(nameof(updateTaskValidator));
         }
 
         [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskById(int id)
         {
-            var taskDto = await _taskService.GetTaskById(id);
-            if (taskDto == null)
-                return NotFound();
+            var result = await _taskService.GetTaskById(id);
+            if (!result.Success)
+                return NotFound(result);
 
-            return Ok(taskDto);
+            return Ok(result);
         }
 
-        
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin, Staff")]
         [HttpGet]
         public async Task<IActionResult> GetAllTasks()
         {
-            var tasks = await _taskService.GetAllTasks();
-            return Ok(tasks);
+            var result = await _taskService.GetAllTasks();
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
         }
-        
+
         [Authorize(Roles = "User")]
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetTasksByUserId(string userId)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
-            if (currentUserId != userId)
-            {
-                return Forbid();
-            }
 
-            var tasks = await _taskService.GetTasksByUserId(userId);
-            return Ok(tasks);
+            if (currentUserId != userId)
+                return Forbid();
+
+            var result = await _taskService.GetTasksByUserId(userId);
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
         }
 
-
-        
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
-            if (!ModelState.IsValid)
-            {
-                Console.WriteLine("ModelState is invalid");
-                return BadRequest(ModelState);
-            }
+            var validationResult = _createTaskValidator.Validate(createTaskDto);
+            if (!validationResult.IsValid)
+                return BadRequest(Result<object>.ErrorResult("Validation failed"));
 
-            try
-            {
-                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
 
-                if (currentUserRole == "User")
-                {
-                    createTaskDto.UserId = currentUserId;
-                }
+            if (currentUserRole == "User")
+                createTaskDto.UserId = currentUserId;
 
-                var taskId = await _taskService.CreateTask(createTaskDto);
-                Console.WriteLine($"Task created with ID: {taskId}");
-                return CreatedAtAction(nameof(GetTaskById), new { id = taskId }, null);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error creating task: {ex.Message}");
-                return StatusCode(500, "Internal server error");
-            }
+            var result = await _taskService.CreateTask(createTaskDto);
+            if (!result.Success)
+                return BadRequest(result);
+
+            return CreatedAtAction(nameof(GetTaskById), new { id = result.Data }, result);
         }
-
-
 
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskDto updateTaskDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var validationResult = _updateTaskValidator.Validate(updateTaskDto);
+            if (!validationResult.IsValid)
+                return BadRequest(Result<object>.ErrorResult("Validation failed"));
 
-            var existingTask = await _taskService.GetTaskById(id);
-            if (existingTask == null)
-                return NotFound();
+            var result = await _taskService.UpdateTask(id, updateTaskDto);
+            if (!result.Success)
+                return BadRequest(result);
 
-            await _taskService.UpdateTask(id, updateTaskDto);
-            return NoContent();
+            return Ok(result);
         }
 
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
-            var existingTask = await _taskService.GetTaskById(id);
-            if (existingTask == null)
-                return NotFound();
+            var result = await _taskService.DeleteTask(id);
+            if (!result.Success)
+                return NotFound(result);
 
-            await _taskService.DeleteTask(id);
-            return NoContent();
+            return Ok(result);
         }
-        
+
+        [Authorize]
         [HttpPut("{taskId}/complete")]
         public async Task<IActionResult> MarkTaskAsCompleted(int taskId)
         {
-            await _taskService.MarkTaskAsCompleted(taskId);
-            return NoContent();
-        }
-        
-        [HttpGet("user/{userId}/tasks-for-day")]
-        public async Task<ActionResult<IEnumerable<ReadTaskDto>>> GetTasksForDay(string userId, [FromQuery] DateTime date)
-        {
-            try
-            {
-                var tasks = await _taskService.GetTasksForDay(userId, date);
-                return Ok(tasks);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            if (taskId <= 0)
+                return BadRequest(Result<object>.ErrorResult("Invalid task ID."));
+
+            var result = await _taskService.MarkTaskAsCompleted(taskId);
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
         }
 
+        [Authorize]
+        [HttpGet("user/{userId}/tasks-for-day")]
+        public async Task<IActionResult> GetTasksForDay(string userId, [FromQuery] DateTime date)
+        {
+            var result = await _taskService.GetTasksForDay(userId, date);
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
     }
 }

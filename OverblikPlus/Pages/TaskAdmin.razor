@@ -1,5 +1,6 @@
 @page "/admin/tasks"
 @using AutoMapper
+@using OverblikPlus.Common
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.TaskSteps
 @using OverblikPlus.Dtos.User
@@ -95,17 +96,44 @@
 
     private async Task LoadTasks()
     {
-        var role = await AuthStateProvider.GetRoleAsync();
-        if (role == "Admin" || role == "Staff")
+        try
         {
-            Tasks = await TaskService.GetAllTasks();
+            var role = await AuthStateProvider.GetRoleAsync();
+            Result<List<ReadTaskDto>> result;
+
+            if (role == "Admin" || role == "Staff")
+            {
+                result = await TaskService.GetAllTasks();
+            }
+            else if (role == "User")
+            {
+                var currentUserId = await AuthStateProvider.GetUserIdAsync();
+                result = await TaskService.GetTasksForUserAsync(currentUserId);
+            }
+            else
+            {
+                Tasks = new List<ReadTaskDto>();
+                return;
+            }
+
+            if (result.Success)
+            {
+                Tasks = result.Data ?? new List<ReadTaskDto>();
+            }
+            else
+            {
+                Console.WriteLine($"Fejl ved indlæsning af opgaver: {result.Error}");
+                Tasks = new List<ReadTaskDto>();
+            }
         }
-        else if (role == "User")
+        catch (Exception ex)
         {
-            var currentUserId = await AuthStateProvider.GetUserIdAsync();
-            Tasks = await TaskService.GetTasksForUserAsync(currentUserId);
+            Console.WriteLine($"Uventet fejl: {ex.Message}");
+            Tasks = new List<ReadTaskDto>();
         }
     }
+
+
 
 
     private async Task LoadUsers()
@@ -135,15 +163,25 @@
             {
                 Console.WriteLine($"Opdaterer opgave med ID {taskFormModel.Id}");
                 var updateTaskDto = Mapper.Map<UpdateTaskDto>(taskFormModel);
-                await TaskService.UpdateTask(updateTaskDto.Id, updateTaskDto);
+                var result = await TaskService.UpdateTask(updateTaskDto.Id, updateTaskDto);
+
+                if (!result.Success)
+                {
+                    Console.WriteLine($"Fejl ved opdatering: {result.Error}");
+                }
             }
             else
             {
                 Console.WriteLine("Opretter ny opgave");
                 var createTaskDto = Mapper.Map<CreateTaskDto>(taskFormModel);
-                await TaskService.CreateTask(createTaskDto);
+                var result = await TaskService.CreateTask(createTaskDto);
+
+                if (!result.Success)
+                {
+                    Console.WriteLine($"Fejl ved oprettelse: {result.Error}");
+                }
             }
-        
+
             await LoadTasks();
             isTaskFormVisible = false;
             ResetForm();
@@ -153,6 +191,7 @@
             Console.WriteLine($"Fejl i SaveTask: {ex.Message}");
         }
     }
+
 
     private void ResetForm()
     {
@@ -170,22 +209,20 @@
     {
         try
         {
-            bool succes = await TaskService.DeleteTask(taskId);
-            if (succes)
+            var result = await TaskService.DeleteTask(taskId);
+            if (result.Success)
             {
                 Console.WriteLine("Opgaven er slettet");
                 await LoadTasks();
             }
             else
             {
-                Console.WriteLine("Du har ikke tilladelse til at slette denne opgave");
+                Console.WriteLine($"Fejl: {result.Error}");
             }
-
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            Console.WriteLine($"Exception: {e.Message}");
         }
     }
 

@@ -1,22 +1,51 @@
 using System.Text;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Serilog;
 using TaskMicroService.DataAccess;
+using TaskMicroService.dto;
 using TaskMicroService.Profiles;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
+using TaskMicroService.Validators;
+using TaskMicroService.Middelwares;
 
+// ---- ENVIRONMENT LOGGING ----
 var builder = WebApplication.CreateBuilder(args);
+var environment = builder.Environment.EnvironmentName;
 
+// ---- SERILOG CONFIGURATION ----
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.ApplicationInsights(
+        Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING"), 
+        TelemetryConverter.Traces)
+    .CreateLogger();
 
-builder.Services.AddApplicationInsightsTelemetry(builder.Configuration["ApplicationInsights:ConnectionString"]);
+builder.Host.UseSerilog();
 
+// ---- APPLICATION INSIGHTS ----
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    options.ConnectionString = Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
+});
+
+// ---- DATABASE CONFIGURATION ----
+var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Connection Timeout=30;";
+
+Log.Logger.Information("This is the DB connection string: " + dbConnectionString);
 
 builder.Services.AddDbContext<TaskDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(dbConnectionString));
 
-builder.Services.AddAuthentication(options => 
+builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -35,42 +64,70 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-// TODO implementere korrekt cors
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowOverblikPlus",
-        policy => policy.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
-});
+// ---- Blob Storage ----
+var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONNECTION_STRING") ??
+                           "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;";
+        builder.Services.AddSingleton(x => { return new BlobServiceClient(blobConnectionString); });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowOverblikPlus",
+                policy => policy.WithOrigins("https://overblikplus.dk", "http://localhost:5226")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+        });
 
-builder.Services.AddControllers();
-builder.Services.AddAutoMapper(typeof(MappingProfile));
-builder.Services.AddScoped<ITaskService, TaskService>();
-builder.Services.AddScoped<ITaskStepService, TaskStepService>();
-builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+// ---- SERVICES ----
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+        builder.Services.AddControllers();
+        builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-var app = builder.Build();
+// ---- DEPENDENCY INJECTION ----
+        builder.Services.AddScoped<ITaskService, TaskService>();
+        builder.Services.AddScoped<ITaskStepService, TaskStepService>();
+        builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-else
-{
-    app.UseHttpsRedirection();
-}
+// ---- VALIDATORS ----
+        builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
+        builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
+        builder.Services.AddFluentValidationAutoValidation();
+        builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 
-app.UseRouting();
+// ---- BUILD APPLICATION ----
+        var app = builder.Build();
 
-app.UseCors("AllowOverblikPlus");
+// ---- MIDDLEWARE CONFIGURATION ----
+        if (app.Environment.IsDevelopment())
+        {
+        }
+        else
+        {
+            app.UseHttpsRedirection();
+        }
 
-app.UseAuthentication();
-app.UseAuthorization();
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
-app.MapControllers();
-app.Run();
+        app.UseCors("AllowOverblikPlus");
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers();
+
+// ---- START APP ----
+        try
+        {
+            Log.Information("Starting the application in {Environment} mode", environment);
+            app.Run();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application start-up failed");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    
