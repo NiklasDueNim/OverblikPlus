@@ -12,6 +12,7 @@ namespace TaskMicroService.Profiles
             CreateMap<TaskEntity, ReadTaskDto>()
                 .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.Steps));
 
+
             CreateMap<CreateTaskDto, TaskEntity>();
             
             // CreateMap<UpdateTaskDto, TaskEntity>();

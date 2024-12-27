@@ -10,7 +10,7 @@ namespace TaskMicroService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TaskController : ControllerBase
+    public class TaskController : ControllerBase //TODO: hvorfor bruges logger ikke her? 
     {
         private readonly ITaskService _taskService;
         private readonly ILogger<TaskController> _logger;
@@ -71,7 +71,7 @@ namespace TaskMicroService.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
-            var validationResult = _createTaskValidator.Validate(createTaskDto);
+            var validationResult = await _createTaskValidator.ValidateAsync(createTaskDto);
             if (!validationResult.IsValid)
                 return BadRequest(Result<object>.ErrorResult("Validation failed"));
 
@@ -92,7 +92,7 @@ namespace TaskMicroService.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskDto updateTaskDto)
         {
-            var validationResult = _updateTaskValidator.Validate(updateTaskDto);
+            var validationResult = await _updateTaskValidator.ValidateAsync(updateTaskDto);
             if (!validationResult.IsValid)
                 return BadRequest(Result<object>.ErrorResult("Validation failed"));
 

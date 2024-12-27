@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Newtonsoft.Json;
 using OverblikPlus.Dtos.Tasks;
 using OverblikPlus.Services.Interfaces;
 using OverblikPlus.Common;
@@ -14,7 +15,7 @@ public class TaskService : ITaskService
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
 
-    // Generic method for executing GET requests with Result<T>
+
     private async Task<Result<T>> ExecuteGetRequest<T>(string uri)
     {
         try
@@ -29,7 +30,6 @@ public class TaskService : ITaskService
         }
     }
 
-    // Generic method for non-query requests (POST, PUT, DELETE)
     private async Task<Result> ExecuteNonQueryRequest(Func<Task<HttpResponseMessage>> requestFunc, string actionDescription)
     {
         try
@@ -50,48 +50,62 @@ public class TaskService : ITaskService
         }
     }
 
-    // Fetch all tasks
+
     public async Task<Result<List<ReadTaskDto>>> GetAllTasks() =>
         await ExecuteGetRequest<List<ReadTaskDto>>("/api/Task");
 
-    // Fetch tasks for a specific user
     public async Task<Result<List<ReadTaskDto>>> GetTasksForUserAsync(string userId) =>
         await ExecuteGetRequest<List<ReadTaskDto>>($"api/Task/user/{userId}");
-
-    // Fetch task by ID
+    
     public async Task<Result<ReadTaskDto>> GetTaskById(int taskId) =>
         await ExecuteGetRequest<ReadTaskDto>($"/api/Task/{taskId}");
 
-    // Create a new task
+
     public async Task<Result<int>> CreateTask(CreateTaskDto newTask)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/Task", newTask);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var createdTaskId = await response.Content.ReadFromJsonAsync<int>();
-            return Result<int>.SuccessResult(createdTaskId);
+            Console.WriteLine($"Sender request til API: {JsonConvert.SerializeObject(newTask)}");
+
+            var response = await _httpClient.PostAsJsonAsync("/api/Task", newTask);
+            Console.WriteLine($"API Response Content: {response}");
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"JSON Response: {jsonResponse}");
+
+            var apiResponse = JsonConvert.DeserializeObject<Result<int>>(jsonResponse);
+
+            if (apiResponse.Success)
+            {
+                return Result<int>.SuccessResult(apiResponse.Data);
+            }
+            return Result<int>.ErrorResult($"Failed to create task. Details: {apiResponse.Error}");
         }
-        var errorContent = await response.Content.ReadAsStringAsync();
-        return Result<int>.ErrorResult($"Failed to create task. Details: {errorContent}");
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl i CreateTask: {ex.Message}");
+            return Result<int>.ErrorResult($"Exception: {ex.Message}");
+        }
     }
 
-    // Update an existing task
+
+
     public async Task<Result> UpdateTask(int taskId, UpdateTaskDto updatedTask) =>
         await ExecuteNonQueryRequest(
             () => _httpClient.PutAsJsonAsync($"/api/Task/{taskId}", updatedTask),
             "Task update");
 
-    // Delete a task
+
     public async Task<Result> DeleteTask(int taskId) =>
         await ExecuteNonQueryRequest(
             () => _httpClient.DeleteAsync($"/api/Task/{taskId}"),
             "Task deletion");
 
-    // Fetch tasks for the current user
+
     public async Task<Result<List<ReadTaskDto>>> GetTasksForCurrentUserAsync() =>
         await ExecuteGetRequest<List<ReadTaskDto>>("api/Task/user-tasks");
 
-    // Mark task as completed
+
     public async Task<Result> MarkTaskAsCompleted(int taskId)
     {
         return await ExecuteNonQueryRequest(
@@ -99,7 +113,7 @@ public class TaskService : ITaskService
             "Mark task as completed");
     }
 
-    // Fetch tasks for a specific day
+
     public async Task<Result<List<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date)
     {
         return await ExecuteGetRequest<List<ReadTaskDto>>($"api/Task/user/{userId}/tasks-for-day?date={date:yyyy-MM-dd}");

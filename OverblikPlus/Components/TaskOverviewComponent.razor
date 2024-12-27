@@ -11,7 +11,7 @@
                 <p>@task.Description</p>
                 @if (!string.IsNullOrEmpty(task.Image))
                 {
-                <img src="@task.Image" alt="Opgave Billede" class="img-thumbnail" style="width: 150px; height: auto;" />
+                    <img src="@task.Image" alt="Opgave Billede" class="img-thumbnail" style="width: 150px; height: auto;" />
                 }
             </div>
             <div>
@@ -32,4 +32,18 @@
 [Parameter] public EventCallback<int> OnAddStep { get; set; }
 [Parameter] public EventCallback<ReadTaskStepDto> OnEditStep { get; set; }
 [Parameter] public EventCallback<int> OnDeleteStep { get; set; }
+
+
+private string FixImageUrl(string imageUrl)
+{
+    if (string.IsNullOrEmpty(imageUrl))
+        return "";
+
+    if (imageUrl.Contains("azurite"))
+    {
+        return imageUrl.Replace("http://azurite:10000", "http://localhost:10000");
+    }
+
+    return imageUrl;
+}
 }
