@@ -1,38 +1,31 @@
-# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
 
-# Kopier Shared-projektet
-COPY OverblikPlusBackend/OverblikPlus.Shared/OverblikPlus.Shared.csproj ./OverblikPlus.Shared/
-WORKDIR /src/OverblikPlus.Shared
-RUN dotnet restore OverblikPlus.Shared.csproj
+WORKDIR /app
 
-# Kopier TaskMicroService-projektet
-WORKDIR /src
-COPY OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj ./TaskMicroService/
-WORKDIR /src/TaskMicroService
-RUN dotnet restore TaskMicroService.csproj
+# Kopier solution-filen (en mappe op)
+COPY ../OverblikPlusBackend.sln .
 
-# Kopier al kildekode
-COPY OverblikPlusBackend/OverblikPlus.Shared ./OverblikPlus.Shared/
-COPY OverblikPlusBackend/TaskMicroService ./TaskMicroService/
+# Kopier .csproj-filer
+COPY ../OverblikPlus.Shared/OverblikPlus.Shared.csproj OverblikPlus.Shared/
+COPY ./TaskMicroService.csproj TaskMicroService.csproj
 
-# Byg TaskMicroService-projektet
-WORKDIR /src/TaskMicroService
-RUN dotnet publish -c Release -o /app -v d
+# Restore
+RUN dotnet restore OverblikPlusBackend.sln
 
-# Runtime stage
+# Kopier resten af koden
+COPY ../OverblikPlus.Shared/ OverblikPlus.Shared/
+COPY . .
+
+# Publish
+RUN dotnet publish TaskMicroService.csproj -c Release -o /out
+
+# Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app .
+COPY --from=build /out .
 
-# Expose ports og miljøvariabler
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
 
-# Healthcheck (valgfrit)
-HEALTHCHECK CMD curl --fail http://localhost:80/health || exit 1
-
-# Start applikationen
 ENTRYPOINT ["dotnet", "TaskMicroService.dll"]
