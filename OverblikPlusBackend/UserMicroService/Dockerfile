@@ -4,11 +4,14 @@ WORKDIR /src
 
 # Kopier Shared-projektet
 COPY OverblikPlusBackend/OverblikPlus.Shared/OverblikPlus.Shared.csproj ./OverblikPlus.Shared/
-RUN dotnet restore ./OverblikPlus.Shared/OverblikPlus.Shared.csproj
+WORKDIR /src/OverblikPlus.Shared
+RUN dotnet restore OverblikPlus.Shared.csproj
 
 # Kopier UserMicroService-projektet
+WORKDIR /src
 COPY OverblikPlusBackend/UserMicroService/UserMicroService.csproj ./UserMicroService/
-RUN dotnet restore ./UserMicroService/UserMicroService.csproj
+WORKDIR /src/UserMicroService
+RUN dotnet restore UserMicroService.csproj
 
 # Kopier al kildekode
 COPY OverblikPlusBackend/OverblikPlus.Shared ./OverblikPlus.Shared/
