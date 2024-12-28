@@ -19,7 +19,7 @@ COPY OverblikPlusBackend/TaskMicroService ./TaskMicroService/
 
 # Byg TaskMicroService-projektet
 WORKDIR /src/TaskMicroService
-RUN dotnet publish -c Release -o /app
+RUN dotnet publish -c Release -o /app/TaskMicroService
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
