@@ -55,7 +55,7 @@ jobs:
       # Bygger Docker-billedet
       - name: Build Docker image
         run: |
-          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest .
+          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService' || 'TaskMicroService' }}/Dockerfile OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService' || 'TaskMicroService' }}
 
       # Push billedet til ACR
       - name: Push Docker image to ACR
