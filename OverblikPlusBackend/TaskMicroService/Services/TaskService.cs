@@ -111,9 +111,9 @@ namespace TaskMicroService.Services
 
             _mapper.Map(updateTaskDto, taskEntity);
 
-            if (!string.IsNullOrEmpty(updateTaskDto.ImageUrl))
+            if (!string.IsNullOrEmpty(updateTaskDto.ImageBase64))
             {
-                var imageBytes = Convert.FromBase64String(updateTaskDto.ImageUrl);
+                var imageBytes = Convert.FromBase64String(updateTaskDto.ImageBase64);
                 using var stream = new MemoryStream(imageBytes);
                 var blobFileName = $"{Guid.NewGuid()}.jpg";
                 taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);

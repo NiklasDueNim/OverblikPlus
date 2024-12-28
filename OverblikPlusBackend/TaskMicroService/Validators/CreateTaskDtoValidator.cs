@@ -13,9 +13,5 @@ public class CreateTaskDtoValidator : AbstractValidator<CreateTaskDto>
 
         RuleFor(x => x.Description)
             .MaximumLength(500).WithMessage("Description cannot exceed 500 characters");
-        
-        RuleFor(x => x.RecurrenceInterval)
-            .GreaterThan(0).WithMessage("RecurrenceInterval must be greater than zero.");
-
     }
 }
