@@ -5,7 +5,7 @@ namespace OverblikPlus.Shared.Logging
 {
     public class LoggerService : ILoggerService
     {
-        private readonly ILogger _logger;
+        private readonly Serilog.ILogger _logger;
 
         public LoggerService()
         {
