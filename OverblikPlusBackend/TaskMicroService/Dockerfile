@@ -2,6 +2,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
+# Ryd tidligere builds for at undgå adgangsfejl
+RUN rm -rf /src/TaskMicroService/bin /src/TaskMicroService/obj
+
 # Kopier Shared-projektet
 COPY OverblikPlusBackend/OverblikPlus.Shared/OverblikPlus.Shared.csproj ./OverblikPlus.Shared/
 WORKDIR /src/OverblikPlus.Shared
@@ -19,7 +22,7 @@ COPY OverblikPlusBackend/TaskMicroService ./TaskMicroService/
 
 # Byg TaskMicroService-projektet
 WORKDIR /src/TaskMicroService
-RUN dotnet publish -c Release -o /app/TaskMicroService
+RUN dotnet publish -c Release -o /app
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
