@@ -41,11 +41,13 @@ jobs:
           done
 
       # Kører tests
-      - name: Run tests
+      - name: Run UserMicroService Tests
         run: |
-          for csproj in $(find . -name '*.Tests.csproj'); do
-            dotnet test "$csproj" --no-restore --verbosity normal
-          done
+          dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj --no-restore --verbosity normal
+
+      - name: Run TaskMicroService Tests
+        run: |
+          dotnet test OverblikPlusBackend/TaskMicroService.Test/TaskMicroService.Test.csproj --no-restore --verbosity normal
 
       # Log ind på Azure
       - name: Azure Login
@@ -80,7 +82,7 @@ jobs:
           --container-image-name overblikplusregistry.azurecr.io/overblikplus-${{ matrix.service }}:latest \
           --container-registry-url https://overblikplusregistry.azurecr.io
 
-      # Genstarter appen (valgfrit)
+      # Genstarter appen
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
