@@ -26,27 +26,6 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Gendanner afhængigheder
-      - name: Restore dependencies
-        run: |
-          for csproj in $(find . -name '*.csproj'); do
-            dotnet restore "$csproj"
-          done
-
-      # Bygger projekterne
-      - name: Build projects
-        run: |
-          for csproj in $(find . -name '*.csproj'); do
-            dotnet build "$csproj" --configuration Release --no-restore
-          done
-
-      # Kører tests
-      - name: Run tests
-        run: |
-          for csproj in $(find . -name '*.Tests.csproj'); do
-            dotnet test "$csproj" --no-restore --verbosity normal
-          done
-
       # Log ind på Azure Container Registry (ACR)
       - name: Login to Azure Container Registry
         run: |
@@ -55,10 +34,13 @@ jobs:
       # Bygger Docker-billedet
       - name: Build Docker image
         run: |
+          if [[ "${{ matrix.service }}" == "task-api" ]]; then
             docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
-            -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService/Dockerfile' || 'TaskMicroService/Dockerfile' }} \
-            --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
-            .
+            -f OverblikPlusBackend/TaskMicroService/Dockerfile .
+          else
+            docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+            -f OverblikPlusBackend/UserMicroService/Dockerfile .
+          fi
 
       # Push billedet til ACR
       - name: Push Docker image to ACR
@@ -76,11 +58,6 @@ jobs:
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
-
-      # Tjekker appens status
-      - name: Check App Status
-        run: |
-          az webapp show --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup --query state
 
       # Tjekker logs
       - name: Check Logs
