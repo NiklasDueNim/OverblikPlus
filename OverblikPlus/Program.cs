@@ -14,6 +14,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 var taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL") ?? "http://localhost:5101";
 var userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL") ?? "http://localhost:5102";
 
+
 // --- AUTHENTICATION OG JWT CONFIGURATION ---
 // Tilføj authentication state provider
 builder.Services.AddSingleton<CustomAuthStateProvider>();

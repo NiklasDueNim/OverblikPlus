@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using TaskMicroService.Common;
 using TaskMicroService.DataAccess;
 using TaskMicroService.dto;
@@ -8,7 +9,7 @@ using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services
 {
-    public class TaskService : ITaskService
+    public class TaskService : ITaskService //TODO: Implementer transaction i create og update. Central logging og result
     {
         private readonly TaskDbContext _dbContext;
         private readonly IMapper _mapper;
@@ -70,6 +71,8 @@ namespace TaskMicroService.Services
                 using var stream = new MemoryStream(imageBytes);
                 var blobFileName = $"{Guid.NewGuid()}.jpg";
                 taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
+                Log.Logger.Information($"Image URL: {taskEntity.ImageUrl}");
+
             }
 
             taskEntity.NextOccurrence = createTaskDto.RecurrenceType != "None"

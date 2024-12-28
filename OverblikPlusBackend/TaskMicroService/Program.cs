@@ -66,8 +66,16 @@ builder.Services.AddAuthentication(options =>
 
 // ---- Blob Storage ----
 var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONNECTION_STRING") ??
-                           "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;";
-        builder.Services.AddSingleton(x => { return new BlobServiceClient(blobConnectionString); });
+                           "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://localhost:10000;";
+builder.Services.AddSingleton(x => { return new BlobServiceClient(blobConnectionString); });
+Log.Logger.Information($"Blob Storage Connection String: {blobConnectionString}");
+
+// Dynamisk generer base URL baseret på miljø
+var blobBaseUrl = Environment.GetEnvironmentVariable("BLOB_BASE_URL") ??
+                  "http://localhost:10000/devstoreaccount1/images"; //TODO: Tilføj blob base url til min dev
+builder.Services.AddSingleton(blobBaseUrl);
+
+Log.Logger.Information($"Blob Base URL: {blobBaseUrl}");
 
         builder.Services.AddCors(options =>
         {

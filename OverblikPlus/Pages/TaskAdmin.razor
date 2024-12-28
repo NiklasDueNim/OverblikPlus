@@ -1,5 +1,6 @@
 @page "/admin/tasks"
 @using AutoMapper
+@using Newtonsoft.Json
 @using OverblikPlus.Common
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Dtos.TaskSteps
@@ -119,6 +120,13 @@
             if (result.Success)
             {
                 Tasks = result.Data ?? new List<ReadTaskDto>();
+                Console.WriteLine($"API Response: {JsonConvert.SerializeObject(result.Data)}");
+
+                
+                foreach (var task in Tasks)
+                {
+                    Console.WriteLine($"task Image: {task.Image}");
+                }
             }
             else
             {
@@ -168,6 +176,8 @@
                 if (!result.Success)
                 {
                     Console.WriteLine($"Fejl ved opdatering: {result.Error}");
+                    Console.WriteLine($"Detaljeret fejl: {JsonConvert.SerializeObject(result)}");
+
                 }
             }
             else

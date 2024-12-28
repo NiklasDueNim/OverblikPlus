@@ -1,27 +1,29 @@
-using TaskMicroService.Services.Interfaces;
-
-namespace TaskMicroService.Services;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using TaskMicroService.Services.Interfaces;
 
 public class BlobStorageService : IBlobStorageService
 {
     private readonly BlobServiceClient _blobServiceClient;
     private readonly string _containerName = "images";
+    private readonly string _blobBaseUrl;
 
-    public BlobStorageService(BlobServiceClient blobServiceClient)
+    public BlobStorageService(BlobServiceClient blobServiceClient, string blobBaseUrl)
     {
         _blobServiceClient = blobServiceClient;
+        _blobBaseUrl = blobBaseUrl;
     }
 
     public async Task<string> UploadImageAsync(Stream imageStream, string fileName)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
         await containerClient.CreateIfNotExistsAsync();
+        Console.WriteLine($"Container klient: {containerClient}");
 
         var blobClient = containerClient.GetBlobClient(fileName);
         await blobClient.UploadAsync(imageStream, overwrite: true);
 
-        return blobClient.Uri.ToString();
+        return $"{_blobBaseUrl}/{fileName}";
     }
 
     public async Task DeleteImageAsync(string fileName)
