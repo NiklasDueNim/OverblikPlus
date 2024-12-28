@@ -42,4 +42,8 @@
       <Folder Include="Migrations\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\OverblikPlus.Shared\OverblikPlus.Shared.csproj" />
+    </ItemGroup>
+
 </Project>

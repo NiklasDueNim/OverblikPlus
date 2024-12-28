@@ -2,9 +2,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Ryd tidligere builds for at undgå adgangsfejl
-RUN rm -rf /app/*
-
 # Kopier Shared-projektet
 COPY OverblikPlusBackend/OverblikPlus.Shared/OverblikPlus.Shared.csproj ./OverblikPlus.Shared/
 WORKDIR /src/OverblikPlus.Shared
