@@ -10,6 +10,7 @@ namespace TaskMicroService.Profiles
         {
             // Task mappings
             CreateMap<TaskEntity, ReadTaskDto>()
+                .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.ImageUrl))
                 .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.Steps));
 
 

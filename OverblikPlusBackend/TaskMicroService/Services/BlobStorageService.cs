@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using TaskMicroService.Services.Interfaces;
 
 public class BlobStorageService : IBlobStorageService
@@ -17,6 +18,7 @@ public class BlobStorageService : IBlobStorageService
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
         await containerClient.CreateIfNotExistsAsync();
+        Console.WriteLine($"Container klient: {containerClient}");
 
         var blobClient = containerClient.GetBlobClient(fileName);
         await blobClient.UploadAsync(imageStream, overwrite: true);

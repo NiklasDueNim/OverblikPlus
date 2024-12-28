@@ -66,7 +66,7 @@ builder.Services.AddAuthentication(options =>
 
 // ---- Blob Storage ----
 var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONNECTION_STRING") ??
-                           "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;";
+                           "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://localhost:10000;";
 builder.Services.AddSingleton(x => { return new BlobServiceClient(blobConnectionString); });
 Log.Logger.Information($"Blob Storage Connection String: {blobConnectionString}");
 

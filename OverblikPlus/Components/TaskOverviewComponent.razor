@@ -11,8 +11,15 @@
                 <p>@task.Description</p>
                 @if (!string.IsNullOrEmpty(task.Image))
                 {
-                    <img src="@task.Image" alt="Opgave Billede" class="img-thumbnail" style="width: 150px; height: auto;" />
+                    var fixedImageUrl = FixImageUrl(task.Image);
+                    Console.WriteLine($"Fixed Image URL: {fixedImageUrl}");
+                    <img src="@fixedImageUrl" alt="Opgave Billede" class="img-thumbnail" style="width: 150px; height: auto;" />
                 }
+                else
+                {
+                    Console.WriteLine("Ingen billede til denne opgave.");
+                }
+
             </div>
             <div>
                 <button class="btn btn-primary me-2" @onclick="() => OnEditTask.InvokeAsync(task)">Rediger</button>
