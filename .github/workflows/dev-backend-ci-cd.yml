@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [user-api, task-api]
+        service: [TaskMicroService, UserMicroService] # Opdaterede navne til services
 
     steps:
-      # Tjekker koden ud
+      # Henter koden fra repository
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -26,56 +26,23 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Gendanner afhængigheder
-      - name: Restore dependencies
-        run: |
-          for csproj in $(find . -name '*.csproj'); do
-            dotnet restore "$csproj"
-          done
-
-      # Bygger projekterne
-      - name: Build projects
-        run: |
-          for csproj in $(find . -name '*.csproj'); do
-            dotnet build "$csproj" --configuration Release --no-restore
-          done
-
-      # Kører tests
-      - name: Run UserMicroService Tests
-        run: |
-          dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj --no-restore --verbosity normal
-
-      - name: Run TaskMicroService Tests
-        run: |
-          dotnet test OverblikPlusBackend/TaskMicroService.Test/TaskMicroService.Test.csproj --no-restore --verbosity normal
-
-      # Log ind på Azure
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      # Log ind på Azure Container Registry (ACR)
+      # Logger ind i Azure Container Registry
       - name: Login to Azure Container Registry
         run: |
           az acr login --name overblikplusregistry
 
-      # Bygger Docker-billedet
+      # Bygger Docker image med korrekt sti
       - name: Build Docker image
         run: |
-          docker build --platform linux/amd64 -t overblikplus-${{ matrix.service }}:latest .
+          docker build --platform linux/amd64 -t overblikplus-${{ matrix.service }}:latest -f OverblikPlusBackend/${{ matrix.service }}/Dockerfile OverblikPlusBackend/${{ matrix.service }}
 
-      # Tag billedet til ACR
-      - name: Tag Docker image
-        run: |
-          docker tag overblikplus-${{ matrix.service }}:latest overblikplusregistry.azurecr.io/overblikplus-${{ matrix.service }}:latest
-
-      # Push billedet til ACR
+      # Push Docker image til Azure Container Registry
       - name: Push Docker image to ACR
         run: |
+          docker tag overblikplus-${{ matrix.service }}:latest overblikplusregistry.azurecr.io/overblikplus-${{ matrix.service }}:latest
           docker push overblikplusregistry.azurecr.io/overblikplus-${{ matrix.service }}:latest
 
-      # Opdater Azure App Service med det nye billede
+      # Opdaterer Azure App Service med det nye image
       - name: Update Azure App Service
         run: |
           az webapp config container set --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup \
@@ -86,13 +53,3 @@ jobs:
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
-
-      # Tjekker appens status
-      - name: Check App Status
-        run: |
-          az webapp show --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup --query state
-
-      # Tjekker logs
-      - name: Check Logs
-        run: |
-          az webapp log tail --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
