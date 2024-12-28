@@ -1,16 +1,22 @@
 using System.Text;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using OverblikPlus.Shared.Interfaces;
+using OverblikPlus.Shared.Logging;
 using UserMicroService.DataAccess;
+using UserMicroService.dto;
 using UserMicroService.Entities;
 using UserMicroService.Helpers;
 using UserMicroService.Services;
 using UserMicroService.Services.Interfaces;
+using UserMicroService.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -22,7 +28,9 @@ Log.Logger = new LoggerConfiguration()
         TelemetryConverter.Traces)
     .CreateLogger();
 
+
 builder.Host.UseSerilog();
+
 
 string encryptionKey = builder.Configuration.GetSection("EncryptionSettings:EncryptionKey").Value;
 if (string.IsNullOrEmpty(encryptionKey))
@@ -31,7 +39,9 @@ if (string.IsNullOrEmpty(encryptionKey))
 }
 EncryptionHelper.SetEncryptionKey(encryptionKey);
 
-var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;";
+var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? 
+                          "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;";
+
 
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(dbConnectionString));
@@ -39,6 +49,7 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>()
     .AddDefaultTokenProviders();
+
 
 builder.Services.AddAuthentication(options =>
     {
@@ -59,6 +70,7 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOverblikPlus",
@@ -68,33 +80,42 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IValidator<CreateUserDto>, CreateUserDtoValidator>();
+builder.Services.AddScoped<IValidator<UpdateUserDto>, UpdateUserDtoValidator>();
+
+
+
+builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
 var app = builder.Build();
 
+
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage(); 
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {
-    app.UseHttpsRedirection();
+    app.UseHttpsRedirection(); 
 }
 
-app.UseSwagger();
-app.UseSwaggerUI();
-
+app.UseSerilogRequestLogging();
 app.UseRouting();
-
 app.UseCors("AllowOverblikPlus");
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.Run();
