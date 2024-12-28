@@ -1,31 +1,27 @@
+# Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
 
-WORKDIR /app
+# Copy project file and restore dependencies
+COPY ["TaskMicroService.csproj", "./"]
+RUN dotnet restore
 
-# Kopier solution-filen (en mappe op)
-COPY ../OverblikPlusBackend.sln .
+# Copy everything and build
+COPY ./ ./
+RUN dotnet publish -c Release -o /app
 
-# Kopier .csproj-filer
-COPY ../OverblikPlus.Shared/OverblikPlus.Shared.csproj OverblikPlus.Shared/
-COPY ./TaskMicroService.csproj TaskMicroService.csproj
-
-# Restore
-RUN dotnet restore OverblikPlusBackend.sln
-
-# Kopier resten af koden
-COPY ../OverblikPlus.Shared/ OverblikPlus.Shared/
-COPY . .
-
-# Publish
-RUN dotnet publish TaskMicroService.csproj -c Release -o /out
-
-# Runtime
+# Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /out .
+COPY --from=build /app .
 
+# Expose ports and environment settings
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
 
+# Add healthcheck (optional)
+HEALTHCHECK CMD curl --fail http://localhost:80/health || exit 1
+
+# Start the application
 ENTRYPOINT ["dotnet", "TaskMicroService.dll"]
