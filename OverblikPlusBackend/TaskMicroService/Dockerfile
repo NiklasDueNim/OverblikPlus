@@ -22,12 +22,14 @@ COPY OverblikPlusBackend/TaskMicroService ./TaskMicroService/
 
 # Byg TaskMicroService-projektet
 WORKDIR /src/TaskMicroService
-RUN dotnet publish -c Release -o /app
+RUN dotnet clean
+RUN rm -rf bin obj
+RUN dotnet publish -c Release -o /app/TaskMicroService
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app .
+COPY --from=build /app/TaskMicroService .
 
 # Expose ports og miljøvariabler
 ENV ASPNETCORE_ENVIRONMENT=Production
