@@ -15,5 +15,10 @@ public class ReadUserDto
     public string Role { get; set; }
 
     public string Goals { get; set; }
+    
+    public ReadUserDto()
+    {
+        Goals = string.Empty;
+    }
         
 }
