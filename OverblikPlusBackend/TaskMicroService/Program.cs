@@ -80,7 +80,7 @@ Log.Logger.Information($"Blob Base URL: {blobBaseUrl}");
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowOverblikPlus",
-                policy => policy.WithOrigins("https://overblikplus.dk", "http://localhost:5226")
+                policy => policy.WithOrigins("https://overblikplus.dk", "http://localhost:5226", "https://yellow-ocean-0f63e7903.4.azurestaticapps.net")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials());
