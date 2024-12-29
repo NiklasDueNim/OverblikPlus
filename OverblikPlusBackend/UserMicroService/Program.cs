@@ -76,8 +76,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowOverblikPlus",
         policy => policy.AllowAnyOrigin()
             .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+            .AllowAnyHeader());
 });
 
 

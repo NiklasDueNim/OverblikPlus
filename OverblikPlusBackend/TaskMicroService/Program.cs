@@ -77,14 +77,23 @@ builder.Services.AddSingleton(blobBaseUrl);
 
 Log.Logger.Information($"Blob Base URL: {blobBaseUrl}");
 
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("AllowOverblikPlus",
-                policy => policy.WithOrigins("https://overblikplus.dk", "http://localhost:5226", "https://yellow-ocean-0f63e7903.4.azurestaticapps.net")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
-        });
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowOverblikPlus",
+        policy => policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
+        // builder.Services.AddCors(options =>
+        // {
+        //     options.AddPolicy("AllowOverblikPlus",
+        //         policy => policy.WithOrigins("https://overblikplus.dk", "http://localhost:5226", "https://yellow-ocean-0f63e7903.4.azurestaticapps.net")
+        //             .AllowAnyMethod()
+        //             .AllowAnyHeader()
+        //             .AllowCredentials());
+        // });
 
 // ---- SERVICES ----
         builder.Services.AddEndpointsApiExplorer();
