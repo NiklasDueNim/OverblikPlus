@@ -24,7 +24,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Install dependencies for det valgte service
+      # Install dependencies for the selected service
       - name: Install dependencies
         run: |
           if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
@@ -33,7 +33,7 @@ jobs:
             dotnet restore OverblikPlusBackend/UserMicroService/UserMicroService.csproj
           fi
 
-      # Build projektet
+      # Build the project
       - name: Build Project
         run: |
           if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
@@ -42,6 +42,7 @@ jobs:
             dotnet build OverblikPlusBackend/UserMicroService/UserMicroService.csproj -c Release
           fi
 
+      # Run tests
       - name: Run tests
         run: |
           if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
@@ -49,8 +50,6 @@ jobs:
           else
             dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj --no-build --logger "console;verbosity=normal"
           fi
-
-
 
       # Build Docker image
       - name: Build Docker image
@@ -63,7 +62,7 @@ jobs:
         run: |
           docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest
 
-      # Deploy til Azure
+      # Deploy to Azure
       - name: Update Azure App Service
         run: |
           az webapp config container set --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup \
