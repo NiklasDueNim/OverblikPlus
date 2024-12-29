@@ -9,30 +9,24 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Hent miljø fra runtime
-var environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "dev";
+// --- HARDCODED ENVIRONMENT ---
+var environment = "dev"; // Skift til "prod" for produktionsmiljø
 
-// Hent API base URL'er fra miljøvariabler
-string taskApiBaseUrl;
-string userApiBaseUrl;
+string taskApiBaseUrl = "https://overblikplus-task-api-dev.azurewebsites.net";
+string userApiBaseUrl = "https://overblikplus-user-api-dev.azurewebsites.net";
 
 if (environment == "prod")
 {
-    taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL_PROD") ?? "https://default-prod-task-api.com";
-    userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL_PROD") ?? "https://default-prod-user-api.com";
-}
-else
-{
-    taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL_DEV") ?? "http://localhost:5101";
-    userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL_DEV") ?? "http://localhost:5102";
+    taskApiBaseUrl = "https://overblikplus-task-api-prod.azurewebsites.net";
+    userApiBaseUrl = "https://overblikplus-user-api-prod.azurewebsites.net";
 }
 
-// Log for fejlfindingsformål
+// Log URL'er for fejlfinding
 Console.WriteLine($"Environment: {environment}");
 Console.WriteLine($"Task API Base URL: {taskApiBaseUrl}");
 Console.WriteLine($"User API Base URL: {userApiBaseUrl}");
 
-// --- Authentication og JWT ---
+// --- AUTHENTICATION OG JWT CONFIGURATION ---
 builder.Services.AddSingleton<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 
@@ -45,7 +39,7 @@ builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
             userApiBaseUrl
         }));
 
-// --- HTTP Clients ---
+// --- HTTP CLIENTS TIL API SERVICES ---
 builder.Services.AddHttpClient<IUserService, UserService>(client =>
 {
     client.BaseAddress = new Uri(userApiBaseUrl);
@@ -56,15 +50,9 @@ builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
     client.BaseAddress = new Uri(taskApiBaseUrl);
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
-// Tilføj AuthService
-builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
-{
-    client.BaseAddress = new Uri(userApiBaseUrl);
-}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
-
 // Automapper og Authorization
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();
 
-// --- Start App ---
+// --- START APP ---
 await builder.Build().RunAsync();
