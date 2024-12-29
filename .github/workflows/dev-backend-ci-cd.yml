@@ -26,16 +26,18 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # 3. Azure login-check
-      - name: Azure Login Check
-        run: |
-          az account show
 
-      # 4. Login til Azure
+      # . Login til Azure
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # . Azure login-check
+      - name: Azure Login Check
+        run: |
+          az account show
+
 
       # 5. Gendanner afhængigheder
       - name: Restore dependencies
