@@ -24,37 +24,34 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Install dependencies for the selected service
+      # Install dependencies
       - name: Install dependencies
         run: |
-          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
-            dotnet restore OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj
-          else
-            dotnet restore OverblikPlusBackend/UserMicroService/UserMicroService.csproj
-          fi
+          dotnet restore OverblikPlusBackend/${{ matrix.service }}/${{ matrix.service }}.csproj
 
-      # Build the project
+      # Build project
       - name: Build Project
         run: |
-          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
-            dotnet build OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj -c Release
-          else
-            dotnet build OverblikPlusBackend/UserMicroService/UserMicroService.csproj -c Release
-          fi
+          dotnet build OverblikPlusBackend/${{ matrix.service }}/${{ matrix.service }}.csproj -c Release --no-restore
 
       # Run tests
       - name: Run tests
         run: |
-          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
-            dotnet test OverblikPlusBackend/TaskMicroService.Test/TaskMicroService.Test.csproj --no-build --logger "console;verbosity=normal"
-          else
-            dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj --no-build --logger "console;verbosity=normal"
-          fi
+          dotnet test OverblikPlusBackend/${{ matrix.service }}.Test/${{ matrix.service }}.Test.csproj -c Release --no-build \
+          --logger "trx;LogFileName=test-results.trx"
+
+      # Archive test results
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test Results (${{ matrix.service }})
+          path: OverblikPlusBackend/${{ matrix.service }}.Test/TestResults/test-results.trx
 
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           -f OverblikPlusBackend/${{ matrix.service }}/Dockerfile .
 
       # Push Docker image to ACR
