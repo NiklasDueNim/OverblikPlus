@@ -67,7 +67,7 @@ namespace TaskMicroService.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
