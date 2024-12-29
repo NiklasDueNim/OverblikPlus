@@ -1,32 +1,32 @@
-name: PROD - Azure Static Web Apps CI/CD
+name: DEV - Azure Static Web Apps CI/CD
 
 on:
   push:
     branches:
-      - main
+      - development
 
 jobs:
   build_and_deploy_job:
     runs-on: ubuntu-latest
-    name: Build and Deploy to Prod
+    name: Build and Deploy to Dev
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
           lfs: false
 
-      # Opsæt miljøvariabler til Prod
+      # Opsæt miljøvariabler til Dev
       - name: Set environment variables
         run: |
-          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
-          echo "TASK_API_BASE_URL=${{ secrets.TASK_API_BASE_URL_PROD }}" >> $GITHUB_ENV
-          echo "USER_API_BASE_URL=${{ secrets.USER_API_BASE_URL_PROD }}" >> $GITHUB_ENV
+          echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          echo "TASK_API_BASE_URL=${{ secrets.TASK_API_BASE_URL_DEV }}" >> $GITHUB_ENV
+          echo "USER_API_BASE_URL=${{ secrets.USER_API_BASE_URL_DEV }}" >> $GITHUB_ENV
 
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_MEADOW_0E5AD7903 }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_OCEAN_0F63E7903 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "./OverblikPlus"
@@ -42,5 +42,5 @@ jobs:
         id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_MEADOW_0E5AD7903 }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_OCEAN_0F63E7903 }}
           action: "close"
