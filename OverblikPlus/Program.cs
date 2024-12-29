@@ -12,8 +12,8 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 
 // Tjek om vi kører i et Azure-miljø (f.eks. dev eller prod)
-var taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL");
-var userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL");
+var taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL_DEV");
+var userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL_DEV");
 
 // Fallback til lokal udvikling, hvis miljøvariabler ikke er sat
 if (string.IsNullOrEmpty(taskApiBaseUrl) || string.IsNullOrEmpty(userApiBaseUrl))
