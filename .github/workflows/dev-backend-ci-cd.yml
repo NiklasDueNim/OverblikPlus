@@ -65,13 +65,14 @@ jobs:
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      # 9. Bygger Docker-billedet
+      # Bygger Docker-billedet
       - name: Build Docker image
         run: |
-          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+          docker build --platform linux/amd64 \
+          -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService/Dockerfile' || 'TaskMicroService/Dockerfile' }} \
           --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
-          .
+          OverblikPlusBackend
 
       # 10. Push Docker-billedet til ACR
       - name: Push Docker image to ACR
