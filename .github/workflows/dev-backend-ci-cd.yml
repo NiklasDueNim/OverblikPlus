@@ -45,11 +45,10 @@ jobs:
       - name: Run tests
         run: |
           if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
-            dotnet test OverblikPlusBackend/TaskMicroService.Test/TaskMicroService.Test.csproj --no-build --verbosity normal
+            dotnet test OverblikPlusBackend/TaskMicroService.Test/TaskMicroService.Test.csproj --no-build --logger "console;verbosity=normal"
           else
-            dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj --no-build --verbosity normal
+            dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj --no-build --logger "console;verbosity=normal"
           fi
-
 
 
       # Build Docker image
