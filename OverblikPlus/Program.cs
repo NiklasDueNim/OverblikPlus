@@ -13,8 +13,19 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 var environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "dev";
 
 // Hent API base URL'er fra miljøvariabler
-string taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL") ?? "http://localhost:5101";
-string userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL") ?? "http://localhost:5102";
+string taskApiBaseUrl;
+string userApiBaseUrl;
+
+if (environment == "prod")
+{
+    taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL_PROD") ?? "https://default-prod-task-api.com";
+    userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL_PROD") ?? "https://default-prod-user-api.com";
+}
+else
+{
+    taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL_DEV") ?? "http://localhost:5101";
+    userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL_DEV") ?? "http://localhost:5102";
+}
 
 // Log for fejlfindingsformål
 Console.WriteLine($"Environment: {environment}");
