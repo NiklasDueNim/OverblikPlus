@@ -10,23 +10,27 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+// Hent miljøvariabler fra runtime
+var environment = Environment.GetEnvironmentVariable("ENVIRONMENT") ?? "dev";
 
-// Tjek om vi kører i et Azure-miljø (f.eks. dev eller prod)
-var taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL_DEV");
-var userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL_DEV");
+string taskApiBaseUrl;
+string userApiBaseUrl;
 
-// Fallback til lokal udvikling, hvis miljøvariabler ikke er sat
-if (string.IsNullOrEmpty(taskApiBaseUrl) || string.IsNullOrEmpty(userApiBaseUrl))
+if (environment == "prod")
 {
-    // Hent fra en lokal konfigurationsfil (kun til lokal udvikling)
-    var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
-    var config = await http.GetFromJsonAsync<Dictionary<string, string>>("appsettings.json");
-
-    taskApiBaseUrl ??= config?["TaskApiBaseUrl"] ?? "http://localhost:5101";
-    userApiBaseUrl ??= config?["UserApiBaseUrl"] ?? "http://localhost:5102";
+    // Prod miljøvariabler
+    taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL_PROD") ?? "https://default-prod-task-api.com";
+    userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL_PROD") ?? "https://default-prod-user-api.com";
+}
+else
+{
+    // Dev miljøvariabler
+    taskApiBaseUrl = Environment.GetEnvironmentVariable("TASK_API_BASE_URL_DEV") ?? "http://localhost:5101";
+    userApiBaseUrl = Environment.GetEnvironmentVariable("USER_API_BASE_URL_DEV") ?? "http://localhost:5102";
 }
 
 // Log URL'erne til fejlfindingsformål (fjernes i prod)
+Console.WriteLine($"Environment: {environment}");
 Console.WriteLine($"Task API Base URL: {taskApiBaseUrl}");
 Console.WriteLine($"User API Base URL: {userApiBaseUrl}");
 
