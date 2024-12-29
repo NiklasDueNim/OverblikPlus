@@ -17,21 +17,21 @@ using UserMicroService.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+// --- LOGGING ---
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
-    .WriteTo.ApplicationInsights(
-        Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING"), 
-        TelemetryConverter.Traces)
+    // Application Insights er deaktiveret
+    //.WriteTo.ApplicationInsights(
+    //    Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING"), 
+    //    TelemetryConverter.Traces)
     .CreateLogger();
-
 
 builder.Host.UseSerilog();
 
-
+// --- ENCRYPTION KEY ---
 string encryptionKey = builder.Configuration.GetSection("EncryptionSettings:EncryptionKey").Value;
 if (string.IsNullOrEmpty(encryptionKey))
 {
@@ -39,17 +39,23 @@ if (string.IsNullOrEmpty(encryptionKey))
 }
 EncryptionHelper.SetEncryptionKey(encryptionKey);
 
+// --- DATABASE CONNECTION ---
 var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? 
                           "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;";
-
 
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(dbConnectionString));
 
+
+// --- IDENTITY CONFIGURATION ---
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>()
     .AddDefaultTokenProviders();
 
+// --- AUTHENTICATION & JWT ---
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is missing.");
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience is missing.");
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
 
 builder.Services.AddAuthentication(options =>
     {
@@ -64,13 +70,18 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 
+// Log JWT variabler
+Console.WriteLine($"Jwt:Issuer = {jwtIssuer}");
+Console.WriteLine($"Jwt:Audience = {jwtAudience}");
+Console.WriteLine($"Jwt:Key = {jwtKey}");
 
+// --- CORS CONFIGURATION ---
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOverblikPlus",
@@ -83,11 +94,9 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
-
-
+// --- SERVICES ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(Program));
@@ -95,13 +104,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IValidator<CreateUserDto>, CreateUserDtoValidator>();
 builder.Services.AddScoped<IValidator<UpdateUserDto>, UpdateUserDtoValidator>();
-
-
-
 builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
+// --- BUILD APPLICATION ---
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
