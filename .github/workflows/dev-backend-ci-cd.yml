@@ -24,34 +24,47 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Install dependencies
+      # Install dependencies for the selected service
       - name: Install dependencies
         run: |
-          dotnet restore OverblikPlusBackend/${{ matrix.service }}/${{ matrix.service }}.csproj
+          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
+            dotnet restore OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj
+          else
+            dotnet restore OverblikPlusBackend/UserMicroService/UserMicroService.csproj
+          fi
 
-      # Build project
+      # Build the project
       - name: Build Project
         run: |
-          dotnet build OverblikPlusBackend/${{ matrix.service }}/${{ matrix.service }}.csproj -c Release --no-restore
+          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
+            dotnet build OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj -c Release
+          else
+            dotnet build OverblikPlusBackend/UserMicroService/UserMicroService.csproj -c Release
+          fi
 
       # Run tests
       - name: Run tests
         run: |
-          dotnet test OverblikPlusBackend/${{ matrix.service }}.Test/${{ matrix.service }}.Test.csproj -c Release --no-build \
-          --logger "trx;LogFileName=test-results.trx"
+          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
+            dotnet test OverblikPlusBackend/TaskMicroService.Test/TaskMicroService.Test.csproj -c Release --no-build \
+              --logger "trx;LogFileName=test-results.trx"
+          else
+            dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj -c Release --no-build \
+              --logger "trx;LogFileName=test-results.trx"
+          fi
 
-      # **Upload test results med v3**
+      # Upload test results
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3 # <-- Opdateret til nyeste version
+        uses: actions/upload-artifact@v3
         with:
           name: Test Results (${{ matrix.service }})
-          path: OverblikPlusBackend/${{ matrix.service }}.Test/TestResults/test-results.trx
+          path: OverblikPlusBackend/${{ matrix.service }}.Tests/TestResults/**/*.trx
 
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+          docker build -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           -f OverblikPlusBackend/${{ matrix.service }}/Dockerfile .
 
       # Push Docker image to ACR
