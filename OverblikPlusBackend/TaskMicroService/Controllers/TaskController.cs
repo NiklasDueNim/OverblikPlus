@@ -40,7 +40,7 @@ namespace TaskMicroService.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin, Staff")]
+        // [Authorize(Roles = "Admin, Staff")]
         [HttpGet]
         public async Task<IActionResult> GetAllTasks()
         {
