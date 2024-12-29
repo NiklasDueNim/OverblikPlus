@@ -1,4 +1,4 @@
-name: DEV - CI/CD Backend
+name: DEV - Backend CI/CD
 
 on:
   push:
@@ -9,79 +9,63 @@ on:
       - Development
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [TaskMicroService, UserMicroService]
+        service: [user-api, task-api]
 
     steps:
-      # Henter koden
+      # Tjekker koden ud
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Sætter .NET Core op
+      # Sætter .NET SDK op
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4.0.1
         with:
           dotnet-version: 8.0.x
 
-      # Installerer dependencies
-      - name: Install dependencies
+      # Gendanner afhængigheder for alle projekter
+      - name: Restore dependencies
         run: |
-          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
-            dotnet restore OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj
-          else
-            dotnet restore OverblikPlusBackend/UserMicroService/UserMicroService.csproj
-          fi
+          for csproj in $(find . -name '*.csproj'); do
+            dotnet restore "$csproj"
+          done
 
-      # Bygger projektet
-      - name: Build Project
+      # Bygger alle projekter
+      - name: Build projects
         run: |
-          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
-            dotnet build OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj -c Release
-          else
-            dotnet build OverblikPlusBackend/UserMicroService/UserMicroService.csproj -c Release
-          fi
+          for csproj in $(find . -name '*.csproj'); do
+            dotnet build "$csproj" --configuration Release --no-restore
+          done
 
-      # Kører tests
+      # Kører tests for alle testprojekter
       - name: Run tests
         run: |
-          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
-            dotnet test OverblikPlusBackend/TaskMicroService.Test/TaskMicroService.Test.csproj --no-build --logger "trx;LogFileName=test-results.trx"
-          else
-            dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj --no-build --logger "trx;LogFileName=test-results.trx"
-          fi
+          for csproj in $(find . -name '*.Tests.csproj'); do
+            dotnet test "$csproj" --no-restore --verbosity normal --logger "trx;LogFileName=test-results.trx"
+          done
 
-      # Upload testresultater som artefakt
+      # Upload testresultater som artefakter
       - name: Upload Test Results
         uses: actions/upload-artifact@v3
         with:
-          name: test-results-${{ matrix.service }}
-          path: OverblikPlusBackend/${{ matrix.service }}.Tests/TestResults/**/*.trx
+          name: test-results
+          path: '**/TestResults/test-results.trx'
 
-  build-and-deploy:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [TaskMicroService, UserMicroService]
-
-    steps:
-      # Henter koden igen til deploy-trin
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Logger ind i Azure Container Registry
+      # Logger ind på Azure Container Registry (ACR)
       - name: Login to Azure Container Registry
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      # Bygger Docker-image
+      # Bygger Docker-image baseret på service
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
-          -f OverblikPlusBackend/${{ matrix.service }}/Dockerfile .
+          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+          -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService/Dockerfile' || 'TaskMicroService/Dockerfile' }} \
+          --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
+          .
 
       # Pusher Docker-image til ACR
       - name: Push Docker image to ACR
@@ -99,3 +83,13 @@ jobs:
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
+
+      # Tjekker appens status
+      - name: Check App Status
+        run: |
+          az webapp show --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup --query state
+
+      # Tjekker logs efter deployment
+      - name: Check Logs
+        run: |
+          az webapp log tail --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
