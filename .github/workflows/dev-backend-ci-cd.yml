@@ -9,57 +9,53 @@ on:
       - Development
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [user-api, task-api]
+        service: [task-api, user-api]
 
     steps:
-      # Tjekker koden ud
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Sætter .NET SDK op
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4.0.1
         with:
           dotnet-version: 8.0.x
 
-      # Log ind på Azure Container Registry (ACR)
+      - name: Install dependencies
+        run: |
+          dotnet restore OverblikPlusBackend/${{ matrix.service }}
+
+      - name: Build and run tests
+        run: |
+          dotnet build OverblikPlusBackend/${{ matrix.service }} -c Release
+          dotnet test OverblikPlusBackend/${{ matrix.service }}.Tests --no-build --verbosity normal
+
       - name: Login to Azure Container Registry
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      # Bygger Docker-billedet
       - name: Build Docker image
         run: |
-          if [[ "${{ matrix.service }}" == "task-api" ]]; then
-            docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
-            -f OverblikPlusBackend/TaskMicroService/Dockerfile .
-          else
-            docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
-            -f OverblikPlusBackend/UserMicroService/Dockerfile .
-          fi
+          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+          -f OverblikPlusBackend/${{ matrix.service }}/Dockerfile .
 
-      # Push billedet til ACR
       - name: Push Docker image to ACR
         run: |
           docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest
 
-      # Opdater Azure App Service med det nye billede
-      - name: Update Azure App Service
+      - name: Deploy to Azure App Service
         run: |
           az webapp config container set --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup \
           --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           --container-registry-url https://${{ secrets.ACR_REGISTRY }}
 
-      # Genstarter appen
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
 
-      # Tjekker logs
       - name: Check Logs
         run: |
           az webapp log tail --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
