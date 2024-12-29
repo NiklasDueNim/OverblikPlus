@@ -1,4 +1,4 @@
-name: DEV - Backend CI/CD
+name: DEV - CI/CD Backend
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [task-api, user-api]
+        service: [TaskMicroService, UserMicroService]
 
     steps:
       - name: Checkout code
@@ -24,29 +24,46 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      # Install dependencies for det valgte service
       - name: Install dependencies
         run: |
-          dotnet restore OverblikPlusBackend/${{ matrix.service }}
+          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
+            dotnet restore OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj
+          else
+            dotnet restore OverblikPlusBackend/UserMicroService/UserMicroService.csproj
+          fi
 
-      - name: Build and run tests
+      # Build projektet
+      - name: Build Project
         run: |
-          dotnet build OverblikPlusBackend/${{ matrix.service }} -c Release
-          dotnet test OverblikPlusBackend/${{ matrix.service }}.Tests --no-build --verbosity normal
+          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
+            dotnet build OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj -c Release
+          else
+            dotnet build OverblikPlusBackend/UserMicroService/UserMicroService.csproj -c Release
+          fi
 
-      - name: Login to Azure Container Registry
+      # Test projektet
+      - name: Run tests
         run: |
-          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+          if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
+            dotnet test OverblikPlusBackend/TaskMicroService.Test --no-build --verbosity normal
+          else
+            dotnet test OverblikPlusBackend/UserMicroService.Tests --no-build --verbosity normal
+          fi
 
+      # Build Docker image
       - name: Build Docker image
         run: |
-          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+          docker build -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           -f OverblikPlusBackend/${{ matrix.service }}/Dockerfile .
 
+      # Push Docker image to ACR
       - name: Push Docker image to ACR
         run: |
           docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest
 
-      - name: Deploy to Azure App Service
+      # Deploy til Azure
+      - name: Update Azure App Service
         run: |
           az webapp config container set --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup \
           --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
@@ -55,7 +72,3 @@ jobs:
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
-
-      - name: Check Logs
-        run: |
-          az webapp log tail --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
