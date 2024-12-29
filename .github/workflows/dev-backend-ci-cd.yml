@@ -16,16 +16,18 @@ jobs:
         service: [TaskMicroService, UserMicroService]
 
     steps:
+      # Henter koden
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Sætter .NET Core op
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4.0.1
         with:
           dotnet-version: 8.0.x
 
-      # Restore dependencies
-      - name: Restore dependencies
+      # Installerer dependencies
+      - name: Install dependencies
         run: |
           if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
             dotnet restore OverblikPlusBackend/TaskMicroService/TaskMicroService.csproj
@@ -33,7 +35,7 @@ jobs:
             dotnet restore OverblikPlusBackend/UserMicroService/UserMicroService.csproj
           fi
 
-      # Build the project
+      # Bygger projektet
       - name: Build Project
         run: |
           if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
@@ -42,49 +44,58 @@ jobs:
             dotnet build OverblikPlusBackend/UserMicroService/UserMicroService.csproj -c Release
           fi
 
-      # **Run tests with specific path check**
-      - name: Test Project
+      # Kører tests
+      - name: Run tests
         run: |
           if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
-            testPath="OverblikPlusBackend/TaskMicroService.Tests/bin/Debug/net8.0/TaskMicroService.Tests.dll"
+            dotnet test OverblikPlusBackend/TaskMicroService.Test/TaskMicroService.Test.csproj --no-build --logger "trx;LogFileName=test-results.trx"
           else
-            testPath="OverblikPlusBackend/UserMicroService.Tests/bin/Debug/net8.0/UserMicroService.Tests.dll"
+            dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj --no-build --logger "trx;LogFileName=test-results.trx"
           fi
 
-          # Kontroller, om testfilen findes
-          if [ ! -f "$testPath" ]; then
-            echo "Test file $testPath not found!"
-            exit 1
-          fi
-
-          # Kør testene
-          dotnet test $testPath --logger "trx;LogFileName=test-results.trx"
-
-      # Upload test resultater
+      # Upload testresultater som artefakt
       - name: Upload Test Results
         uses: actions/upload-artifact@v3
         with:
           name: test-results-${{ matrix.service }}
-          path: OverblikPlusBackend/${{ matrix.service }}.Tests/TestResults/test-results.trx
+          path: OverblikPlusBackend/${{ matrix.service }}.Tests/TestResults/**/*.trx
 
-      # Build Docker image
+  build-and-deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [TaskMicroService, UserMicroService]
+
+    steps:
+      # Henter koden igen til deploy-trin
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Logger ind i Azure Container Registry
+      - name: Login to Azure Container Registry
+        run: |
+          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+      # Bygger Docker-image
       - name: Build Docker image
         run: |
           docker build -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           -f OverblikPlusBackend/${{ matrix.service }}/Dockerfile .
 
-      # Push Docker image to ACR
+      # Pusher Docker-image til ACR
       - name: Push Docker image to ACR
         run: |
           docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest
 
-      # Deploy to Azure
+      # Opdaterer Azure App Service
       - name: Update Azure App Service
         run: |
           az webapp config container set --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup \
           --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           --container-registry-url https://${{ secrets.ACR_REGISTRY }}
 
+      # Genstarter Azure App Service
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
