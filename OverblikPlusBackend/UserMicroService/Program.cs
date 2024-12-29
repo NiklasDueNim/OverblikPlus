@@ -23,10 +23,6 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
-    // Application Insights er deaktiveret
-    //.WriteTo.ApplicationInsights(
-    //    Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING"), 
-    //    TelemetryConverter.Traces)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -53,9 +49,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 // --- AUTHENTICATION & JWT ---
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is missing.");
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience is missing.");
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
+var jwtIssuer = Environment.GetEnvironmentVariable("Jwt__Issuer") ?? "https://overblikplus.dk";
+var jwtAudience = Environment.GetEnvironmentVariable("Jwt__Audience") ?? "https://overblikplus.dk";
+var jwtKey = Environment.GetEnvironmentVariable("Jwt__Key") ?? "MyVeryStrongSecretKeyForJWT1234567890";
 
 builder.Services.AddAuthentication(options =>
     {
@@ -118,6 +114,8 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseHttpsRedirection(); 
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseSerilogRequestLogging();
