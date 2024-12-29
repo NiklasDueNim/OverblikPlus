@@ -86,14 +86,19 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 
-        // builder.Services.AddCors(options =>
-        // {
-        //     options.AddPolicy("AllowOverblikPlus",
-        //         policy => policy.WithOrigins("https://overblikplus.dk", "http://localhost:5226", "https://yellow-ocean-0f63e7903.4.azurestaticapps.net")
-        //             .AllowAnyMethod()
-        //             .AllowAnyHeader()
-        //             .AllowCredentials());
-        // });
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowOverblikPlus",
+        policy => policy.WithOrigins(
+                "https://overblikplus.dk",
+                "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
+                "http://localhost:5226")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+});
+
 
 // ---- SERVICES ----
         builder.Services.AddEndpointsApiExplorer();
