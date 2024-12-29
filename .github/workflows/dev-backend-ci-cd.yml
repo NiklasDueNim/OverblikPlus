@@ -24,7 +24,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Install dependencies for the selected service
+      # Install dependencies
       - name: Install dependencies
         run: |
           if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
@@ -46,19 +46,16 @@ jobs:
       - name: Run tests
         run: |
           if [ "${{ matrix.service }}" == "TaskMicroService" ]; then
-            dotnet test OverblikPlusBackend/TaskMicroService.Test/TaskMicroService.Test.csproj -c Release --no-build \
-              --logger "trx;LogFileName=test-results.trx"
+            dotnet test OverblikPlusBackend/TaskMicroService.Tests/TaskMicroService.Tests.csproj --no-build --logger "trx;LogFileName=test-results.trx"
           else
-            dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj -c Release --no-build \
-              --logger "trx;LogFileName=test-results.trx"
+            dotnet test OverblikPlusBackend/UserMicroService.Tests/UserMicroService.Tests.csproj --no-build --logger "trx;LogFileName=test-results.trx"
           fi
 
-      # Upload test results
-      - name: Upload test results
-        if: always()
+      # Upload Test Results
+      - name: Upload Test Results
         uses: actions/upload-artifact@v3
         with:
-          name: Test Results (${{ matrix.service }})
+          name: ${{ matrix.service }}-test-results
           path: OverblikPlusBackend/${{ matrix.service }}.Tests/TestResults/**/*.trx
 
       # Build Docker image
