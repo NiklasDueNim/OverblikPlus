@@ -90,8 +90,3 @@ jobs:
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
-
-      # 13. Debug Logs - fejlfinding
-      - name: Debug Azure Logs
-        run: |
-          az webapp log tail --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
