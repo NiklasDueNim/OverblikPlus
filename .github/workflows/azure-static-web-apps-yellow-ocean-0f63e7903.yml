@@ -1,21 +1,17 @@
-name: DEV - Azure Static Web Apps CI/CD
+name: DEV - Frontend CI/CD
 
 on:
   push:
     branches:
-      - development
+      - Development
 
 jobs:
-  build_and_deploy_job:
+  build_and_deploy_frontend:
     runs-on: ubuntu-latest
-    name: Build and Deploy to Dev
+    name: Build and Deploy Frontend
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: true
-          lfs: false
 
-      # Opsæt miljøvariabler til Dev
       - name: Set environment variables
         run: |
           echo "ENVIRONMENT=dev" >> $GITHUB_ENV
