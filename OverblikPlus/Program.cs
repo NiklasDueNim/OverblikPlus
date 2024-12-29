@@ -12,8 +12,8 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // --- HARDCODED ENVIRONMENT ---
 var environment = "dev"; // Skift til "prod" for produktionsmiljø
 
-string taskApiBaseUrl = "https://overblikplus-task-api-dev.azurewebsites.net";
-string userApiBaseUrl = "https://overblikplus-user-api-dev.azurewebsites.net";
+string taskApiBaseUrl = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
+string userApiBaseUrl = "https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net";
 
 if (environment == "prod")
 {
