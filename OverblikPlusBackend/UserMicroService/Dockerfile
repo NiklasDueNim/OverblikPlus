@@ -1,38 +1,28 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+WORKDIR /app
 
-# Kopier Shared-projektet
-COPY OverblikPlusBackend/OverblikPlus.Shared/OverblikPlus.Shared.csproj ./OverblikPlus.Shared/
-WORKDIR /src/OverblikPlus.Shared
-RUN dotnet restore OverblikPlus.Shared.csproj
+# Copy Shared project
+COPY OverblikPlus.Shared/OverblikPlus.Shared.csproj OverblikPlus.Shared/
+COPY UserMicroService/UserMicroService.csproj UserMicroService/
 
-# Kopier UserMicroService-projektet
-WORKDIR /src
-COPY OverblikPlusBackend/UserMicroService/UserMicroService.csproj ./UserMicroService/
-WORKDIR /src/UserMicroService
-RUN dotnet restore UserMicroService.csproj
+# Restore dependencies
+RUN dotnet restore UserMicroService/UserMicroService.csproj
 
-# Kopier al kildekode
-COPY OverblikPlusBackend/OverblikPlus.Shared ./OverblikPlus.Shared/
-COPY OverblikPlusBackend/UserMicroService ./UserMicroService/
+# Copy all source files
+COPY OverblikPlus.Shared/ OverblikPlus.Shared/
+COPY UserMicroService/ UserMicroService/
 
-# Byg UserMicroService-projektet
-WORKDIR /src/UserMicroService
-RUN dotnet publish -c Release -o /app
+# Build and publish the app
+WORKDIR /app/UserMicroService
+RUN dotnet publish -c Release -o /out
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app .
+COPY --from=build /out .
 
-# Expose ports og miljøvariabler
-ENV ASPNETCORE_ENVIRONMENT=Production
+# Expose port
 ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
-
-# Healthcheck (valgfrit)
-HEALTHCHECK CMD curl --fail http://localhost:80/health || exit 1
-
-# Start applikationen
 ENTRYPOINT ["dotnet", "UserMicroService.dll"]

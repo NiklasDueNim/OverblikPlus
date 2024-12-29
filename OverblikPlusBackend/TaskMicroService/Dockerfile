@@ -1,27 +1,28 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+WORKDIR /app
 
-# Copy project file and restore dependencies
-COPY TaskMicroService.csproj ./
-RUN dotnet restore
+# Copy Shared project
+COPY OverblikPlus.Shared/OverblikPlus.Shared.csproj OverblikPlus.Shared/
+COPY TaskMicroService/TaskMicroService.csproj TaskMicroService/
 
-# Copy everything and build
-COPY ./ ./
-RUN dotnet publish -c Release -o /app
+# Restore dependencies
+RUN dotnet restore TaskMicroService/TaskMicroService.csproj
+
+# Copy all source files
+COPY OverblikPlus.Shared/ OverblikPlus.Shared/
+COPY TaskMicroService/ TaskMicroService/
+
+# Build and publish the app
+WORKDIR /app/TaskMicroService
+RUN dotnet publish -c Release -o /out
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /app .
+COPY --from=build /out .
 
-# Expose ports and environment settings
-ENV ASPNETCORE_ENVIRONMENT=Production
+# Expose port
 ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
-
-# Add healthcheck (optional)
-HEALTHCHECK CMD curl --fail http://localhost:80/health || exit 1
-
-# Start the application
 ENTRYPOINT ["dotnet", "TaskMicroService.dll"]
