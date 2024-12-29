@@ -16,71 +16,79 @@ jobs:
         service: [user-api, task-api]
 
     steps:
-      # Tjekker koden ud
+      # 1. Tjekker koden ud
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Sætter .NET SDK op
+      # 2. Sætter .NET SDK op
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4.0.1
         with:
           dotnet-version: 8.0.x
 
-      # Gendanner afhængigheder
+      # 3. Azure login-check
+      - name: Azure Login Check
+        run: |
+          az account show
+
+      # 4. Login til Azure
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # 5. Gendanner afhængigheder
       - name: Restore dependencies
         run: |
           for csproj in $(find . -name '*.csproj'); do
             dotnet restore "$csproj"
           done
-      
-      # Bygger projekterne
+
+      # 6. Bygger projekterne
       - name: Build projects
         run: |
           for csproj in $(find . -name '*.csproj'); do
             dotnet build "$csproj" --configuration Release --no-restore
           done
 
-      # Kører tests
+      # 7. Kører tests
       - name: Run tests
         run: |
           for csproj in $(find . -name '*.Tests.csproj'); do
-            dotnet test "$csproj" --no-restore --logger "trx;LogFileName=test-results.trx"
+            dotnet test "$csproj" --no-restore --verbosity normal
           done
 
-      # Uploader testresultater
-      - name: Upload test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: '**/TestResults/test-results.trx'
-
-      # Log ind på Azure Container Registry (ACR)
+      # 8. Log ind på Azure Container Registry (ACR)
       - name: Login to Azure Container Registry
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      # Bygger Docker-billedet
+      # 9. Bygger Docker-billedet
       - name: Build Docker image
         run: |
-          docker build --platform linux/amd64 \
-          -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService/Dockerfile' || 'TaskMicroService/Dockerfile' }} \
           --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
-          OverblikPlusBackend
+          .
 
-      # Push billedet til ACR
+      # 10. Push Docker-billedet til ACR
       - name: Push Docker image to ACR
         run: |
           docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest
 
-      # Opdater Azure App Service med det nye billede
+      # 11. Opdater Azure App Service
       - name: Update Azure App Service
         run: |
           az webapp config container set --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup \
           --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           --container-registry-url https://${{ secrets.ACR_REGISTRY }}
 
-      # Genstarter appen
+      # 12. Genstart Azure App Service
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
+
+      # 13. Debug Logs - fejlfinding
+      - name: Debug Azure Logs
+        run: |
+          az webapp log tail --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
