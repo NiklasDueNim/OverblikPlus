@@ -26,70 +26,61 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Gendanner afhængigheder for alle projekter
+      # Gendanner afhængigheder
       - name: Restore dependencies
         run: |
           for csproj in $(find . -name '*.csproj'); do
             dotnet restore "$csproj"
           done
-
-      # Bygger alle projekter
+      
+      # Bygger projekterne
       - name: Build projects
         run: |
           for csproj in $(find . -name '*.csproj'); do
             dotnet build "$csproj" --configuration Release --no-restore
           done
 
-      # Kører tests for alle testprojekter
+      # Kører tests
       - name: Run tests
         run: |
           for csproj in $(find . -name '*.Tests.csproj'); do
-            dotnet test "$csproj" --no-restore --verbosity normal --logger "trx;LogFileName=test-results.trx"
+            dotnet test "$csproj" --no-restore --logger "trx;LogFileName=test-results.trx"
           done
 
-      # Upload testresultater som artefakter
-      - name: Upload Test Results
+      # Uploader testresultater
+      - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: '**/TestResults/test-results.trx'
 
-      # Logger ind på Azure Container Registry (ACR)
+      # Log ind på Azure Container Registry (ACR)
       - name: Login to Azure Container Registry
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      # Bygger Docker-image baseret på service
+      # Bygger Docker-billedet
       - name: Build Docker image
         run: |
-          docker build --platform linux/amd64 -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+          docker build --platform linux/amd64 \
+          -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService/Dockerfile' || 'TaskMicroService/Dockerfile' }} \
           --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
-          .
+          OverblikPlusBackend
 
-      # Pusher Docker-image til ACR
+      # Push billedet til ACR
       - name: Push Docker image to ACR
         run: |
           docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest
 
-      # Opdaterer Azure App Service
+      # Opdater Azure App Service med det nye billede
       - name: Update Azure App Service
         run: |
           az webapp config container set --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup \
           --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
           --container-registry-url https://${{ secrets.ACR_REGISTRY }}
 
-      # Genstarter Azure App Service
+      # Genstarter appen
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
-
-      # Tjekker appens status
-      - name: Check App Status
-        run: |
-          az webapp show --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup --query state
-
-      # Tjekker logs efter deployment
-      - name: Check Logs
-        run: |
-          az webapp log tail --name overblikplus-${{ matrix.service }}-dev --resource-group OverblikPlus-ResourceGroup
