@@ -20,9 +20,9 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var token = await _authStateProvider.GetTokenAsync();
+        Console.WriteLine("Calling URL: " + request.RequestUri);
         Console.WriteLine($"JWT token in handler: {token}");
-
-
+        
         if (!string.IsNullOrEmpty(token))
         {
             Console.WriteLine($"Using JWT: {token}");
