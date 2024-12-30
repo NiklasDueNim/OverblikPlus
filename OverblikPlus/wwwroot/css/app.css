@@ -98,6 +98,7 @@ body.dark-theme {
     font-size: 12px;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .calendar-header {
@@ -149,6 +150,7 @@ body.dark-theme {
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     width: 400px;
+    max-width: 90%;
     position: relative;
     z-index: 1051;
 }
@@ -168,6 +170,10 @@ body.dark-theme {
     .calendar-header {
         grid-template-columns: repeat(3, 1fr);
     }
+
+    .modal {
+        width: 90%;
+    }
 }
 
 @media (max-width: 480px) {
@@ -184,7 +190,8 @@ body.dark-theme {
     }
 
     .modal {
-        width: 300px;
+        width: 100%;
+        margin: 10px;
     }
 }
 

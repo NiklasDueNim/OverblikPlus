@@ -25,8 +25,8 @@
     <div class="calendar-grid">
         @foreach (var day in daysInMonth)
         {
-            <div class="calendar-cell @(day.Date == DateTime.Today ? "today" : "")">
-                <div class="date-number" @onclick="() => OpenDayDetails(day)">@day.Day</div>
+            <div class="calendar-cell @(day.Date == DateTime.Today ? "today" : "")" @onclick="() => OpenDayDetails(day)">
+                <div class="date-number">@day.Day</div>
                 @if (tasksForMonth.ContainsKey(day.Date))
                 {
                     <ul class="task-list">
@@ -63,7 +63,7 @@
         <input type="text" placeholder="Tilføj ny aftale" @bind="newTaskName" class="form-control mb-2" />
 
         <!-- Footer med knapper -->
-        <div class="modal-footer d-flex justify-content-end">
+        <div class="modal-footer">
             <button class="btn btn-primary" @onclick="AddTask">Tilføj</button>
             <button class="btn btn-secondary" @onclick="CloseModal">Luk</button>
             <button class="btn btn-success" @onclick="DownloadCalendarFile">Download Kalender</button>
@@ -117,7 +117,6 @@
         selectedDate = date;
         newTaskName = string.Empty;
         showModal = true;
-        StateHasChanged();
     }
 
     private void AddTask()
