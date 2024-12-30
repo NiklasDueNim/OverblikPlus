@@ -91,16 +91,16 @@
 }
 
 .modal {
+    z-index: 1051 !important;
     background: white;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     width: 400px;
-    z-index: 1051; /* Selve modal-vinduet skal ligge øverst */
 }
 
 .modal-backdrop {
-    z-index: 1050; /* Sørg for, at denne værdi er høj */
+    z-index: 1050 !important;
 }
 
 .modal {
