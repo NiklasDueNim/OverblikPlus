@@ -36,7 +36,8 @@ if (string.IsNullOrEmpty(encryptionKey))
 EncryptionHelper.SetEncryptionKey(encryptionKey);
 
 // --- DATABASE CONNECTION ---
-var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+var dbConnectionString = "Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;";
+
 
 if (string.IsNullOrEmpty(dbConnectionString))
 {
