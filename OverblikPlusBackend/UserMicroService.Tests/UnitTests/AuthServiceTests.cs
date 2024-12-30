@@ -20,12 +20,10 @@ public class AuthServiceTests
 
     public AuthServiceTests()
     {
-        // Mock UserManager
         _mockUserManager = new Mock<UserManager<ApplicationUser>>(
             Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null
         );
 
-        // Mock SignInManager
         _mockSignInManager = new Mock<SignInManager<ApplicationUser>>(
             _mockUserManager.Object,
             Mock.Of<IHttpContextAccessor>(),
@@ -33,19 +31,16 @@ public class AuthServiceTests
             null, null, null, null
         );
 
-        // Mock IConfiguration
         _mockConfiguration = new Mock<IConfiguration>();
         _mockConfiguration.Setup(c => c["Jwt:Key"]).Returns("TestSecretKey12345678901234567890");
         _mockConfiguration.Setup(c => c["Jwt:Issuer"]).Returns("TestIssuer");
         _mockConfiguration.Setup(c => c["Jwt:Audience"]).Returns("TestAudience");
 
-        // Mock DbContext med In-Memory Database
         var options = new DbContextOptionsBuilder<UserDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDb")
             .Options;
         _dbContext = new UserDbContext(options);
 
-        // Initialize AuthService
         _authService = new AuthService(
             _mockUserManager.Object,
             _mockSignInManager.Object,
