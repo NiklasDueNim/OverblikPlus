@@ -109,9 +109,6 @@ builder.Services.AddControllers();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
-
-
-
 // ---- DEPENDENCY INJECTION ----
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskStepService, TaskStepService>();
