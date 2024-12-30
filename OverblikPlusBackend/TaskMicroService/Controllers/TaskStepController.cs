@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using TaskMicroService.dto;
+using TaskMicroService.dtos.TaskStep;
 using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Controllers

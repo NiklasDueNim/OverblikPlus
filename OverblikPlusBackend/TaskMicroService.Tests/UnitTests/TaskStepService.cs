@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TaskMicroService.DataAccess;
-using TaskMicroService.dto;
+using TaskMicroService.dtos.TaskStep;
 using TaskMicroService.Entities;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;

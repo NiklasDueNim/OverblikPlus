@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TaskMicroService.Common;
 using TaskMicroService.DataAccess;
-using TaskMicroService.dto;
+using TaskMicroService.dtos.Task;
 using TaskMicroService.Entities;
 using TaskMicroService.Services.Interfaces;
 

@@ -1,4 +1,5 @@
-using TaskMicroService.dto;
+using TaskMicroService.dtos;
+using TaskMicroService.dtos.TaskStep;
 
 namespace TaskMicroService.Services.Interfaces
 {

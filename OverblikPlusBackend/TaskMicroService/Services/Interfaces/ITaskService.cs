@@ -1,5 +1,5 @@
 using TaskMicroService.Common;
-using TaskMicroService.dto;
+using TaskMicroService.dtos.Task;
 
 namespace TaskMicroService.Services.Interfaces
 {

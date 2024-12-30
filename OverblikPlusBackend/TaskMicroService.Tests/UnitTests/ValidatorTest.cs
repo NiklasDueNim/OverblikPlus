@@ -1,4 +1,4 @@
-using TaskMicroService.dto;
+using TaskMicroService.dtos.Task;
 using TaskMicroService.Validators;
 
 namespace TaskMicroService.Test.UnitTests;

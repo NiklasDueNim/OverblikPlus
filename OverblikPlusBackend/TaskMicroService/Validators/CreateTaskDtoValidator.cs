@@ -1,5 +1,5 @@
 using FluentValidation;
-using TaskMicroService.dto;
+using TaskMicroService.dtos.Task;
 
 namespace TaskMicroService.Validators;
 

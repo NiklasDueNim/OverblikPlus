@@ -3,7 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskMicroService.Common;
-using TaskMicroService.dto;
+using TaskMicroService.dtos.Task;
 using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Controllers

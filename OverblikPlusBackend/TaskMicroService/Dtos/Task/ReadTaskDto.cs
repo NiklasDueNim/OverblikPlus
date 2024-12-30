@@ -1,4 +1,6 @@
-namespace TaskMicroService.dto;
+using TaskMicroService.dtos.TaskStep;
+
+namespace TaskMicroService.dtos.Task;
 
 public class ReadTaskDto
 {

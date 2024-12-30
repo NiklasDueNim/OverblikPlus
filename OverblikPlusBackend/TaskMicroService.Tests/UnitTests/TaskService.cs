@@ -2,7 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using TaskMicroService.DataAccess;
-using TaskMicroService.dto;
+using TaskMicroService.dtos.Task;
 using TaskMicroService.Entities;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;

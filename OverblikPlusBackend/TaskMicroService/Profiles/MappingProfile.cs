@@ -1,5 +1,6 @@
 using AutoMapper;
-using TaskMicroService.dto;
+using TaskMicroService.dtos.Task;
+using TaskMicroService.dtos.TaskStep;
 using TaskMicroService.Entities;
 
 namespace TaskMicroService.Profiles
