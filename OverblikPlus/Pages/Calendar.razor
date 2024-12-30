@@ -5,8 +5,8 @@
 @inject ITaskService TaskService
 @inject IJSRuntime JS
 
-<div class="container">
-    <h3>Kalender</h3>
+<div class="container mt-4">
+    <h3 class="mb-4">Kalender</h3>
 
     <!-- Navigationskontrol -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -19,58 +19,67 @@
     <div class="calendar-header">
         @foreach (var dayName in dayNames)
         {
-            <div>@dayName</div>
+        <div>@dayName</div>
         }
     </div>
     <div class="calendar-grid">
         @foreach (var day in daysInMonth)
         {
-            <div class="calendar-cell @(day.Date == DateTime.Today ? "today" : "")" @onclick="() => OpenDayDetails(day)">
-                <div class="date-number">@day.Day</div>
-                @if (tasksForMonth.ContainsKey(day.Date))
+        <div class="calendar-cell @(day.Date == DateTime.Today ? "today" : "")" @onclick="() => OpenDayDetails(day)">
+            <div class="date-number">@day.Day</div>
+            @if (tasksForMonth.ContainsKey(day.Date))
+            {
+            <ul class="task-list">
+                @foreach (var task in tasksForMonth[day.Date])
                 {
-                    <ul class="task-list">
-                        @foreach (var task in tasksForMonth[day.Date])
-                        {
-                            <li class="task-item">@task.Name</li>
-                        }
-                    </ul>
+                <li class="task-item">@task.Name</li>
                 }
-            </div>
+            </ul>
+            }
+        </div>
         }
     </div>
-</div>
 
-<!-- Modal til aftaledetaljer -->
-@if (showModal)
-{
-<div class="modal-backdrop">
-    <div class="modal">
-        <h4>Aftaler for @selectedDate.ToShortDateString()</h4>
-        <ul class="task-list">
-            @if (tasksForMonth.ContainsKey(selectedDate))
-            {
-                @foreach (var task in tasksForMonth[selectedDate])
-                {
-                    <li>@task.Name</li>
-                }
-            }
-            else
-            {
-                <li>Ingen aftaler</li>
-            }
-        </ul>
-        <input type="text" placeholder="Tilføj ny aftale" @bind="newTaskName" class="form-control mb-2" />
+    <!-- Modal for opgaveoplysninger -->
+    @if (showModal)
+    {
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-labelledby="taskModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Aftaler for @selectedDate.ToShortDateString()</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="task-list">
+                        @if (tasksForMonth.ContainsKey(selectedDate))
+                        {
+                        @foreach (var task in tasksForMonth[selectedDate])
+                        {
+                        <li>@task.Name</li>
+                        }
+                        }
+                        else
+                        {
+                        <li>Ingen aftaler</li>
+                        }
+                    </ul>
 
-        <!-- Footer med knapper -->
-        <div class="modal-footer">
-            <button class="btn btn-primary" @onclick="AddTask">Tilføj</button>
-            <button class="btn btn-secondary" @onclick="CloseModal">Luk</button>
-            <button class="btn btn-success" @onclick="DownloadCalendarFile">Download Kalender</button>
+                    <div class="mb-3">
+                        <label for="newTaskName" class="form-label">Tilføj ny aftale:</label>
+                        <input type="text" id="newTaskName" @bind="newTaskName" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Luk</button>
+                    <button type="button" class="btn btn-primary" @onclick="AddTask">Tilføj</button>
+                    <button type="button" class="btn btn-success" @onclick="DownloadCalendarFile">Download Kalender</button>
+                </div>
+            </div>
         </div>
     </div>
+    }
 </div>
-}
 
 @code {
     private DateTime selectedMonth = DateTime.Today;
@@ -113,7 +122,6 @@
 
     private void OpenDayDetails(DateTime date)
     {
-        Console.WriteLine($"Åbner detaljer for dato: {date}");
         selectedDate = date;
         newTaskName = string.Empty;
         showModal = true;
