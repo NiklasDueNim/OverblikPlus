@@ -1,6 +1,7 @@
 @page "/create-user"
 @using OverblikPlus.Dtos.User
 @using OverblikPlus.Services.Interfaces
+@inject CustomAuthStateProvider AuthStateProvider
 
 <h3>Opret Bruger</h3>
 
@@ -39,10 +40,14 @@
         <label for="password">Password</label>
         <InputText id="password" @bind-Value="newUser.Password" class="form-control" />
     </div>
-    <div class="form-group">
-        <label for="role">Rolle</label>
-        <InputText id="role" @bind-Value="newUser.Role" class="form-control" />
-    </div>
+    @if (isAdmin)
+    {
+        <div class="form-group">
+            <label for="role">Rolle</label>
+            <InputText id="role" @bind-Value="newUser.Role" class="form-control" />
+        </div>
+    }
+
 
     <button type="submit" class="btn btn-primary">Opret Bruger</button>
 </EditForm>
@@ -51,10 +56,16 @@
     private CreateUserDto newUser = new CreateUserDto();
     private string successMessage = string.Empty;
     private string errorMessage = string.Empty;
+    private bool isAdmin = false;
 
     [Inject] public IUserService UserService { get; set; }
-    
 
+    protected override async Task OnInitializedAsync()
+    {
+        var role = await AuthStateProvider.GetRoleAsync();
+        isAdmin = role is "Admin";
+    }
+    
     private async Task HandleCreateUser()
     {
         try
