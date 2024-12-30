@@ -1,4 +1,4 @@
-namespace TaskMicroService.Dtos.Calendar;
+namespace OverblikPlus.Dtos.Calendar;
 
 public class ReadCalendarEventDto
 {

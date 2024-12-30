@@ -39,6 +39,9 @@ builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
             userApiBaseUrl
         }));
 
+builder.Services.AddScoped<CalendarEventService>();
+
+
 // --- HTTP CLIENTS TIL API SERVICES ---
 builder.Services.AddHttpClient<IUserService, UserService>(client =>
 {
