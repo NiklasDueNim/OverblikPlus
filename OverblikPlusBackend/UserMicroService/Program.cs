@@ -36,10 +36,17 @@ if (string.IsNullOrEmpty(encryptionKey))
 EncryptionHelper.SetEncryptionKey(encryptionKey);
 
 // --- DATABASE CONNECTION ---
-// var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? 
-//                           "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;";
+var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 
-var dbConnectionString = "Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;";
+if (string.IsNullOrEmpty(dbConnectionString))
+{
+    Console.WriteLine("DB_CONNECTION_STRING is missing or empty. Using fallback connection string.");
+    dbConnectionString = "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;";
+}
+else
+{
+    Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
+}
 
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(dbConnectionString));
