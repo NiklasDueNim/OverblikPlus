@@ -15,6 +15,11 @@
         <button class="btn btn-primary" @onclick="NextMonth">Næste måned</button>
     </div>
 
+    <!-- Fast Download-knap -->
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-success" @onclick="DownloadCalendarFile">Download Kalender</button>
+    </div>
+
     <!-- Kalendergrid -->
     <div class="calendar-header">
         @foreach (var dayName in dayNames)
@@ -73,13 +78,13 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CloseModal">Luk</button>
                     <button type="button" class="btn btn-primary" @onclick="AddTask">Tilføj</button>
-                    <button type="button" class="btn btn-success" @onclick="DownloadCalendarFile">Download Kalender</button>
                 </div>
             </div>
         </div>
     </div>
     }
 </div>
+
 
 @code {
     private DateTime selectedMonth = DateTime.Today;
@@ -89,6 +94,7 @@
     private bool showModal = false;
     private DateTime selectedDate;
     private string newTaskName;
+    private HashSet<string> downloadedTasks = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -154,6 +160,9 @@
         {
             foreach (var task in taskGroup.Value)
             {
+                var taskId = $"{taskGroup.Key:yyyyMMdd}-{task.Name}";
+                if (downloadedTasks.Contains(taskId)) continue;
+
                 var startDate = taskGroup.Key;
                 var endDate = startDate.AddHours(1);
 
@@ -164,6 +173,8 @@
                 builder.AppendLine($"DESCRIPTION:{task.Description ?? ""}");
                 builder.AppendLine($"UID:{Guid.NewGuid()}");
                 builder.AppendLine("END:VEVENT");
+                
+                downloadedTasks.Add(taskId);
             }
         }
 
