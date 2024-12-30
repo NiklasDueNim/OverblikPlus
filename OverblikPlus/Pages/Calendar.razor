@@ -1,7 +1,9 @@
 @page "/calendar"
+@using System.Text
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Services.Interfaces
 @inject ITaskService TaskService
+@inject IJSRuntime JS
 
 <div class="container">
     <h3>Kalender</h3>
@@ -39,94 +41,128 @@
     </div>
 </div>
 
-
 <!-- Modal til aftaledetaljer -->
 @if (showModal)
 {
-    <div class="modal-backdrop">
-        <div class="modal">
-            <h4>Aftaler for @selectedDate.ToShortDateString()</h4>
-            <ul class="task-list">
-                @if (tasksForMonth.ContainsKey(selectedDate))
-                {
-                    @foreach (var task in tasksForMonth[selectedDate])
-                    {
-                        <li>@task.Name</li>
-                    }
-                }
-                else
-                {
-                    <li>Ingen aftaler</li>
-                }
-            </ul>
-            <input type="text" placeholder="Tilføj ny aftale" @bind="newTaskName" class="form-control mb-2" />
+<div class="modal-backdrop">
+    <div class="modal">
+        <h4>Aftaler for @selectedDate.ToShortDateString()</h4>
+        <ul class="task-list">
+            @if (tasksForMonth.ContainsKey(selectedDate))
+            {
+            @foreach (var task in tasksForMonth[selectedDate])
+            {
+            <li>@task.Name</li>
+            }
+            }
+            else
+            {
+            <li>Ingen aftaler</li>
+            }
+        </ul>
+        <input type="text" placeholder="Tilføj ny aftale" @bind="newTaskName" class="form-control mb-2" />
+
+        <!-- Footer med knapper -->
+        <div class="modal-footer">
             <button class="btn btn-primary" @onclick="AddTask">Tilføj</button>
             <button class="btn btn-secondary" @onclick="CloseModal">Luk</button>
+            <button class="btn btn-success" @onclick="DownloadCalendarFile">Download Kalender</button>
         </div>
     </div>
+</div>
 }
 
 @code {
-    private DateTime selectedMonth = DateTime.Today;
-    private List<DateTime> daysInMonth = new();
-    private Dictionary<DateTime, List<ReadTaskDto>> tasksForMonth = new();
-    private string[] dayNames = { "Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn" };
-    private bool showModal = false;
-    private DateTime selectedDate;
-    private string newTaskName;
+private DateTime selectedMonth = DateTime.Today;
+private List<DateTime> daysInMonth = new();
+private Dictionary<DateTime, List<ReadTaskDto>> tasksForMonth = new();
+private string[] dayNames = { "Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn" };
+private bool showModal = false;
+private DateTime selectedDate;
+private string newTaskName;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadTasksForMonth();
-    }
+protected override async Task OnInitializedAsync()
+{
+await LoadTasksForMonth();
+}
 
-    private async Task LoadTasksForMonth()
-    {
-        var userId = "hent_userId"; // Skift dette ud med det korrekte userId
-        daysInMonth = Enumerable.Range(1, DateTime.DaysInMonth(selectedMonth.Year, selectedMonth.Month))
-                                .Select(day => new DateTime(selectedMonth.Year, selectedMonth.Month, day))
-                                .ToList();
+private async Task LoadTasksForMonth()
+{
+daysInMonth = Enumerable.Range(1, DateTime.DaysInMonth(selectedMonth.Year, selectedMonth.Month))
+.Select(day => new DateTime(selectedMonth.Year, selectedMonth.Month, day))
+.ToList();
 
-        // Simulér opgaver (erstat med API-kald)
-        tasksForMonth = new Dictionary<DateTime, List<ReadTaskDto>>
-        {
-            { DateTime.Today, new List<ReadTaskDto> { new ReadTaskDto { Name = "Læge kl. 10:40" } } },
-            { DateTime.Today.AddDays(1), new List<ReadTaskDto> { new ReadTaskDto { Name = "Møde kl. 14:00" } } }
-        };
-    }
+tasksForMonth = new Dictionary<DateTime, List<ReadTaskDto>>
+{
+{ DateTime.Today, new List<ReadTaskDto> { new ReadTaskDto { Name = "Læge kl. 10:40" } } },
+{ DateTime.Today.AddDays(1), new List<ReadTaskDto> { new ReadTaskDto { Name = "Møde kl. 14:00" } } }
+};
+}
 
-    private void PreviousMonth()
-    {
-        selectedMonth = selectedMonth.AddMonths(-1);
-        _ = LoadTasksForMonth();
-    }
+private void PreviousMonth()
+{
+selectedMonth = selectedMonth.AddMonths(-1);
+_ = LoadTasksForMonth();
+}
 
-    private void NextMonth()
-    {
-        selectedMonth = selectedMonth.AddMonths(1);
-        _ = LoadTasksForMonth();
-    }
+private void NextMonth()
+{
+selectedMonth = selectedMonth.AddMonths(1);
+_ = LoadTasksForMonth();
+}
 
-    private void OpenDayDetails(DateTime date)
-    {
-        selectedDate = date;
-        newTaskName = string.Empty;
-        showModal = true;
-    }
+private void OpenDayDetails(DateTime date)
+{
+selectedDate = date;
+newTaskName = string.Empty;
+showModal = true;
+}
 
-    private void AddTask()
-    {
-        if (!tasksForMonth.ContainsKey(selectedDate))
-        {
-            tasksForMonth[selectedDate] = new List<ReadTaskDto>();
-        }
+private void AddTask()
+{
+if (!tasksForMonth.ContainsKey(selectedDate))
+{
+tasksForMonth[selectedDate] = new List<ReadTaskDto>();
+}
 
-        tasksForMonth[selectedDate].Add(new ReadTaskDto { Name = newTaskName });
-        newTaskName = string.Empty;
-    }
+tasksForMonth[selectedDate].Add(new ReadTaskDto { Name = newTaskName });
+newTaskName = string.Empty;
+}
 
-    private void CloseModal()
-    {
-        showModal = false;
-    }
+private void CloseModal()
+{
+showModal = false;
+}
+
+private async Task DownloadCalendarFile()
+{
+var builder = new StringBuilder();
+builder.AppendLine("BEGIN:VCALENDAR");
+builder.AppendLine("VERSION:2.0");
+builder.AppendLine("PRODID:-//OverblikPlus//Calendar//EN");
+
+foreach (var taskGroup in tasksForMonth)
+{
+foreach (var task in taskGroup.Value)
+{
+var startDate = taskGroup.Key;
+var endDate = startDate.AddHours(1);
+
+builder.AppendLine("BEGIN:VEVENT");
+builder.AppendLine($"SUMMARY:{task.Name}");
+builder.AppendLine($"DTSTART:{startDate:yyyyMMddTHHmmssZ}");
+builder.AppendLine($"DTEND:{endDate:yyyyMMddTHHmmssZ}");
+builder.AppendLine($"DESCRIPTION:{task.Description ?? ""}");
+builder.AppendLine($"UID:{Guid.NewGuid()}");
+builder.AppendLine("END:VEVENT");
+}
+}
+
+builder.AppendLine("END:VCALENDAR");
+
+var bytes = Encoding.UTF8.GetBytes(builder.ToString());
+var base64 = Convert.ToBase64String(bytes);
+
+await JS.InvokeVoidAsync("downloadFile", "calendar.ics", "text/calendar", base64);
+}
 }

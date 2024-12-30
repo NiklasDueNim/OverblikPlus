@@ -1,24 +1,19 @@
+/* Container styling */
 .container {
-    width: 90%;
+    width: 100%;
     max-width: 1000px;
     margin: auto;
-    padding: 20px;
+    padding: 10px;
     background-color: #f7f7f7;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-h3 {
-    text-align: center;
-    font-size: 24px;
-    color: #333;
-    margin-bottom: 20px;
-}
-
+/* Kalender grid */
 .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-auto-rows: 100px;
+    grid-template-columns: repeat(7, 1fr); /* 7 kolonner for ugens dage */
+    grid-auto-rows: minmax(80px, auto);   /* Juster højde automatisk */
     gap: 1px;
     background-color: #e6e6e6;
     border: 1px solid #ddd;
@@ -26,33 +21,35 @@ h3 {
     overflow: hidden;
 }
 
+/* Kalender celle */
 .calendar-cell {
     background-color: white;
-    display: flex;
-    flex-direction: column;
     padding: 5px;
     border: 1px solid #ddd;
     font-size: 12px;
-    color: #555;
     position: relative;
+    overflow: hidden;
+    cursor: pointer; /* Gør det tydeligt, at cellerne er klikbare */
+    transition: background-color 0.2s;
 }
 
 .calendar-cell.today {
-    background-color: #e3f2fd;
+    background-color: #e3f2fd; /* Fremhæv dagens dato */
     border: 2px solid #42a5f5;
 }
 
+/* Kalender overskrifter */
 .calendar-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    background-color: #42a5f5;
-    color: white;
     text-align: center;
-    font-weight: bold;
     padding: 10px 0;
-    border-bottom: 2px solid #ddd;
+    font-weight: bold;
+    color: white;
+    background-color: #0962a6;
 }
 
+/* Dato tal */
 .date-number {
     font-size: 14px;
     font-weight: bold;
@@ -60,6 +57,7 @@ h3 {
     margin-bottom: 10px;
 }
 
+/* Opgaveliste */
 .task-list {
     margin: 0;
     padding: 0;
@@ -69,11 +67,102 @@ h3 {
 .task-item {
     font-size: 12px;
     color: white;
-    background-color: #ff7043;
+    background-color: #ff7043; /* Orange baggrund til opgaver */
     border-radius: 4px;
     padding: 2px 4px;
     margin-bottom: 5px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Modal styling */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Mørk baggrund */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050; /* Sørg for, at den vises øverst */
+}
+
+.modal {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    width: 400px;
+    z-index: 1051; /* Selve modal-vinduet skal ligge øverst */
+}
+
+.modal-backdrop {
+    z-index: 1050; /* Sørg for, at denne værdi er høj */
+}
+
+.modal {
+    z-index: 1051; /* Skal være højere end backdrop */
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    width: 400px;
+    margin: 50px auto;
+    position: relative;
+}
+
+
+/* Modal footer styling */
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+/* Knapper i modal */
+.modal-footer button {
+    margin: 0 5px;
+}
+
+/* Responsivitet - Mobil og mindre skærme */
+@media (max-width: 768px) {
+    .calendar-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3 kolonner */
+    }
+
+    .calendar-header {
+        grid-template-columns: repeat(3, 1fr); /* 3 kolonner for overskrifter */
+    }
+
+    .calendar-cell {
+        font-size: 10px;
+        padding: 2px;
+    }
+
+    .modal {
+        width: 90%; /* Gør modal bredere */
+    }
+}
+
+/* Responsivitet - Mindre enheder */
+@media (max-width: 480px) {
+    .calendar-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 kolonner */
+    }
+
+    .calendar-header {
+        grid-template-columns: repeat(2, 1fr); /* 2 kolonner for overskrifter */
+    }
+
+    .calendar-cell {
+        font-size: 9px;
+    }
+
+    .modal {
+        width: 100%; /* Fuld bredde */
+        margin: 10px;
+    }
 }
