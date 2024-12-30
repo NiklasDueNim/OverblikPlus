@@ -11,6 +11,7 @@ namespace TaskMicroService.DataAccess
 
         public DbSet<TaskEntity> Tasks { get; set; }
         public DbSet<TaskStep> TaskSteps { get; set; }
+        public DbSet<CalendarEvent> CalendarEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,6 +27,16 @@ namespace TaskMicroService.DataAccess
                 .WithMany(t => t.Steps)
                 .HasForeignKey(ts => ts.TaskId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<CalendarEvent>()
+                .HasKey(c => c.Id);
+            modelBuilder.Entity<CalendarEvent>()
+                .Property(c => c.Title).IsRequired().HasMaxLength(100);
+            modelBuilder.Entity<CalendarEvent>()
+                .Property(c => c.StartTime).IsRequired();
+            modelBuilder.Entity<CalendarEvent>()
+                .Property(c => c.EndTime).IsRequired();
+
 
             base.OnModelCreating(modelBuilder);
         }

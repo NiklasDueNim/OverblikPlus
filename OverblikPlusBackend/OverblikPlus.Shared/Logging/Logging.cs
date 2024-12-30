@@ -27,7 +27,7 @@ namespace OverblikPlus.Shared.Logging
 
         public void LogError(string message, Exception ex)
         {
-            _logger.Error(ex, message);
+            _logger.Error(message + " Exception: {Exception}", ex);
         }
     }
 }

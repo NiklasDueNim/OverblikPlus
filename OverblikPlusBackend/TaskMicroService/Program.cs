@@ -5,15 +5,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using OverblikPlus.Shared.Interfaces;
+using OverblikPlus.Shared.Logging;
 using Serilog;
 using TaskMicroService.DataAccess;
-using TaskMicroService.dtos;
+using TaskMicroService.Dtos.Calendar;
 using TaskMicroService.dtos.Task;
-using TaskMicroService.Profiles;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
 using TaskMicroService.Validators;
-using TaskMicroService.Middelwares;
+using TaskMicroService.Middlewares;
+using TaskMicroService.Validators.Calendar;
 
 // ---- ENVIRONMENT LOGGING ----
 var builder = WebApplication.CreateBuilder(args);
@@ -66,14 +68,13 @@ builder.Services.AddAuthentication(options =>
     });
 
 // ---- Blob Storage ----
-var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONNECTION_STRING") ??
-                           "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://localhost:10000;";
+var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONNECTION_STRING") ?? "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://localhost:10000;";
+
 builder.Services.AddSingleton(x => { return new BlobServiceClient(blobConnectionString); });
 Log.Logger.Information($"Blob Storage Connection String: {blobConnectionString}");
 
 // Dynamisk generer base URL baseret på miljø
-var blobBaseUrl = Environment.GetEnvironmentVariable("BLOB_BASE_URL") ??
-                  "http://localhost:10000/devstoreaccount1/images"; //TODO: Tilføj blob base url til min dev
+var blobBaseUrl = Environment.GetEnvironmentVariable("BLOB_BASE_URL") ?? "http://localhost:10000/devstoreaccount1/images"; //TODO: Tilføj blob base url til min dev
 builder.Services.AddSingleton(blobBaseUrl);
 
 Log.Logger.Information($"Blob Base URL: {blobBaseUrl}");
@@ -102,55 +103,62 @@ builder.Services.AddCors(options =>
 
 
 // ---- SERVICES ----
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-        builder.Services.AddControllers();
-        builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddSingleton<ILoggerService, LoggerService>();
+
+
+
 
 // ---- DEPENDENCY INJECTION ----
-        builder.Services.AddScoped<ITaskService, TaskService>();
-        builder.Services.AddScoped<ITaskStepService, TaskStepService>();
-        builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ITaskStepService, TaskStepService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
 
 // ---- VALIDATORS ----
-        builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
-        builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
-        builder.Services.AddFluentValidationAutoValidation();
-        builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
+builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
+builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
+builder.Services.AddScoped<IValidator<CreateCalendarEventDto>, CreateCalendarEventDtoValidator>();
+
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 
 // ---- BUILD APPLICATION ----
-        var app = builder.Build();
+var app = builder.Build();
 
 // ---- MIDDLEWARE CONFIGURATION ----
-        if (app.Environment.IsDevelopment())
-        {
-        }
-        else
-        {
-            app.UseHttpsRedirection();
-        }
+if (app.Environment.IsDevelopment())
+{
+}
+else
+{
+    app.UseHttpsRedirection();
+}
 
-        app.UseSwagger();
-        app.UseSwaggerUI();
+app.UseSwagger();
+app.UseSwaggerUI();
 
-        app.UseCors("AllowOverblikPlus");
-        app.UseMiddleware<ExceptionHandlingMiddleware>();
-        app.UseAuthentication();
-        app.UseAuthorization();
-        app.MapControllers();
+app.UseCors("AllowOverblikPlus");
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 // ---- START APP ----
-        try
-        {
-            Log.Information("Starting the application in {Environment} mode", environment);
-            app.Run();
-        }
-        catch (Exception ex)
-        {
-            Log.Fatal(ex, "Application start-up failed");
-        }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
-    
+try
+{
+    Log.Information("Starting the application in {Environment} mode", environment);
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application start-up failed");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
