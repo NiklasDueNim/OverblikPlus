@@ -55,6 +55,11 @@ builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
     client.BaseAddress = new Uri(userApiBaseUrl);
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
+builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
+{
+    client.BaseAddress = new Uri(taskApiBaseUrl);
+}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
+
 // Automapper og Authorization
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();
