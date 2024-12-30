@@ -14,7 +14,6 @@ public class BlobStorageServiceTests
 
     public BlobStorageServiceTests()
     {
-        // Mock Azure Blob Services
         _mockBlobServiceClient = new Mock<BlobServiceClient>();
         _mockBlobContainerClient = new Mock<BlobContainerClient>();
         _mockBlobClient = new Mock<BlobClient>();
@@ -27,7 +26,6 @@ public class BlobStorageServiceTests
             .Setup(x => x.GetBlobClient(It.IsAny<string>()))
             .Returns(_mockBlobClient.Object);
 
-        // Initialiser BlobStorageService
         _blobStorageService = new BlobStorageService(_mockBlobServiceClient.Object, _blobBaseUrl);
     }
 
@@ -38,12 +36,10 @@ public class BlobStorageServiceTests
         var stream = new MemoryStream();
         var fileName = "test.jpg";
 
-        // Mock CreateIfNotExistsAsync
         _mockBlobContainerClient
             .Setup(x => x.CreateIfNotExistsAsync(PublicAccessType.Blob, null, null, default))
             .ReturnsAsync(Response.FromValue(Mock.Of<BlobContainerInfo>(), Mock.Of<Response>()));
 
-        // Mock UploadAsync
         _mockBlobClient
             .Setup(x => x.UploadAsync(It.IsAny<Stream>(), true, default))
             .ReturnsAsync(Response.FromValue(Mock.Of<BlobContentInfo>(), Mock.Of<Response>()));
@@ -83,16 +79,13 @@ public class BlobStorageServiceTests
         // Arrange
         var fileName = "test.jpg";
 
-        // Mock BlobContainerClient
         var mockContainerClient = new Mock<BlobContainerClient>();
         var mockBlobClient = new Mock<BlobClient>();
 
-        // Opsætning af GetBlobClient til at returnere en mocket BlobClient
         mockContainerClient
             .Setup(c => c.GetBlobClient(fileName))
             .Returns(mockBlobClient.Object);
 
-        // Opsætning af DeleteIfExistsAsync til at returnere en success-response
         mockBlobClient
             .Setup(b => b.DeleteIfExistsAsync(
                 It.IsAny<DeleteSnapshotsOption>(),
@@ -100,7 +93,6 @@ public class BlobStorageServiceTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response.FromValue(true, Mock.Of<Response>()));
 
-        // Opsætning af mock BlobServiceClient til at returnere en mocket ContainerClient
         _mockBlobServiceClient
             .Setup(x => x.GetBlobContainerClient(It.IsAny<string>()))
             .Returns(mockContainerClient.Object);
@@ -114,7 +106,7 @@ public class BlobStorageServiceTests
                 It.IsAny<DeleteSnapshotsOption>(),
                 It.IsAny<BlobRequestConditions>(),
                 It.IsAny<CancellationToken>()),
-            Times.Once); // Sikrer, at metoden blev kaldt én gang
+            Times.Once);
     }
 
 

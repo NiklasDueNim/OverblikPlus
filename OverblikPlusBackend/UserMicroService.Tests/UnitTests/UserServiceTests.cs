@@ -187,10 +187,7 @@ public class UserServiceTests
             Assert.Equal("Med2", EncryptionHelper.Decrypt(user.Medication, true));
             Assert.Equal("Goal2", user.Goals);
         }
-
-
-
-
+        
 
         private static Mock<UserManager<ApplicationUser>> MockUserManager(List<ApplicationUser> users)
         {
