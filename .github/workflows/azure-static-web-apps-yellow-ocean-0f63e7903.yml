@@ -12,21 +12,28 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set environment variables
+      # (A) Overskriv placeholders i OverblikPlus/wwwroot/appsettings.json
+      - name: Replace config placeholders (Dev)
         run: |
-          echo "ENVIRONMENT=dev" >> $GITHUB_ENV
-          echo "TASK_API_BASE_URL=${{ secrets.TASK_API_BASE_URL_DEV }}" >> $GITHUB_ENV
-          echo "USER_API_BASE_URL=${{ secrets.USER_API_BASE_URL_DEV }}" >> $GITHUB_ENV
+          sed -i 's/"dev-or-prod"/"dev"/g' ./OverblikPlus/wwwroot/appsettings.json
+          sed -i 's#https://placeholder-task-api.example.com#${{ secrets.TASK_API_BASE_URL_DEV }}#g' ./OverblikPlus/wwwroot/appsettings.json
+          sed -i 's#https://placeholder-user-api.example.com#${{ secrets.USER_API_BASE_URL_DEV }}#g' ./OverblikPlus/wwwroot/appsettings.json
 
-      - name: Build And Deploy
+      # (B) Build + Deploy
+      - name: Build And Deploy (Dev)
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
+          # Indsæt den secret, du bruger til dev-miljø
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_OCEAN_0F63E7903 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
+
+          # Path til selve dit Blazor-projekt
           app_location: "./OverblikPlus"
+          # Hvis du ikke har en API-projektmappe, sæt den til ""
           api_location: ""
+          # Byg i "wwwroot"
           output_location: "wwwroot"
 
   close_pull_request_job:
