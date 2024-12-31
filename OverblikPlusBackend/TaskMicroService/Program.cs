@@ -22,15 +22,15 @@ var builder = WebApplication.CreateBuilder(args);
 var environment = builder.Environment.EnvironmentName;
 
 // ---- SERILOG CONFIGURATION ----
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
-    .WriteTo.ApplicationInsights(
-        Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING"), 
-        TelemetryConverter.Traces)
-    .CreateLogger();
+// Log.Logger = new LoggerConfiguration()
+//     .ReadFrom.Configuration(builder.Configuration)
+//     .Enrich.FromLogContext()
+//     .WriteTo.Console()
+//     .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+//     .WriteTo.ApplicationInsights(
+//         Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING"), 
+//         TelemetryConverter.Traces)
+//     .CreateLogger();
 
 builder.Host.UseSerilog();
 
