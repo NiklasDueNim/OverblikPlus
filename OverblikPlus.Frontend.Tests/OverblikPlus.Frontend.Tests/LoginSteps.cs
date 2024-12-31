@@ -9,8 +9,8 @@ namespace OverblikPlus.Frontend.Tests;
 [Binding]
 public class LoginSteps
 {
-    private IWebDriver driver;
-    private WebDriverWait wait;
+    private IWebDriver? driver;
+    private WebDriverWait? wait;
 
     [Given(@"I am on the login page")]
     public void GivenIAmOnTheLoginPage()
