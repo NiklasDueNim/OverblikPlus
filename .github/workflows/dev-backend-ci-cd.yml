@@ -56,9 +56,10 @@ jobs:
       # 7. Kører tests
       - name: Run tests
         run: |
-          for csproj in $(find . -name '*.Tests.csproj'); do
+          for csproj in $(find . -name '*.Tests.csproj' ! -name '*OverblikPlus.Frontend.Tests*'); do
             dotnet test "$csproj" --no-restore --verbosity normal
           done
+
 
       # 8. Log ind på Azure Container Registry (ACR)
       - name: Login to Azure Container Registry
