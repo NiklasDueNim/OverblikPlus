@@ -41,6 +41,11 @@ builder.Services.AddHttpClient<IUserService, UserService>(client =>
     client.BaseAddress = new Uri(userApiBaseUrl);
 }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
+builder.Services.AddHttpClient<ICalendarEventService, CalendarEventService>(client =>
+{
+    client.BaseAddress = new Uri(taskApiBaseUrl);
+}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
+
 builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
 {
     client.BaseAddress = new Uri(taskApiBaseUrl);
