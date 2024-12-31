@@ -16,8 +16,9 @@ using UserMicroService.Services.Interfaces;
 using UserMicroService.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
+var environment = builder.Environment.EnvironmentName;
 
-// --- LOGGING ---
+// --- LOGGING / SERILOG ---
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
@@ -28,20 +29,23 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // --- ENCRYPTION KEY ---
-string encryptionKey = builder.Configuration.GetSection("EncryptionSettings:EncryptionKey").Value;
+// 1) Læs fra env-var, ellers fra appsettings ("EncryptionSettings:EncryptionKey")
+var encryptionKey = Environment.GetEnvironmentVariable("ENCRYPTION_KEY") 
+    ?? builder.Configuration["EncryptionSettings:EncryptionKey"];
+
 if (string.IsNullOrEmpty(encryptionKey))
 {
-    throw new InvalidOperationException("Encryption key is missing in appsettings.");
+    throw new InvalidOperationException("Encryption key is missing (ENV var or appsettings).");
 }
 EncryptionHelper.SetEncryptionKey(encryptionKey);
 
 // --- DATABASE CONNECTION ---
-var dbConnectionString = "Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;";
-
+var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") 
+    ?? "Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;";
 
 if (string.IsNullOrEmpty(dbConnectionString))
 {
-    Console.WriteLine("DB_CONNECTION_STRING is missing or empty. Using fallback connection string.");
+    Console.WriteLine("DB_CONNECTION_STRING is missing or empty. Using fallback local connection string.");
     dbConnectionString = "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;";
 }
 else
@@ -52,40 +56,49 @@ else
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(dbConnectionString));
 
-
 // --- IDENTITY CONFIGURATION ---
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<UserDbContext>()
     .AddDefaultTokenProviders();
 
-// --- AUTHENTICATION & JWT ---
-var jwtIssuer = Environment.GetEnvironmentVariable("Jwt__Issuer") ?? "https://overblikplus.dk";
-var jwtAudience = Environment.GetEnvironmentVariable("Jwt__Audience") ?? "https://overblikplus.dk";
-var jwtKey = Environment.GetEnvironmentVariable("Jwt__Key") ?? "MyVeryStrongSecretKeyForJWT1234567890";
+// --- JWT CONFIGURATION ---
+// 1) Læs fra env-vars, fallback til appsettings
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") 
+    ?? builder.Configuration["Jwt:Issuer"]
+    ?? "https://overblikplus.dk";  // fallback
+
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") 
+    ?? builder.Configuration["Jwt:Audience"]
+    ?? "https://overblikplus.dk";  // fallback
+
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") 
+    ?? builder.Configuration["Jwt:Key"]
+    ?? "MyVeryStrongSecretKeyForJWT1234567890"; // fallback
 
 builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-        };
-    });
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
 
-// Log JWT variabler
-Console.WriteLine($"Jwt:Issuer = {jwtIssuer}");
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
+// Log JWT-variabler (debug formål)
+Console.WriteLine($"Jwt:Issuer   = {jwtIssuer}");
 Console.WriteLine($"Jwt:Audience = {jwtAudience}");
-Console.WriteLine($"Jwt:Key = {jwtKey}");
+Console.WriteLine($"Jwt:Key      = {jwtKey}");
 
 // --- CORS CONFIGURATION ---
 builder.Services.AddCors(options =>
@@ -100,12 +113,12 @@ builder.Services.AddCors(options =>
             .AllowCredentials());
 });
 
-// --- SERVICES ---
+// --- SERVICES & DEPENDENCIES ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(Program));
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IValidator<CreateUserDto>, CreateUserDtoValidator>();
@@ -115,15 +128,17 @@ builder.Services.AddSingleton<ILoggerService, LoggerService>();
 // --- BUILD APPLICATION ---
 var app = builder.Build();
 
+// --- MIDDLEWARE & CONFIG ---
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage(); 
+    // Kun i dev
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 else
 {
-    app.UseHttpsRedirection(); 
+    app.UseHttpsRedirection();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -135,5 +150,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();
