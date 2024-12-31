@@ -41,66 +41,65 @@ builder.Services.AddApplicationInsightsTelemetry(options =>
 });
 
 // ---- DATABASE CONFIGURATION ----
-var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Connection Timeout=30;";
+// Henter DB fra env var, fallback til en default (localhost)
+var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") 
+    ?? "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;";
 
 Log.Logger.Information("This is the DB connection string: " + dbConnectionString);
 
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseSqlServer(dbConnectionString));
 
+// ---- JWT CONFIGURATION ----
+// Læser env vars til JWT, fallback til appsettings.json
+var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Jwt:Issuer"];
+var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["Jwt:Audience"];
+var jwtKey     = Environment.GetEnvironmentVariable("JWT_KEY")     ?? builder.Configuration["Jwt:Key"];
+
 builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer("Bearer", options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
 
 // ---- Blob Storage ----
-var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONNECTION_STRING") ?? "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://localhost:10000;";
-
-builder.Services.AddSingleton(x => { return new BlobServiceClient(blobConnectionString); });
+var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONNECTION_STRING") 
+    ?? "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://localhost:10000;";
+builder.Services.AddSingleton(x => new BlobServiceClient(blobConnectionString));
 Log.Logger.Information($"Blob Storage Connection String: {blobConnectionString}");
 
 // Dynamisk generer base URL baseret på miljø
-var blobBaseUrl = Environment.GetEnvironmentVariable("BLOB_BASE_URL") ?? "http://localhost:10000/devstoreaccount1/images"; //TODO: Tilføj blob base url til min dev
+var blobBaseUrl = Environment.GetEnvironmentVariable("BLOB_BASE_URL") 
+    ?? "http://localhost:10000/devstoreaccount1/images";
 builder.Services.AddSingleton(blobBaseUrl);
-
 Log.Logger.Information($"Blob Base URL: {blobBaseUrl}");
 
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowOverblikPlus",
-        policy => policy.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader());
-});
-
-
+// ---- CORS ----
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOverblikPlus",
         policy => policy.WithOrigins(
-                "https://overblikplus.dk",
-                "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-                "http://localhost:5226")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+            "https://overblikplus.dk",
+            "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
+            "http://localhost:5226")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
 });
-
 
 // ---- SERVICES ----
 builder.Services.AddEndpointsApiExplorer();
@@ -120,7 +119,6 @@ builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
 builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
 builder.Services.AddScoped<IValidator<CreateCalendarEventDto>, CreateCalendarEventDtoValidator>();
 
-
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 
@@ -128,10 +126,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 var app = builder.Build();
 
 // ---- MIDDLEWARE CONFIGURATION ----
-if (app.Environment.IsDevelopment())
-{
-}
-else
+if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
@@ -143,6 +138,7 @@ app.UseCors("AllowOverblikPlus");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 // ---- START APP ----
