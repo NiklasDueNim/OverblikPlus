@@ -16,6 +16,9 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.6" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Selenium.Support" Version="4.27.0" />
+        <PackageReference Include="Selenium.WebDriver" Version="4.27.0" />
+        <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="131.0.6778.20400" />
         <PackageReference Include="System.Net.Http.Json" Version="8.0.1" />
     </ItemGroup>
 
@@ -29,6 +32,9 @@
       <_ContentIncludedByDefault Remove="OverblikPlus.Tests\OverblikPlus.Tests\obj\OverblikPlus.Tests.csproj.nuget.dgspec.json" />
       <_ContentIncludedByDefault Remove="OverblikPlus.Tests\OverblikPlus.Tests\obj\project.assets.json" />
       <_ContentIncludedByDefault Remove="OverblikPlus.Tests\OverblikPlus.Tests\obj\project.packagespec.json" />
+      <_ContentIncludedByDefault Remove="OverblikPlus.Frontend.Tests\OverblikPlus.Frontend.Tests\obj\OverblikPlus.Frontend.Tests.csproj.nuget.dgspec.json" />
+      <_ContentIncludedByDefault Remove="OverblikPlus.Frontend.Tests\OverblikPlus.Frontend.Tests\obj\project.assets.json" />
+      <_ContentIncludedByDefault Remove="OverblikPlus.Frontend.Tests\OverblikPlus.Frontend.Tests\obj\project.packagespec.json" />
     </ItemGroup>
 
 </Project>

@@ -10,7 +10,7 @@
     <input @bind="loginDto.Password" type="password" placeholder="Adgangskode" />
     
     <!-- Disable button while loading -->
-    <button @onclick="Login" class="btn btn-primary" disabled="@isLoading">
+    <button id="loginButton" @onclick="Login" class="btn btn-primary" disabled="@isLoading">
         @if (isLoading)
         {
             <span>Logger ind...</span>
@@ -29,11 +29,11 @@
 
 @code {
     private LoginDto loginDto = new LoginDto();
-    private bool isLoading = false; // Tracks loading state
+    private bool isLoading = false; 
 
     private async Task Login()
     {
-        isLoading = true; // Start loading
+        isLoading = true;
         try
         {
             var success = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
@@ -48,7 +48,7 @@
         }
         finally
         {
-            isLoading = false; // Stop loading
+            isLoading = false;
         }
     }
 
