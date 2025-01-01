@@ -3,11 +3,12 @@
 @using OverblikPlus.Services.Interfaces
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthStateProvider
 
 <div class="login-container">
     <h3>Login</h3>
-    <input @bind="loginDto.Email" placeholder="Email" />
-    <input @bind="loginDto.Password" type="password" placeholder="Adgangskode" />
+    <input @bind="loginDto.Email" placeholder="Email" class="form-control mb-2" />
+    <input @bind="loginDto.Password" type="password" placeholder="Adgangskode" class="form-control mb-2" />
     
     <!-- Disable button while loading -->
     <button id="loginButton" @onclick="Login" class="btn btn-primary" disabled="@isLoading">
@@ -21,7 +22,12 @@
         }
     </button>
 
-    <h3>Ny bruger?</h3>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+
+    <h3 class="mt-4">Ny bruger?</h3>
     <button @onclick="NavigateToRegister" class="btn btn-secondary" disabled="@isLoading">
         Registrer
     </button>
@@ -30,21 +36,31 @@
 @code {
     private LoginDto loginDto = new LoginDto();
     private bool isLoading = false; 
+    private string errorMessage = string.Empty;
 
     private async Task Login()
     {
         isLoading = true;
+        errorMessage = string.Empty;
+
         try
         {
-            var success = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
-            if (success)
+            var (jwtToken, refreshToken) = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
+
+            if (!string.IsNullOrEmpty(jwtToken))
             {
                 Navigation.NavigateTo("/");
             }
             else
             {
-                Console.WriteLine("Fejl ved login");
+                errorMessage = "Fejl ved login: Ugyldig email eller adgangskode.";
+                Console.WriteLine("Fejl ved login: tom token.");
             }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Fejl ved login: {ex.Message}";
+            Console.WriteLine($"Fejl ved login: {ex.Message}");
         }
         finally
         {
