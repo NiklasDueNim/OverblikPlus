@@ -28,7 +28,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         
         await _localStorage.SetItemAsync("authToken", token);
         await _localStorage.SetItemAsync("refreshToken", refreshToken);
-
+        
         Console.WriteLine($"SetTokenAsync called. JWT: {_jwtToken}, RefreshToken: {_refreshToken}");
 
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
@@ -161,6 +161,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
             case 3: return base64 + "=";
             default: return base64;
         }
+        
     }
     
     public async Task<string> GetRoleAsync()

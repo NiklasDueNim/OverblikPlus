@@ -103,15 +103,24 @@ Console.WriteLine($"Jwt:Key      = {jwtKey}");
 // --- CORS CONFIGURATION ---
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowOverblikPlus",
-        policy => policy.WithOrigins(
-                "https://overblikplus.dk",
-                "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-                "http://localhost:5226")
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
             .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+            .AllowAnyHeader());
 });
+
+
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowOverblikPlus",
+//         policy => policy.WithOrigins(
+//                 "https://overblikplus.dk",
+//                 "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
+//                 "http://localhost:5226")
+//             .AllowAnyMethod()
+//             .AllowAnyHeader()
+//             .AllowCredentials());
+// });
 
 // --- SERVICES & DEPENDENCIES ---
 builder.Services.AddEndpointsApiExplorer();
@@ -145,7 +154,7 @@ else
 
 app.UseSerilogRequestLogging();
 app.UseRouting();
-app.UseCors("AllowOverblikPlus");
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
