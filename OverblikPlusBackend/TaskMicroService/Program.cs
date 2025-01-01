@@ -34,11 +34,11 @@ var environment = builder.Environment.EnvironmentName;
 
 builder.Host.UseSerilog();
 
-// ---- APPLICATION INSIGHTS ----
-builder.Services.AddApplicationInsightsTelemetry(options =>
-{
-    options.ConnectionString = Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
-});
+// // ---- APPLICATION INSIGHTS ----
+// builder.Services.AddApplicationInsightsTelemetry(options =>
+// {
+//     options.ConnectionString = Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
+// });
 
 // ---- DATABASE CONFIGURATION ----
 // Henter DB fra env var, fallback til en default (localhost)
