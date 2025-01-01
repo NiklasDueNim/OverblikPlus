@@ -7,12 +7,9 @@ namespace OverblikPlus.Shared.Logging
     {
         private readonly Serilog.ILogger _logger;
 
-        public LoggerService()
+        public LoggerService(Serilog.ILogger logger)
         {
-            _logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
-                .CreateLogger();
+            _logger = logger;
         }
 
         public void LogInfo(string message)
