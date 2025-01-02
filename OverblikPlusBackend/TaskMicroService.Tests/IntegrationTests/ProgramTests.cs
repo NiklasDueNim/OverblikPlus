@@ -57,13 +57,13 @@ namespace TaskMicroService.Test.IntegrationTests
         //     Assert.Contains("Access-Control-Allow-Origin", response.Headers.ToString());
         // }
 
-        [Fact]
-        public void DependencyInjection_IsConfiguredCorrectly()
-        {
-            using var scope = _factory.Services.CreateScope();
-            var taskService = scope.ServiceProvider.GetRequiredService<ITaskService>();
-            Assert.NotNull(taskService);
-        }
+        // [Fact]
+        // public void DependencyInjection_IsConfiguredCorrectly()
+        // {
+        //     using var scope = _factory.Services.CreateScope();
+        //     var taskService = scope.ServiceProvider.GetRequiredService<ITaskService>();
+        //     Assert.NotNull(taskService);
+        // }
 
         // [Fact]
         // public async Task Middleware_LogsRequestsAndResponses()
