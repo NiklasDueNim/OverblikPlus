@@ -10,4 +10,15 @@ public class UserDbContext : IdentityDbContext<ApplicationUser>
     public UserDbContext(DbContextOptions<UserDbContext> options) : base(options)
     {
     }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Token);
+            entity.Property(e => e.UserId).IsRequired();
+        });
+    }
 }

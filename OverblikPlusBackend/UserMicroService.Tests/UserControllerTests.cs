@@ -43,7 +43,8 @@ public class UserControllerTests
 
         // Assert
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-        Assert.Equal($"User with ID {userId} not found.", notFoundResult.Value);
+        var response = notFoundResult.Value.GetType().GetProperty("Message").GetValue(notFoundResult.Value, null);
+        Assert.Equal($"User with ID {userId} not found.", response);
     }
 
     [Fact]
@@ -66,14 +67,15 @@ public class UserControllerTests
     public async Task GetAllUsersAsync_ReturnsNotFound_WhenNoUsersExist()
     {
         // Arrange
-        _userServiceMock.Setup(s => s.GetAllUsersAsync()).ReturnsAsync((IEnumerable<ReadUserDto>)null);
+        _userServiceMock.Setup(s => s.GetAllUsersAsync()).ReturnsAsync(Enumerable.Empty<ReadUserDto>());
 
         // Act
         var result = await _controller.GetAllUsersAsync();
 
         // Assert
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-        Assert.Equal("No users found.", notFoundResult.Value);
+        var response = notFoundResult.Value.GetType().GetProperty("Message").GetValue(notFoundResult.Value, null);
+        Assert.Equal("No users found.", response);
     }
 
     [Fact]
@@ -150,7 +152,8 @@ public class UserControllerTests
 
         // Assert
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-        Assert.Equal("User with ID nonexistent not found.", notFoundResult.Value);
+        var response = notFoundResult.Value.GetType().GetProperty("Message").GetValue(notFoundResult.Value, null);
+        Assert.Equal("User with ID nonexistent not found.", response);
     }
 
     [Fact]
@@ -172,15 +175,16 @@ public class UserControllerTests
     public async Task DeleteUserAsync_ReturnsNotFound_WhenUserDoesNotExist()
     {
         // Arrange
-        _userServiceMock.Setup(s => s.GetUserById("nonexistent", "Admin")).ReturnsAsync((ReadUserDto)null);
+        var userId = "nonexistentUserId";
+        _userServiceMock.Setup(s => s.GetUserById(userId, "Admin")).ReturnsAsync((ReadUserDto)null);
 
         // Act
-        var result = await _controller.DeleteUserAsync("nonexistent");
+        var result = await _controller.DeleteUserAsync(userId);
 
         // Assert
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-        var response = Assert.IsType<dynamic>(notFoundResult.Value);
-        Assert.Equal("User with ID nonexistent not found.", response.Message);
+        var response = notFoundResult.Value.GetType().GetProperty("Message").GetValue(notFoundResult.Value, null);
+        Assert.Equal($"User with ID {userId} not found.", response);
     }
 
     [Fact]
