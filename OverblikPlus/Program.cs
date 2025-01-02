@@ -12,8 +12,8 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 
 var configuration = builder.Configuration;
 var environment = configuration["ENVIRONMENT"] ?? "dev";
-var taskApiBaseUrl = configuration["TASK_API_BASE_URL"] ?? "https://fallback-task.example.com";
-var userApiBaseUrl = configuration["USER_API_BASE_URL"] ?? "https://fallback-user.example.com";
+var taskApiBaseUrl = configuration["TASK_API_BASE_URL"];
+var userApiBaseUrl = configuration["USER_API_BASE_URL"];
 
 Console.WriteLine($"Environment: {environment}");
 Console.WriteLine($"TASK API Base URL: {taskApiBaseUrl}");
@@ -24,7 +24,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddBlazoredLocalStorage();
 
-builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddSingleton<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
     new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())

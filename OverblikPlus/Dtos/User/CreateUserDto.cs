@@ -16,7 +16,6 @@ public class CreateUserDto
 
     [Required(ErrorMessage = "Adgangskode er påkrævet.")]
     public string Password { get; set; }
-
-    [Required(ErrorMessage = "Rolle er påkrævet.")]
+    
     public string Role { get; set; }
 }
