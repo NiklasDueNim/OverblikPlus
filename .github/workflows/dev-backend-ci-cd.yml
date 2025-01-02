@@ -38,6 +38,21 @@ jobs:
         run: |
           az account show
 
+      # 12. Sæt environment-variabler (App Settings) på Azure
+      - name: Set Azure App Settings (Dev)
+        run: |
+          az webapp config appsettings set \
+            --name overblikplus-${{ matrix.service }}-dev \
+            --resource-group OverblikPlus-ResourceGroup \
+            --settings \
+              "DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING_DEV }}" \
+              "BLOB_STORAGE_CONNECTION_STRING=${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" \
+              "BLOB_BASE_URL=${{ secrets.BLOB_BASE_URL_DEV }}" \
+              "JWT_ISSUER=${{ secrets.JWT_ISSUER_DEV }}" \
+              "JWT_AUDIENCE=${{ secrets.JWT_AUDIENCE_DEV }}" \
+              "JWT_KEY=${{ secrets.JWT_KEY_DEV }}" \
+              "ENVIRONMENT=dev"
+
       # 5. Gendanner afhængigheder
       - name: Restore dependencies
         run: |
@@ -86,21 +101,6 @@ jobs:
             --resource-group OverblikPlus-ResourceGroup \
             --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest \
             --container-registry-url https://${{ secrets.ACR_REGISTRY }}
-
-      # 12. Sæt environment-variabler (App Settings) på Azure
-      - name: Set Azure App Settings (Dev)
-        run: |
-          az webapp config appsettings set \
-            --name overblikplus-${{ matrix.service }}-dev \
-            --resource-group OverblikPlus-ResourceGroup \
-            --settings \
-              "DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING_DEV }}" \
-              "BLOB_STORAGE_CONNECTION_STRING=${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" \
-              "BLOB_BASE_URL=${{ secrets.BLOB_BASE_URL_DEV }}" \
-              "JWT_ISSUER=${{ secrets.JWT_ISSUER_DEV }}" \
-              "JWT_AUDIENCE=${{ secrets.JWT_AUDIENCE_DEV }}" \
-              "JWT_KEY=${{ secrets.JWT_KEY_DEV }}" \
-              "ENVIRONMENT=dev"
 
       # 13. Genstart Azure App Service så ny config slår igennem
       - name: Restart Azure App Service
