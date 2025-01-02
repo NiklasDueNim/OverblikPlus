@@ -19,14 +19,14 @@ public class MappingProfileTests
     public void Should_Map_CreateUserDto_To_ApplicationUser()
     {
         // Arrange
-        var createUserDto = new CreateUserDto { /* initialize properties */ };
+        var createUserDto = new CreateUserDto {  };
 
         // Act
         var applicationUser = _mapper.Map<ApplicationUser>(createUserDto);
 
         // Assert
         Assert.NotNull(applicationUser);
-        // Add more assertions to verify the mapping
+
     }
 
     [Fact]
