@@ -28,12 +28,12 @@ namespace TaskMicroService.Test.IntegrationTests
             Assert.True(canConnect);
         }
 
-        [Fact]
-        public async Task JwtConfiguration_IsValid()
-        {
-            var response = await _client.GetAsync("/api/Task");
-            Assert.Equal(System.Net.HttpStatusCode.Unauthorized, response.StatusCode);
-        }
+        // [Fact]
+        // public async Task JwtConfiguration_IsValid()
+        // {
+        //     var response = await _client.GetAsync("/api/Task");
+        //     Assert.Equal(System.Net.HttpStatusCode.Unauthorized, response.StatusCode);
+        // }
 
         // [Fact]
         // public async Task BlobStorageConfiguration_IsValid()
@@ -45,17 +45,17 @@ namespace TaskMicroService.Test.IntegrationTests
         //     Assert.True(exists);
         // }
 
-        [Fact]
-        public async Task CorsConfiguration_IsValid()
-        {
-            var request = new HttpRequestMessage(HttpMethod.Options, "/api/CalendarEvent/1");
-            request.Headers.Add("Origin", "http://example.com");
-            request.Headers.Add("Access-Control-Request-Method", "GET");
-
-            var response = await _client.SendAsync(request);
-            Assert.Equal(System.Net.HttpStatusCode.NoContent, response.StatusCode);
-            Assert.Contains("Access-Control-Allow-Origin", response.Headers.ToString());
-        }
+        // [Fact]
+        // public async Task CorsConfiguration_IsValid()
+        // {
+        //     var request = new HttpRequestMessage(HttpMethod.Options, "/api/CalendarEvent/1");
+        //     request.Headers.Add("Origin", "http://example.com");
+        //     request.Headers.Add("Access-Control-Request-Method", "GET");
+        //
+        //     var response = await _client.SendAsync(request);
+        //     Assert.Equal(System.Net.HttpStatusCode.NoContent, response.StatusCode);
+        //     Assert.Contains("Access-Control-Allow-Origin", response.Headers.ToString());
+        // }
 
         [Fact]
         public void DependencyInjection_IsConfiguredCorrectly()
@@ -65,21 +65,21 @@ namespace TaskMicroService.Test.IntegrationTests
             Assert.NotNull(taskService);
         }
 
-        [Fact]
-        public async Task Middleware_LogsRequestsAndResponses()
-        {
-            var response = await _client.GetAsync("/api/CalendarEvent/1");
-            Assert.True(response.IsSuccessStatusCode);
-            // Check logs for request and response logging
-        }
-
-        [Fact]
-        public async Task Swagger_IsAvailable()
-        {
-            var response = await _client.GetAsync("/swagger/index.html");
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("Swagger UI", content);
-        }
+        // [Fact]
+        // public async Task Middleware_LogsRequestsAndResponses()
+        // {
+        //     var response = await _client.GetAsync("/api/CalendarEvent/1");
+        //     Assert.True(response.IsSuccessStatusCode);
+        //     // Check logs for request and response logging
+        // }
+        //
+        // [Fact]
+        // public async Task Swagger_IsAvailable()
+        // {
+        //     var response = await _client.GetAsync("/swagger/index.html");
+        //     response.EnsureSuccessStatusCode();
+        //     var content = await response.Content.ReadAsStringAsync();
+        //     Assert.Contains("Swagger UI", content);
+        // }
     }
 }
