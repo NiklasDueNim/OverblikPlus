@@ -15,7 +15,6 @@ public class TaskService : ITaskService
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
 
-
     private async Task<Result<T>> ExecuteGetRequest<T>(string uri)
     {
         try
@@ -50,22 +49,20 @@ public class TaskService : ITaskService
         }
     }
 
-
     public async Task<Result<List<ReadTaskDto>>> GetAllTasks() =>
         await ExecuteGetRequest<List<ReadTaskDto>>("/api/Task");
 
     public async Task<Result<List<ReadTaskDto>>> GetTasksForUserAsync(string userId) =>
         await ExecuteGetRequest<List<ReadTaskDto>>($"api/Task/user/{userId}");
-    
+
     public async Task<Result<ReadTaskDto>> GetTaskById(int taskId) =>
         await ExecuteGetRequest<ReadTaskDto>($"/api/Task/{taskId}");
-
 
     public async Task<Result<int>> CreateTask(CreateTaskDto newTask)
     {
         try
         {
-            Console.WriteLine($"Sender request til API: {JsonConvert.SerializeObject(newTask)}");
+            Console.WriteLine($"Sending request to API: {JsonConvert.SerializeObject(newTask)}");
 
             var response = await _httpClient.PostAsJsonAsync("/api/Task", newTask);
             Console.WriteLine($"API Response Content: {response}");
@@ -83,28 +80,23 @@ public class TaskService : ITaskService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fejl i CreateTask: {ex.Message}");
+            Console.WriteLine($"Error in CreateTask: {ex.Message}");
             return Result<int>.ErrorResult($"Exception: {ex.Message}");
         }
     }
-
-
 
     public async Task<Result> UpdateTask(int taskId, UpdateTaskDto updatedTask) =>
         await ExecuteNonQueryRequest(
             () => _httpClient.PutAsJsonAsync($"/api/Task/{taskId}", updatedTask),
             "Task update");
 
-
     public async Task<Result> DeleteTask(int taskId) =>
         await ExecuteNonQueryRequest(
             () => _httpClient.DeleteAsync($"/api/Task/{taskId}"),
             "Task deletion");
 
-
     public async Task<Result<List<ReadTaskDto>>> GetTasksForCurrentUserAsync() =>
         await ExecuteGetRequest<List<ReadTaskDto>>("api/Task/user-tasks");
-
 
     public async Task<Result> MarkTaskAsCompleted(int taskId)
     {
@@ -112,7 +104,6 @@ public class TaskService : ITaskService
             () => _httpClient.PutAsync($"/api/task/{taskId}/complete", null),
             "Mark task as completed");
     }
-
 
     public async Task<Result<List<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date)
     {

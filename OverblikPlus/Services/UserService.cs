@@ -10,7 +10,7 @@ public class UserService : IUserService
 
     public UserService(HttpClient httpClient)
     {
-        _httpClient = httpClient;
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
 
     public async Task<IEnumerable<ReadUserDto>> GetAllUsers()
@@ -18,7 +18,11 @@ public class UserService : IUserService
         try
         {
             var users = await _httpClient.GetFromJsonAsync<IEnumerable<ReadUserDto>>("api/User/users");
-            return users ?? new List<ReadUserDto>();
+            if (users == null)
+            {
+                throw new Exception("No users received.");
+            }
+            return users;
         }
         catch (Exception ex)
         {
@@ -27,7 +31,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<ReadUserDto> GetUserById(string id)
+    public async Task<ReadUserDto?> GetUserById(string id)
     {
         try
         {
@@ -45,31 +49,53 @@ public class UserService : IUserService
         }
     }
 
-
     public async Task<string> CreateUser(CreateUserDto newUser)
     {
-        var response = await _httpClient.PostAsJsonAsync("api/User", newUser);
-        response.EnsureSuccessStatusCode();
-        
-        var createdUser = await response.Content.ReadFromJsonAsync<ReadUserDto>();
-        
-        if (createdUser != null)
+        try
         {
-            return createdUser.Id;
-        }
+            var response = await _httpClient.PostAsJsonAsync("api/User", newUser);
+            response.EnsureSuccessStatusCode();
 
-        throw new Exception("User creation failed or response was not as expected.");
+            var createdUser = await response.Content.ReadFromJsonAsync<ReadUserDto>();
+            if (createdUser != null)
+            {
+                return createdUser.Id;
+            }
+
+            throw new Exception("User creation failed or response was not as expected.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating user: {ex.Message}");
+            throw;
+        }
     }
 
     public async Task UpdateUser(string id, UpdateUserDto updatedUser)
     {
-        var response = await _httpClient.PutAsJsonAsync($"api/User/{id}", updatedUser);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync($"api/User/{id}", updatedUser);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating user with ID {id}: {ex.Message}");
+            throw;
+        }
     }
 
     public async Task DeleteUser(string id)
     {
-        var response = await _httpClient.DeleteAsync($"api/User/{id}");
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"api/User/{id}");
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting user with ID {id}: {ex.Message}");
+            throw;
+        }
     }
 }

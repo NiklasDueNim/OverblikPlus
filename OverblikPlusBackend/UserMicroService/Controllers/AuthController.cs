@@ -1,8 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using OverblikPlus.Shared.Interfaces;
-using System;
-using System.Threading.Tasks;
 using UserMicroService.dto;
 using UserMicroService.Services.Interfaces;
 

@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Linq;
 
 namespace OverblikPlus;
 
@@ -12,7 +13,7 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
         _authStateProvider = authStateProvider;
         _authorizedUrls = new HashSet<string>();
     }
-    
+
     public JwtAuthorizationMessageHandler ConfigureHandler(IEnumerable<string> authorizedUrls)
     {
         _authorizedUrls = new HashSet<string>(authorizedUrls, StringComparer.OrdinalIgnoreCase);
@@ -21,23 +22,14 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var requestUri = request.RequestUri.ToString();
-        bool isAuthorizedUrl = false;
-        foreach (var url in _authorizedUrls)
-        {
-            if (requestUri.StartsWith(url, StringComparison.OrdinalIgnoreCase))
-            {
-                isAuthorizedUrl = true;
-                break;
-            }
-        }
+        var requestUri = request.RequestUri;
 
-        if (isAuthorizedUrl)
+        if (_authorizedUrls.Any(url => requestUri.ToString().StartsWith(url, StringComparison.OrdinalIgnoreCase)))
         {
             var token = await _authStateProvider.GetTokenAsync();
-            Console.WriteLine("Calling URL: " + request.RequestUri);
+            Console.WriteLine("Calling URL: " + requestUri);
             Console.WriteLine($"JWT token in handler: {token}");
-            
+
             if (!string.IsNullOrEmpty(token))
             {
                 Console.WriteLine($"Using JWT: {token}");

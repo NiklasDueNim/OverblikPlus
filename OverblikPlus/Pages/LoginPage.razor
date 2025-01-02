@@ -9,7 +9,7 @@
     <h3>Login</h3>
     <input @bind="loginDto.Email" placeholder="Email" class="form-control mb-2" />
     <input @bind="loginDto.Password" type="password" placeholder="Adgangskode" class="form-control mb-2" />
-    
+
     <!-- Disable button while loading -->
     <button id="loginButton" @onclick="Login" class="btn btn-primary" disabled="@isLoading">
         @if (isLoading)
@@ -35,7 +35,7 @@
 
 @code {
     private LoginDto loginDto = new LoginDto();
-    private bool isLoading = false; 
+    private bool isLoading = false;
     private string errorMessage = string.Empty;
 
     private async Task Login()

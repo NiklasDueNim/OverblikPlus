@@ -161,9 +161,8 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
             case 3: return base64 + "=";
             default: return base64;
         }
-        
     }
-    
+
     public async Task<string> GetRoleAsync()
     {
         if (string.IsNullOrEmpty(_jwtToken))

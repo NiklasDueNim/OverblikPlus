@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Serilog;
 using OverblikPlus.Shared.Interfaces;
 using OverblikPlus.Shared.Logging;
+using Serilog;
 using UserMicroService.DataAccess;
 using UserMicroService.dto;
 using UserMicroService.Entities;
@@ -15,6 +15,8 @@ using UserMicroService.Services;
 using UserMicroService.Services.Interfaces;
 using UserMicroService.Validators;
 using UserMicroService.Validators.Auth;
+
+namespace UserMicroService;
 
 public class Program
 {
@@ -38,7 +40,7 @@ public class Program
 
         // --- ENCRYPTION KEY ---
         var encryptionKey = Environment.GetEnvironmentVariable("ENCRYPTION_KEY")
-            ?? builder.Configuration["EncryptionSettings:EncryptionKey"];
+                            ?? builder.Configuration["EncryptionSettings:EncryptionKey"];
 
         if (string.IsNullOrEmpty(encryptionKey))
         {
@@ -48,7 +50,7 @@ public class Program
 
         // --- DATABASE CONNECTION ---
         var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-            ?? "Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;";
+                                 ?? "Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;";
 
         if (string.IsNullOrEmpty(dbConnectionString))
         {
@@ -70,36 +72,36 @@ public class Program
 
         // --- JWT CONFIGURATION ---
         var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
-            ?? builder.Configuration["Jwt:Issuer"]
-            ?? "https://overblikplus.dk";
+                        ?? builder.Configuration["Jwt:Issuer"]
+                        ?? "https://overblikplus.dk";
 
         var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
-            ?? builder.Configuration["Jwt:Audience"]
-            ?? "https://overblikplus.dk";
+                          ?? builder.Configuration["Jwt:Audience"]
+                          ?? "https://overblikplus.dk";
 
         var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY")
-            ?? builder.Configuration["Jwt:Key"]
-            ?? "MyVeryStrongSecretKeyForJWT1234567890";
+                     ?? builder.Configuration["Jwt:Key"]
+                     ?? "MyVeryStrongSecretKeyForJWT1234567890";
 
         builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
 
-                ValidIssuer = jwtIssuer,
-                ValidAudience = jwtAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-            };
-        });
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+                };
+            });
 
         Console.WriteLine($"Jwt:Issuer   = {jwtIssuer}");
         Console.WriteLine($"Jwt:Audience = {jwtAudience}");
