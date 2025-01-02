@@ -45,6 +45,9 @@
         try
         {
             var (jwtToken, refreshToken) = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
+            
+            Console.WriteLine($"jwtToken: {jwtToken}");
+            Console.WriteLine($"refreshToken: {refreshToken}");
 
             if (!string.IsNullOrEmpty(jwtToken))
             {
