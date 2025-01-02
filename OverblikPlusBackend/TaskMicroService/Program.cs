@@ -3,6 +3,7 @@ using Azure.Storage.Blobs;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +13,7 @@ using Serilog;
 using TaskMicroService.DataAccess;
 using TaskMicroService.Dtos.Calendar;
 using TaskMicroService.dtos.Task;
+using TaskMicroService.Entities;
 using TaskMicroService.Middlewares;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
@@ -95,6 +97,10 @@ public class Program
                     .AllowAnyMethod()
                     .AllowAnyHeader());
         });
+        
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<TaskDbContext>()
+            .AddDefaultTokenProviders();
 
         // ---- SERVICES ----
         builder.Services.AddEndpointsApiExplorer();
