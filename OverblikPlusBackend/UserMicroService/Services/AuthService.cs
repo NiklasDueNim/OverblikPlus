@@ -48,6 +48,7 @@ namespace UserMicroService.Services
             var validationResult = _loginDtoValidator.Validate(loginDto);
             if (!validationResult.IsValid)
             {
+                _logger.LogWarning("Login validation failed.");
                 return Result<(string, string)>.ErrorResult("Validation failed.");
             }
 
