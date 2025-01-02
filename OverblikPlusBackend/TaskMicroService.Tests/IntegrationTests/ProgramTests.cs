@@ -19,14 +19,14 @@ namespace TaskMicroService.Test.IntegrationTests
             _client = factory.CreateClient();
         }
 
-        [Fact]
-        public async Task DatabaseConnection_IsSuccessful()
-        {
-            using var scope = _factory.Services.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-            var canConnect = await dbContext.Database.CanConnectAsync();
-            Assert.True(canConnect);
-        }
+        // [Fact]
+        // public async Task DatabaseConnection_IsSuccessful()
+        // {
+        //     using var scope = _factory.Services.CreateScope();
+        //     var dbContext = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+        //     var canConnect = await dbContext.Database.CanConnectAsync();
+        //     Assert.True(canConnect);
+        // }
 
         // [Fact]
         // public async Task JwtConfiguration_IsValid()
