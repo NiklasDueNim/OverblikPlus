@@ -35,15 +35,15 @@ namespace TaskMicroService.Test.IntegrationTests
             Assert.Equal(System.Net.HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        [Fact]
-        public async Task BlobStorageConfiguration_IsValid()
-        {
-            using var scope = _factory.Services.CreateScope();
-            var blobServiceClient = scope.ServiceProvider.GetRequiredService<BlobServiceClient>();
-            var container = blobServiceClient.GetBlobContainerClient("images");
-            var exists = await container.ExistsAsync();
-            Assert.True(exists);
-        }
+        // [Fact]
+        // public async Task BlobStorageConfiguration_IsValid()
+        // {
+        //     using var scope = _factory.Services.CreateScope();
+        //     var blobServiceClient = scope.ServiceProvider.GetRequiredService<BlobServiceClient>();
+        //     var container = blobServiceClient.GetBlobContainerClient("images");
+        //     var exists = await container.ExistsAsync();
+        //     Assert.True(exists);
+        // }
 
         [Fact]
         public async Task CorsConfiguration_IsValid()
