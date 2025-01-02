@@ -41,7 +41,7 @@ jobs:
       # 12. Overskriv placeholders
       - name: Replace config placeholders (Dev)
         run: |
-          sed -i 's/"dev-or-prod"/"prod"/g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i 's/"dev-or-prod"/"dev"/g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i 's#DBConnectionStringPlaceholder#${{ secrets.DB_CONNECTION_STRING_DEV }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i 's#BlobStorageConnectionString#${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i 's#KeyPlaceholder#${{ secrets.JWT_KEY_DEV }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
