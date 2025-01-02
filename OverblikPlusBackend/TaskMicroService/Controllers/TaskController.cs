@@ -30,7 +30,7 @@ namespace TaskMicroService.Controllers
             _updateTaskValidator = updateTaskValidator ?? throw new ArgumentNullException(nameof(updateTaskValidator));
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskById(int id)
         {
@@ -45,7 +45,7 @@ namespace TaskMicroService.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin, Staff")]
+        // [Authorize(Roles = "Admin, Staff")]
         [HttpGet]
         public async Task<IActionResult> GetAllTasks()
         {
@@ -60,7 +60,7 @@ namespace TaskMicroService.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "User")]
+        // [Authorize(Roles = "User")]
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetTasksByUserId(string userId)
         {
@@ -83,7 +83,7 @@ namespace TaskMicroService.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
@@ -111,7 +111,7 @@ namespace TaskMicroService.Controllers
             return CreatedAtAction(nameof(GetTaskById), new { id = result.Data }, result);
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, [FromBody] UpdateTaskDto updateTaskDto)
         {
@@ -133,7 +133,7 @@ namespace TaskMicroService.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
@@ -148,7 +148,7 @@ namespace TaskMicroService.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpPut("{taskId}/complete")]
         public async Task<IActionResult> MarkTaskAsCompleted(int taskId)
         {
@@ -169,7 +169,7 @@ namespace TaskMicroService.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpGet("user/{userId}/tasks-for-day")]
         public async Task<IActionResult> GetTasksForDay(string userId, [FromQuery] DateTime date)
         {
