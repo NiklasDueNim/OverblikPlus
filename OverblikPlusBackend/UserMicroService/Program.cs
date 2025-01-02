@@ -36,6 +36,16 @@ public class Program
 
         // Register Serilog.ILogger
         builder.Services.AddSingleton(Log.Logger);
+        
+        // --- DATABASE CONNECTION ---
+        var dbConnectionString = builder.Configuration["ConnectionStrings:DBConnectionString"];
+        
+        Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
+
+        if (string.IsNullOrEmpty(dbConnectionString))
+        {
+            throw new Exception("DB_CONNECTION_STRING is missing or empty.");
+        }
 
         // --- ENCRYPTION KEY ---
         var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
@@ -45,16 +55,6 @@ public class Program
             throw new InvalidOperationException("Encryption key is missing.");
         }
         EncryptionHelper.SetEncryptionKey(encryptionKey);
-
-        // --- DATABASE CONNECTION ---
-        var dbConnectionString = builder.Configuration["ConnectionStrings:DBConnectionString"];
-
-        if (string.IsNullOrEmpty(dbConnectionString))
-        {
-            throw new Exception("DB_CONNECTION_STRING is missing or empty.");
-        }
-        
-        Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
         
         builder.Services.AddDbContext<UserDbContext>(options =>
             options.UseSqlServer(dbConnectionString));
