@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using OverblikPlus.Shared.Interfaces;
 using System.Threading.Tasks;
-using UserMicroService;
 using UserMicroService.Controllers;
 using UserMicroService.dto;
 using UserMicroService.Services.Interfaces;
+using UserMicroService.Common;
 using Xunit;
 
 public class AuthControllerTests
@@ -51,7 +51,7 @@ public class AuthControllerTests
         // Arrange
         var loginDto = new LoginDto { Email = "test@example.com", Password = "password" };
         _loginValidatorMock.Setup(v => v.Validate(loginDto)).Returns(new FluentValidation.Results.ValidationResult());
-        _authServiceMock.Setup(s => s.LoginAsync(loginDto)).ReturnsAsync((string.Empty, string.Empty));
+        _authServiceMock.Setup(s => s.LoginAsync(loginDto)).ReturnsAsync(Result<(string, string)>.ErrorResult("Invalid login credentials."));
 
         // Act
         var result = await _controller.Login(loginDto);
@@ -67,7 +67,7 @@ public class AuthControllerTests
         // Arrange
         var loginDto = new LoginDto { Email = "test@example.com", Password = "password" };
         _loginValidatorMock.Setup(v => v.Validate(loginDto)).Returns(new FluentValidation.Results.ValidationResult());
-        _authServiceMock.Setup(s => s.LoginAsync(loginDto)).ReturnsAsync(("token", "refreshToken"));
+        _authServiceMock.Setup(s => s.LoginAsync(loginDto)).ReturnsAsync(Result<(string, string)>.SuccessResult(("token", "refreshToken")));
 
         // Act
         var result = await _controller.Login(loginDto);
@@ -98,7 +98,7 @@ public class AuthControllerTests
         // Arrange
         var registerDto = new RegisterDto { Email = "test@example.com", Password = "password" };
         _registerValidatorMock.Setup(v => v.Validate(registerDto)).Returns(new FluentValidation.Results.ValidationResult());
-        _authServiceMock.Setup(s => s.RegisterAsync(registerDto)).ReturnsAsync(new RegistrationResult { Success = false, Errors = new[] { "Error" } });
+        _authServiceMock.Setup(s => s.RegisterAsync(registerDto)).ReturnsAsync(Result.ErrorResult("Error"));
 
         // Act
         var result = await _controller.Register(registerDto);
@@ -114,7 +114,7 @@ public class AuthControllerTests
         // Arrange
         var registerDto = new RegisterDto { Email = "test@example.com", Password = "password" };
         _registerValidatorMock.Setup(v => v.Validate(registerDto)).Returns(new FluentValidation.Results.ValidationResult());
-        _authServiceMock.Setup(s => s.RegisterAsync(registerDto)).ReturnsAsync(new RegistrationResult { Success = true });
+        _authServiceMock.Setup(s => s.RegisterAsync(registerDto)).ReturnsAsync(Result.SuccessResult());
 
         // Act
         var result = await _controller.Register(registerDto);
@@ -140,7 +140,7 @@ public class AuthControllerTests
     {
         // Arrange
         var token = "invalidToken";
-        _authServiceMock.Setup(s => s.RefreshTokenAsync(token)).ReturnsAsync(string.Empty);
+        _authServiceMock.Setup(s => s.RefreshTokenAsync(token)).ReturnsAsync(Result<string>.ErrorResult("Failed to refresh token."));
 
         // Act
         var result = await _controller.RefreshToken(token);
@@ -155,7 +155,7 @@ public class AuthControllerTests
     {
         // Arrange
         var token = "validToken";
-        _authServiceMock.Setup(s => s.RefreshTokenAsync(token)).ReturnsAsync("newToken");
+        _authServiceMock.Setup(s => s.RefreshTokenAsync(token)).ReturnsAsync(Result<string>.SuccessResult("newToken"));
 
         // Act
         var result = await _controller.RefreshToken(token);

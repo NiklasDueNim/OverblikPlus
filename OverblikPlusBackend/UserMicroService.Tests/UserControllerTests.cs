@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UserMicroService.Controllers;
 using UserMicroService.dto;
 using UserMicroService.Services.Interfaces;
+using UserMicroService.Common;
 using Xunit;
 
 public class UserControllerTests
@@ -36,7 +37,8 @@ public class UserControllerTests
     {
         // Arrange
         var userId = "nonexistent";
-        _userServiceMock.Setup(s => s.GetUserById(userId, "Admin")).ReturnsAsync((ReadUserDto)null);
+        _userServiceMock.Setup(s => s.GetUserById(userId, "Admin"))
+            .ReturnsAsync(Result<ReadUserDto>.ErrorResult("User not found."));
 
         // Act
         var result = await _controller.GetUserById(userId);
@@ -44,7 +46,7 @@ public class UserControllerTests
         // Assert
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
         var response = notFoundResult.Value.GetType().GetProperty("Message").GetValue(notFoundResult.Value, null);
-        Assert.Equal($"User with ID {userId} not found.", response);
+        Assert.Equal("User not found.", response);
     }
 
     [Fact]
@@ -53,7 +55,7 @@ public class UserControllerTests
         // Arrange
         var userId = "existing";
         var userDto = new ReadUserDto { Id = userId, Email = "test@example.com" };
-        _userServiceMock.Setup(s => s.GetUserById(userId, "Admin")).ReturnsAsync(userDto);
+        _userServiceMock.Setup(s => s.GetUserById(userId, "Admin")).ReturnsAsync(Result<ReadUserDto>.SuccessResult(userDto));
 
         // Act
         var result = await _controller.GetUserById(userId);
@@ -67,7 +69,7 @@ public class UserControllerTests
     public async Task GetAllUsersAsync_ReturnsNotFound_WhenNoUsersExist()
     {
         // Arrange
-        _userServiceMock.Setup(s => s.GetAllUsersAsync()).ReturnsAsync(Enumerable.Empty<ReadUserDto>());
+        _userServiceMock.Setup(s => s.GetAllUsersAsync()).ReturnsAsync(Result<IEnumerable<ReadUserDto>>.ErrorResult("No users found."));
 
         // Act
         var result = await _controller.GetAllUsersAsync();
@@ -83,7 +85,7 @@ public class UserControllerTests
     {
         // Arrange
         var users = new List<ReadUserDto> { new ReadUserDto { Id = "1", Email = "test1@example.com" } };
-        _userServiceMock.Setup(s => s.GetAllUsersAsync()).ReturnsAsync(users);
+        _userServiceMock.Setup(s => s.GetAllUsersAsync()).ReturnsAsync(Result<IEnumerable<ReadUserDto>>.SuccessResult(users));
 
         // Act
         var result = await _controller.GetAllUsersAsync();
@@ -114,7 +116,7 @@ public class UserControllerTests
         // Arrange
         var createUserDto = new CreateUserDto { Email = "test@example.com", Password = "password" };
         _createUserValidatorMock.Setup(v => v.ValidateAsync(createUserDto, default)).ReturnsAsync(new FluentValidation.Results.ValidationResult());
-        _userServiceMock.Setup(s => s.CreateUserAsync(createUserDto)).ReturnsAsync("newUserId");
+        _userServiceMock.Setup(s => s.CreateUserAsync(createUserDto)).ReturnsAsync(Result<string>.SuccessResult("newUserId"));
 
         // Act
         var result = await _controller.CreateUserAsync(createUserDto);
@@ -144,8 +146,10 @@ public class UserControllerTests
     {
         // Arrange
         var updateUserDto = new UpdateUserDto { Email = "test@example.com" };
-        _updateUserValidatorMock.Setup(v => v.ValidateAsync(updateUserDto, default)).ReturnsAsync(new FluentValidation.Results.ValidationResult());
-        _userServiceMock.Setup(s => s.GetUserById("nonexistent", "Admin")).ReturnsAsync((ReadUserDto)null);
+        _updateUserValidatorMock.Setup(v => v.ValidateAsync(updateUserDto, default))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+        _userServiceMock.Setup(s => s.GetUserById("nonexistent", "Admin"))
+            .ReturnsAsync(Result<ReadUserDto>.ErrorResult("User not found."));
 
         // Act
         var result = await _controller.UpdateUserAsync("nonexistent", updateUserDto);
@@ -161,8 +165,12 @@ public class UserControllerTests
     {
         // Arrange
         var updateUserDto = new UpdateUserDto { Email = "test@example.com" };
-        _updateUserValidatorMock.Setup(v => v.ValidateAsync(updateUserDto, default)).ReturnsAsync(new FluentValidation.Results.ValidationResult());
-        _userServiceMock.Setup(s => s.GetUserById("existing", "Admin")).ReturnsAsync(new ReadUserDto { Id = "existing" });
+        _updateUserValidatorMock.Setup(v => v.ValidateAsync(updateUserDto, default))
+            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
+        _userServiceMock.Setup(s => s.GetUserById("existing", "Admin"))
+            .ReturnsAsync(Result<ReadUserDto>.SuccessResult(new ReadUserDto { Id = "existing" }));
+        _userServiceMock.Setup(s => s.UpdateUserAsync("existing", updateUserDto))
+            .ReturnsAsync(Result.SuccessResult());
 
         // Act
         var result = await _controller.UpdateUserAsync("existing", updateUserDto);
@@ -176,7 +184,8 @@ public class UserControllerTests
     {
         // Arrange
         var userId = "nonexistentUserId";
-        _userServiceMock.Setup(s => s.GetUserById(userId, "Admin")).ReturnsAsync((ReadUserDto)null);
+        _userServiceMock.Setup(s => s.GetUserById(userId, "Admin"))
+            .ReturnsAsync(Result<ReadUserDto>.ErrorResult("User not found."));
 
         // Act
         var result = await _controller.DeleteUserAsync(userId);
@@ -187,11 +196,15 @@ public class UserControllerTests
         Assert.Equal($"User with ID {userId} not found.", response);
     }
 
+    
     [Fact]
     public async Task DeleteUserAsync_ReturnsNoContent_WhenUserIsDeleted()
     {
         // Arrange
-        _userServiceMock.Setup(s => s.GetUserById("existing", "Admin")).ReturnsAsync(new ReadUserDto { Id = "existing" });
+        _userServiceMock.Setup(s => s.GetUserById("existing", "Admin"))
+            .ReturnsAsync(Result<ReadUserDto>.SuccessResult(new ReadUserDto { Id = "existing" }));
+        _userServiceMock.Setup(s => s.DeleteUserAsync("existing"))
+            .ReturnsAsync(Result.SuccessResult());
 
         // Act
         var result = await _controller.DeleteUserAsync("existing");

@@ -3,6 +3,7 @@ using UserMicroService.dto;
 using UserMicroService.Services.Interfaces;
 using FluentValidation;
 using OverblikPlus.Shared.Interfaces;
+using UserMicroService.Common;
 
 namespace UserMicroService.Controllers
 {
@@ -21,10 +22,10 @@ namespace UserMicroService.Controllers
             IValidator<UpdateUserDto> updateUserValidator,
             ILoggerService logger)
         {
-            _userService = userService;
-            _createUserValidator = createUserValidator;
-            _updateUserValidator = updateUserValidator;
-            _logger = logger;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _createUserValidator = createUserValidator ?? throw new ArgumentNullException(nameof(createUserValidator));
+            _updateUserValidator = updateUserValidator ?? throw new ArgumentNullException(nameof(updateUserValidator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         // GET /api/userservice/{id}
@@ -33,15 +34,15 @@ namespace UserMicroService.Controllers
         {
             _logger.LogInfo($"GetUserById called with ID: {id}");
 
-            var user = await _userService.GetUserById(id, "Admin");
-            if (user == null)
+            var result = await _userService.GetUserById(id, "Admin");
+            if (!result.Success)
             {
                 _logger.LogWarning($"User with ID: {id} not found");
-                return NotFound(new { Message = $"User with ID {id} not found." });
+                return NotFound(new { Message = result.Error });
             }
 
             _logger.LogInfo($"User with ID: {id} retrieved successfully");
-            return Ok(user);
+            return Ok(result.Data);
         }
 
         // GET /api/userservice/users
@@ -50,15 +51,15 @@ namespace UserMicroService.Controllers
         {
             _logger.LogInfo("GetAllUsers called");
 
-            var users = await _userService.GetAllUsersAsync();
-            if (users == null || !users.Any())
+            var result = await _userService.GetAllUsersAsync();
+            if (!result.Success || !result.Data.Any())
             {
                 _logger.LogWarning("No users found");
                 return NotFound(new { Message = "No users found." });
             }
 
             _logger.LogInfo("All users retrieved successfully");
-            return Ok(users);
+            return Ok(result.Data);
         }
 
         // POST /api/userservice
@@ -74,53 +75,73 @@ namespace UserMicroService.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var userId = await _userService.CreateUserAsync(createUserDto);
-            _logger.LogInfo($"User with ID: {userId} created successfully");
+            var result = await _userService.CreateUserAsync(createUserDto);
+            if (!result.Success)
+            {
+                _logger.LogWarning($"Failed to create user: {result.Error}");
+                return BadRequest(new { Message = result.Error });
+            }
 
-            return CreatedAtAction(nameof(GetUserById), new { id = userId }, createUserDto);
+            _logger.LogInfo($"User with ID: {result.Data} created successfully");
+            return CreatedAtAction(nameof(GetUserById), new { id = result.Data }, createUserDto);
         }
 
         // PUT /api/userservice/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUserAsync(string id, [FromBody] UpdateUserDto updateUserDto)
+        public async Task<IActionResult> UpdateUserAsync(string id, UpdateUserDto updateUserDto)
         {
-            _logger.LogInfo($"UpdateUser called for ID: {id}");
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("User ID is required.");
+            }
+
+            if (updateUserDto == null)
+            {
+                return BadRequest("UpdateUserDto is required.");
+            }
 
             var validationResult = await _updateUserValidator.ValidateAsync(updateUserDto);
             if (!validationResult.IsValid)
             {
-                _logger.LogWarning($"Validation failed for UpdateUserDto with ID: {id}");
                 return BadRequest(validationResult.Errors);
             }
 
-            var user = await _userService.GetUserById(id, "Admin");
-            if (user == null)
+            var userResult = await _userService.GetUserById(id, "Admin");
+            if (!userResult.Success)
             {
-                _logger.LogWarning($"User with ID: {id} not found for update");
                 return NotFound(new { Message = $"User with ID {id} not found." });
             }
 
-            await _userService.UpdateUserAsync(id, updateUserDto);
-            _logger.LogInfo($"User with ID: {id} updated successfully");
+            var updateResult = await _userService.UpdateUserAsync(id, updateUserDto);
+            if (!updateResult.Success)
+            {
+                return StatusCode(500, "An error occurred while updating the user.");
+            }
 
             return NoContent();
         }
 
         // DELETE /api/userservice/{id}
         [HttpDelete("{id}")]
+        
         public async Task<IActionResult> DeleteUserAsync(string id)
         {
-            _logger.LogInfo($"DeleteUser called for ID: {id}");
-
-            var user = await _userService.GetUserById(id, "Admin");
-            if (user == null)
+            if (string.IsNullOrEmpty(id))
             {
-                _logger.LogWarning($"User with ID: {id} not found for deletion");
+                return BadRequest("User ID is required.");
+            }
+
+            var userResult = await _userService.GetUserById(id, "Admin");
+            if (!userResult.Success)
+            {
                 return NotFound(new { Message = $"User with ID {id} not found." });
             }
 
-            await _userService.DeleteUserAsync(id);
-            _logger.LogInfo($"User with ID: {id} deleted successfully");
+            var deleteResult = await _userService.DeleteUserAsync(id);
+            if (!deleteResult.Success)
+            {
+                return StatusCode(500, "An error occurred while deleting the user.");
+            }
 
             return NoContent();
         }

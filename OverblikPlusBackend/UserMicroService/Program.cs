@@ -128,8 +128,8 @@ public class Program
         builder.Services.AddScoped<IValidator<CreateUserDto>, CreateUserDtoValidator>();
         builder.Services.AddScoped<IValidator<UpdateUserDto>, UpdateUserDtoValidator>();
         builder.Services.AddScoped<IValidator<ReadUserDto>, ReadUserDtoValidator>();
-        builder.Services.AddScoped<IValidator<LoginDto>, LoginValidator>();
-        builder.Services.AddScoped<IValidator<RegisterDto>, RegisterValidator>();
+        builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
+        builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
         builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
         // --- BUILD APPLICATION ---

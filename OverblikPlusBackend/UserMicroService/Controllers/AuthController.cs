@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OverblikPlus.Shared.Interfaces;
 using UserMicroService.dto;
 using UserMicroService.Services.Interfaces;
+using UserMicroService.Common;
 
 namespace UserMicroService.Controllers
 {
@@ -37,23 +38,15 @@ namespace UserMicroService.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            try
+            var result = await _authService.LoginAsync(loginDto);
+            if (!result.Success)
             {
-                var (token, refreshToken) = await _authService.LoginAsync(loginDto);
-                if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(refreshToken))
-                {
-                    _logger.LogWarning($"Login failed for user {loginDto.Email}");
-                    return Unauthorized("Invalid login credentials.");
-                }
+                _logger.LogWarning($"Login failed for user {loginDto.Email}");
+                return Unauthorized(result.Error);
+            }
 
-                _logger.LogInfo($"User {loginDto.Email} logged in successfully.");
-                return Ok(new { Token = token, RefreshToken = refreshToken });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Exception occurred during login.", ex);
-                return StatusCode(500, "An error occurred during login.");
-            }
+            _logger.LogInfo($"User {loginDto.Email} logged in successfully.");
+            return Ok(new { Token = result.Data.Item1, RefreshToken = result.Data.Item2 });
         }
 
         [HttpPost("register")]
@@ -66,23 +59,15 @@ namespace UserMicroService.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            try
+            var result = await _authService.RegisterAsync(registerDto);
+            if (!result.Success)
             {
-                var result = await _authService.RegisterAsync(registerDto);
-                if (!result.Success)
-                {
-                    _logger.LogWarning($"Registration failed for user {registerDto.Email}");
-                    return BadRequest(result.Errors);
-                }
+                _logger.LogWarning($"Registration failed for user {registerDto.Email}");
+                return BadRequest(result.Error);
+            }
 
-                _logger.LogInfo($"User {registerDto.Email} registered successfully.");
-                return Ok("User registered successfully.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Exception occurred during registration.", ex);
-                return StatusCode(500, "An error occurred during registration.");
-            }
+            _logger.LogInfo($"User {registerDto.Email} registered successfully.");
+            return Ok("User registered successfully.");
         }
 
         [HttpPost("refresh")]
@@ -94,23 +79,15 @@ namespace UserMicroService.Controllers
                 return BadRequest("Refresh token is required.");
             }
 
-            try
+            var result = await _authService.RefreshTokenAsync(token);
+            if (!result.Success)
             {
-                var newToken = await _authService.RefreshTokenAsync(token);
-                if (string.IsNullOrEmpty(newToken))
-                {
-                    _logger.LogWarning("Failed to refresh token.");
-                    return Unauthorized("Failed to refresh token.");
-                }
+                _logger.LogWarning("Failed to refresh token.");
+                return Unauthorized(result.Error);
+            }
 
-                _logger.LogInfo("Token refreshed successfully.");
-                return Ok(new { Token = newToken });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Exception occurred during token refresh.", ex);
-                return StatusCode(500, "An error occurred during token refresh.");
-            }
+            _logger.LogInfo("Token refreshed successfully.");
+            return Ok(new { Token = result.Data });
         }
     }
 }

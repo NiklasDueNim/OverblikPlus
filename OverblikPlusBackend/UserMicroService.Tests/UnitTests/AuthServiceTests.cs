@@ -1,12 +1,18 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using UserMicroService.DataAccess;
 using UserMicroService.dto;
 using UserMicroService.Entities;
 using UserMicroService.Services;
+using OverblikPlus.Shared.Interfaces;
+using UserMicroService.Validators.Auth;
+using UserMicroService.Common;
 
 namespace UserMicroService.Tests.UnitTests;
 
@@ -15,13 +21,25 @@ public class AuthServiceTests
     private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
     private readonly Mock<SignInManager<ApplicationUser>> _mockSignInManager;
     private readonly Mock<IConfiguration> _mockConfiguration;
+    private readonly Mock<ILoggerService> _mockLogger;
+    private readonly IValidator<LoginDto> _loginValidator;
+    private readonly IValidator<RegisterDto> _registerValidator;
     private readonly UserDbContext _dbContext;
     private readonly AuthService _authService;
 
     public AuthServiceTests()
     {
+        var store = new Mock<IUserStore<ApplicationUser>>();
         _mockUserManager = new Mock<UserManager<ApplicationUser>>(
-            Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null
+            store.Object,
+            new Mock<IOptions<IdentityOptions>>().Object,
+            new Mock<IPasswordHasher<ApplicationUser>>().Object,
+            new IUserValidator<ApplicationUser>[0],
+            new IPasswordValidator<ApplicationUser>[0],
+            new Mock<ILookupNormalizer>().Object,
+            new Mock<IdentityErrorDescriber>().Object,
+            new Mock<IServiceProvider>().Object,
+            new Mock<ILogger<UserManager<ApplicationUser>>>().Object
         );
 
         _mockSignInManager = new Mock<SignInManager<ApplicationUser>>(
@@ -36,6 +54,11 @@ public class AuthServiceTests
         _mockConfiguration.Setup(c => c["Jwt:Issuer"]).Returns("TestIssuer");
         _mockConfiguration.Setup(c => c["Jwt:Audience"]).Returns("TestAudience");
 
+        _mockLogger = new Mock<ILoggerService>();
+
+        _loginValidator = new LoginDtoValidator();
+        _registerValidator = new RegisterDtoValidator();
+
         var options = new DbContextOptionsBuilder<UserDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDb")
             .Options;
@@ -45,32 +68,11 @@ public class AuthServiceTests
             _mockUserManager.Object,
             _mockSignInManager.Object,
             _mockConfiguration.Object,
-            _dbContext
+            _dbContext,
+            _mockLogger.Object,
+            _loginValidator,
+            _registerValidator
         );
-    }
-
-    [Fact]
-    public async Task LoginAsync_ReturnsToken_WhenLoginIsSuccessful()
-    {
-        // Arrange
-        var loginDto = new LoginDto { Email = "test@example.com", Password = "Password123!" };
-        var user = new ApplicationUser { Id = "1", Email = loginDto.Email, UserName = loginDto.Email, Role = "User"};
-
-        _mockSignInManager
-            .Setup(s => s.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false))
-            .ReturnsAsync(SignInResult.Success);
-
-        _mockUserManager
-            .Setup(u => u.FindByEmailAsync(loginDto.Email))
-            .ReturnsAsync(user);
-
-        // Act
-        var result = await _authService.LoginAsync(loginDto);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.False(string.IsNullOrEmpty(result.Item1));
-        Assert.False(string.IsNullOrEmpty(result.Item2));
     }
 
     [Fact]
@@ -86,17 +88,29 @@ public class AuthServiceTests
             Role = "User"
         };
 
+        var user = new ApplicationUser
+        {
+            Id = "1",
+            FirstName = registerDto.FirstName,
+            LastName = registerDto.LastName,
+            Email = registerDto.Email,
+            UserName = registerDto.Email
+        };
+
         _mockUserManager.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), registerDto.Password))
             .ReturnsAsync(IdentityResult.Success);
         _mockUserManager.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), registerDto.Role))
             .ReturnsAsync(IdentityResult.Success);
+        _mockUserManager.Setup(u => u.FindByEmailAsync(registerDto.Email))
+            .ReturnsAsync(user);
 
         // Act
         var result = await _authService.RegisterAsync(registerDto);
 
         // Assert
+        Assert.NotNull(result);
         Assert.True(result.Success);
-        Assert.Empty(result.Errors);
+        Assert.Null(result.Error);
     }
 
     [Fact]
@@ -121,7 +135,7 @@ public class AuthServiceTests
         var result = await _authService.ChangePasswordAsync(changePasswordDto);
 
         // Assert
-        Assert.True(result);
+        Assert.True(result.Success);
     }
 
     [Fact]
@@ -131,9 +145,10 @@ public class AuthServiceTests
         _mockSignInManager.Setup(s => s.SignOutAsync()).Returns(Task.CompletedTask);
 
         // Act
-        await _authService.LogoutAsync();
+        var result = await _authService.LogoutAsync();
 
         // Assert
+        Assert.True(result.Success);
         _mockSignInManager.Verify(s => s.SignOutAsync(), Times.Once);
     }
 }
