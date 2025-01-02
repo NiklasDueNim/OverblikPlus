@@ -22,7 +22,6 @@ public class AuthServiceTests
     private readonly Mock<SignInManager<ApplicationUser>> _mockSignInManager;
     private readonly Mock<IConfiguration> _mockConfiguration;
     private readonly Mock<ILoggerService> _mockLogger;
-    private readonly IValidator<LoginDto> _loginValidator;
     private readonly IValidator<RegisterDto> _registerValidator;
     private readonly UserDbContext _dbContext;
     private readonly AuthService _authService;
@@ -56,7 +55,6 @@ public class AuthServiceTests
 
         _mockLogger = new Mock<ILoggerService>();
 
-        _loginValidator = new LoginDtoValidator();
         _registerValidator = new RegisterDtoValidator();
 
         var options = new DbContextOptionsBuilder<UserDbContext>()
@@ -70,7 +68,6 @@ public class AuthServiceTests
             _mockConfiguration.Object,
             _dbContext,
             _mockLogger.Object,
-            _loginValidator,
             _registerValidator
         );
     }
