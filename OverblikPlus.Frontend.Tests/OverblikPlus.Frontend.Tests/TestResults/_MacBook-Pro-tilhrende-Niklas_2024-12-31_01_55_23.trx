@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="c5b7d4c8-ff3b-47c3-b1e1-fc12fbdbb86f" name="@MacBook-Pro-tilhrende-Niklas 2024-12-31 01:55:23" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2024-12-31T01:55:23.2740920+01:00" queuing="2024-12-31T01:55:23.2740920+01:00" start="2024-12-31T01:55:18.4783490+01:00" finish="2024-12-31T01:55:26.2348640+01:00" />
+  <TestSettings name="default" id="298f49cb-b885-4557-bb69-40d3750251af">
+    <Deployment runDeploymentRoot="_MacBook-Pro-tilhrende-Niklas_2024-12-31_01_55_23" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="d433e13e-bc42-4e54-a874-23d6174773b5" testId="1d306539-8790-12ce-0303-9c48c0ba893a" testName="OverblikPlus.Frontend.Tests.DropdownTests.Dropdown_Should_ClickAndSelectOption" computerName="MacBook-Pro-tilhrende-Niklas" duration="00:00:04.6837337" startTime="2024-12-31T01:55:23.4735240+01:00" endTime="2024-12-31T01:55:23.4735240+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d433e13e-bc42-4e54-a874-23d6174773b5" />
+    <UnitTestResult executionId="1e069306-0334-4d8f-b04c-12246c70de3a" testId="8a72372b-0800-d84c-858e-274b3f72b27e" testName="SuccessfulLogin" computerName="MacBook-Pro-tilhrende-Niklas" duration="00:00:02.2440760" startTime="2024-12-31T01:55:23.8906020+01:00" endTime="2024-12-31T01:55:26.1346370+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1e069306-0334-4d8f-b04c-12246c70de3a">
+      <Output>
+        <StdOut>Given I am on the login page
+-&gt; done: LoginSteps.GivenIAmOnTheLoginPage() (1,9s)
+When I enter a valid email and password
+-&gt; done: LoginSteps.WhenIEnterAValidEmailAndPassword() (0,1s)
+And I click the login button
+-&gt; done: LoginSteps.WhenIClickTheLoginButton() (0,1s)
+Then I should be redirected to the homepage
+-&gt; error: Assert.Contains() Failure: Sub-string not found
+String:    "https://yellow-ocean-0f63e7903.4.azuresta"···
+Not found: "/tasks" (0,0s)</StdOut>
+        <ErrorInfo>
+          <Message>Xunit.Sdk.ContainsException : Assert.Contains() Failure: Sub-string not found
+String:    "https://yellow-ocean-0f63e7903.4.azuresta"···
+Not found: "/tasks"</Message>
+          <StackTrace>   at Xunit.Assert.Contains(String expectedSubstring, String actualString, StringComparison comparisonType) in /_/src/xunit.assert/Asserts/StringAsserts.cs:line 56
+   at Xunit.Assert.Contains(String expectedSubstring, String actualString) in /_/src/xunit.assert/Asserts/StringAsserts.cs:line 35
+   at OverblikPlus.Frontend.Tests.LoginSteps.ThenIShouldBeRedirectedToTheHomepage() in /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/LoginSteps.cs:line 50
+   at InvokeStub_Action`1.Invoke(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at TechTalk.SpecFlow.Bindings.BindingInvoker.InvokeBinding(IBinding binding, IContextManager contextManager, Object[] arguments, ITestTracer testTracer, TimeSpan&amp; duration)
+   at TechTalk.SpecFlow.Infrastructure.TestExecutionEngine.ExecuteStepMatch(BindingMatch match, Object[] arguments, TimeSpan&amp; duration)
+   at TechTalk.SpecFlow.Infrastructure.TestExecutionEngine.ExecuteStep(IContextManager contextManager, StepInstance stepInstance)
+   at TechTalk.SpecFlow.Infrastructure.TestExecutionEngine.OnAfterLastStep()
+   at TechTalk.SpecFlow.TestRunner.CollectScenarioErrors()
+   at OverblikPlus.Frontend.Tests.LoginFeature.ScenarioCleanup()
+   at OverblikPlus.Frontend.Tests.LoginFeature.SuccessfulLogin() in /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/Login.feature:line 10
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2566f475-0929-4488-a068-30f978c39534" testId="d23f1d7f-c2f4-513b-5391-953e61eb072f" testName="OverblikPlus.Frontend.Tests.UITests.HomePage_Title_Should_Be_Correct" computerName="MacBook-Pro-tilhrende-Niklas" duration="00:00:03.6931265" startTime="2024-12-31T01:55:22.4832190+01:00" endTime="2024-12-31T01:55:22.4832190+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2566f475-0929-4488-a068-30f978c39534" />
+    <UnitTestResult executionId="06becdc0-8137-47f3-8437-9f2f2c417d91" testId="bf5f09ae-20eb-c8e0-a350-26b6b555ab6a" testName="LoginTests.LoginButton_Click_Should_NavigateToHomePage" computerName="MacBook-Pro-tilhrende-Niklas" duration="00:00:04.9571776" startTime="2024-12-31T01:55:23.7469650+01:00" endTime="2024-12-31T01:55:23.7469650+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="06becdc0-8137-47f3-8437-9f2f2c417d91" />
+    <UnitTestResult executionId="10f6355e-b0ff-4fcc-b32c-7eb9ad61227c" testId="338e63a0-a445-e133-2473-e7309b5081a0" testName="OverblikPlus.Frontend.Tests.ValidationTests.EmptyInput_Should_ShowValidationError" computerName="MacBook-Pro-tilhrende-Niklas" duration="00:00:03.1919846" startTime="2024-12-31T01:55:21.9899720+01:00" endTime="2024-12-31T01:55:21.9899720+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="10f6355e-b0ff-4fcc-b32c-7eb9ad61227c">
+      <Output>
+        <ErrorInfo>
+          <Message>OpenQA.Selenium.WebDriverException : unknown error: net::ERR_CONNECTION_REFUSED
+  (Session info: chrome=131.0.6778.205)</Message>
+          <StackTrace>   at OpenQA.Selenium.WebDriver.UnpackAndThrowOnError(Response errorResponse, String commandToExecute)
+   at OpenQA.Selenium.WebDriver.ExecuteAsync(String driverCommandToExecute, Dictionary`2 parameters)
+   at OpenQA.Selenium.Navigator.GoToUrlAsync(String url)
+   at OpenQA.Selenium.Navigator.&lt;&gt;c__DisplayClass6_0.&lt;&lt;GoToUrl&gt;b__0&gt;d.MoveNext()
+--- End of stack trace from previous location ---
+   at OpenQA.Selenium.Navigator.GoToUrl(String url)
+   at OverblikPlus.Frontend.Tests.ValidationTests.EmptyInput_Should_ShowValidationError() in /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/ValidationTests.cs:line 12
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="24938a76-f9aa-435c-afd6-96e126800b08" testId="35754785-7cc1-0c3d-583e-c649461a6eda" testName="OverblikPlus.Frontend.Tests.QRCodeTests.QRCodeScan_Should_NavigateToTaskSteps" computerName="MacBook-Pro-tilhrende-Niklas" duration="00:00:03.1796312" startTime="2024-12-31T01:55:21.9810210+01:00" endTime="2024-12-31T01:55:21.9810330+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="24938a76-f9aa-435c-afd6-96e126800b08">
+      <Output>
+        <ErrorInfo>
+          <Message>OpenQA.Selenium.WebDriverException : unknown error: net::ERR_NAME_NOT_RESOLVED
+  (Session info: chrome=131.0.6778.205)</Message>
+          <StackTrace>   at OpenQA.Selenium.WebDriver.UnpackAndThrowOnError(Response errorResponse, String commandToExecute)
+   at OpenQA.Selenium.WebDriver.ExecuteAsync(String driverCommandToExecute, Dictionary`2 parameters)
+   at OpenQA.Selenium.Navigator.GoToUrlAsync(String url)
+   at OpenQA.Selenium.Navigator.&lt;&gt;c__DisplayClass6_0.&lt;&lt;GoToUrl&gt;b__0&gt;d.MoveNext()
+--- End of stack trace from previous location ---
+   at OpenQA.Selenium.Navigator.GoToUrl(String url)
+   at OverblikPlus.Frontend.Tests.QRCodeTests.QRCodeScan_Should_NavigateToTaskSteps() in /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/QRCodeTests.cs:line 12
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="LoginTests.LoginButton_Click_Should_NavigateToHomePage" storage="/users/niklasduenim/documents/programmering/gitten/4semester/overblikplus.frontend.tests/overblikplus.frontend.tests/bin/debug/net8.0/overblikplus.frontend.tests.dll" id="bf5f09ae-20eb-c8e0-a350-26b6b555ab6a">
+      <Execution id="06becdc0-8137-47f3-8437-9f2f2c417d91" />
+      <TestMethod codeBase="/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/bin/Debug/net8.0/OverblikPlus.Frontend.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="LoginTests" name="LoginButton_Click_Should_NavigateToHomePage" />
+    </UnitTest>
+    <UnitTest name="OverblikPlus.Frontend.Tests.ValidationTests.EmptyInput_Should_ShowValidationError" storage="/users/niklasduenim/documents/programmering/gitten/4semester/overblikplus.frontend.tests/overblikplus.frontend.tests/bin/debug/net8.0/overblikplus.frontend.tests.dll" id="338e63a0-a445-e133-2473-e7309b5081a0">
+      <Execution id="10f6355e-b0ff-4fcc-b32c-7eb9ad61227c" />
+      <TestMethod codeBase="/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/bin/Debug/net8.0/OverblikPlus.Frontend.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="OverblikPlus.Frontend.Tests.ValidationTests" name="EmptyInput_Should_ShowValidationError" />
+    </UnitTest>
+    <UnitTest name="OverblikPlus.Frontend.Tests.QRCodeTests.QRCodeScan_Should_NavigateToTaskSteps" storage="/users/niklasduenim/documents/programmering/gitten/4semester/overblikplus.frontend.tests/overblikplus.frontend.tests/bin/debug/net8.0/overblikplus.frontend.tests.dll" id="35754785-7cc1-0c3d-583e-c649461a6eda">
+      <Execution id="24938a76-f9aa-435c-afd6-96e126800b08" />
+      <TestMethod codeBase="/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/bin/Debug/net8.0/OverblikPlus.Frontend.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="OverblikPlus.Frontend.Tests.QRCodeTests" name="QRCodeScan_Should_NavigateToTaskSteps" />
+    </UnitTest>
+    <UnitTest name="OverblikPlus.Frontend.Tests.DropdownTests.Dropdown_Should_ClickAndSelectOption" storage="/users/niklasduenim/documents/programmering/gitten/4semester/overblikplus.frontend.tests/overblikplus.frontend.tests/bin/debug/net8.0/overblikplus.frontend.tests.dll" id="1d306539-8790-12ce-0303-9c48c0ba893a">
+      <Execution id="d433e13e-bc42-4e54-a874-23d6174773b5" />
+      <TestMethod codeBase="/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/bin/Debug/net8.0/OverblikPlus.Frontend.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="OverblikPlus.Frontend.Tests.DropdownTests" name="Dropdown_Should_ClickAndSelectOption" />
+    </UnitTest>
+    <UnitTest name="SuccessfulLogin" storage="/users/niklasduenim/documents/programmering/gitten/4semester/overblikplus.frontend.tests/overblikplus.frontend.tests/bin/debug/net8.0/overblikplus.frontend.tests.dll" id="8a72372b-0800-d84c-858e-274b3f72b27e">
+      <Execution id="1e069306-0334-4d8f-b04c-12246c70de3a" />
+      <TestMethod codeBase="/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/bin/Debug/net8.0/OverblikPlus.Frontend.Tests.dll" adapterTypeName="executor://nunit3testexecutor/" className="OverblikPlus.Frontend.Tests.LoginFeature" name="SuccessfulLogin" />
+    </UnitTest>
+    <UnitTest name="OverblikPlus.Frontend.Tests.UITests.HomePage_Title_Should_Be_Correct" storage="/users/niklasduenim/documents/programmering/gitten/4semester/overblikplus.frontend.tests/overblikplus.frontend.tests/bin/debug/net8.0/overblikplus.frontend.tests.dll" id="d23f1d7f-c2f4-513b-5391-953e61eb072f">
+      <Execution id="2566f475-0929-4488-a068-30f978c39534" />
+      <TestMethod codeBase="/Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/bin/Debug/net8.0/OverblikPlus.Frontend.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="OverblikPlus.Frontend.Tests.UITests" name="HomePage_Title_Should_Be_Correct" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="1d306539-8790-12ce-0303-9c48c0ba893a" executionId="d433e13e-bc42-4e54-a874-23d6174773b5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8a72372b-0800-d84c-858e-274b3f72b27e" executionId="1e069306-0334-4d8f-b04c-12246c70de3a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d23f1d7f-c2f4-513b-5391-953e61eb072f" executionId="2566f475-0929-4488-a068-30f978c39534" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf5f09ae-20eb-c8e0-a350-26b6b555ab6a" executionId="06becdc0-8137-47f3-8437-9f2f2c417d91" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="338e63a0-a445-e133-2473-e7309b5081a0" executionId="10f6355e-b0ff-4fcc-b32c-7eb9ad61227c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="35754785-7cc1-0c3d-583e-c649461a6eda" executionId="24938a76-f9aa-435c-afd6-96e126800b08" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="6" executed="6" passed="3" failed="3" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.8)
+[xUnit.net 00:00:00.04]   Discovering: OverblikPlus.Frontend.Tests
+[xUnit.net 00:00:00.05]   Discovered:  OverblikPlus.Frontend.Tests
+[xUnit.net 00:00:00.05]   Starting:    OverblikPlus.Frontend.Tests
+Starting ChromeDriver 131.0.6778.204 (52183f9e99a61056f9b78535f53d256f1516f2a0-refs/branch-heads/6778_155@{#7}) on port 57891
+Only local connections are allowed.
+Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+ChromeDriver was started successfully on port 57891.
+Starting ChromeDriver 131.0.6778.204 (52183f9e99a61056f9b78535f53d256f1516f2a0-refs/branch-heads/6778_155@{#7}) on port 57892
+Only local connections are allowed.
+Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+ChromeDriver was started successfully on port 57892.
+Starting ChromeDriver 131.0.6778.204 (52183f9e99a61056f9b78535f53d256f1516f2a0-refs/branch-heads/6778_155@{#7}) on port 57890
+Only local connections are allowed.
+Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+ChromeDriver was started successfully on port 57890.
+Starting ChromeDriver 131.0.6778.204 (52183f9e99a61056f9b78535f53d256f1516f2a0-refs/branch-heads/6778_155@{#7}) on port 57889
+Only local connections are allowed.
+Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+ChromeDriver was started successfully on port 57889.
+Starting ChromeDriver 131.0.6778.204 (52183f9e99a61056f9b78535f53d256f1516f2a0-refs/branch-heads/6778_155@{#7}) on port 57893
+Only local connections are allowed.
+Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+ChromeDriver was started successfully on port 57893.
+[xUnit.net 00:00:03.26]       OpenQA.Selenium.WebDriverException : unknown error: net::ERR_NAME_NOT_RESOLVED
+[xUnit.net 00:00:03.26]         (Session info: chrome=131.0.6778.205)
+[xUnit.net 00:00:03.26]       Stack Trace:
+[xUnit.net 00:00:03.26]            at OpenQA.Selenium.WebDriver.UnpackAndThrowOnError(Response errorResponse, String commandToExecute)
+[xUnit.net 00:00:03.26]            at OpenQA.Selenium.WebDriver.ExecuteAsync(String driverCommandToExecute, Dictionary`2 parameters)
+[xUnit.net 00:00:03.26]            at OpenQA.Selenium.Navigator.GoToUrlAsync(String url)
+[xUnit.net 00:00:03.26]            at OpenQA.Selenium.Navigator.&lt;&gt;c__DisplayClass6_0.&lt;&lt;GoToUrl&gt;b__0&gt;d.MoveNext()
+[xUnit.net 00:00:03.26]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:03.26]            at OpenQA.Selenium.Navigator.GoToUrl(String url)
+[xUnit.net 00:00:03.26]         /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/QRCodeTests.cs(12,0): at OverblikPlus.Frontend.Tests.QRCodeTests.QRCodeScan_Should_NavigateToTaskSteps()
+[xUnit.net 00:00:03.26]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:03.26]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.26]       OpenQA.Selenium.WebDriverException : unknown error: net::ERR_CONNECTION_REFUSED
+[xUnit.net 00:00:03.26]         (Session info: chrome=131.0.6778.205)
+[xUnit.net 00:00:03.26]       Stack Trace:
+[xUnit.net 00:00:03.26]            at OpenQA.Selenium.WebDriver.UnpackAndThrowOnError(Response errorResponse, String commandToExecute)
+[xUnit.net 00:00:03.26]            at OpenQA.Selenium.WebDriver.ExecuteAsync(String driverCommandToExecute, Dictionary`2 parameters)
+[xUnit.net 00:00:03.27]            at OpenQA.Selenium.Navigator.GoToUrlAsync(String url)
+[xUnit.net 00:00:03.27]            at OpenQA.Selenium.Navigator.&lt;&gt;c__DisplayClass6_0.&lt;&lt;GoToUrl&gt;b__0&gt;d.MoveNext()
+[xUnit.net 00:00:03.27]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:03.27]            at OpenQA.Selenium.Navigator.GoToUrl(String url)
+[xUnit.net 00:00:03.27]         /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/ValidationTests.cs(12,0): at OverblikPlus.Frontend.Tests.ValidationTests.EmptyInput_Should_ShowValidationError()
+[xUnit.net 00:00:03.27]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:03.27]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.03]   Finished:    OverblikPlus.Frontend.Tests
+NUnit Adapter 4.6.0.0: Test execution started
+Running all tests in /Users/niklasduenim/Documents/Programmering/Gitten/4semester/OverblikPlus.Frontend.Tests/OverblikPlus.Frontend.Tests/bin/Debug/net8.0/OverblikPlus.Frontend.Tests.dll
+   NUnit3TestExecutor discovered 1 of 1 NUnit test cases using Current Discovery mode, Non-Explicit run
+Starting ChromeDriver 131.0.6778.204 (52183f9e99a61056f9b78535f53d256f1516f2a0-refs/branch-heads/6778_155@{#7}) on port 57966
+Only local connections are allowed.
+Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+ChromeDriver was started successfully on port 57966.
+Given I am on the login page
+-&gt; done: LoginSteps.GivenIAmOnTheLoginPage() (1,9s)
+When I enter a valid email and password
+-&gt; done: LoginSteps.WhenIEnterAValidEmailAndPassword() (0,1s)
+And I click the login button
+-&gt; done: LoginSteps.WhenIClickTheLoginButton() (0,1s)
+Then I should be redirected to the homepage
+-&gt; error: Assert.Contains() Failure: Sub-string not found
+String:    "https://yellow-ocean-0f63e7903.4.azuresta"···
+Not found: "/tasks" (0,0s)
+
+NUnit Adapter 4.6.0.0: Test execution complete
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="MacBook-Pro-tilhrende-Niklas" outcome="Error" timestamp="2024-12-31T01:55:21.9797740+01:00">
+        <Text>[xUnit.net 00:00:03.26]     OverblikPlus.Frontend.Tests.QRCodeTests.QRCodeScan_Should_NavigateToTaskSteps [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="MacBook-Pro-tilhrende-Niklas" outcome="Error" timestamp="2024-12-31T01:55:21.9832030+01:00">
+        <Text>[xUnit.net 00:00:03.26]     OverblikPlus.Frontend.Tests.ValidationTests.EmptyInput_Should_ShowValidationError [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

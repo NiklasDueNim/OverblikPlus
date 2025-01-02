@@ -1,7 +1,9 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using OverblikPlus.Shared.Interfaces;
 using UserMicroService.dto;
-using UserMicroService.Services;
 using UserMicroService.Services.Interfaces;
+using UserMicroService.Common;
 
 namespace UserMicroService.Controllers
 {
@@ -10,33 +12,82 @@ namespace UserMicroService.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IValidator<LoginDto> _loginValidator;
+        private readonly IValidator<RegisterDto> _registerValidator;
+        private readonly ILoggerService _logger;
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            IAuthService authService,
+            IValidator<LoginDto> loginValidator,
+            IValidator<RegisterDto> registerValidator,
+            ILoggerService logger)
         {
-            _authService = authService;
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _loginValidator = loginValidator ?? throw new ArgumentNullException(nameof(loginValidator));
+            _registerValidator = registerValidator ?? throw new ArgumentNullException(nameof(registerValidator));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var token = await _authService.LoginAsync(loginDto);
-            return Ok(new { Token = token.Item1, RefreshToken = token.Item2 });
+            var validationResult = _loginValidator.Validate(loginDto);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning("Login validation failed.");
+                return BadRequest(validationResult.Errors);
+            }
+
+            var result = await _authService.LoginAsync(loginDto);
+            if (!result.Success)
+            {
+                _logger.LogWarning($"Login failed for user {loginDto.Email}");
+                return Unauthorized(result.Error);
+            }
+
+            _logger.LogInfo($"User {loginDto.Email} logged in successfully.");
+            return Ok(new { Token = result.Data.Item1, RefreshToken = result.Data.Item2 });
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var result = await _authService.RegisterAsync(registerDto);
-            if (!result.Success) return BadRequest(result.Errors);
+            var validationResult = _registerValidator.Validate(registerDto);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning("Registration validation failed.");
+                return BadRequest(validationResult.Errors);
+            }
 
+            var result = await _authService.RegisterAsync(registerDto);
+            if (!result.Success)
+            {
+                _logger.LogWarning($"Registration failed for user {registerDto.Email}");
+                return BadRequest(result.Error);
+            }
+
+            _logger.LogInfo($"User {registerDto.Email} registered successfully.");
             return Ok("User registered successfully.");
         }
 
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshToken([FromBody] string token)
         {
-            var newToken = await _authService.RefreshTokenAsync(token);
-            return Ok(new { Token = newToken });
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogWarning("Refresh token is missing.");
+                return BadRequest("Refresh token is required.");
+            }
+
+            var result = await _authService.RefreshTokenAsync(token);
+            if (!result.Success)
+            {
+                _logger.LogWarning("Failed to refresh token.");
+                return Unauthorized(result.Error);
+            }
+
+            _logger.LogInfo("Token refreshed successfully.");
+            return Ok(new { Token = result.Data });
         }
     }
 }

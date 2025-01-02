@@ -1,13 +1,14 @@
+using UserMicroService.Common;
 using UserMicroService.dto;
 
 namespace UserMicroService.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<IEnumerable<ReadUserDto>> GetAllUsersAsync();
-        Task<ReadUserDto> GetUserById(string id, string userRole);
-        Task<string> CreateUserAsync(CreateUserDto createUserDto);
-        Task DeleteUserAsync(string id);
-        Task UpdateUserAsync(string id, UpdateUserDto updateUserDto);
+        Task<Result<IEnumerable<ReadUserDto>>> GetAllUsersAsync();
+        Task<Result<ReadUserDto>> GetUserById(string id, string userRole);
+        Task<Result<string>> CreateUserAsync(CreateUserDto createUserDto);
+        Task<Result> DeleteUserAsync(string id);
+        Task<Result> UpdateUserAsync(string id, UpdateUserDto updateUserDto);
     }
 }

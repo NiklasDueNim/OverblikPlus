@@ -77,7 +77,7 @@
     private List<ReadTaskDto> todaysTasks = new();
     private List<ReadTaskDto> uncompletedTasks => todaysTasks.Where(t => !t.IsCompleted).ToList();
     private double taskCompletionPercentage = 0;
-    private string taskViewMode = "Single"; // Default view mode
+    private string taskViewMode = "Single";
     private int currentTaskIndex = 0;
 
     protected override async Task OnInitializedAsync()
@@ -87,21 +87,45 @@
 
     private async Task RefreshTasks()
     {
-        var userId = await AuthStateProvider.GetUserIdAsync();
-        if (!string.IsNullOrEmpty(userId))
+        try
         {
+            var userId = await AuthStateProvider.GetUserIdAsync();
+            if (string.IsNullOrEmpty(userId))
+            {
+                Console.WriteLine("User ID is null or empty.");
+                todaysTasks = new List<ReadTaskDto>();
+                return;
+            }
+
             user = await UserService.GetUserById(userId);
-            var allTasks = await TaskService.GetTasksForUserAsync(userId);
 
-            // Filter tasks for today
-            todaysTasks = allTasks.Where(task =>
-                string.IsNullOrEmpty(task.RecurrenceType) || task.RecurrenceType == "None" ||
-                task.NextOccurrence.Date == DateTime.Today).ToList();
+            var result = await TaskService.GetTasksForUserAsync(userId);
 
-            currentTaskIndex = 0; // Reset index when tasks are reloaded
+            if (!result.Success)
+            {
+                Console.WriteLine($"Fejl ved hentning af opgaver: {result.Error}");
+                todaysTasks = new List<ReadTaskDto>();
+                return;
+            }
+            
+            todaysTasks = result.Data
+                .Where(task =>
+                    string.IsNullOrEmpty(task.RecurrenceType) || 
+                    task.RecurrenceType == "None" ||
+                    (task.NextOccurrence.HasValue && task.NextOccurrence.Value.Date == DateTime.Today))
+                .ToList();
+            
+            currentTaskIndex = 0;
             UpdateProgress();
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Uventet fejl i RefreshTasks: {ex.Message}");
+            todaysTasks = new List<ReadTaskDto>();
+        }
     }
+
+
 
     private void UpdateProgress()
     {
@@ -118,12 +142,13 @@
         StateHasChanged();
     }
 
-    private void NextTask()
+    private async Task NextTask()
     {
         if (uncompletedTasks.Count == 0)
             return;
 
         currentTaskIndex = (currentTaskIndex + 1) % uncompletedTasks.Count;
+        await Task.CompletedTask;
     }
 
     private async Task GoToTaskSteps(int taskId)
@@ -138,6 +163,11 @@
             await TaskService.MarkTaskAsCompleted(taskId);
         }
 
-        await RefreshTasks();
+        var task = todaysTasks.FirstOrDefault(t => t.Id == taskId);
+        if (task != null)
+        {
+            task.IsCompleted = isCompleted;
+            UpdateProgress();
+        }
     }
 }

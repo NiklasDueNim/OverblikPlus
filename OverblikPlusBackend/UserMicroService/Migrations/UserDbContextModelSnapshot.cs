@@ -243,14 +243,14 @@ namespace UserMicroService.Migrations
 
             modelBuilder.Entity("UserMicroService.Entities.RefreshToken", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("bit");
@@ -258,15 +258,11 @@ namespace UserMicroService.Migrations
                     b.Property<bool>("IsUsed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Token");
 
                     b.ToTable("RefreshTokens");
                 });

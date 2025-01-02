@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,6 +11,8 @@ using UserMicroService.DataAccess;
 using UserMicroService.dto;
 using UserMicroService.Entities;
 using UserMicroService.Services.Interfaces;
+using OverblikPlus.Shared.Interfaces;
+using UserMicroService.Common;
 
 namespace UserMicroService.Services
 {
@@ -19,36 +22,72 @@ namespace UserMicroService.Services
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly UserDbContext _dbContext;
+        private readonly ILoggerService _logger;
+        private readonly IValidator<LoginDto> _loginDtoValidator;
+        private readonly IValidator<RegisterDto> _registerDtoValidator;
 
         public AuthService(UserManager<ApplicationUser> userManager,
                            SignInManager<ApplicationUser> signInManager,
                            IConfiguration configuration,
-                           UserDbContext dbContext)
+                           UserDbContext dbContext,
+                           ILoggerService logger,
+                           IValidator<LoginDto> loginDtoValidator,
+                           IValidator<RegisterDto> registerDtoValidator)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _dbContext = dbContext;
+            _logger = logger;
+            _loginDtoValidator = loginDtoValidator;
+            _registerDtoValidator = registerDtoValidator;
         }
 
-        public async Task<(string, string)> LoginAsync(LoginDto loginDto)
+        public async Task<Result<(string, string)>> LoginAsync(LoginDto loginDto)
         {
-            var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
-            if (!result.Succeeded) throw new UnauthorizedAccessException("Invalid login attempt.");
+            var validationResult = _loginDtoValidator.Validate(loginDto);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning("Login validation failed.");
+                return Result<(string, string)>.ErrorResult("Validation failed.");
+            }
 
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
-            if (user == null) throw new UnauthorizedAccessException("User not found.");
+            try
+            {
+                var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
+                if (!result.Succeeded) return Result<(string, string)>.ErrorResult("Invalid login attempt.");
 
-            var jwtToken = GenerateJwtToken(user);
-            var refreshToken = GenerateRefreshToken(user.Id);
-            await SaveRefreshTokenAsync(refreshToken);
+                var user = await _userManager.FindByEmailAsync(loginDto.Email);
+                if (user == null) return Result<(string, string)>.ErrorResult("User not found.");
 
-            return (jwtToken, refreshToken.Token);
+                var jwtToken = GenerateJwtToken(user);
+                var refreshToken = GenerateRefreshToken(user.Id);
+                await SaveRefreshTokenAsync(refreshToken);
+
+                return Result<(string, string)>.SuccessResult((jwtToken, refreshToken.Token));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An error occurred during login.", ex);
+                return Result<(string, string)>.ErrorResult("An error occurred during login.");
+            }
         }
 
-
-        public async Task<RegistrationResult> RegisterAsync(RegisterDto registerDto)
+        public async Task<Result> RegisterAsync(RegisterDto registerDto)
         {
+            if (registerDto == null)
+            {
+                _logger.LogError("RegisterDto is null.", new ArgumentNullException(nameof(registerDto)));
+                return Result.ErrorResult("Invalid registration data.");
+            }
+
+            var validationResult = await _registerDtoValidator.ValidateAsync(registerDto);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning("Registration validation failed.");
+                return Result.ErrorResult("Validation failed.");
+            }
+
             var user = new ApplicationUser
             {
                 FirstName = registerDto.FirstName,
@@ -57,53 +96,71 @@ namespace UserMicroService.Services
                 UserName = registerDto.Email,
                 Role = registerDto.Role
             };
-            
-            var result = await _userManager.CreateAsync(user, registerDto.Password);
-            if (!result.Succeeded)
-                return new RegistrationResult { Success = false, Errors = result.Errors.Select(e => e.Description) };
 
-            await _userManager.AddToRoleAsync(user, registerDto.Role);
+            try
+            {
+                var createResult = await _userManager.CreateAsync(user, registerDto.Password);
+                if (!createResult.Succeeded)
+                {
+                    var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                    _logger.LogError("User creation failed: {Errors}", new Exception(errors));
+                    return Result.ErrorResult(errors);
+                }
 
-            return new RegistrationResult { Success = true };
+                var roleResult = await _userManager.AddToRoleAsync(user, registerDto.Role);
+                if (!roleResult.Succeeded)
+                {
+                    var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                    _logger.LogError("Failed to assign role to user: {Errors}", new Exception(errors));
+                    return Result.ErrorResult(errors);
+                }
+
+                _logger.LogInfo($"User {registerDto.Email} registered successfully.");
+                return Result.SuccessResult();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An error occurred during registration. Exception: {Exception}", ex);
+                return Result.ErrorResult("An error occurred during registration.");
+            }
         }
 
-
-        public async Task<bool> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
+        public async Task<Result> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
         {
-            var user = await _userManager.FindByEmailAsync(changePasswordDto.Email); // Brug FindByEmailAsync
+            var user = await _userManager.FindByEmailAsync(changePasswordDto.Email);
             if (user == null)
             {
-                throw new ArgumentException("User not found.");
+                return Result.ErrorResult("User not found.");
             }
 
             var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
 
             if (!result.Succeeded)
             {
-                throw new InvalidOperationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+                return Result.ErrorResult(string.Join(", ", result.Errors.Select(e => e.Description)));
             }
 
-            return true;
+            return Result.SuccessResult();
         }
 
-
-        public Task LogoutAsync()
+        public async Task<Result> LogoutAsync()
         {
-            return _signInManager.SignOutAsync();
+            await _signInManager.SignOutAsync();
+            return Result.SuccessResult();
         }
 
-        public async Task<string> RefreshTokenAsync(string token)
+        public async Task<Result<string>> RefreshTokenAsync(string token)
         {
             var storedToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(t => t.Token == token);
 
             if (storedToken == null || storedToken.IsUsed || storedToken.IsRevoked)
             {
-                throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+                return Result<string>.ErrorResult("Invalid or expired refresh token.");
             }
 
             if (storedToken.ExpiryDate < DateTime.UtcNow)
             {
-                throw new UnauthorizedAccessException("Refresh token has expired.");
+                return Result<string>.ErrorResult("Refresh token has expired.");
             }
 
             storedToken.IsUsed = true;
@@ -113,14 +170,14 @@ namespace UserMicroService.Services
             var user = await _userManager.FindByIdAsync(storedToken.UserId);
             if (user == null)
             {
-                throw new UnauthorizedAccessException("User not found.");
+                return Result<string>.ErrorResult("User not found.");
             }
 
             var newJwtToken = GenerateJwtToken(user);
             var newRefreshToken = GenerateRefreshToken(user.Id);
             await SaveRefreshTokenAsync(newRefreshToken);
 
-            return newJwtToken;
+            return Result<string>.SuccessResult(newJwtToken);
         }
 
         private RefreshToken GenerateRefreshToken(string userId)

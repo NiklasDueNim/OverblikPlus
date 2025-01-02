@@ -4,45 +4,49 @@ using OverblikPlus;
 using OverblikPlus.Services;
 using OverblikPlus.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
+using Blazored.LocalStorage;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+
+var configuration = builder.Configuration;
+var environment = configuration["ENVIRONMENT"] ?? "dev";
+var taskApiBaseUrl = configuration["TASK_API_BASE_URL"] ?? "https://fallback-task.example.com";
+var userApiBaseUrl = configuration["USER_API_BASE_URL"] ?? "https://fallback-user.example.com";
+
+Console.WriteLine($"Environment: {environment}");
+Console.WriteLine($"TASK API Base URL: {taskApiBaseUrl}");
+Console.WriteLine($"USER API Base URL: {userApiBaseUrl}");
+
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+builder.Services.AddBlazoredLocalStorage();
 
-builder.Services.AddSingleton<CustomAuthStateProvider>();
+builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
-
-builder.Services.AddHttpClient<IUserService, UserService>(client =>
-{
-    client.BaseAddress = new Uri("https://overblikplus-user-api.azurewebsites.net");
-}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
-
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
     new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())
-        .ConfigureHandler(authorizedUrls: new[]
-        {
-            "https://overblikplus-user-api.azurewebsites.net",
-            "https://overblikplus-task-api.azurewebsites.net"
-        }));
+        .ConfigureHandler(new[] { taskApiBaseUrl, userApiBaseUrl }));
 
-builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
+void ConfigureHttpClient<TClient, TImplementation>(IServiceCollection services, string baseUrl)
+    where TClient : class
+    where TImplementation : class, TClient
 {
-    client.BaseAddress = new Uri("https://overblikplus-task-api.azurewebsites.net");
-}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
+    services.AddHttpClient<TClient, TImplementation>(client =>
+    {
+        client.BaseAddress = new Uri(baseUrl);
+    }).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
+}
 
-builder.Services.AddHttpClient<ITaskStepService, TaskStepService>(client =>
-{
-    client.BaseAddress = new Uri("https://overblikplus-task-api.azurewebsites.net");
-}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
-
-builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
-{
-    client.BaseAddress = new Uri("https://overblikplus-user-api.azurewebsites.net");
-}).AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
+ConfigureHttpClient<IUserService, UserService>(builder.Services, userApiBaseUrl);
+ConfigureHttpClient<ICalendarEventService, CalendarEventService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<ITaskService, TaskService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<IAuthService, AuthService>(builder.Services, userApiBaseUrl);
+ConfigureHttpClient<ITaskStepService, TaskStepService>(builder.Services, taskApiBaseUrl);
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();
 
 await builder.Build().RunAsync();
-

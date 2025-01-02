@@ -1,20 +1,21 @@
+using OverblikPlus.Common;
 using OverblikPlus.Dtos.Tasks;
 
 namespace OverblikPlus.Services.Interfaces
 {
     public interface ITaskService
     {
-        Task<List<ReadTaskDto>> GetAllTasks();
-        Task<List<ReadTaskDto>> GetTasksForUserAsync(string userId);
+        Task<Result<List<ReadTaskDto>>> GetAllTasks();
+        Task<Result<List<ReadTaskDto>>> GetTasksForUserAsync(string userId);
         
-        Task<ReadTaskDto> GetTaskById(int taskId);
+        Task<Result<ReadTaskDto>> GetTaskById(int taskId);
         
-        Task<bool> CreateTask(CreateTaskDto newTask);
+        Task<Result<int>> CreateTask(CreateTaskDto newTask);
         
-        Task<bool> UpdateTask(int taskId, UpdateTaskDto updatedTask);
+        Task<Result> UpdateTask(int taskId, UpdateTaskDto updatedTask);
         
-        Task<bool> DeleteTask(int taskId);
-        Task MarkTaskAsCompleted(int taskId);
-        Task<List<ReadTaskDto>> GetTasksForDay(string userId, DateTime date);
+        Task<Result> DeleteTask(int taskId);
+        Task<Result> MarkTaskAsCompleted(int taskId);
+        Task<Result<List<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date);
     }
 }

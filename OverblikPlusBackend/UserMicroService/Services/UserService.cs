@@ -1,13 +1,12 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using OverblikPlus.Shared.Interfaces;
 using UserMicroService.dto;
 using UserMicroService.Entities;
 using UserMicroService.Helpers;
 using UserMicroService.Services.Interfaces;
+using UserMicroService.Common;
 
 namespace UserMicroService.Services
 {
@@ -15,37 +14,51 @@ namespace UserMicroService.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly ILoggerService _logger;
 
-        public UserService(UserManager<ApplicationUser> userManager, IMapper mapper)
+        public UserService(UserManager<ApplicationUser> userManager, IMapper mapper, ILoggerService logger)
         {
-            _userManager = userManager;
-            _mapper = mapper;
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<ReadUserDto>> GetAllUsersAsync()
+        public async Task<Result<IEnumerable<ReadUserDto>>> GetAllUsersAsync()
         {
+            _logger.LogInfo("Fetching all users.");
             var users = await _userManager.Users.ToListAsync();
-            return _mapper.Map<List<ReadUserDto>>(users);
+            if (users == null || !users.Any())
+            {
+                _logger.LogWarning("No users found.");
+                return Result<IEnumerable<ReadUserDto>>.ErrorResult("No users found.");
+            }
+            return Result<IEnumerable<ReadUserDto>>.SuccessResult(_mapper.Map<List<ReadUserDto>>(users));
         }
 
-        public async Task<ReadUserDto> GetUserById(string id, string userRole)
+        public async Task<Result<ReadUserDto>> GetUserById(string id, string userRole)
         {
+            _logger.LogInfo($"Fetching user with ID: {id}");
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return null;
-            
+            if (user == null)
+            {
+                _logger.LogWarning($"User with ID: {id} not found.");
+                return Result<ReadUserDto>.ErrorResult("User not found.");
+            }
+
             if (userRole == "Admin" || userRole == "Staff")
             {
                 user.Medication = EncryptionHelper.Decrypt(user.Medication);
             }
 
-            return _mapper.Map<ReadUserDto>(user);
+            return Result<ReadUserDto>.SuccessResult(_mapper.Map<ReadUserDto>(user));
         }
 
-        public async Task<string> CreateUserAsync(CreateUserDto createUserDto)
+        public async Task<Result<string>> CreateUserAsync(CreateUserDto createUserDto)
         {
+            _logger.LogInfo("Creating new user.");
+
             var user = _mapper.Map<ApplicationUser>(createUserDto);
             user.UserName = user.FirstName + user.LastName;
-            Console.WriteLine($"Medication = {createUserDto.Medication}");
 
             if (!string.IsNullOrEmpty(createUserDto.Medication))
             {
@@ -56,38 +69,49 @@ namespace UserMicroService.Services
 
             if (!result.Succeeded)
             {
-                throw new Exception("Failed to create user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                _logger.LogError("Failed to create user.", new Exception(errors));
+                return Result<string>.ErrorResult("Failed to create user: " + errors);
             }
 
-            return user.Id;
+            _logger.LogInfo($"User created successfully with ID: {user.Id}");
+            return Result<string>.SuccessResult(user.Id);
         }
 
-        public async Task DeleteUserAsync(string id)
+        public async Task<Result> DeleteUserAsync(string id)
         {
+            _logger.LogInfo($"Deleting user with ID: {id}");
             var user = await _userManager.FindByIdAsync(id);
 
             if (user != null)
             {
                 await _userManager.DeleteAsync(user);
+                _logger.LogInfo($"User with ID: {id} deleted successfully.");
+                return Result.SuccessResult();
             }
             else
             {
-                throw new KeyNotFoundException("User not found");
+                _logger.LogWarning($"User with ID: {id} not found.");
+                return Result.ErrorResult("User not found");
             }
         }
 
-        public async Task UpdateUserAsync(string id, UpdateUserDto updateUserDto)
+        public async Task<Result> UpdateUserAsync(string id, UpdateUserDto updateUserDto)
         {
+            _logger.LogInfo($"Updating user with ID: {id}");
             var user = await _userManager.FindByIdAsync(id);
 
             if (user != null)
             {
                 _mapper.Map(updateUserDto, user);
                 await _userManager.UpdateAsync(user);
+                _logger.LogInfo($"User with ID: {id} updated successfully.");
+                return Result.SuccessResult();
             }
             else
             {
-                throw new KeyNotFoundException("User not found");
+                _logger.LogWarning($"User with ID: {id} not found.");
+                return Result.ErrorResult("User not found");
             }
         }
     }

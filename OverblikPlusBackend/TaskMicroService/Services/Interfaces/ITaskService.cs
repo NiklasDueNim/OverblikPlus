@@ -1,17 +1,17 @@
-using TaskMicroService.dto;
+using TaskMicroService.Common;
+using TaskMicroService.dtos.Task;
 
 namespace TaskMicroService.Services.Interfaces
 {
     public interface ITaskService
     {
-        Task<IEnumerable<ReadTaskDto>> GetAllTasks();
-        Task<ReadTaskDto> GetTaskById(int id);
-
-        Task<IEnumerable<ReadTaskDto>> GetTasksByUserId(string userId);
-        Task<int> CreateTask(CreateTaskDto createTaskDto);
-        Task DeleteTask(int id);
-        Task UpdateTask(int id, UpdateTaskDto updateTaskDto);
-        Task MarkTaskAsCompleted(int taskId);
-        Task<IEnumerable<ReadTaskDto>> GetTasksForDay(string userId, DateTime date);
+        Task<Result<IEnumerable<ReadTaskDto>>> GetAllTasks();
+        Task<Result<ReadTaskDto>> GetTaskById(int id);
+        Task<Result<IEnumerable<ReadTaskDto>>> GetTasksByUserId(string userId);
+        Task<Result<int>> CreateTask(CreateTaskDto createTaskDto);
+        Task<Result> DeleteTask(int id);
+        Task<Result> UpdateTask(int id, UpdateTaskDto updateTaskDto);
+        Task<Result> MarkTaskAsCompleted(int taskId);
+        Task<Result<IEnumerable<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date);
     }
 }

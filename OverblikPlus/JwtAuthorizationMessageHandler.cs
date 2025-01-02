@@ -1,4 +1,7 @@
 using System.Net.Http.Headers;
+using System.Linq;
+
+namespace OverblikPlus;
 
 public class JwtAuthorizationMessageHandler : DelegatingHandler
 {
@@ -10,7 +13,7 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
         _authStateProvider = authStateProvider;
         _authorizedUrls = new HashSet<string>();
     }
-    
+
     public JwtAuthorizationMessageHandler ConfigureHandler(IEnumerable<string> authorizedUrls)
     {
         _authorizedUrls = new HashSet<string>(authorizedUrls, StringComparer.OrdinalIgnoreCase);
@@ -19,28 +22,36 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var token = await _authStateProvider.GetTokenAsync();
-        Console.WriteLine($"JWT token in handler: {token}");
+        var requestUri = request.RequestUri;
 
-
-        if (!string.IsNullOrEmpty(token))
+        if (_authorizedUrls.Any(url => requestUri.ToString().StartsWith(url, StringComparison.OrdinalIgnoreCase)))
         {
-            Console.WriteLine($"Using JWT: {token}");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
-        else
-        {
-            Console.WriteLine("No JWT available");
+            var token = await _authStateProvider.GetTokenAsync();
+            Console.WriteLine("Calling URL: " + requestUri);
+            Console.WriteLine($"JWT token in handler: {token}");
 
-            var refreshed = await _authStateProvider.RefreshTokenAsync();
-            if (refreshed)
+            if (!string.IsNullOrEmpty(token))
             {
-                token = await _authStateProvider.GetTokenAsync();
+                Console.WriteLine($"Using JWT: {token}");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            else
+            {
+                Console.WriteLine("No JWT available. Attempting to refresh token.");
+
+                var refreshed = await _authStateProvider.RefreshTokenAsync();
+                if (refreshed)
+                {
+                    token = await _authStateProvider.GetTokenAsync();
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+                else
+                {
+                    Console.WriteLine("Token refresh failed. Proceeding without token.");
+                }
             }
         }
 
         return await base.SendAsync(request, cancellationToken);
     }
-
 }

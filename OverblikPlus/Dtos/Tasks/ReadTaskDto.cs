@@ -19,6 +19,6 @@ public class ReadTaskDto
     public string RecurrenceType { get; set; }
     
     public int RecurrenceInterval { get; set; }
-    public DateTime NextOccurrence { get; set; }
+    public DateTime? NextOccurrence { get; set; }
 
 }

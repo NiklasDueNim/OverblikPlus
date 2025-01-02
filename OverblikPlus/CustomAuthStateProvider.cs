@@ -2,17 +2,22 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
-using OverblikPlus.Services;
+using Blazored.LocalStorage;
+using OverblikPlus.Dtos.Auth;
+
+namespace OverblikPlus;
 
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
     private string _jwtToken;
     private string _refreshToken;
     private readonly HttpClient _httpClient;
+    private readonly ILocalStorageService _localStorage;
 
-    public CustomAuthStateProvider(HttpClient httpClient)
+    public CustomAuthStateProvider(HttpClient httpClient, ILocalStorageService localStorage)
     {
         _httpClient = httpClient;
+        _localStorage = localStorage;
     }
 
     public async Task SetTokenAsync(string token, string refreshToken)
@@ -20,6 +25,10 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         Console.WriteLine($"SetTokenAsync called. JWT: {token}, RefreshToken: {refreshToken}");
         _jwtToken = token;
         _refreshToken = refreshToken;
+        
+        await _localStorage.SetItemAsync("authToken", token);
+        await _localStorage.SetItemAsync("refreshToken", refreshToken);
+        
         Console.WriteLine($"SetTokenAsync called. JWT: {_jwtToken}, RefreshToken: {_refreshToken}");
 
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
@@ -29,18 +38,28 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         _jwtToken = null;
         _refreshToken = null;
+
+        await _localStorage.RemoveItemAsync("authToken");
+        await _localStorage.RemoveItemAsync("refreshToken");
+
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        if (string.IsNullOrEmpty(_jwtToken))
+        {
+            _jwtToken = await _localStorage.GetItemAsync<string>("authToken");
+            _refreshToken = await _localStorage.GetItemAsync<string>("refreshToken");
+        }
+
         if (string.IsNullOrEmpty(_jwtToken) || IsTokenExpired(_jwtToken))
         {
-            return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
 
         var identity = new ClaimsIdentity(ParseClaimsFromJwt(_jwtToken), "jwt");
-        return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
+        return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
     public Task<string> GetTokenAsync()
@@ -55,7 +74,6 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
         return Task.FromResult(_jwtToken);
     }
-
 
     public Task<string> GetRefreshTokenAsync() => Task.FromResult(_refreshToken);
 
@@ -74,7 +92,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                if (result != null)
+                if (result != null && !string.IsNullOrEmpty(result.Token))
                 {
                     Console.WriteLine($"Token refreshed. New JWT: {result.Token}, New RefreshToken: {result.RefreshToken}");
                     await SetTokenAsync(result.Token, result.RefreshToken);
@@ -93,7 +111,6 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
         return false;
     }
-
 
     public Task<string> GetUserIdAsync()
     {
@@ -136,7 +153,6 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
     }
 
-
     private string AddPadding(string base64)
     {
         switch (base64.Length % 4)
@@ -146,7 +162,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
             default: return base64;
         }
     }
-    
+
     public async Task<string> GetRoleAsync()
     {
         if (string.IsNullOrEmpty(_jwtToken))
@@ -157,7 +173,6 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         var claims = ParseClaimsFromJwt(_jwtToken);
         return claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
     }
-
 
     private bool IsTokenExpired(string jwt)
     {

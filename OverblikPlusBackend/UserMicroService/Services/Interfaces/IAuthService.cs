@@ -1,12 +1,14 @@
+using UserMicroService.Common;
 using UserMicroService.dto;
 
-namespace UserMicroService.Services.Interfaces;
-
-public interface IAuthService
+namespace UserMicroService.Services.Interfaces
 {
-    Task<(string, string)> LoginAsync(LoginDto loginDto);
-    Task<RegistrationResult> RegisterAsync(RegisterDto registerDto);
-    Task<string> RefreshTokenAsync(string token);
-    Task<bool> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
-    Task LogoutAsync();
+    public interface IAuthService
+    {
+        Task<Result<(string, string)>> LoginAsync(LoginDto loginDto);
+        Task<Result> RegisterAsync(RegisterDto registerDto);
+        Task<Result<string>> RefreshTokenAsync(string token);
+        Task<Result> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
+        Task<Result> LogoutAsync();
+    }
 }

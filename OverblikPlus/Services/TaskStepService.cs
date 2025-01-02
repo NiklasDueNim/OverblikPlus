@@ -10,15 +10,20 @@ namespace OverblikPlus.Services
 
         public TaskStepService(HttpClient httpClient)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             Console.WriteLine($"TaskStepService BaseAddress: {_httpClient.BaseAddress}");
         }
-        
+
         private async Task<T?> ExecuteGetRequest<T>(string url)
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<T>(url);
+                var response = await _httpClient.GetFromJsonAsync<T>(url);
+                if (response == null)
+                {
+                    throw new Exception("No data received.");
+                }
+                return response;
             }
             catch (Exception ex)
             {
@@ -26,8 +31,7 @@ namespace OverblikPlus.Services
                 return default;
             }
         }
-        
-        
+
         private async Task<bool> ExecuteNonQueryRequest(Func<Task<HttpResponseMessage>> httpRequest, string errorMessage)
         {
             try
@@ -46,15 +50,13 @@ namespace OverblikPlus.Services
                 return false;
             }
         }
-        
+
         public async Task<List<ReadTaskStepDto>> GetStepsForTask(int taskId) =>
             await ExecuteGetRequest<List<ReadTaskStepDto>>($"/api/tasks/{taskId}/steps") ?? new List<ReadTaskStepDto>();
 
-    
         public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepId) =>
             await ExecuteGetRequest<ReadTaskStepDto>($"/api/tasks/{taskId}/steps/{stepId}");
 
-        
         public async Task<bool> CreateTaskStep(CreateTaskStepDto newStep)
         {
             return await ExecuteNonQueryRequest(
@@ -62,7 +64,7 @@ namespace OverblikPlus.Services
                 $"Error creating step for task {newStep.TaskId}"
             );
         }
-        
+
         public async Task<bool> UpdateTaskStep(int taskId, int stepId, UpdateTaskStepDto updatedStep)
         {
             return await ExecuteNonQueryRequest(
@@ -70,7 +72,7 @@ namespace OverblikPlus.Services
                 $"Error updating step {stepId} for task {taskId}"
             );
         }
-        
+
         public async Task<bool> DeleteTaskStep(int taskId, int stepId)
         {
             return await ExecuteNonQueryRequest(

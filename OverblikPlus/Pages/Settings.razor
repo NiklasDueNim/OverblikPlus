@@ -1,0 +1,82 @@
+@page "/Settings"
+@inject IJSRuntime JS
+
+
+<div class="container mt-4">
+    <h3>Indstillinger</h3>
+    <hr />
+
+
+    <div class="mb-3">
+        <label class="form-label">Tema:</label>
+        <select class="form-select" @bind="selectedTheme">
+            <option value="light">Lyst Tema</option>
+            <option value="dark">Mørkt Tema</option>
+        </select>
+    </div>
+
+  
+    <div class="form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="enableNotifications" @bind="enableNotifications" />
+        <label class="form-check-label" for="enableNotifications">Aktiver notifikationer</label>
+    </div>
+
+
+    <div class="mb-3">
+        <label class="form-label">Sprog:</label>
+        <select class="form-select" @bind="selectedLanguage">
+            <option value="da">Dansk</option>
+            <option value="en">Engelsk</option>
+        </select>
+    </div>
+
+
+    <button class="btn btn-primary" @onclick="SaveSettings">Gem Indstillinger</button>
+
+   
+    @if (showMessage)
+    {
+        <div class="alert alert-success mt-3">Indstillinger gemt!</div>
+    }
+</div>
+
+@code {
+    private string selectedTheme = "light";
+    private bool enableNotifications = true;
+    private string selectedLanguage = "da";
+    private bool showMessage = false;
+
+
+    private async Task SaveSettings()
+    {
+        
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", selectedTheme);
+        await JS.InvokeVoidAsync("localStorage.setItem", "notifications", enableNotifications.ToString());
+        await JS.InvokeVoidAsync("localStorage.setItem", "language", selectedLanguage);
+
+       
+        await JS.InvokeVoidAsync("changeTheme", selectedTheme);
+
+     
+        showMessage = true;
+
+        await Task.Delay(3000);
+        showMessage = false;
+    }
+
+ 
+    protected override async Task OnInitializedAsync()
+    {
+        var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme") ?? "light";
+        var notifications = await JS.InvokeAsync<string>("localStorage.getItem", "notifications") ?? "true";
+        var language = await JS.InvokeAsync<string>("localStorage.getItem", "language") ?? "da";
+
+   
+        selectedTheme = theme;
+        enableNotifications = bool.Parse(notifications);
+        selectedLanguage = language;
+
+      
+        await JS.InvokeVoidAsync("changeTheme", selectedTheme);
+    }
+}
