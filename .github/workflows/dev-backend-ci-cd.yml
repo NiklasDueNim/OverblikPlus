@@ -97,7 +97,6 @@ jobs:
               "DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING_DEV }}" \
               "BLOB_STORAGE_CONNECTION_STRING=${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" \
               "BLOB_BASE_URL=${{ secrets.BLOB_BASE_URL_DEV }}" \
-              "APPLICATIONINSIGHTS_CONNECTION_STRING=${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING_DEV }}" \
               "JWT_ISSUER=${{ secrets.JWT_ISSUER_DEV }}" \
               "JWT_AUDIENCE=${{ secrets.JWT_AUDIENCE_DEV }}" \
               "JWT_KEY=${{ secrets.JWT_KEY_DEV }}" \
