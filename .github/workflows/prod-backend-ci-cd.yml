@@ -43,7 +43,7 @@ jobs:
         run: |
           sed -i 's/"dev-or-prod"/"prod"/g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i 's#DBConnectionStringPlaceholder#${{ secrets.DB_CONNECTION_STRING_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#BlobStorageConnectionString#${{ secrets.BLOB_STORAGE_CONNECTION_STRING_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i 's#BlobStorageConnectionStringPlaceholder#${{ secrets.BLOB_STORAGE_CONNECTION_STRING_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i 's#KeyPlaceholder#${{ secrets.JWT_KEY_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i 's#IssuerPlaceholder#${{ secrets.JWT_ISSUER_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i 's#AudiencePlaceholder#${{ secrets.JWT_AUDIENCE_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
