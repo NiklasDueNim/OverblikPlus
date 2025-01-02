@@ -4,6 +4,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using OverblikPlus.Shared.Interfaces;
 using OverblikPlus.Shared.Logging;
@@ -69,6 +70,8 @@ public class Program
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
             };
         });
+        
+        IdentityModelEventSource.ShowPII = true;
 
         logger.LogInfo($"JWT Issuer: {jwtIssuer}");
         logger.LogInfo($"JWT Audience: {jwtAudience}");
