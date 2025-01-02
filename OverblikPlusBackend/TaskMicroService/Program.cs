@@ -39,17 +39,16 @@ public class Program
         var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerService>();
 
         // ---- DATABASE CONFIGURATION ----
-        var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-            ?? "Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;";
+        var dbConnectionString = builder.Configuration["ConnectionStrings:DBConnectionString"];
         logger.LogInfo($"Database Connection String: {dbConnectionString}");
 
         builder.Services.AddDbContext<TaskDbContext>(options =>
             options.UseSqlServer(dbConnectionString));
 
         // ---- JWT CONFIGURATION ----
-        var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? builder.Configuration["Jwt:Issuer"];
-        var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? builder.Configuration["Jwt:Audience"];
-        var jwtKey     = Environment.GetEnvironmentVariable("JWT_KEY")     ?? builder.Configuration["Jwt:Key"];
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+        var jwtAudience = builder.Configuration["Jwt:Audience"];
+        var jwtKey = builder.Configuration["Jwt:Key"];
 
         builder.Services.AddAuthentication(options =>
         {
@@ -75,13 +74,13 @@ public class Program
         logger.LogInfo($"JWT Audience: {jwtAudience}");
 
         // ---- Blob Storage ----
-        var blobConnectionString = Environment.GetEnvironmentVariable("BLOB_STORAGE_CONNECTION_STRING")
-            ?? "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://localhost:10000;";
+        var blobConnectionString = builder.Configuration["ConnectionStrings:BlobStorageConnectionString"];
+        
         builder.Services.AddSingleton(x => new BlobServiceClient(blobConnectionString));
         logger.LogInfo($"Blob Storage Connection String: {blobConnectionString}");
 
-        var blobBaseUrl = Environment.GetEnvironmentVariable("BLOB_BASE_URL")
-            ?? "http://localhost:10000/devstoreaccount1/images";
+        var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"];
+        
         builder.Services.AddSingleton(blobBaseUrl);
         logger.LogInfo($"Blob Base URL: {blobBaseUrl}");
 

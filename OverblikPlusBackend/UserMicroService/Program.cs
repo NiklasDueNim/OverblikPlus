@@ -23,8 +23,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        var environment = builder.Environment.EnvironmentName;
-
+        
         // --- LOGGING / SERILOG ---
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(builder.Configuration)
@@ -39,29 +38,24 @@ public class Program
         builder.Services.AddSingleton(Log.Logger);
 
         // --- ENCRYPTION KEY ---
-        var encryptionKey = Environment.GetEnvironmentVariable("ENCRYPTION_KEY")
-                            ?? builder.Configuration["EncryptionSettings:EncryptionKey"];
+        var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
 
         if (string.IsNullOrEmpty(encryptionKey))
         {
-            throw new InvalidOperationException("Encryption key is missing (ENV var or appsettings).");
+            throw new InvalidOperationException("Encryption key is missing.");
         }
         EncryptionHelper.SetEncryptionKey(encryptionKey);
 
         // --- DATABASE CONNECTION ---
-        var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-                                 ?? "Server=hildur.ucn.dk;Database=DMA-CSD-V23_10481979;User Id=DMA-CSD-V23_10481979;Password=Password1!;Encrypt=False;";
+        var dbConnectionString = builder.Configuration["ConnectionStrings:DBConnectionString"];
 
         if (string.IsNullOrEmpty(dbConnectionString))
         {
-            Console.WriteLine("DB_CONNECTION_STRING is missing or empty. Using fallback local connection string.");
-            dbConnectionString = "Server=localhost,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Encrypt=False;";
+            throw new Exception("DB_CONNECTION_STRING is missing or empty.");
         }
-        else
-        {
-            Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
-        }
-
+        
+        Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
+        
         builder.Services.AddDbContext<UserDbContext>(options =>
             options.UseSqlServer(dbConnectionString));
 
@@ -71,18 +65,10 @@ public class Program
             .AddDefaultTokenProviders();
 
         // --- JWT CONFIGURATION ---
-        var jwtIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
-                        ?? builder.Configuration["Jwt:Issuer"]
-                        ?? "https://overblikplus.dk";
-
-        var jwtAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
-                          ?? builder.Configuration["Jwt:Audience"]
-                          ?? "https://overblikplus.dk";
-
-        var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY")
-                     ?? builder.Configuration["Jwt:Key"]
-                     ?? "MyVeryStrongSecretKeyForJWT1234567890";
-
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+        var jwtAudience = builder.Configuration["Jwt:Audience"];
+        var jwtKey = builder.Configuration["Jwt:Key"];
+                     
         builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
