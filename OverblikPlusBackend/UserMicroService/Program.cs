@@ -132,10 +132,11 @@ public class Program
         }
         else
         {
-            app.UseHttpsRedirection();
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        
+        app.UseHttpsRedirection();
 
         app.UseSerilogRequestLogging();
         app.UseRouting();
