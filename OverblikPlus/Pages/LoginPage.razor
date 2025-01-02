@@ -10,7 +10,6 @@
     <input @bind="loginDto.Email" placeholder="Email" class="form-control mb-2" />
     <input @bind="loginDto.Password" type="password" placeholder="Adgangskode" class="form-control mb-2" />
 
-    <!-- Disable button while loading -->
     <button id="loginButton" @onclick="Login" class="btn btn-primary" disabled="@isLoading">
         @if (isLoading)
         {
@@ -56,6 +55,11 @@
                 errorMessage = "Fejl ved login: Ugyldig email eller adgangskode.";
                 Console.WriteLine("Fejl ved login: tom token.");
             }
+        }
+        catch (HttpRequestException httpEx)
+        {
+            errorMessage = $"Fejl ved login: {httpEx.Message}";
+            Console.WriteLine($"HTTP Fejl ved login: {httpEx.Message}");
         }
         catch (Exception ex)
         {
