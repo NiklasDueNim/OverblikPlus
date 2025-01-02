@@ -3,7 +3,6 @@ using UserMicroService.dto;
 using UserMicroService.Services.Interfaces;
 using FluentValidation;
 using OverblikPlus.Shared.Interfaces;
-using UserMicroService.Common;
 
 namespace UserMicroService.Controllers
 {
