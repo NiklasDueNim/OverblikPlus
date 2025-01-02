@@ -1,3 +1,4 @@
+using OverblikPlus.Common;
 using OverblikPlus.Dtos;
 using OverblikPlus.Dtos.User;
 
@@ -7,7 +8,7 @@ public interface IUserService
 {
     Task<IEnumerable<ReadUserDto>> GetAllUsers();
     Task<ReadUserDto> GetUserById(string id);
-    Task<string> CreateUser(CreateUserDto createUserDto);
+    Task<Result> CreateUser(CreateUserDto newUser);
     Task UpdateUser(string id, UpdateUserDto updateUserDto);
     Task DeleteUser(string id);
 }

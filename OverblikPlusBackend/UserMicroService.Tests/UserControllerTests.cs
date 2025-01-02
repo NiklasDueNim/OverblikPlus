@@ -179,7 +179,8 @@ public class UserControllerTests
 
         // Assert
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-        Assert.Equal("User with ID nonexistent not found.", notFoundResult.Value);
+        var response = Assert.IsType<dynamic>(notFoundResult.Value);
+        Assert.Equal("User with ID nonexistent not found.", response.Message);
     }
 
     [Fact]

@@ -65,20 +65,34 @@
         var role = await AuthStateProvider.GetRoleAsync();
         isAdmin = role is "Admin";
     }
-    
+
     private async Task HandleCreateUser()
     {
         try
         {
-            await UserService.CreateUser(newUser);
-            successMessage = "Bruger oprettet succesfuldt.";
-            errorMessage = string.Empty;
-            newUser = new CreateUserDto();
+            if (string.IsNullOrEmpty(newUser.Role))
+            {
+                newUser.Role = "User";
+            }
+
+            var result = await UserService.CreateUser(newUser);
+
+            if (result.Success)
+            {
+                successMessage = "User created successfully.";
+                errorMessage = string.Empty;
+                newUser = new CreateUserDto();
+            }
+            else
+            {
+                errorMessage = $"Error creating user: {result.Error}";
+                successMessage = string.Empty;
+            }
         }
         catch (Exception ex)
         {
             successMessage = string.Empty;
-            errorMessage = $"Fejl ved oprettelse af bruger: {ex.Message}";
+            errorMessage = $"Error creating user: {ex.Message}";
         }
     }
 }

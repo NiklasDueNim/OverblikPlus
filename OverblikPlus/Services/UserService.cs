@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using OverblikPlus.Common;
 using OverblikPlus.Dtos.User;
 using OverblikPlus.Services.Interfaces;
 
@@ -49,7 +50,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<string> CreateUser(CreateUserDto newUser)
+    public async Task<Result> CreateUser(CreateUserDto newUser)
     {
         try
         {
@@ -59,7 +60,7 @@ public class UserService : IUserService
             var createdUser = await response.Content.ReadFromJsonAsync<ReadUserDto>();
             if (createdUser != null)
             {
-                return createdUser.Id;
+                return new Result { Success = true };
             }
 
             throw new Exception("User creation failed or response was not as expected.");
