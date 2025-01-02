@@ -68,7 +68,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build --platform linux/amd64 \
-            -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-prod:latest \
+            -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
             -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService/Dockerfile' || 'TaskMicroService/Dockerfile' }} \
             --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
             OverblikPlusBackend
@@ -76,22 +76,22 @@ jobs:
       # 10. Pusher Docker-billedet til ACR
       - name: Push Docker image to ACR
         run: |
-          docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-prod:latest
+          docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest
 
       # 11. Opdater Azure App Service til det nyeste Docker-image
       - name: Update Azure App Service
         run: |
           az webapp config container set \
-            --name overblikplus-${{ matrix.service }}-prod \
+            --name overblikplus-${{ matrix.service }} \
             --resource-group OverblikPlus-ResourceGroup \
-            --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-prod:latest \
+            --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
             --container-registry-url https://${{ secrets.ACR_REGISTRY }}
 
       # 12. Sæt environment-variabler (App Settings) på Azure
       - name: Set Azure App Settings (Prod)
         run: |
           az webapp config appsettings set \
-            --name overblikplus-${{ matrix.service }}-prod \
+            --name overblikplus-${{ matrix.service }} \
             --resource-group OverblikPlus-ResourceGroup \
             --settings \
               "DB_CONNECTION_STRING=${{ secrets.DB_CONNECTION_STRING_PROD }}" \
