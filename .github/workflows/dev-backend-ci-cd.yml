@@ -76,7 +76,7 @@ jobs:
       # 10. Pusher Docker-billedet til ACR
       - name: Push Docker image to ACR
         run: |
-          docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest
+          docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest
 
       # 11. Opdater Azure App Service til det nyeste Docker-image
       - name: Update Azure App Service
@@ -84,10 +84,10 @@ jobs:
           az webapp config container set \
             --name overblikplus-${{ matrix.service }}-dev \
             --resource-group OverblikPlus-ResourceGroup \
-            --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest \
+            --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest \
             --container-registry-url https://${{ secrets.ACR_REGISTRY }}
 
-      # 12. Sæt environment-variabler (App Settings) på Azure (vigtigt!)
+      # 12. Sæt environment-variabler (App Settings) på Azure
       - name: Set Azure App Settings (Dev)
         run: |
           az webapp config appsettings set \
