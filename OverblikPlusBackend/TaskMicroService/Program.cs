@@ -99,6 +99,7 @@ public class Program
         });
         
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddRoles<IdentityRole>() 
             .AddEntityFrameworkStores<TaskDbContext>()
             .AddDefaultTokenProviders();
 
