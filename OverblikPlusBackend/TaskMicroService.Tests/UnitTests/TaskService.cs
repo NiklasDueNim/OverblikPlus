@@ -1,6 +1,9 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using OverblikPlus.Shared.Interfaces;
+using OverblikPlus.Shared.Logging;
+using Serilog;
 using TaskMicroService.DataAccess;
 using TaskMicroService.dtos.Task;
 using TaskMicroService.Entities;
@@ -25,8 +28,8 @@ public class TaskServiceTests
 
         _mapperMock = new Mock<IMapper>();
         _blobStorageServiceMock = new Mock<IBlobStorageService>();
-
-        _taskService = new TaskService(_dbContext, _mapperMock.Object, _blobStorageServiceMock.Object);
+        
+        _taskService = new TaskService(_dbContext, _mapperMock.Object, _blobStorageServiceMock.Object, new Mock<ILoggerService>().Object);
     }
 
     [Fact]

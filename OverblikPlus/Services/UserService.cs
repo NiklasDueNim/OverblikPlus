@@ -56,14 +56,8 @@ public class UserService : IUserService
         {
             var response = await _httpClient.PostAsJsonAsync("api/auth/register", newUser);
             response.EnsureSuccessStatusCode();
-
-            var createdUser = await response.Content.ReadFromJsonAsync<ReadUserDto>();
-            if (createdUser != null)
-            {
-                return new Result { Success = true };
-            }
-
-            throw new Exception("User creation failed or response was not as expected.");
+            
+            return new Result { Success = true };
         }
         catch (Exception ex)
         {

@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OverblikPlus.Shared.Interfaces;
 using Serilog;
 using TaskMicroService.Common;
 using TaskMicroService.DataAccess;
@@ -14,16 +15,19 @@ namespace TaskMicroService.Services
         private readonly TaskDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IBlobStorageService _blobStorageService;
+        private readonly ILoggerService _logger;
 
-        public TaskService(TaskDbContext dbContext, IMapper mapper, IBlobStorageService blobStorageService)
+        public TaskService(TaskDbContext dbContext, IMapper mapper, IBlobStorageService blobStorageService, ILoggerService logger)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _blobStorageService = blobStorageService ?? throw new ArgumentNullException(nameof(blobStorageService));
+            _logger = logger;
         }
 
         public async Task<Result<IEnumerable<ReadTaskDto>>> GetAllTasks()
         {
+            _logger.LogInfo("Getting all tasks.");
             var tasks = await _dbContext.Tasks.Include(t => t.Steps).ToListAsync();
 
             if (!tasks.Any())
@@ -35,6 +39,8 @@ namespace TaskMicroService.Services
 
         public async Task<Result<ReadTaskDto>> GetTaskById(int id)
         {
+            _logger.LogInfo($"Getting task with id = {id}");
+
             var task = await _dbContext.Tasks.Include(t => t.Steps).FirstOrDefaultAsync(t => t.Id == id);
 
             if (task == null)
@@ -46,6 +52,8 @@ namespace TaskMicroService.Services
 
         public async Task<Result<IEnumerable<ReadTaskDto>>> GetTasksByUserId(string userId)
         {
+            _logger.LogInfo($"Getting all tasks from user {userId}");
+
             var tasks = await _dbContext.Tasks
                 .Include(t => t.Steps)
                 .Where(t => t.UserId == userId)
@@ -60,6 +68,7 @@ namespace TaskMicroService.Services
 
         public async Task<Result<int>> CreateTask(CreateTaskDto createTaskDto)
         {
+            _logger.LogInfo($"Creating new task for user = {createTaskDto.UserId}");
             if (string.IsNullOrEmpty(createTaskDto.UserId))
                 return Result<int>.ErrorResult("UserId is required for the task.");
 
@@ -105,6 +114,7 @@ namespace TaskMicroService.Services
 
         public async Task<Result> UpdateTask(int id, UpdateTaskDto updateTaskDto)
         {
+            _logger.LogInfo($"Updating task with id = {id}");
             var taskEntity = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
             if (taskEntity == null)
                 return Result.ErrorResult($"Task with ID {id} not found.");
