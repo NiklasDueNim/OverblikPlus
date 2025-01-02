@@ -54,7 +54,7 @@ public class UserService : IUserService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/User", newUser);
+            var response = await _httpClient.PostAsJsonAsync("api/auth/register", newUser);
             response.EnsureSuccessStatusCode();
 
             var createdUser = await response.Content.ReadFromJsonAsync<ReadUserDto>();

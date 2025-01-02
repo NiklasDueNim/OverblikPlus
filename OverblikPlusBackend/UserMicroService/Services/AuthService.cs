@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -23,7 +22,6 @@ namespace UserMicroService.Services
         private readonly IConfiguration _configuration;
         private readonly UserDbContext _dbContext;
         private readonly ILoggerService _logger;
-        private readonly IValidator<LoginDto> _loginDtoValidator;
         private readonly IValidator<RegisterDto> _registerDtoValidator;
 
         public AuthService(UserManager<ApplicationUser> userManager,
@@ -31,7 +29,6 @@ namespace UserMicroService.Services
                            IConfiguration configuration,
                            UserDbContext dbContext,
                            ILoggerService logger,
-                           IValidator<LoginDto> loginDtoValidator,
                            IValidator<RegisterDto> registerDtoValidator)
         {
             _userManager = userManager;
@@ -39,19 +36,11 @@ namespace UserMicroService.Services
             _configuration = configuration;
             _dbContext = dbContext;
             _logger = logger;
-            _loginDtoValidator = loginDtoValidator;
             _registerDtoValidator = registerDtoValidator;
         }
 
         public async Task<Result<(string, string)>> LoginAsync(LoginDto loginDto)
         {
-            var validationResult = _loginDtoValidator.Validate(loginDto);
-            if (!validationResult.IsValid)
-            {
-                _logger.LogWarning("Login validation failed.");
-                return Result<(string, string)>.ErrorResult("Validation failed.");
-            }
-
             try
             {
                 var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
