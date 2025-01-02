@@ -106,5 +106,5 @@ jobs:
       - name: Restart Azure App Service
         run: |
           az webapp restart \
-            --name overblikplus-${{ matrix.service }}-prod \
+            --name overblikplus-${{ matrix.service }} \
             --resource-group OverblikPlus-ResourceGroup
