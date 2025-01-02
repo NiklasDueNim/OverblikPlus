@@ -24,7 +24,7 @@ namespace OverblikPlus.Services
 
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("api/Auth/login", loginDto);
+                var response = await _httpClient.PostAsJsonAsync("/api/Auth/login", loginDto);
                 Console.WriteLine($"Login response status: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
