@@ -60,6 +60,21 @@ public class Program
         })
         .AddJwtBearer("Bearer", options =>
         {
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var request = context.HttpContext.Request;
+                    if (request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.NoResult();
+                        return Task.CompletedTask;
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
+
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -72,6 +87,7 @@ public class Program
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
             };
         });
+
         
         IdentityModelEventSource.ShowPII = true;
 
@@ -95,15 +111,20 @@ public class Program
             options.AddPolicy("AllowAll",
                 policy =>
                 {
-                    policy.WithOrigins(
-                            "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-                            "https://overblikplus.dk"
-                        )
+                    policy.SetIsOriginAllowed(origin =>
+                        {
+                            return new[]
+                            {
+                                "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
+                                "https://overblikplus.dk"
+                            }.Contains(origin);
+                        })
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials();
                 });
         });
+
         
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddRoles<IdentityRole>() 
