@@ -96,16 +96,20 @@ public class Program
     // ---- CORS ----
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowAll",
+        options.AddPolicy("AllowSpecificOrigins",
             policy =>
             {
-                policy.SetIsOriginAllowed(origin => true)
+                policy.WithOrigins(
+                        "https://yellow-ocean-0f63e7903.4.azurestaticapps.net", // Dev
+                        "https://overblikplus.dk" // Prod
+                    )
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
                     .WithExposedHeaders("Authorization");
             });
     });
+
 
     builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
         .AddRoles<IdentityRole>()
@@ -153,13 +157,10 @@ public class Program
 
     app.Use(async (context, next) =>
     {
-        if (context.Request.Method == "OPTIONS")
-        {
-            context.Response.StatusCode = 200;
-            await context.Response.CompleteAsync();
-            return;
-        }
-        await next();
+        Console.WriteLine($"Request Method: {context.Request.Method}");
+        Console.WriteLine($"Origin: {context.Request.Headers["Origin"]}");
+        Console.WriteLine($"CORS Headers: {context.Response.Headers["Access-Control-Allow-Origin"]}");
+        await next.Invoke();
     });
 
     app.UseSwagger();
