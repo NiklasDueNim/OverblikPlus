@@ -123,6 +123,8 @@ public class Program
     builder.Services.AddControllers();
     builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+
+
     // ---- DEPENDENCY INJECTION ----
     builder.Services.AddScoped<ITaskService, TaskService>();
     builder.Services.AddScoped<ITaskStepService, TaskStepService>();
@@ -178,7 +180,8 @@ public class Program
     app.UseSwagger();
     app.UseSwaggerUI();
     
-    app.UseDeveloperExceptionPage(); 
+    app.UseDeveloperExceptionPage();
+    app.UseHttpsRedirection();
 
     app.UseRouting();
     app.UseCors("AllowSpecificOrigins");
