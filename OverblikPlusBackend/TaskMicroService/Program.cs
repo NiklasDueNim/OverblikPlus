@@ -31,149 +31,157 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        // Register Serilog
-        builder.Host.UseSerilog();
+    // Register Serilog
+    builder.Host.UseSerilog();
 
-        var environment = builder.Environment.EnvironmentName;
+    var environment = builder.Environment.EnvironmentName;
 
-        // ---- LOGGER SERVICE ----
-        builder.Services.AddSingleton(Log.Logger);
-        builder.Services.AddSingleton<ILoggerService, LoggerService>();
-        var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerService>();
+    // ---- LOGGER SERVICE ----
+    builder.Services.AddSingleton(Log.Logger);
+    builder.Services.AddSingleton<ILoggerService, LoggerService>();
+    var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerService>();
 
-        // ---- DATABASE CONFIGURATION ----
-        var dbConnectionString = builder.Configuration["ConnectionStrings:DBConnectionString"];
-        logger.LogInfo($"Database Connection String: {dbConnectionString}");
+    // ---- DATABASE CONFIGURATION ----
+    var dbConnectionString = builder.Configuration["ConnectionStrings:DBConnectionString"];
+    logger.LogInfo($"Database Connection String: {dbConnectionString}");
 
-        builder.Services.AddDbContext<TaskDbContext>(options =>
-            options.UseSqlServer(dbConnectionString));
+    builder.Services.AddDbContext<TaskDbContext>(options =>
+        options.UseSqlServer(dbConnectionString));
 
-        // ---- JWT CONFIGURATION ----
-        var jwtIssuer = "https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net";
-        var jwtAudience = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
-        var jwtKey = "MyVeryStrongSecretKeyForJWT1234567890123456789";
+    // ---- JWT CONFIGURATION ----
+    var jwtIssuer = "https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net";
+    var jwtAudience = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
+    var jwtKey = "MyVeryStrongSecretKeyForJWT1234567890123456789";
 
-        builder.Services.AddAuthentication(options =>
+    builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer("Bearer", options =>
+        {
+            options.RequireHttpsMetadata = true;
+            options.SaveToken = true;
+
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer("Bearer", options =>
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+            };
+        });
+
+    IdentityModelEventSource.ShowPII = true;
+
+    logger.LogInfo($"JWT Issuer in Runtime: {jwtIssuer}");
+    logger.LogInfo($"JWT Audience in Runtime: {jwtAudience}");
+    logger.LogInfo($"JWT Key Length: {jwtKey.Length}");
+
+    // ---- Blob Storage ----
+    var blobConnectionString = builder.Configuration["ConnectionStrings:BlobStorageConnectionString"];
+
+    builder.Services.AddSingleton(x => new BlobServiceClient(blobConnectionString));
+    logger.LogInfo($"Blob Storage Connection String: {blobConnectionString}");
+
+    var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"];
+
+    builder.Services.AddSingleton(blobBaseUrl);
+    logger.LogInfo($"Blob Base URL: {blobBaseUrl}");
+
+    // ---- CORS ----
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAll",
+            policy =>
             {
-                options.RequireHttpsMetadata = true;
-                options.SaveToken = true;
-
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-
-                    ValidIssuer = jwtIssuer,
-                    ValidAudience = jwtAudience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-                };
+                policy.SetIsOriginAllowed(origin => true)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .WithExposedHeaders("Authorization");
             });
+    });
 
-        IdentityModelEventSource.ShowPII = true;
+    builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddRoles<IdentityRole>()
+        .AddEntityFrameworkStores<TaskDbContext>()
+        .AddDefaultTokenProviders();
 
-        logger.LogInfo($"JWT Issuer in Runtime: {jwtIssuer}");
-        logger.LogInfo($"JWT Audience in Runtime: {jwtAudience}");
-        logger.LogInfo($"JWT Key Length: {jwtKey.Length}");
+    // ---- SERVICES ----
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+    builder.Services.AddControllers();
+    builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        // ---- Blob Storage ----
-        var blobConnectionString = builder.Configuration["ConnectionStrings:BlobStorageConnectionString"];
+    // ---- DEPENDENCY INJECTION ----
+    builder.Services.AddScoped<ITaskService, TaskService>();
+    builder.Services.AddScoped<ITaskStepService, TaskStepService>();
+    builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+    builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
 
-        builder.Services.AddSingleton(x => new BlobServiceClient(blobConnectionString));
-        logger.LogInfo($"Blob Storage Connection String: {blobConnectionString}");
+    // ---- VALIDATORS ----
+    builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
+    builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
+    builder.Services.AddScoped<IValidator<CreateCalendarEventDto>, CreateCalendarEventDtoValidator>();
 
-        var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"];
+    builder.Services.AddFluentValidationAutoValidation();
+    builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 
-        builder.Services.AddSingleton(blobBaseUrl);
-        logger.LogInfo($"Blob Base URL: {blobBaseUrl}");
+    // ---- BUILD APPLICATION ----
+    var app = builder.Build();
 
-        // ---- CORS ----
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll",
-                policy =>
-                {
-                    policy.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                });
-        });
-
-        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<TaskDbContext>()
-            .AddDefaultTokenProviders();
-
-        // ---- SERVICES ----
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-        builder.Services.AddControllers();
-        builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-        // ---- DEPENDENCY INJECTION ----
-        builder.Services.AddScoped<ITaskService, TaskService>();
-        builder.Services.AddScoped<ITaskStepService, TaskStepService>();
-        builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
-        builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
-
-        // ---- VALIDATORS ----
-        builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
-        builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
-        builder.Services.AddScoped<IValidator<CreateCalendarEventDto>, CreateCalendarEventDtoValidator>();
-
-        builder.Services.AddFluentValidationAutoValidation();
-        builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
-
-        // ---- BUILD APPLICATION ----
-        var app = builder.Build();
-
-        // ---- MIDDLEWARE CONFIGURATION ----
-        if (!app.Environment.IsDevelopment())
-        {
-            app.UseHttpsRedirection();
-        }
-
-        app.UseSwagger();
-        app.UseSwaggerUI();
-
-        // Global middleware til logging
-        app.Use(async (context, next) =>
-        {
-            try
-            {
-                logger.LogInfo($"Request: {context.Request.Method} {context.Request.Path}");
-                await next.Invoke();
-                logger.LogInfo($"Response: {context.Response.StatusCode}");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Unhandled exception caught in middleware.", ex);
-                context.Response.StatusCode = 500;
-                await context.Response.WriteAsync("An unexpected error occurred.");
-            }
-        });
-
-        app.UseCors("AllowAll");
-        app.UseMiddleware<ExceptionHandlingMiddleware>();
-        app.UseAuthentication();
-        app.UseAuthorization();
-
-        app.MapControllers();
-
-        try
-        {
-            logger.LogInfo("Starting the application in {Environment} mode".Replace("{Environment}", environment));
-            app.Run();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("Application start-up failed", ex);
-        }
+    // ---- MIDDLEWARE CONFIGURATION ----
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+        app.UseHsts(); // Tving HTTPS for alle requests
     }
+
+    app.UseStatusCodePages(async context =>
+    {
+        var response = context.HttpContext.Response;
+        if (response.StatusCode == 301 || response.StatusCode == 302)
+        {
+            response.StatusCode = 403;
+        }
+    });
+
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Method == "OPTIONS")
+        {
+            context.Response.StatusCode = 200;
+            await context.Response.CompleteAsync();
+            return;
+        }
+        await next();
+    });
+
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
+    app.UseCors("AllowAll");
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    try
+    {
+        logger.LogInfo("Starting the application in {Environment} mode".Replace("{Environment}", environment));
+        app.Run();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError("Application start-up failed", ex);
+    } 
+    
+    }
+    
 }
