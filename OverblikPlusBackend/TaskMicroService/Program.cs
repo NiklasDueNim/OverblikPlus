@@ -155,13 +155,31 @@ public class Program
         }
     });
 
+    // app.Use(async (context, next) =>
+    // {
+    //     Console.WriteLine($"Request Method: {context.Request.Method}");
+    //     Console.WriteLine($"Origin: {context.Request.Headers["Origin"]}");
+    //     Console.WriteLine($"CORS Headers: {context.Response.Headers["Access-Control-Allow-Origin"]}");
+    //     await next.Invoke();
+    // });
+    
+    
     app.Use(async (context, next) =>
     {
-        Console.WriteLine($"Request Method: {context.Request.Method}");
-        Console.WriteLine($"Origin: {context.Request.Headers["Origin"]}");
-        Console.WriteLine($"CORS Headers: {context.Response.Headers["Access-Control-Allow-Origin"]}");
-        await next.Invoke();
+        if (context.Request.Method == "OPTIONS")
+        {
+            context.Response.StatusCode = 200;
+            context.Response.Headers.Add("Access-Control-Allow-Origin", context.Request.Headers["Origin"]);
+            context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            context.Response.Headers.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
+            context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+            await context.Response.CompleteAsync();
+            return;
+        }
+
+        await next();
     });
+
 
     app.UseSwagger();
     app.UseSwaggerUI();
