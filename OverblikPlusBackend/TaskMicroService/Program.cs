@@ -49,59 +49,47 @@ public class Program
             options.UseSqlServer(dbConnectionString));
 
         // ---- JWT CONFIGURATION ----
-        var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-        var jwtAudience = builder.Configuration["Jwt:Audience"];
-        var jwtKey = builder.Configuration["Jwt:Key"];
+        var jwtIssuer = "https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net";
+        var jwtAudience = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
+        var jwtKey = "MyVeryStrongSecretKeyForJWT1234567890123456789";
 
         builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer("Bearer", options =>
-        {
-            options.Events = new JwtBearerEvents
             {
-                OnMessageReceived = context =>
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer("Bearer", options =>
+            {
+                options.RequireHttpsMetadata = true;
+                options.SaveToken = true;
+
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    var request = context.HttpContext.Request;
-                    if (request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
-                    {
-                        context.NoResult();
-                        return Task.CompletedTask;
-                    }
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
 
-                    return Task.CompletedTask;
-                }
-            };
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+                };
+            });
 
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-
-                ValidIssuer = jwtIssuer,
-                ValidAudience = jwtAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-            };
-        });
-
-        
         IdentityModelEventSource.ShowPII = true;
 
-        logger.LogInfo($"JWT Issuer: {jwtIssuer}");
-        logger.LogInfo($"JWT Audience: {jwtAudience}");
+        logger.LogInfo($"JWT Issuer in Runtime: {jwtIssuer}");
+        logger.LogInfo($"JWT Audience in Runtime: {jwtAudience}");
+        logger.LogInfo($"JWT Key Length: {jwtKey.Length}");
 
         // ---- Blob Storage ----
         var blobConnectionString = builder.Configuration["ConnectionStrings:BlobStorageConnectionString"];
-        
+
         builder.Services.AddSingleton(x => new BlobServiceClient(blobConnectionString));
         logger.LogInfo($"Blob Storage Connection String: {blobConnectionString}");
 
         var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"];
-        
+
         builder.Services.AddSingleton(blobBaseUrl);
         logger.LogInfo($"Blob Base URL: {blobBaseUrl}");
 
@@ -111,23 +99,14 @@ public class Program
             options.AddPolicy("AllowAll",
                 policy =>
                 {
-                    policy.SetIsOriginAllowed(origin =>
-                        {
-                            return new[]
-                            {
-                                "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-                                "https://overblikplus.dk"
-                            }.Contains(origin);
-                        })
+                    policy.AllowAnyOrigin()
                         .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials();
+                        .AllowAnyHeader();
                 });
         });
 
-        
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddRoles<IdentityRole>() 
+            .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<TaskDbContext>()
             .AddDefaultTokenProviders();
 
