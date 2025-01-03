@@ -76,7 +76,7 @@
     private ReadUserDto user = new();
     private List<ReadTaskDto> todaysTasks = new();
     private List<ReadTaskDto> uncompletedTasks => todaysTasks.Where(t => !t.IsCompleted).ToList();
-    private double taskCompletionPercentage = 0;
+    private int taskCompletionPercentage = 0;
     private string taskViewMode = "Single";
     private int currentTaskIndex = 0;
 
@@ -132,7 +132,7 @@
         if (todaysTasks.Count > 0)
         {
             var completedTasks = todaysTasks.Count(t => t.IsCompleted);
-            taskCompletionPercentage = (double)completedTasks / todaysTasks.Count * 100;
+            taskCompletionPercentage = completedTasks / todaysTasks.Count * 100;
         }
         else
         {
