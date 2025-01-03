@@ -93,10 +93,16 @@ public class Program
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAll",
-                policy => policy.WithOrigins("https://yellow-ocean-0f63e7903.4.azurestaticapps.net", "http://localhost:5226", "https://overblikplus.dk" )
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                policy =>
+                {
+                    policy.WithOrigins(
+                            "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
+                            "https://overblikplus.dk"
+                        )
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                });
         });
         
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
