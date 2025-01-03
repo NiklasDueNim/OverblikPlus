@@ -111,12 +111,12 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         return false;
     }
 
-    public Task<string> GetUserIdAsync()
+    public string GetUserIdAsync()
     {
         if (string.IsNullOrEmpty(_jwtToken))
         {
             Console.WriteLine("JWT token is missing.");
-            return Task.FromResult<string>(null);
+            return null;
         }
 
         var claims = ParseClaimsFromJwt(_jwtToken);
@@ -127,7 +127,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
             Console.WriteLine("User ID claim is missing in the token.");
         }
 
-        return Task.FromResult(userIdClaim);
+        return userIdClaim;
     }
 
     private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)

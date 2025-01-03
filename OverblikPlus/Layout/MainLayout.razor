@@ -56,7 +56,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var userId = await AuthStateProvider.GetUserIdAsync();
+        var userId = AuthStateProvider.GetUserIdAsync();
         if (!string.IsNullOrEmpty(userId))
         {
             user = await UserService.GetUserById(userId);

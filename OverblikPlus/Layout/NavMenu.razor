@@ -88,6 +88,6 @@
     {
         var role = await AuthStateProvider.GetRoleAsync();
         isAdminOrStaff = role is "Admin" or "Staff";
-        userId = await AuthStateProvider.GetUserIdAsync();
+        userId = AuthStateProvider.GetUserIdAsync();
     }
 }

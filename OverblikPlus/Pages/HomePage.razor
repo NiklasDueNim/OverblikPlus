@@ -89,7 +89,7 @@
     {
         try
         {
-            var userId = await AuthStateProvider.GetUserIdAsync();
+            var userId = AuthStateProvider.GetUserIdAsync();
             if (string.IsNullOrEmpty(userId))
             {
                 Console.WriteLine("User ID is null or empty.");

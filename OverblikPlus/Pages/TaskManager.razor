@@ -107,7 +107,7 @@
             }
             else if (role == "User")
             {
-                var currentUserId = await AuthStateProvider.GetUserIdAsync();
+                var currentUserId = AuthStateProvider.GetUserIdAsync();
                 result = await TaskService.GetTasksForUserAsync(currentUserId);
             }
             else
@@ -151,6 +151,7 @@
     private void CreateTask()
     {
         taskFormModel = new TaskFormModel();
+        taskFormModel.UserId = AuthStateProvider.GetUserIdAsync();
         isEditMode = false;
         isTaskFormVisible = true;
     }

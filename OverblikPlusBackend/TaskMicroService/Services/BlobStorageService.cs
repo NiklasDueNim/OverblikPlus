@@ -5,7 +5,7 @@ using TaskMicroService.Services.Interfaces;
 public class BlobStorageService : IBlobStorageService
 {
     private readonly BlobServiceClient _blobServiceClient;
-    private readonly string _containerName = "images";
+    private const string ContainerName = "images";
     private readonly string _blobBaseUrl;
     
     public BlobStorageService(BlobServiceClient blobServiceClient, string blobBaseUrl)
@@ -22,13 +22,13 @@ public class BlobStorageService : IBlobStorageService
         if (string.IsNullOrEmpty(fileName)) 
             throw new ArgumentNullException(nameof(fileName));
 
-        var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+        var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
         await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
         
         var blobClient = containerClient.GetBlobClient(fileName);
         await blobClient.UploadAsync(imageStream, overwrite: true);
         
-        return $"{_blobBaseUrl}/{_containerName}/{fileName}";
+        return $"{_blobBaseUrl}/{ContainerName}/{fileName}";
     }
 
     
@@ -37,7 +37,7 @@ public class BlobStorageService : IBlobStorageService
         if (string.IsNullOrEmpty(fileName)) 
             throw new ArgumentNullException(nameof(fileName));
         
-        var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+        var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
         var blobClient = containerClient.GetBlobClient(fileName);
         
         await blobClient.DeleteIfExistsAsync();
