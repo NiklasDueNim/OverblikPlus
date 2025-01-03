@@ -38,7 +38,7 @@ jobs:
         run: |
           az account show
       
-      # 12. Overskriv placeholders
+      # 5. Overskriv placeholders
       - name: Replace config placeholders (Dev)
         run: |
           sed -i 's/"dev-or-prod"/"dev"/g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
@@ -55,33 +55,33 @@ jobs:
           sed -i 's#IssuerPlaceholder#${{ secrets.JWT_ISSUER_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
           sed -i 's#AudiencePlaceholder#${{ secrets.BLOB_BASE_URL_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
 
-      # 5. Gendanner afhængigheder
+      # 6. Gendanner afhængigheder
       - name: Restore dependencies
         run: |
           for csproj in $(find . -name '*.csproj'); do
             dotnet restore "$csproj"
           done
 
-      # 6. Bygger projekterne (Release)
+      # 7. Bygger projekterne (Release)
       - name: Build projects
         run: |
           for csproj in $(find . -name '*.csproj'); do
             dotnet build "$csproj" --configuration Release --no-restore
           done
 
-      # 7. Kører tests (ekskl. evt. frontend-tests)
+      # 8. Kører tests (ekskl. evt. frontend-tests)
       - name: Run tests
         run: |
           for csproj in $(find . -name '*.Tests.csproj' ! -name '*OverblikPlus.Frontend.Tests*'); do
             dotnet test "$csproj" --no-restore --verbosity normal
           done
 
-      # 8. Login til Azure Container Registry (ACR)
+      # 9. Login til Azure Container Registry (ACR)
       - name: Login to Azure Container Registry
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      # 9. Bygger Docker-billedet
+      # 10. Bygger Docker-billedet
       - name: Build Docker image
         run: |
           docker build --platform linux/amd64 \
@@ -90,12 +90,12 @@ jobs:
             --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
             OverblikPlusBackend
 
-      # 10. Pusher Docker-billedet til ACR
+      # 11. Pusher Docker-billedet til ACR
       - name: Push Docker image to ACR
         run: |
           docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest
 
-      # 11. Opdater Azure App Service til det nyeste Docker-image
+      # 12. Opdater Azure App Service til det nyeste Docker-image
       - name: Update Azure App Service
         run: |
           az webapp config container set \
