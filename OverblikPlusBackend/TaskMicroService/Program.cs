@@ -184,7 +184,7 @@ public class Program
     app.UseSwaggerUI();
 
     app.UseRouting();
-    app.UseCors("AllowAll");
+    app.UseCors("AllowSpecificOrigins");
     app.UseHttpsRedirection();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseAuthentication();
