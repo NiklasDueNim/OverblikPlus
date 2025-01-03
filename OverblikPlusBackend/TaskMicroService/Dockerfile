@@ -20,9 +20,16 @@ RUN dotnet publish -c Release -o /out
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
+
+# Copy build output
 COPY --from=build /out .
 
-# Expose port
-ENV ASPNETCORE_URLS=http://+:80
+# Environment Variables
+ENV ASPNETCORE_URLS="http://+:80;https://+:443"
+
+# Expose HTTP and HTTPS ports
 EXPOSE 80
+EXPOSE 443
+
+# Entry point
 ENTRYPOINT ["dotnet", "TaskMicroService.dll"]
