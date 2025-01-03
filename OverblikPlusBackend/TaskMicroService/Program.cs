@@ -61,7 +61,7 @@ public class Program
         })
         .AddJwtBearer("Bearer", options =>
         {
-            options.RequireHttpsMetadata = true;
+            options.RequireHttpsMetadata = false;
             options.SaveToken = true;
 
             options.TokenValidationParameters = new TokenValidationParameters
@@ -141,11 +141,6 @@ public class Program
     var app = builder.Build();
 
     // ---- MIDDLEWARE CONFIGURATION ----
-    if (!app.Environment.IsDevelopment())
-    {
-        app.UseHttpsRedirection();
-        app.UseHsts(); // Tving HTTPS for alle requests
-    }
 
     app.UseStatusCodePages(async context =>
     {
@@ -187,7 +182,6 @@ public class Program
 
     app.UseRouting();
     app.UseCors("AllowSpecificOrigins");
-    app.UseHttpsRedirection();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseAuthentication();
     app.UseAuthorization();
