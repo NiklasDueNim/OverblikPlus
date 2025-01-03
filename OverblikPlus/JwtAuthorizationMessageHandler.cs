@@ -22,6 +22,12 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        // Håndterer preflight OPTIONS-anmodninger uden autorisation
+        if (request.Method == HttpMethod.Options)
+        {
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        }
+
         var requestUri = request.RequestUri;
 
         if (_authorizedUrls.Any(url => requestUri.ToString().StartsWith(url, StringComparison.OrdinalIgnoreCase)))
