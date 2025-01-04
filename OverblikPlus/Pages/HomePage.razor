@@ -158,7 +158,6 @@
         await Task.CompletedTask;
     }
     
-    
     private async Task GoToTaskSteps(int taskId)
     {
         var steps = await TaskStepService.GetStepsForTask(taskId);
