@@ -35,7 +35,10 @@
                             <img src="@task.Image" alt="Task Image" class="img-thumbnail" style="max-width: 120px; max-height: 120px; object-fit: cover;" />
                         }
                     </div>
-                    <button class="btn btn-primary" @onclick="() => GoToTaskSteps(task.Id)">Se trin</button>
+                    @if (task.HasSteps)
+                    {
+                        <button class="btn btn-primary" @onclick="() => GoToTaskSteps(task.Id)">Se trin</button>
+                    }
                 </li>
             }
         </ul>
@@ -73,7 +76,8 @@
 
                     foreach (var task in AllTasks)
                     {
-                        Console.WriteLine($"Task: {task.Name}, NextOccurrence: {task.NextOccurrence}");
+                        task.HasSteps = (await TaskStepService.GetStepsForTask(task.Id)).Any();
+                        Console.WriteLine($"Task: {task.Name}, NextOccurrence: {task.NextOccurrence}, HasSteps: {task.HasSteps}");
                     }
                 }
                 else
@@ -124,7 +128,7 @@
         var steps = await TaskStepService.GetStepsForTask(taskId);
         if (steps != null && steps.Count > 0)
         {
-            NavigationManager.NavigateTo($"/task-steps/{taskId}");
+            NavigationManager.NavigateTo($"/task-step-view/{taskId}/step/{steps.First().Id}");
         }
         else
         {

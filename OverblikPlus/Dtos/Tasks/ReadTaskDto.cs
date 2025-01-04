@@ -21,4 +21,6 @@ public class ReadTaskDto
     public int RecurrenceInterval { get; set; }
     public DateTime? NextOccurrence { get; set; }
 
+    public bool HasSteps { get; set; }
+
 }

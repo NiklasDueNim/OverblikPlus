@@ -11,4 +11,5 @@ public class ReadTaskStepDto
     public bool RequiresQrCodeScan { get; set; }
 
     public int? NextStepId { get; set; }
+
 }
