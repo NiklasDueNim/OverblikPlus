@@ -198,12 +198,12 @@ namespace UserMicroService.Services
                 new Claim(ClaimTypes.Role, user.Role)
             };
 
-            //var keyString = _configuration["Jwt:Key"];
-            //if (string.IsNullOrEmpty(keyString))
-            //{
-                //_logger.LogError("Jwt:Key is null or empty!", new ArgumentNullException("Jwt:Key"));
-            //}
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("4f6e20547261636b20466f722053656375726974793f21a3b8cdef12ab34cd"));
+            var keyString = _configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(keyString))
+            {
+                _logger.LogError("Jwt:Key is null or empty!", new ArgumentNullException("Jwt:Key"));
+            }
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(keyString));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var issuer = _configuration["Jwt:Issuer"];
