@@ -111,7 +111,7 @@ public class TaskService : ITaskService
             "Task deletion");
 
     public async Task<Result<List<ReadTaskDto>>> GetTasksForCurrentUserAsync() =>
-        await ExecuteGetRequest<List<ReadTaskDto>>("api/Task/user-tasks");
+        await ExecuteGetRequest<List<ReadTaskDto>>("/api/Task/user-tasks");
 
     public async Task<Result> MarkTaskAsCompleted(int taskId)
     {
@@ -122,6 +122,6 @@ public class TaskService : ITaskService
 
     public async Task<Result<List<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date)
     {
-        return await ExecuteGetRequest<List<ReadTaskDto>>($"api/Task/user/{userId}/tasks-for-day?date={date:yyyy-MM-dd}");
+        return await ExecuteGetRequest<List<ReadTaskDto>>($"/api/Task/user/{userId}/tasks-for-day?date={date:yyyy-MM-dd}");
     }
 }

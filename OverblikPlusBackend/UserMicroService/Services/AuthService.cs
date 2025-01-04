@@ -180,7 +180,7 @@ namespace UserMicroService.Services
                 IsRevoked = false
             };
         }
-
+    
         private async Task SaveRefreshTokenAsync(RefreshToken refreshToken)
         {
             await _dbContext.RefreshTokens.AddAsync(refreshToken);
