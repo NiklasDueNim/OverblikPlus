@@ -95,13 +95,14 @@
     private void FilterTasksByDate()
     {
         FilteredTasks = AllTasks
-            .Where(task => !task.NextOccurrence.HasValue ||
-                           task.NextOccurrence.Value.Date == SelectedDate.Date)
+            .Where(task => 
+                !task.NextOccurrence.HasValue ||
+                task.NextOccurrence.Value.Date == SelectedDate.Date ||
+                (task.RecurrenceType == "Daily" && task.NextOccurrence.Value.Date <= SelectedDate.Date))
             .ToList();
 
         Console.WriteLine($"Filtered {FilteredTasks.Count} tasks for date {SelectedDate.Date}");
     }
-
 
     private void ShowPreviousDay()
     {
