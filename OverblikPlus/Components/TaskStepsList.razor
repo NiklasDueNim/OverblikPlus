@@ -14,6 +14,10 @@
         max-width: 100px;
         max-height: 100px;
     }
+
+    .task-step-buttons {
+        align-self: flex-end;
+    }
 </style>
 
 <ul class="list-group">
@@ -29,7 +33,7 @@
             <img src="@step.Image" alt="Step Image" class="img-thumbnail" />
         </div>
         }
-        <div>
+        <div class="task-step-buttons">
             <button class="btn btn-secondary me-2" @onclick="() => OnEditStep.InvokeAsync(step)">Rediger Trin</button>
             <button class="btn btn-danger" @onclick="() => OnDeleteStep.InvokeAsync(step.Id)">Slet Trin</button>
         </div>
