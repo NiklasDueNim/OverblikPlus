@@ -1,18 +1,23 @@
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
 using OverblikPlus.Dtos.Tasks;
 using OverblikPlus.Services.Interfaces;
 using OverblikPlus.Common;
+
+
 
 namespace OverblikPlus.Services;
 
 public class TaskService : ITaskService
 {
     private readonly HttpClient _httpClient;
+    private readonly CustomAuthStateProvider _authStateProvider;
 
-    public TaskService(HttpClient httpClient)
+    public TaskService(HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _authStateProvider = (CustomAuthStateProvider)authenticationStateProvider;
     }
 
     private async Task<Result<T>> ExecuteGetRequest<T>(string uri)
@@ -53,7 +58,7 @@ public class TaskService : ITaskService
         await ExecuteGetRequest<List<ReadTaskDto>>("/api/Task");
 
     public async Task<Result<List<ReadTaskDto>>> GetTasksForUserAsync(string userId) =>
-        await ExecuteGetRequest<List<ReadTaskDto>>($"api/Task/user/{userId}");
+        await ExecuteGetRequest<List<ReadTaskDto>>($"/api/Task/user/{userId}");
 
     public async Task<Result<ReadTaskDto>> GetTaskById(int taskId) =>
         await ExecuteGetRequest<ReadTaskDto>($"/api/Task/{taskId}");
@@ -62,6 +67,15 @@ public class TaskService : ITaskService
     {
         try
         {
+            var userId = _authStateProvider.GetUserIdAsync();
+            if (string.IsNullOrEmpty(userId))
+            {
+                Console.WriteLine("UserId could not be retrieved from the token.");
+                return Result<int>.ErrorResult("UserId is required for the task.");
+            }
+            
+            newTask.UserId = userId;
+
             Console.WriteLine($"Sending request to API: {JsonConvert.SerializeObject(newTask)}");
 
             var response = await _httpClient.PostAsJsonAsync("/api/Task", newTask);
@@ -84,6 +98,7 @@ public class TaskService : ITaskService
             return Result<int>.ErrorResult($"Exception: {ex.Message}");
         }
     }
+
 
     public async Task<Result> UpdateTask(int taskId, UpdateTaskDto updatedTask) =>
         await ExecuteNonQueryRequest(
