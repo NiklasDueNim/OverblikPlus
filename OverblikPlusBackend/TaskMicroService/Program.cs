@@ -83,7 +83,11 @@ public class Program
                     ValidateIssuerSigningKey = true,
 
                     ValidIssuer = jwtIssuer,
-                    ValidAudience = jwtAudience,
+                    ValidAudiences = new[]
+                    {
+                        "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
+                        "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net"
+                    },
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
                 };
             });
