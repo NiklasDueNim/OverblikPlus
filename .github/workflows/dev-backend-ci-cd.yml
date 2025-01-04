@@ -52,6 +52,8 @@ jobs:
           ENC_KEY=$(echo "${{ secrets.ENCRYPTION_KEY }}" | tr -d '\n')
 
           echo "DB_CONN length: ${#DB_CONN}"
+          echo "JWT_AUDIENCE: $JWT_AUDIENCE"
+
           echo "BLOB_CONN length: ${#BLOB_CONN}"
           echo "JWT_AUDIENCE length: ${#JWT_AUDIENCE}"
 
