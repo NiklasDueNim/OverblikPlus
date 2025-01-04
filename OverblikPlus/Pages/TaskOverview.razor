@@ -2,7 +2,9 @@
 @using OverblikPlus.Dtos.Tasks
 @using OverblikPlus.Services.Interfaces
 @inject ITaskService TaskService
+@inject ITaskStepService TaskStepService
 @inject CustomAuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
 
 <div class="container mt-4">
     <h1 class="mb-4">Oversigt over opgaver</h1>
@@ -33,6 +35,7 @@
                             <img src="@task.Image" alt="Task Image" class="img-thumbnail" style="max-width: 120px; max-height: 120px; object-fit: cover;" />
                         }
                     </div>
+                    <button class="btn btn-primary" @onclick="() => GoToTaskSteps(task.Id)">Se trin</button>
                 </li>
             }
         </ul>
@@ -62,7 +65,7 @@
             if (!string.IsNullOrEmpty(userId))
             {
                 var result = await TaskService.GetTasksForUserAsync(userId);
-                
+
                 if (result.Success)
                 {
                     AllTasks = result.Data ?? new List<ReadTaskDto>();
@@ -95,7 +98,7 @@
     private void FilterTasksByDate()
     {
         FilteredTasks = AllTasks
-            .Where(task => 
+            .Where(task =>
                 !task.NextOccurrence.HasValue ||
                 task.NextOccurrence.Value.Date == SelectedDate.Date ||
                 (task.RecurrenceType == "Daily" && task.NextOccurrence.Value.Date <= SelectedDate.Date))
@@ -114,5 +117,18 @@
     {
         SelectedDate = SelectedDate.AddDays(1);
         FilterTasksByDate();
+    }
+
+    private async Task GoToTaskSteps(int taskId)
+    {
+        var steps = await TaskStepService.GetStepsForTask(taskId);
+        if (steps != null && steps.Count > 0)
+        {
+            NavigationManager.NavigateTo($"/task-steps/{taskId}");
+        }
+        else
+        {
+            Console.WriteLine($"No steps found for task {taskId}");
+        }
     }
 }
