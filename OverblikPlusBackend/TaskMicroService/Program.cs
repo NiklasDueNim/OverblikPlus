@@ -53,15 +53,14 @@ public class Program
             _ => { }
         );
 
-        // 5) Registrér vores eget logger-service
+        
         builder.Services.AddSingleton<Serilog.ILogger>(Log.Logger);
         builder.Services.AddSingleton<ILoggerService, LoggerService>();
         
-        // Byg midlertidigt en serviceprovider, så vi kan logge tidligt
+       
         var tempProvider = builder.Services.BuildServiceProvider();
         var logger = tempProvider.GetRequiredService<ILoggerService>();
 
-        // 6) Database: Læs DBConnectionString (placeholder i appsettings.json)
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
         logger.LogInfo($"[TaskMicroService] DB Connection String: {dbConnectionString}");
 
@@ -69,15 +68,14 @@ public class Program
         builder.Services.AddDbContext<TaskDbContext>(options =>
             options.UseSqlServer(dbConnectionString));
 
-        // 7) Læs JWT-settings fra config (som er erstattet af sed i GitHub Actions)
-        var jwtIssuer = builder.Configuration["Jwt:Issuer"];       // "IssuerPlaceholder" før sed
-        var jwtAudience = builder.Configuration["Jwt:Audience"];   // "AudiencePlaceholder" før sed
-        var jwtKey = builder.Configuration["Jwt:Key"];            // "KeyPlaceholder" før sed
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];       
+        var jwtAudience = builder.Configuration["Jwt:Audience"];   
+        var jwtKey = builder.Configuration["Jwt:Key"];            
 
-        // Vil du have flere audiences? 
+        
         // -> parse evt. semikolon-separeret streng i stedet for blot 'jwtAudience'.
 
-        IdentityModelEventSource.ShowPII = true; // Viser flere detaljer i fejl
+        IdentityModelEventSource.ShowPII = true;
 
         logger.LogInfo($"[TaskMicroService] JWT Issuer: {jwtIssuer}");
         logger.LogInfo($"[TaskMicroService] JWT Audience: {jwtAudience}");
