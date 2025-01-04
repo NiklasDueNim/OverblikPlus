@@ -53,7 +53,8 @@ jobs:
           sed -i 's#EncryptionKeyPlaceholder#${{ secrets.ENCRYPTION_KEY }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
           sed -i 's#KeyPlaceholder#${{ secrets.JWT_KEY_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
           sed -i 's#IssuerPlaceholder#${{ secrets.JWT_ISSUER_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i 's#AudiencePlaceholder#${{ secrets.BLOB_BASE_URL_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i 's#AudiencePlaceholder#${{ secrets.JWT_AUDIENCE_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
+
 
       # 6. Gendanner afhængigheder
       - name: Restore dependencies
