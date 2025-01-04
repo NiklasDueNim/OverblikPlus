@@ -5,7 +5,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity; 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -26,7 +26,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Configure Serilog
+        // Configure Serilog (kun console som eksempel)
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateLogger();
@@ -61,16 +61,25 @@ public class Program
             options.UseSqlServer(dbConnectionString));
 
         // ---- JWT CONFIGURATION ----
+        // Din user-api issuer:
         var jwtIssuer = "https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net";
-        var jwtAudience = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
+
+        // Det er OK at have flere mulige audiences
+        var validAudiences = new[]
+        {
+            "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
+            "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net"
+        };
+
         var jwtKey = "MyVeryStrongSecretKeyForJWT1234567890123456789";
 
+        // Sæt default-schemes til JWT
         builder.Services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; 
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;    
             })
-            .AddJwtBearer("Bearer", options =>
+            .AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
@@ -83,11 +92,7 @@ public class Program
                     ValidateIssuerSigningKey = true,
 
                     ValidIssuer = jwtIssuer,
-                    ValidAudiences = new[]
-                    {
-                        "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-                        "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net"
-                    },
+                    ValidAudiences = validAudiences,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
                 };
             });
@@ -95,7 +100,6 @@ public class Program
         IdentityModelEventSource.ShowPII = true;
 
         logger.LogInfo($"JWT Issuer in Runtime: {jwtIssuer}");
-        logger.LogInfo($"JWT Audience in Runtime: {jwtAudience}");
         logger.LogInfo($"JWT Key Length: {jwtKey.Length}");
 
         // ---- Blob Storage ----
@@ -126,19 +130,13 @@ public class Program
                 });
         });
 
-
-        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<TaskDbContext>()
-            .AddDefaultTokenProviders();
-
         // ---- SERVICES ----
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddControllers();
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        // ---- DEPENDENCY INJECTION ----
+        // ---- DEPENDENCY INJECTION (TaskMicroService) ----
         builder.Services.AddScoped<ITaskService, TaskService>();
         builder.Services.AddScoped<ITaskStepService, TaskStepService>();
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
@@ -162,10 +160,12 @@ public class Program
             var response = context.HttpContext.Response;
             if (response.StatusCode == 301 || response.StatusCode == 302)
             {
+                // Hvis .NET prøver at redirecte med 302, oversætter vi det i stedet til 403
                 response.StatusCode = 403;
             }
         });
 
+        // OPTIONS/CORS håndtering:
         app.Use(async (context, next) =>
         {
             if (context.Request.Method == "OPTIONS")
@@ -195,7 +195,11 @@ public class Program
 
         app.UseRouting();
         app.UseCors("AllowSpecificOrigins");
+
+        // Custom middleware til error-handling
         app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+        // Her aktiveres auth
         app.UseAuthentication();
         app.UseAuthorization();
 
