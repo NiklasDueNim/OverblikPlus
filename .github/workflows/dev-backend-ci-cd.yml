@@ -39,17 +39,21 @@ jobs:
           az account show
       
 
-      # 5.
+     # 5. Overskriv placeholders
       - name: Replace config placeholders (Dev)
         run: |
           echo "Updating TaskMicroService configuration..."
-          DB_CONN="${{ secrets.DB_CONNECTION_STRING_DEV }}"
-          BLOB_CONN="${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}"
-          JWT_KEY="${{ secrets.JWT_KEY_DEV }}"
-          JWT_ISSUER="${{ secrets.JWT_ISSUER_DEV }}"
-          JWT_AUDIENCE="${{ secrets.JWT_AUDIENCE_DEV }}"
-          BLOB_URL="${{ secrets.BLOB_BASE_URL_DEV }}"
-          ENC_KEY="${{ secrets.ENCRYPTION_KEY }}"
+          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING_DEV }}" | tr -d '\n')
+          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" | tr -d '\n')
+          JWT_KEY=$(echo "${{ secrets.JWT_KEY_DEV }}" | tr -d '\n')
+          JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_DEV }}" | tr -d '\n')
+          JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE_DEV }}" | tr -d '\n')
+          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL_DEV }}" | tr -d '\n')
+          ENC_KEY=$(echo "${{ secrets.ENCRYPTION_KEY }}" | tr -d '\n')
+
+          echo "DB_CONN length: ${#DB_CONN}"
+          echo "BLOB_CONN length: ${#BLOB_CONN}"
+          echo "JWT_AUDIENCE length: ${#JWT_AUDIENCE}"
 
           sed -i "s/\"dev-or-prod\"/\"dev\"/g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
