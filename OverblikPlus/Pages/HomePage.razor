@@ -157,13 +157,14 @@
         currentTaskIndex = (currentTaskIndex + 1) % uncompletedTasks.Count;
         await Task.CompletedTask;
     }
-
+    
+    
     private async Task GoToTaskSteps(int taskId)
     {
         var steps = await TaskStepService.GetStepsForTask(taskId);
         if (steps != null && steps.Count > 0)
         {
-            NavigationManager.NavigateTo($"/task-steps/{taskId}");
+            NavigationManager.NavigateTo($"/task-step-view/{taskId}/step/{steps.First().Id}");
         }
         else
         {
