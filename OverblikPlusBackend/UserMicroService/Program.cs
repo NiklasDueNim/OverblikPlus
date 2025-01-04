@@ -63,12 +63,16 @@ public class Program
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<UserDbContext>()
             .AddDefaultTokenProviders();
+        
+        
 
         // --- JWT CONFIGURATION ---
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];
         var jwtAudience = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
 
-        var jwtKey = builder.Configuration["Jwt:Key"];
+        
+        var jwtKey = "MyVeryStrongSecretKeyForJWT1234567890123456789";
+        //var jwtKey = builder.Configuration["Jwt:Key"];
                      
         builder.Services.AddAuthentication(options =>
             {
