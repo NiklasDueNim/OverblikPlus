@@ -54,7 +54,6 @@ public class Program
             options.UseSqlServer(dbConnectionString));
 
         // --- ENCRYPTION KEY ---
-        // appsettings.json -> "EncryptionSettings": { "EncryptionKey": "EncryptionKeyPlaceholder" }
         var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
         if (string.IsNullOrEmpty(encryptionKey))
         {
@@ -68,12 +67,10 @@ public class Program
             .AddDefaultTokenProviders();
 
         // --- JWT CONFIGURATION ---
-        // Læs placeholders "IssuerPlaceholder", "AudiencePlaceholder", "KeyPlaceholder" fra appsettings.json
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];
         var jwtAudience = builder.Configuration["Jwt:Audience"];
         var jwtKey = builder.Configuration["Jwt:Key"];
 
-        // Log info om de læste værdier
         logger.LogInfo($"[UserMicroService] Jwt:Issuer   = {jwtIssuer}");
         logger.LogInfo($"[UserMicroService] Jwt:Audience = {jwtAudience}");
         logger.LogInfo($"[UserMicroService] Jwt:Key Len  = {jwtKey?.Length}");
