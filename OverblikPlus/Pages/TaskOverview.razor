@@ -109,6 +109,7 @@
             .Where(task =>
                 !task.NextOccurrence.HasValue ||
                 task.NextOccurrence.Value.Date == SelectedDate.Date ||
+                task.RecurrenceType == "None" ||
                 (task.RecurrenceType == "Daily" && (SelectedDate.Date - task.NextOccurrence.Value.Date).Days % task.RecurrenceInterval == 0) ||
                 (task.RecurrenceType == "Weekly" && (SelectedDate.Date - task.NextOccurrence.Value.Date).Days % (task.RecurrenceInterval * 7) == 0))
             .ToList();
