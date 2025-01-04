@@ -66,7 +66,8 @@ public class Program
 
         // --- JWT CONFIGURATION ---
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-        var jwtAudience = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net;";
+        var jwtAudience = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
+
         var jwtKey = builder.Configuration["Jwt:Key"];
                      
         builder.Services.AddAuthentication(options =>
