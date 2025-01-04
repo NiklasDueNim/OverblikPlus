@@ -38,24 +38,36 @@ jobs:
         run: |
           az account show
       
-      # 5. Overskriv placeholders
+
+      # 5.
       - name: Replace config placeholders (Dev)
         run: |
-          sed -i 's/"dev-or-prod"/"dev"/g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#DBConnectionStringPlaceholder#${{ secrets.DB_CONNECTION_STRING_DEV }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#BlobStorageConnectionStringPlaceholder#${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#KeyPlaceholder#${{ secrets.JWT_KEY_DEV }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#IssuerPlaceholder#${{ secrets.JWT_ISSUER_DEV }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#AudiencePlaceholder#${{ secrets.JWT_AUDIENCE_DEV }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#BlobStorageBaseUrlPlaceholder#${{ secrets.BLOB_BASE_URL_DEV }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          
-          sed -i 's#DBConnectionStringPlaceholder#${{ secrets.DB_CONNECTION_STRING_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i 's#EncryptionKeyPlaceholder#${{ secrets.ENCRYPTION_KEY }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i 's#KeyPlaceholder#${{ secrets.JWT_KEY_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i 's#IssuerPlaceholder#${{ secrets.JWT_ISSUER_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i 's#AudiencePlaceholder#${{ secrets.JWT_AUDIENCE_DEV }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
+          echo "Updating TaskMicroService configuration..."
+          DB_CONN="${{ secrets.DB_CONNECTION_STRING_DEV }}"
+          BLOB_CONN="${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}"
+          JWT_KEY="${{ secrets.JWT_KEY_DEV }}"
+          JWT_ISSUER="${{ secrets.JWT_ISSUER_DEV }}"
+          JWT_AUDIENCE="${{ secrets.JWT_AUDIENCE_DEV }}"
+          BLOB_URL="${{ secrets.BLOB_BASE_URL_DEV }}"
+          ENC_KEY="${{ secrets.ENCRYPTION_KEY }}"
 
+          sed -i "s/\"dev-or-prod\"/\"dev\"/g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#BlobStorageConnectionStringPlaceholder#$BLOB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#BlobStorageBaseUrlPlaceholder#$BLOB_URL#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
 
+          echo "Updating UserMicroService configuration..."
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#EncryptionKeyPlaceholder#$ENC_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+
+          echo "Configuration updated successfully."
+      
       # 6. Gendanner afhængigheder
       - name: Restore dependencies
         run: |
