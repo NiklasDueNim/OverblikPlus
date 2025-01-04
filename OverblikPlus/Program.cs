@@ -23,8 +23,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddBlazoredLocalStorage();
-
-builder.Services.AddSingleton<CustomAuthStateProvider>();
+builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
     new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())
