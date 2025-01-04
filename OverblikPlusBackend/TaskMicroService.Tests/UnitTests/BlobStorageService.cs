@@ -48,7 +48,7 @@ public class BlobStorageServiceTests
         var result = await _blobStorageService.UploadImageAsync(stream, fileName);
 
         // Assert
-        Assert.Equal($"{_blobBaseUrl}/images/{fileName}", result);
+        Assert.Equal($"{_blobBaseUrl}/{fileName}", result);
         _mockBlobClient.Verify(x => x.UploadAsync(It.IsAny<Stream>(), true, default), Times.Once);
     }
 
