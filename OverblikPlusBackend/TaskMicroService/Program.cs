@@ -25,20 +25,16 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // 1) Konfigurer Serilog til console (simpelt eksempel).
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateLogger();
 
         var builder = WebApplication.CreateBuilder(args);
 
-        // 2) Brug Serilog som logging.
         builder.Host.UseSerilog();
 
-        // 3) Læs environment (Development / Production / etc.)
         var environment = builder.Environment.EnvironmentName;
 
-        // 4) Application Insights - valgfrit
         builder.Services.AddApplicationInsightsTelemetry(options =>
         {
             options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"]
@@ -64,7 +60,7 @@ public class Program
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
         logger.LogInfo($"[TaskMicroService] DB Connection String: {dbConnectionString}");
 
-        // Registrer EF DbContext
+
         builder.Services.AddDbContext<TaskDbContext>(options =>
             options.UseSqlServer(dbConnectionString));
 
@@ -73,7 +69,6 @@ public class Program
         var jwtKey = builder.Configuration["Jwt:Key"];            
 
         
-        // -> parse evt. semikolon-separeret streng i stedet for blot 'jwtAudience'.
 
         IdentityModelEventSource.ShowPII = true;
 
@@ -81,7 +76,6 @@ public class Program
         logger.LogInfo($"[TaskMicroService] JWT Audience: {jwtAudience}");
         logger.LogInfo($"[TaskMicroService] JWT Key Length: {jwtKey?.Length}");
 
-        // 8) Konfigurer JWT-bearer
         builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -104,7 +98,6 @@ public class Program
                 };
             });
 
-        // 9) BlobStorage
         var blobConnectionString = builder.Configuration.GetConnectionString("BlobStorageConnectionString");
         logger.LogInfo($"[TaskMicroService] Blob Connection: {blobConnectionString}");
         builder.Services.AddSingleton(_ => new BlobServiceClient(blobConnectionString));
@@ -113,14 +106,13 @@ public class Program
         builder.Services.AddSingleton(blobBaseUrl);
         logger.LogInfo($"[TaskMicroService] Blob Base Url: {blobBaseUrl}");
 
-        // 10) CORS
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowSpecificOrigins",
                 policy =>
                 {
                     policy.WithOrigins(
-                            // Du kan evt. også sætte disse via placeholders hvis du vil
+                            // sættes via placeholders
                             "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
                             "https://overblikplus.dk"
                         )
@@ -131,29 +123,24 @@ public class Program
                 });
         });
 
-        // 11) Registrer services / controllers / swagger / AutoMapper
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddControllers();
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        // 12) DI (TaskMicroService)
         builder.Services.AddScoped<ITaskService, TaskService>();
         builder.Services.AddScoped<ITaskStepService, TaskStepService>();
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
 
-        // 13) FluentValidation
         builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
         builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
         builder.Services.AddScoped<IValidator<CreateCalendarEventDto>, CreateCalendarEventDtoValidator>();
         builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 
-        // 14) Byg applikationen
         var app = builder.Build();
 
-        // 15) Middleware - Statuskoder
         app.UseStatusCodePages(context =>
         {
             var response = context.HttpContext.Response;
@@ -164,7 +151,6 @@ public class Program
             return Task.CompletedTask;
         });
 
-        // 16) Håndter OPTIONS/CORS
         app.Use(async (context, next) =>
         {
             if (context.Request.Method == "OPTIONS")
@@ -180,31 +166,26 @@ public class Program
             await next();
         });
 
-        // 17) Forwarded headers (typisk på Azure)
         app.UseForwardedHeaders(new ForwardedHeadersOptions
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedProto
         });
 
-        // 18) Swagger
         app.UseSwagger();
         app.UseSwaggerUI();
 
-        // 19) Dev-exceptions (fjern i prod om ønsket)
+        // Fjernes i production
         app.UseDeveloperExceptionPage();
 
         app.UseHttpsRedirection();
         app.UseRouting();
         app.UseCors("AllowSpecificOrigins");
 
-        // 20) Custom error-handling middleware
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-        // 21) Auth
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // 22) Map controllers
         app.MapControllers();
 
         try
