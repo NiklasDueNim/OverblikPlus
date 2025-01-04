@@ -4,6 +4,7 @@
 @using OverblikPlus.Services.Interfaces
 @inject IUserService UserService
 @inject ITaskService TaskService
+@inject ITaskStepService TaskStepService
 @inject CustomAuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
@@ -107,14 +108,14 @@
                 todaysTasks = new List<ReadTaskDto>();
                 return;
             }
-            
+
             todaysTasks = result.Data
                 .Where(task =>
-                    string.IsNullOrEmpty(task.RecurrenceType) || 
+                    string.IsNullOrEmpty(task.RecurrenceType) ||
                     task.RecurrenceType == "None" ||
                     (task.NextOccurrence.HasValue && task.NextOccurrence.Value.Date == DateTime.Today))
                 .ToList();
-            
+
             currentTaskIndex = 0;
             UpdateProgress();
         }
@@ -125,14 +126,12 @@
         }
     }
 
-
-
     private void UpdateProgress()
     {
         if (todaysTasks.Count > 0)
         {
             var completedTasks = todaysTasks.Count(t => t.IsCompleted);
-            taskCompletionPercentage = completedTasks / todaysTasks.Count * 100;
+            taskCompletionPercentage = (int)Math.Round((double)completedTasks / todaysTasks.Count * 100);
         }
         else
         {
@@ -153,7 +152,15 @@
 
     private async Task GoToTaskSteps(int taskId)
     {
-        NavigationManager.NavigateTo($"/task-steps/{taskId}");
+        var steps = await TaskStepService.GetStepsForTask(taskId);
+        if (steps != null && steps.Count > 0)
+        {
+            NavigationManager.NavigateTo($"/task-steps/{taskId}");
+        }
+        else
+        {
+            Console.WriteLine($"No steps found for task {taskId}");
+        }
     }
 
     private async Task OnTaskStatusChanged(int taskId, bool isCompleted)
