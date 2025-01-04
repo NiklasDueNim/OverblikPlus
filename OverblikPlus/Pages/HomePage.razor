@@ -76,7 +76,6 @@
     </div>
 </div>
 
-
 @code {
     private ReadUserDto user = new();
     private List<ReadTaskDto> todaysTasks = new();
@@ -119,6 +118,11 @@
                     task.RecurrenceType == "None" ||
                     (task.NextOccurrence.HasValue && task.NextOccurrence.Value.Date == DateTime.Today))
                 .ToList();
+
+            foreach (var task in todaysTasks)
+            {
+                task.HasSteps = (await TaskStepService.GetStepsForTask(task.Id)).Any();
+            }
 
             currentTaskIndex = 0;
             UpdateProgress();
