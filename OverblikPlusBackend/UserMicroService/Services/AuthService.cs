@@ -198,7 +198,7 @@ namespace UserMicroService.Services
                 new Claim(ClaimTypes.Role, user.Role)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MyVeryStrongSecretKeyForJWT1234567890123456789"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
