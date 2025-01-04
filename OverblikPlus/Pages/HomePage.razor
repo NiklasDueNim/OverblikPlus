@@ -33,7 +33,10 @@
             }
             <p>@currentTask.Description</p>
             <div class="d-flex justify-content-between">
+                @if (currentTask.HasSteps)
+                {
                 <button class="btn btn-primary" @onclick="() => GoToTaskSteps(currentTask.Id)">Gå til trin</button>
+                }
                 <button class="btn btn-secondary" @onclick="NextTask">Næste</button>
             </div>
         </div>
