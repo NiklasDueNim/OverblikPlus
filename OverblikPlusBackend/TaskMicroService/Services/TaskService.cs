@@ -81,19 +81,19 @@ namespace TaskMicroService.Services
                 var blobFileName = $"{Guid.NewGuid()}.jpg";
                 taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
                 Log.Logger.Information($"Image URL: {taskEntity.ImageUrl}");
-
             }
 
-            taskEntity.NextOccurrence = createTaskDto.RecurrenceType != "None"
+            taskEntity.NextOccurrence = createTaskDto.RecurrenceType == "None"
                 ? createTaskDto.StartDate
-                : DateTime.MinValue;
+                : CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
 
             _dbContext.Tasks.Add(taskEntity);
             await _dbContext.SaveChangesAsync();
 
             return Result<int>.SuccessResult(taskEntity.Id);
         }
-
+        
+        
         public async Task<Result> DeleteTask(int id)
         {
             var task = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
@@ -150,6 +150,7 @@ namespace TaskMicroService.Services
             await _dbContext.SaveChangesAsync();
             return Result.SuccessResult();
         }
+        
 
         public async Task<Result<IEnumerable<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date)
         {
