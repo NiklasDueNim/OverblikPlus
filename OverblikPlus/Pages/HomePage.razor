@@ -19,50 +19,50 @@
 
     @if (taskViewMode == "Single")
     {
-        <div class="card mb-4">
-            @if (uncompletedTasks.Count > 0)
-            {
-                var currentTask = uncompletedTasks[currentTaskIndex];
-                <div class="card-header">
-                    <h4>@currentTask.Name</h4>
-                </div>
-                <div class="card-body">
-                    @if (!string.IsNullOrEmpty(currentTask.Image))
-                    {
-                        <img src="@currentTask.Image" alt="Task Image" class="img-fluid mb-3" style="max-width: 100%; height: auto;" />
-                    }
-                    <p>@currentTask.Description</p>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-primary" @onclick="() => GoToTaskSteps(currentTask.Id)">Gå til trin</button>
-                        <button class="btn btn-secondary" @onclick="NextTask">Næste</button>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <p>Ingen uløste opgaver for i dag!</p>
-            }
+    <div class="card mb-4">
+        @if (uncompletedTasks.Count > 0)
+        {
+        var currentTask = uncompletedTasks[currentTaskIndex];
+        <div class="card-header">
+            <h4>@currentTask.Name</h4>
         </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(currentTask.Image))
+            {
+            <img src="@currentTask.Image" alt="Task Image" class="img-fluid mb-3" style="max-width: 100%; height: auto; max-height: 300px;" />
+            }
+            <p>@currentTask.Description</p>
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-primary" @onclick="() => GoToTaskSteps(currentTask.Id)">Gå til trin</button>
+                <button class="btn btn-secondary" @onclick="NextTask">Næste</button>
+            </div>
+        </div>
+        }
+        else
+        {
+        <p>Ingen uløste opgaver for i dag!</p>
+        }
+    </div>
     }
     else if (taskViewMode == "List")
     {
-        <ul class="list-group mb-4">
-            @foreach (var task in todaysTasks)
+    <ul class="list-group mb-4">
+        @foreach (var task in todaysTasks)
+        {
+        <li class="list-group-item d-flex align-items-center">
+            @if (!string.IsNullOrEmpty(task.Image))
             {
-                <li class="list-group-item d-flex align-items-center">
-                    @if (!string.IsNullOrEmpty(task.Image))
-                    {
-                        <img src="@task.Image" alt="Task Image" class="img-thumbnail me-3" style="max-width: 50px; max-height: 50px;" />
-                    }
-                    <input
-                        type="checkbox"
-                        class="form-check-input me-2"
-                        checked="@task.IsCompleted"
-                        @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)" />
-                    <span>@task.Name</span>
-                </li>
+            <img src="@task.Image" alt="Task Image" class="img-thumbnail me-3" style="max-width: 50px; max-height: 50px;" />
             }
-        </ul>
+            <input
+                type="checkbox"
+                class="form-check-input me-2"
+                checked="@task.IsCompleted"
+                @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)" />
+            <span>@task.Name</span>
+        </li>
+        }
+    </ul>
     }
 
     <h3 class="mb-3">Fremgangen med dine opgaver</h3>
@@ -72,6 +72,7 @@
         </div>
     </div>
 </div>
+
 
 @code {
     private ReadUserDto user = new();
