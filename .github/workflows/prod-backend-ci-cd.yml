@@ -38,50 +38,68 @@ jobs:
         run: |
           az account show
           
-      # 12. Overskriv placeholders
+       # 5. Overskriv placeholders
       - name: Replace config placeholders (Prod)
         run: |
-          sed -i 's/"dev-or-prod"/"prod"/g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#DBConnectionStringPlaceholder#${{ secrets.DB_CONNECTION_STRING_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#BlobStorageConnectionStringPlaceholder#${{ secrets.BLOB_STORAGE_CONNECTION_STRING_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#KeyPlaceholder#${{ secrets.JWT_KEY_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#IssuerPlaceholder#${{ secrets.JWT_ISSUER_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#AudiencePlaceholder#${{ secrets.JWT_AUDIENCE_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i 's#BlobStorageBaseUrlPlaceholder#${{ secrets.BLOB_BASE_URL_PROD }}#g' ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          echo "Updating TaskMicroService configuration..."
+          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING_PROD }}" | tr -d '\n')
+          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING_PROD }}" | tr -d '\n')
+          JWT_KEY=$(echo "${{ secrets.JWT_KEY_PROD }}" | tr -d '\n')
+          JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_PROD }}" | tr -d '\n')
+          JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE_PROD }}" | tr -d '\n')
+          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL_PROD }}" | tr -d '\n')
+          ENC_KEY=$(echo "${{ secrets.ENCRYPTION_KEY }}" | tr -d '\n')
 
-          sed -i 's#DBConnectionStringPlaceholder#${{ secrets.DB_CONNECTION_STRING_PROD }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i 's#EncryptionKeyPlaceholder#${{ secrets.ENCRYPTION_KEY }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i 's#KeyPlaceholder#${{ secrets.JWT_KEY_PROD }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i 's#IssuerPlaceholder#${{ secrets.JWT_ISSUER_PROD }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i 's#AudiencePlaceholder#${{ secrets.BLOB_BASE_URL_PROD }}#g' ./OverblikPlusBackend/UserMicroService/appsettings.json
+          echo "DB_CONN length: ${#DB_CONN}"
+          echo "JWT_AUDIENCE: $JWT_AUDIENCE"
 
-      # 5. Gendanner afhængigheder
+          echo "BLOB_CONN length: ${#BLOB_CONN}"
+          echo "JWT_AUDIENCE length: ${#JWT_AUDIENCE}"
+
+          sed -i "s/\"dev-or-prod\"/\"dev\"/g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#BlobStorageConnectionStringPlaceholder#$BLOB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#BlobStorageBaseUrlPlaceholder#$BLOB_URL#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+
+          echo "Updating UserMicroService configuration..."
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#EncryptionKeyPlaceholder#$ENC_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+
+          echo "Configuration updated successfully."
+
+      # 6. Gendanner afhængigheder
       - name: Restore dependencies
         run: |
           for csproj in $(find . -name '*.csproj'); do
             dotnet restore "$csproj"
           done
 
-      # 6. Bygger projekterne (Release)
+      # 7. Bygger projekterne (Release)
       - name: Build projects
         run: |
           for csproj in $(find . -name '*.csproj'); do
             dotnet build "$csproj" --configuration Release --no-restore
           done
 
-      # 7. Kører tests
+      # 8. Kører tests
       - name: Run tests
         run: |
           for csproj in $(find . -name '*.Tests.csproj' ! -name '*OverblikPlus.Frontend.Tests*'); do
             dotnet test "$csproj" --no-restore --verbosity normal
           done
 
-      # 8. Login til Azure Container Registry (ACR)
+      # 9. Login til Azure Container Registry (ACR)
       - name: Login to Azure Container Registry
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      # 9. Bygger Docker-billedet
+      # 10. Bygger Docker-billedet
       - name: Build Docker image
         run: |
           docker build --platform linux/amd64 \
@@ -90,12 +108,12 @@ jobs:
             --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
             OverblikPlusBackend
 
-      # 10. Pusher Docker-billedet til ACR
+      # 11. Pusher Docker-billedet til ACR
       - name: Push Docker image to ACR
         run: |
           docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}:latest
 
-      # 11. Opdater Azure App Service til det nyeste Docker-image
+      # 12. Opdater Azure App Service til det nyeste Docker-image
       - name: Update Azure App Service
         run: |
           az webapp config container set \
