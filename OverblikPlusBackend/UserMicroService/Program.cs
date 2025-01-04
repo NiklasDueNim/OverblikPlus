@@ -42,7 +42,6 @@ public class Program
         var logger = tempProvider.GetRequiredService<ILoggerService>();
 
         // --- DATABASE CONNECTION ---
-        // Læser placeholder "DBConnectionStringPlaceholder" fra appsettings.json (overskrives i GitHub Actions)
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
         Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
         if (string.IsNullOrEmpty(dbConnectionString))
