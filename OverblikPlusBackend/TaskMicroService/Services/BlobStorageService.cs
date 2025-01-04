@@ -16,19 +16,19 @@ public class BlobStorageService : IBlobStorageService
     
     public async Task<string> UploadImageAsync(Stream imageStream, string fileName)
     {
-        if (imageStream == null) 
+        if (imageStream == null)
             throw new ArgumentNullException(nameof(imageStream));
-        
-        if (string.IsNullOrEmpty(fileName)) 
+
+        if (string.IsNullOrEmpty(fileName))
             throw new ArgumentNullException(nameof(fileName));
 
         var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
         await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
-        
+
         var blobClient = containerClient.GetBlobClient(fileName);
         await blobClient.UploadAsync(imageStream, overwrite: true);
-        
-        return $"{_blobBaseUrl}/{ContainerName}/{fileName}";
+
+        return $"{_blobBaseUrl.TrimEnd('/')}/{fileName}";
     }
 
     
