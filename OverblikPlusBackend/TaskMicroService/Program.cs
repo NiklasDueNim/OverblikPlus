@@ -5,7 +5,6 @@ using FluentValidation.AspNetCore;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Identity; 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -26,64 +25,74 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Configure Serilog (kun console som eksempel)
+        // 1) Konfigurer Serilog til console (simpelt eksempel).
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateLogger();
 
         var builder = WebApplication.CreateBuilder(args);
 
-        // Register Serilog
+        // 2) Brug Serilog som logging.
         builder.Host.UseSerilog();
 
+        // 3) Læs environment (Development / Production / etc.)
         var environment = builder.Environment.EnvironmentName;
 
-        // ---- Application Insights ----
+        // 4) Application Insights - valgfrit
         builder.Services.AddApplicationInsightsTelemetry(options =>
         {
-            options.ConnectionString = "InstrumentationKey=b97b1b86-165e-4cfd-a348-149f9d0c992d";
+            options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"]
+                ?? "InstrumentationKey=b97b1b86-165e-4cfd-a348-149f9d0c992d";
         });
         builder.Logging.AddApplicationInsights(
-            configureTelemetryConfiguration: (config) =>
-                config.ConnectionString = "InstrumentationKey=b97b1b86-165e-4cfd-a348-149f9d0c992d",
-            configureApplicationInsightsLoggerOptions: (options) => { });
+            config =>
+            {
+                config.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"]
+                    ?? "InstrumentationKey=b97b1b86-165e-4cfd-a348-149f9d0c992d";
+            },
+            _ => { }
+        );
 
-        // ---- LOGGER SERVICE ----
-        builder.Services.AddSingleton(Log.Logger);
+        // 5) Registrér vores eget logger-service
+        builder.Services.AddSingleton<Serilog.ILogger>(Log.Logger);
         builder.Services.AddSingleton<ILoggerService, LoggerService>();
-        var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerService>();
+        
+        // Byg midlertidigt en serviceprovider, så vi kan logge tidligt
+        var tempProvider = builder.Services.BuildServiceProvider();
+        var logger = tempProvider.GetRequiredService<ILoggerService>();
 
-        // ---- DATABASE CONFIGURATION ----
-        var dbConnectionString = builder.Configuration["ConnectionStrings:DBConnectionString"];
-        logger.LogInfo($"Database Connection String: {dbConnectionString}");
+        // 6) Database: Læs DBConnectionString (placeholder i appsettings.json)
+        var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
+        logger.LogInfo($"[TaskMicroService] DB Connection String: {dbConnectionString}");
 
+        // Registrer EF DbContext
         builder.Services.AddDbContext<TaskDbContext>(options =>
             options.UseSqlServer(dbConnectionString));
 
-        // ---- JWT CONFIGURATION ----
-        // Din user-api issuer:
-        var jwtIssuer = "https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net";
+        // 7) Læs JWT-settings fra config (som er erstattet af sed i GitHub Actions)
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];       // "IssuerPlaceholder" før sed
+        var jwtAudience = builder.Configuration["Jwt:Audience"];   // "AudiencePlaceholder" før sed
+        var jwtKey = builder.Configuration["Jwt:Key"];            // "KeyPlaceholder" før sed
 
-        // Det er OK at have flere mulige audiences
-        var validAudiences = new[]
-        {
-            "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-            "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net"
-        };
+        // Vil du have flere audiences? 
+        // -> parse evt. semikolon-separeret streng i stedet for blot 'jwtAudience'.
 
-        var jwtKey = "MyVeryStrongSecretKeyForJWT1234567890123456789";
+        IdentityModelEventSource.ShowPII = true; // Viser flere detaljer i fejl
 
-        // Sæt default-schemes til JWT
+        logger.LogInfo($"[TaskMicroService] JWT Issuer: {jwtIssuer}");
+        logger.LogInfo($"[TaskMicroService] JWT Audience: {jwtAudience}");
+        logger.LogInfo($"[TaskMicroService] JWT Key Length: {jwtKey?.Length}");
+
+        // 8) Konfigurer JWT-bearer
         builder.Services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; 
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;    
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
-
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -92,36 +101,30 @@ public class Program
                     ValidateIssuerSigningKey = true,
 
                     ValidIssuer = jwtIssuer,
-                    ValidAudiences = validAudiences,
+                    ValidAudience = jwtAudience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
                 };
             });
 
-        IdentityModelEventSource.ShowPII = true;
+        // 9) BlobStorage
+        var blobConnectionString = builder.Configuration.GetConnectionString("BlobStorageConnectionString");
+        logger.LogInfo($"[TaskMicroService] Blob Connection: {blobConnectionString}");
+        builder.Services.AddSingleton(_ => new BlobServiceClient(blobConnectionString));
 
-        logger.LogInfo($"JWT Issuer in Runtime: {jwtIssuer}");
-        logger.LogInfo($"JWT Key Length: {jwtKey.Length}");
-
-        // ---- Blob Storage ----
-        var blobConnectionString = builder.Configuration["ConnectionStrings:BlobStorageConnectionString"];
-
-        builder.Services.AddSingleton(x => new BlobServiceClient(blobConnectionString));
-        logger.LogInfo($"Blob Storage Connection String: {blobConnectionString}");
-
-        var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"];
-
+        var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"]; // "BlobStorageBaseUrlPlaceholder" før sed
         builder.Services.AddSingleton(blobBaseUrl);
-        logger.LogInfo($"Blob Base URL: {blobBaseUrl}");
+        logger.LogInfo($"[TaskMicroService] Blob Base Url: {blobBaseUrl}");
 
-        // ---- CORS ----
+        // 10) CORS
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowSpecificOrigins",
                 policy =>
                 {
                     policy.WithOrigins(
-                            "https://yellow-ocean-0f63e7903.4.azurestaticapps.net", // Dev
-                            "https://overblikplus.dk" // Prod
+                            // Du kan evt. også sætte disse via placeholders hvis du vil
+                            "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
+                            "https://overblikplus.dk"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
@@ -130,42 +133,40 @@ public class Program
                 });
         });
 
-        // ---- SERVICES ----
+        // 11) Registrer services / controllers / swagger / AutoMapper
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddControllers();
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        // ---- DEPENDENCY INJECTION (TaskMicroService) ----
+        // 12) DI (TaskMicroService)
         builder.Services.AddScoped<ITaskService, TaskService>();
         builder.Services.AddScoped<ITaskStepService, TaskStepService>();
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
 
-        // ---- VALIDATORS ----
+        // 13) FluentValidation
         builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
         builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
         builder.Services.AddScoped<IValidator<CreateCalendarEventDto>, CreateCalendarEventDtoValidator>();
-
         builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 
-        // ---- BUILD APPLICATION ----
+        // 14) Byg applikationen
         var app = builder.Build();
 
-        // ---- MIDDLEWARE CONFIGURATION ----
-
-        app.UseStatusCodePages(async context =>
+        // 15) Middleware - Statuskoder
+        app.UseStatusCodePages(context =>
         {
             var response = context.HttpContext.Response;
             if (response.StatusCode == 301 || response.StatusCode == 302)
             {
-                // Hvis .NET prøver at redirecte med 302, oversætter vi det i stedet til 403
                 response.StatusCode = 403;
             }
+            return Task.CompletedTask;
         });
 
-        // OPTIONS/CORS håndtering:
+        // 16) Håndter OPTIONS/CORS
         app.Use(async (context, next) =>
         {
             if (context.Request.Method == "OPTIONS")
@@ -178,36 +179,39 @@ public class Program
                 await context.Response.CompleteAsync();
                 return;
             }
-
             await next();
         });
 
+        // 17) Forwarded headers (typisk på Azure)
         app.UseForwardedHeaders(new ForwardedHeadersOptions
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedProto
         });
 
+        // 18) Swagger
         app.UseSwagger();
         app.UseSwaggerUI();
 
+        // 19) Dev-exceptions (fjern i prod om ønsket)
         app.UseDeveloperExceptionPage();
-        app.UseHttpsRedirection();
 
+        app.UseHttpsRedirection();
         app.UseRouting();
         app.UseCors("AllowSpecificOrigins");
 
-        // Custom middleware til error-handling
+        // 20) Custom error-handling middleware
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-        // Her aktiveres auth
+        // 21) Auth
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // 22) Map controllers
         app.MapControllers();
 
         try
         {
-            logger.LogInfo("Starting the application in {Environment} mode".Replace("{Environment}", environment));
+            logger.LogInfo($"[TaskMicroService] Starting application in {environment} mode.");
             app.Run();
         }
         catch (Exception ex)

@@ -23,57 +23,62 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        
-        // --- LOGGING / SERILOG ---
+
+        // --- Serilog: Skriver til Console (kan udvides) ---
         Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(builder.Configuration)
+            .ReadFrom.Configuration(builder.Configuration) // læser evt. serilog-indstillinger fra config
             .Enrich.FromLogContext()
             .WriteTo.Console()
-            .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
         builder.Host.UseSerilog();
 
-        // Register Serilog.ILogger
+        // --- Registrer Serilog.ILogger som singleton ---
         builder.Services.AddSingleton(Log.Logger);
-        
-        // --- DATABASE CONNECTION ---
-        var dbConnectionString = builder.Configuration["ConnectionStrings:DBConnectionString"];
-        
-        Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
+        builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
+        // Byg en midlertidig serviceprovider for at kunne logge tidligt
+        var tempProvider = builder.Services.BuildServiceProvider();
+        var logger = tempProvider.GetRequiredService<ILoggerService>();
+
+        // --- DATABASE CONNECTION ---
+        // Læser placeholder "DBConnectionStringPlaceholder" fra appsettings.json (overskrives i GitHub Actions)
+        var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
+        Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
         if (string.IsNullOrEmpty(dbConnectionString))
         {
             throw new Exception("DB_CONNECTION_STRING is missing or empty.");
         }
 
-        // --- ENCRYPTION KEY ---
-        var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
+        builder.Services.AddDbContext<UserDbContext>(options =>
+            options.UseSqlServer(dbConnectionString));
 
+        // --- ENCRYPTION KEY ---
+        // appsettings.json -> "EncryptionSettings": { "EncryptionKey": "EncryptionKeyPlaceholder" }
+        var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
         if (string.IsNullOrEmpty(encryptionKey))
         {
             throw new InvalidOperationException("Encryption key is missing.");
         }
         EncryptionHelper.SetEncryptionKey(encryptionKey);
-        
-        builder.Services.AddDbContext<UserDbContext>(options =>
-            options.UseSqlServer(dbConnectionString));
 
         // --- IDENTITY CONFIGURATION ---
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<UserDbContext>()
             .AddDefaultTokenProviders();
-        
-        
 
         // --- JWT CONFIGURATION ---
+        // Læs placeholders "IssuerPlaceholder", "AudiencePlaceholder", "KeyPlaceholder" fra appsettings.json
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-        var jwtAudience = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
+        var jwtAudience = builder.Configuration["Jwt:Audience"];
+        var jwtKey = builder.Configuration["Jwt:Key"];
 
-        
-        var jwtKey = "MyVeryStrongSecretKeyForJWT1234567890123456789";
-        //var jwtKey = builder.Configuration["Jwt:Key"];
-                     
+        // Log info om de læste værdier
+        logger.LogInfo($"[UserMicroService] Jwt:Issuer   = {jwtIssuer}");
+        logger.LogInfo($"[UserMicroService] Jwt:Audience = {jwtAudience}");
+        logger.LogInfo($"[UserMicroService] Jwt:Key Len  = {jwtKey?.Length}");
+
+        // Konfigurer JWT-bearer til at validere indkommende tokens
         builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -94,16 +99,15 @@ public class Program
                 };
             });
 
-        Console.WriteLine($"Jwt:Issuer   = {jwtIssuer}");
-        Console.WriteLine($"Jwt:Audience = {jwtAudience}");
-        Console.WriteLine($"Jwt:Key      = {jwtKey}");
-
-        // --- CORS CONFIGURATION ---
+        // --- CORS CONFIGURATION (eksempel) ---
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAll",
-                policy => policy.WithOrigins("https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-                        "http://localhost:5226", "https://overblikplus.dk")
+                policy => policy.WithOrigins(
+                        "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
+                        "http://localhost:5226",
+                        "https://overblikplus.dk"
+                    )
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials());
@@ -115,15 +119,16 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAutoMapper(typeof(Program));
 
-        // Registering services
+        // Register dine custom services
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+
+        // FluentValidation – fx
         builder.Services.AddScoped<IValidator<CreateUserDto>, CreateUserDtoValidator>();
         builder.Services.AddScoped<IValidator<UpdateUserDto>, UpdateUserDtoValidator>();
         builder.Services.AddScoped<IValidator<ReadUserDto>, ReadUserDtoValidator>();
         builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
         builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
-        builder.Services.AddSingleton<ILoggerService, LoggerService>();
 
         // --- BUILD APPLICATION ---
         var app = builder.Build();
@@ -131,25 +136,39 @@ public class Program
         // --- MIDDLEWARE & CONFIG ---
         if (app.Environment.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage();
+            app.UseDeveloperExceptionPage();  // for nem fejlfinding
             app.UseSwagger();
             app.UseSwaggerUI();
         }
         else
         {
+            // Du kan stadig vise Swagger i production, hvis du vil
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        
+
         app.UseHttpsRedirection();
 
+        // Log hver request
         app.UseSerilogRequestLogging();
+
         app.UseRouting();
         app.UseCors("AllowAll");
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // Map controllers
         app.MapControllers();
-        app.Run();
+
+        // Kør appen
+        try
+        {
+            logger.LogInfo($"[UserMicroService] Starting in {app.Environment.EnvironmentName} mode.");
+            app.Run();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Application start-up failed", ex);
+        }
     }
 }
