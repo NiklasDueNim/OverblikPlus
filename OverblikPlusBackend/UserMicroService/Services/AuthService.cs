@@ -203,7 +203,7 @@ namespace UserMicroService.Services
 
             var token = new JwtSecurityToken(
                 _configuration["Jwt:Issuer"],
-                _configuration["Jwt:Audience"],
+                "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net",
                 claims,
                 expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: creds);
