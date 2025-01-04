@@ -1,24 +1,43 @@
 @using OverblikPlus.Dtos.TaskSteps
 
+
+<style>
+    .task-step {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .task-step-text {
+        flex: 1;
+        margin-right: 10px;
+    }
+
+    .task-step-image {
+        max-width: 100px;
+        max-height: 100px;
+    }
+</style>
+
 <ul class="list-group">
     @foreach (var step in Steps)
     {
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
+    <li class="list-group-item task-step">
+        <div class="task-step-text">
             <span>@step.Text</span>
-            @if (!string.IsNullOrEmpty(step.Image))
-            {
-            <img src="@step.Image" alt="Step Image" class="img-thumbnail" style="width: 100px; height: auto;" />
-            }
         </div>
+        @if (!string.IsNullOrEmpty(step.Image))
+        {
+        <div class="task-step-image">
+            <img src="@step.Image" alt="Step Image" class="img-thumbnail" />
+        </div>
+        }
         <div>
             <button class="btn btn-secondary me-2" @onclick="() => OnEditStep.InvokeAsync(step)">Rediger Trin</button>
             <button class="btn btn-danger" @onclick="() => OnDeleteStep.InvokeAsync(step.Id)">Slet Trin</button>
         </div>
     </li>
     }
-
-
 </ul>
 
 @code {
