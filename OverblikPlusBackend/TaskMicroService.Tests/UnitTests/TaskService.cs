@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 using OverblikPlus.Shared.Interfaces;
 using OverblikPlus.Shared.Logging;
@@ -23,12 +24,13 @@ public class TaskServiceTests
     {
         var options = new DbContextOptionsBuilder<TaskDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
         _dbContext = new TaskDbContext(options);
 
         _mapperMock = new Mock<IMapper>();
         _blobStorageServiceMock = new Mock<IBlobStorageService>();
-        
+
         _taskService = new TaskService(_dbContext, _mapperMock.Object, _blobStorageServiceMock.Object, new Mock<ILoggerService>().Object);
     }
 
@@ -150,7 +152,7 @@ public class TaskServiceTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Success);
+        Assert.True(result.Success, result.Error);
         Assert.NotNull(result.Data);
         Assert.True(result.Data > 0);
     }

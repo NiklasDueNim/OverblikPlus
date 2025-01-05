@@ -72,25 +72,38 @@ namespace TaskMicroService.Services
             if (string.IsNullOrEmpty(createTaskDto.UserId))
                 return Result<int>.ErrorResult("UserId is required for the task.");
 
-            var taskEntity = _mapper.Map<TaskEntity>(createTaskDto);
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
+            try
             {
-                var imageBytes = Convert.FromBase64String(createTaskDto.ImageBase64);
-                using var stream = new MemoryStream(imageBytes);
-                var blobFileName = $"{Guid.NewGuid()}.jpg";
-                taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
-                Log.Logger.Information($"Image URL: {taskEntity.ImageUrl}");
+                var taskEntity = _mapper.Map<TaskEntity>(createTaskDto);
+
+                if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
+                {
+                    var imageBytes = Convert.FromBase64String(createTaskDto.ImageBase64);
+                    using var stream = new MemoryStream(imageBytes);
+                    var blobFileName = $"{Guid.NewGuid()}.jpg";
+                    taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
+                    Log.Logger.Information($"Image URL: {taskEntity.ImageUrl}");
+                }
+
+                taskEntity.NextOccurrence = createTaskDto.RecurrenceType == "None"
+                    ? createTaskDto.StartDate
+                    : CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
+
+                _dbContext.Tasks.Add(taskEntity);
+                await _dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return Result<int>.SuccessResult(taskEntity.Id);
             }
-
-            taskEntity.NextOccurrence = createTaskDto.RecurrenceType == "None"
-                ? createTaskDto.StartDate
-                : CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
-
-            _dbContext.Tasks.Add(taskEntity);
-            await _dbContext.SaveChangesAsync();
-
-            return Result<int>.SuccessResult(taskEntity.Id);
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError("Error creating task", ex);
+                return Result<int>.ErrorResult("An error occurred while creating the task.");
+            }
         }
         
         

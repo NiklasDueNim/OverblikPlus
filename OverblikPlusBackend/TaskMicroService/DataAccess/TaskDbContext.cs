@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using TaskMicroService.Entities;
 
 namespace TaskMicroService.DataAccess
@@ -12,6 +13,8 @@ namespace TaskMicroService.DataAccess
         public DbSet<TaskEntity> Tasks { get; set; }
         public DbSet<TaskStep> TaskSteps { get; set; }
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
+        public DatabaseFacade Database => base.Database;
+
         
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
