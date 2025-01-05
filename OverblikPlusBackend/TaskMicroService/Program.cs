@@ -102,7 +102,7 @@ public class Program
         logger.LogInfo($"[TaskMicroService] Blob Connection: {blobConnectionString}");
         builder.Services.AddSingleton(_ => new BlobServiceClient(blobConnectionString));
 
-        var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"]; // "BlobStorageBaseUrlPlaceholder" før sed
+        var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"];
         builder.Services.AddSingleton(blobBaseUrl);
         logger.LogInfo($"[TaskMicroService] Blob Base Url: {blobBaseUrl}");
 
@@ -112,7 +112,6 @@ public class Program
                 policy =>
                 {
                     policy.WithOrigins(
-                            // sættes via placeholders
                             "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
                             "https://overblikplus.dk"
                         )
@@ -175,7 +174,7 @@ public class Program
         app.UseSwagger();
         app.UseSwaggerUI();
 
-        // Fjernes i production
+        // Fjernes i produktion
         app.UseDeveloperExceptionPage();
 
         app.UseHttpsRedirection();
