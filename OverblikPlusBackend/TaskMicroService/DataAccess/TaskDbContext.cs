@@ -3,7 +3,7 @@ using TaskMicroService.Entities;
 
 namespace TaskMicroService.DataAccess
 {
-    public class TaskDbContext : DbContext
+    public class TaskDbContext : DbContext, ITaskDbContext
     {
         public TaskDbContext(DbContextOptions<TaskDbContext> options) : base(options)
         {
