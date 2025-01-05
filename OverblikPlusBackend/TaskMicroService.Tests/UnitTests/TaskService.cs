@@ -29,9 +29,9 @@ public class TaskServiceTests
         _dbContext = new TaskDbContext(options);
 
         _mapperMock = new Mock<IMapper>();
-        _blobStorageServiceMock = new Mock<IBlobStorageService>();
+        var imageServiceMock = new Mock<IImageService>();
 
-        _taskService = new TaskService(_dbContext, _mapperMock.Object, _blobStorageServiceMock.Object, new Mock<ILoggerService>().Object);
+        _taskService = new TaskService(_dbContext, _mapperMock.Object, imageServiceMock.Object, new Mock<ILoggerService>().Object);
     }
 
     [Fact]
@@ -130,8 +130,9 @@ public class TaskServiceTests
             UserId = "user123"
         };
 
-        _blobStorageServiceMock
-            .Setup(b => b.UploadImageAsync(It.IsAny<MemoryStream>(), It.IsAny<string>()))
+        var imageServiceMock = new Mock<IImageService>();
+        imageServiceMock
+            .Setup(i => i.UploadImageAsync(It.IsAny<string>()))
             .ReturnsAsync("http://example.com/uploaded-image.jpg");
 
         _mapperMock
@@ -147,8 +148,10 @@ public class TaskServiceTests
                 RequiresQrCodeScan = createTaskDto.RequiresQrCodeScan
             });
 
+        var taskService = new TaskService(_dbContext, _mapperMock.Object, imageServiceMock.Object, new Mock<ILoggerService>().Object);
+
         // Act
-        var result = await _taskService.CreateTask(createTaskDto);
+        var result = await taskService.CreateTask(createTaskDto);
 
         // Assert
         Assert.NotNull(result);
@@ -171,12 +174,15 @@ public class TaskServiceTests
         _dbContext.Tasks.Add(task);
         await _dbContext.SaveChangesAsync();
 
-        _blobStorageServiceMock
-            .Setup(b => b.DeleteImageAsync(It.IsAny<string>()))
+        var imageServiceMock = new Mock<IImageService>();
+        imageServiceMock
+            .Setup(i => i.DeleteImageAsync(It.IsAny<string>()))
             .Returns(Task.CompletedTask);
 
+        var taskService = new TaskService(_dbContext, _mapperMock.Object, imageServiceMock.Object, new Mock<ILoggerService>().Object);
+
         // Act
-        var result = await _taskService.DeleteTask(3);
+        var result = await taskService.DeleteTask(3);
 
         // Assert
         Assert.NotNull(result);

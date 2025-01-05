@@ -132,6 +132,7 @@ public class Program
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
         builder.Services.AddScoped<ITaskDbContext, TaskDbContext>();
+        builder.Services.AddScoped<IImageService, ImageService>();
 
         builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
         builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();

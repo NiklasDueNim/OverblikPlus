@@ -10,18 +10,18 @@ using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services
 {
-    public class TaskService : ITaskService //TODO: Implementer transaction i create og update. Central logging og result
+    public class TaskService : ITaskService
     {
         private readonly ITaskDbContext _dbContext;
         private readonly IMapper _mapper;
-        private readonly IBlobStorageService _blobStorageService;
+        private readonly IImageService _imageService;
         private readonly ILoggerService _logger;
 
-        public TaskService(ITaskDbContext dbContext, IMapper mapper, IBlobStorageService blobStorageService, ILoggerService logger)
+        public TaskService(ITaskDbContext dbContext, IMapper mapper, IImageService imageService, ILoggerService logger)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _blobStorageService = blobStorageService ?? throw new ArgumentNullException(nameof(blobStorageService));
+            _imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
             _logger = logger;
         }
 
@@ -80,16 +80,14 @@ namespace TaskMicroService.Services
 
                 if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
                 {
-                    var imageBytes = Convert.FromBase64String(createTaskDto.ImageBase64);
-                    using var stream = new MemoryStream(imageBytes);
-                    var blobFileName = $"{Guid.NewGuid()}.jpg";
-                    taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
-                    Log.Logger.Information($"Image URL: {taskEntity.ImageUrl}");
+                    taskEntity.ImageUrl = await _imageService.UploadImageAsync(createTaskDto.ImageBase64);
+                    _logger.LogInfo($"Image URL: {taskEntity.ImageUrl}");
                 }
 
                 taskEntity.NextOccurrence = createTaskDto.RecurrenceType == "None"
                     ? createTaskDto.StartDate
-                    : CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
+                    : CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType,
+                        createTaskDto.RecurrenceInterval);
 
                 _dbContext.Tasks.Add(taskEntity);
                 await _dbContext.SaveChangesAsync();
@@ -105,8 +103,7 @@ namespace TaskMicroService.Services
                 return Result<int>.ErrorResult("An error occurred while creating the task.");
             }
         }
-        
-        
+
         public async Task<Result> DeleteTask(int id)
         {
             var task = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
@@ -115,8 +112,7 @@ namespace TaskMicroService.Services
 
             if (!string.IsNullOrEmpty(task.ImageUrl))
             {
-                var blobFileName = task.ImageUrl.Substring(task.ImageUrl.LastIndexOf('/') + 1);
-                await _blobStorageService.DeleteImageAsync(blobFileName);
+                await _imageService.DeleteImageAsync(task.ImageUrl);
             }
 
             _dbContext.Tasks.Remove(task);
@@ -136,10 +132,7 @@ namespace TaskMicroService.Services
 
             if (!string.IsNullOrEmpty(updateTaskDto.ImageBase64))
             {
-                var imageBytes = Convert.FromBase64String(updateTaskDto.ImageBase64);
-                using var stream = new MemoryStream(imageBytes);
-                var blobFileName = $"{Guid.NewGuid()}.jpg";
-                taskEntity.ImageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
+                taskEntity.ImageUrl = await _imageService.UploadImageAsync(updateTaskDto.ImageBase64);
             }
 
             await _dbContext.SaveChangesAsync();
@@ -156,14 +149,14 @@ namespace TaskMicroService.Services
 
             if (!string.IsNullOrEmpty(task.RecurrenceType) && task.RecurrenceType != "None")
             {
-                task.NextOccurrence = CalculateNextOccurrence(task.NextOccurrence, task.RecurrenceType, task.RecurrenceInterval);
+                task.NextOccurrence =
+                    CalculateNextOccurrence(task.NextOccurrence, task.RecurrenceType, task.RecurrenceInterval);
                 task.IsCompleted = false;
             }
 
             await _dbContext.SaveChangesAsync();
             return Result.SuccessResult();
         }
-        
 
         public async Task<Result<IEnumerable<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date)
         {
@@ -173,7 +166,8 @@ namespace TaskMicroService.Services
                 .ToListAsync();
 
             if (!tasks.Any())
-                return Result<IEnumerable<ReadTaskDto>>.ErrorResult($"No tasks found for user {userId} on {date.ToShortDateString()}.");
+                return Result<IEnumerable<ReadTaskDto>>.ErrorResult(
+                    $"No tasks found for user {userId} on {date.ToShortDateString()}.");
 
             var taskDtos = _mapper.Map<List<ReadTaskDto>>(tasks);
             return Result<IEnumerable<ReadTaskDto>>.SuccessResult(taskDtos);
