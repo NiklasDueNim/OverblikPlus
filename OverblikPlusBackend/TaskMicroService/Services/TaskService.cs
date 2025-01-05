@@ -1,7 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OverblikPlus.Shared.Interfaces;
-using Serilog;
 using TaskMicroService.Common;
 using TaskMicroService.DataAccess;
 using TaskMicroService.dtos.Task;
