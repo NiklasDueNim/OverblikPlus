@@ -71,7 +71,7 @@ namespace TaskMicroService.Services
             if (string.IsNullOrEmpty(createTaskDto.UserId))
                 return Result<int>.ErrorResult("UserId is required for the task.");
 
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {

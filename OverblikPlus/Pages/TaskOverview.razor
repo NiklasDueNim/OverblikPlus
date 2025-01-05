@@ -107,15 +107,22 @@
     {
         FilteredTasks = AllTasks
             .Where(task =>
-                !task.NextOccurrence.HasValue ||
-                task.NextOccurrence.Value.Date == SelectedDate.Date ||
-                task.RecurrenceType == "None" ||
-                (task.RecurrenceType == "Daily" && (SelectedDate.Date - task.NextOccurrence.Value.Date).Days % task.RecurrenceInterval == 0) ||
-                (task.RecurrenceType == "Weekly" && (SelectedDate.Date - task.NextOccurrence.Value.Date).Days % (task.RecurrenceInterval * 7) == 0))
+                    (!task.NextOccurrence.HasValue && task.RecurrenceType == "None" 
+                                                   && task.StartDate.Date == SelectedDate.Date)
+
+                    || (task.NextOccurrence.HasValue 
+                        && task.NextOccurrence.Value.Date == SelectedDate.Date)
+
+                    || (task.RecurrenceType == "Daily" && task.NextOccurrence.HasValue
+                                                       && (SelectedDate.Date - task.NextOccurrence.Value.Date).Days % task.RecurrenceInterval == 0)
+
+                    || (task.RecurrenceType == "Weekly" && task.NextOccurrence.HasValue
+                                                        && (SelectedDate.Date - task.NextOccurrence.Value.Date).Days % (task.RecurrenceInterval * 7) == 0))
             .ToList();
 
         Console.WriteLine($"Filtered {FilteredTasks.Count} tasks for date {SelectedDate.Date}");
     }
+
 
     private void ShowPreviousDay()
     {
