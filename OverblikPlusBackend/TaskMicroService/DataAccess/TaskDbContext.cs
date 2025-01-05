@@ -12,6 +12,11 @@ namespace TaskMicroService.DataAccess
         public DbSet<TaskEntity> Tasks { get; set; }
         public DbSet<TaskStep> TaskSteps { get; set; }
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
+        
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return base.SaveChangesAsync(cancellationToken);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

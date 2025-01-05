@@ -12,12 +12,12 @@ namespace TaskMicroService.Services
 {
     public class TaskService : ITaskService //TODO: Implementer transaction i create og update. Central logging og result
     {
-        private readonly TaskDbContext _dbContext;
+        private readonly ITaskDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IBlobStorageService _blobStorageService;
         private readonly ILoggerService _logger;
 
-        public TaskService(TaskDbContext dbContext, IMapper mapper, IBlobStorageService blobStorageService, ILoggerService logger)
+        public TaskService(ITaskDbContext dbContext, IMapper mapper, IBlobStorageService blobStorageService, ILoggerService logger)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

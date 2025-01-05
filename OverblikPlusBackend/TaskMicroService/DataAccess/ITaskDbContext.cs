@@ -10,4 +10,7 @@ public interface ITaskDbContext
     DbSet<TaskStep> TaskSteps { get; }
     
     DbSet<CalendarEvent> CalendarEvents { get; }
+    
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
 }
