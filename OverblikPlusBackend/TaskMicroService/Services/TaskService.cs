@@ -68,10 +68,10 @@ namespace TaskMicroService.Services
         public async Task<Result<int>> CreateTask(CreateTaskDto createTaskDto)
         {
             _logger.LogInfo($"Creating new task for user = {createTaskDto.UserId}");
-    
+
             if (string.IsNullOrEmpty(createTaskDto.UserId))
             {
-                _logger.LogError("UserId is required for the task." , new Exception("UserId is required for the task."));
+                _logger.LogError("UserId is required for the task.", new Exception("UserId is required for the task."));
                 return Result<int>.ErrorResult("UserId is required for the task.");
             }
 
@@ -87,8 +87,15 @@ namespace TaskMicroService.Services
                     taskEntity.ImageUrl = await UploadImageAsync(createTaskDto.ImageBase64);
                 }
 
-                _logger.LogInfo("Calculating next occurrence...");
-                taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
+                if (!string.IsNullOrEmpty(createTaskDto.RecurrenceType))
+                {
+                    _logger.LogInfo("Calculating next occurrence...");
+                    taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
+                }
+                else
+                {
+                    taskEntity.NextOccurrence = createTaskDto.StartDate;
+                }
 
                 _logger.LogInfo("Saving task...");
                 await SaveTaskAsync(taskEntity);
