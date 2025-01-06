@@ -21,7 +21,7 @@ namespace TaskMicroService.Services
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Result<IEnumerable<ReadTaskDto>>> GetAllTasks()
