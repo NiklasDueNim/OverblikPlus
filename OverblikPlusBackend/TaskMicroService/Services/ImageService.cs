@@ -16,7 +16,15 @@ public class ImageService : IImageService
         var imageBytes = Convert.FromBase64String(imageBase64);
         using var stream = new MemoryStream(imageBytes);
         var blobFileName = $"{Guid.NewGuid()}.jpg";
-        return await _blobStorageService.UploadImageAsync(stream, blobFileName);
+    
+        var imageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
+    
+        if (string.IsNullOrEmpty(imageUrl))
+        {
+            throw new InvalidOperationException("Image upload failed.");
+        }
+    
+        return imageUrl;
     }
 
     public async Task DeleteImageAsync(string imageUrl)
