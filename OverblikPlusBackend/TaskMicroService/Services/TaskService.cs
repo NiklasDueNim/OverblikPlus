@@ -79,17 +79,12 @@ namespace TaskMicroService.Services
 
                 if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
                 {
-                    taskEntity.ImageUrl = await _imageService.UploadImageAsync(createTaskDto.ImageBase64);
-                    _logger.LogInfo($"Image URL: {taskEntity.ImageUrl}");
+                    taskEntity.ImageUrl = await UploadImageAsync(createTaskDto.ImageBase64);
                 }
 
-                taskEntity.NextOccurrence = createTaskDto.RecurrenceType == "None"
-                    ? createTaskDto.StartDate
-                    : CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType,
-                        createTaskDto.RecurrenceInterval);
+                taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
 
-                _dbContext.Tasks.Add(taskEntity);
-                await _dbContext.SaveChangesAsync();
+                await SaveTaskAsync(taskEntity);
 
                 await transaction.CommitAsync();
 
@@ -131,7 +126,7 @@ namespace TaskMicroService.Services
 
             if (!string.IsNullOrEmpty(updateTaskDto.ImageBase64))
             {
-                taskEntity.ImageUrl = await _imageService.UploadImageAsync(updateTaskDto.ImageBase64);
+                taskEntity.ImageUrl = await UploadImageAsync(updateTaskDto.ImageBase64);
             }
 
             await _dbContext.SaveChangesAsync();
@@ -179,8 +174,22 @@ namespace TaskMicroService.Services
                 "Daily" => startDate.AddDays(interval),
                 "Weekly" => startDate.AddDays(7 * interval),
                 "Monthly" => startDate.AddMonths(interval),
+                "Yearly" => startDate.AddYears(interval),
                 _ => throw new ArgumentException("Invalid recurrence type")
             };
+        }
+
+        private async Task<string> UploadImageAsync(string imageBase64)
+        {
+            var imageUrl = await _imageService.UploadImageAsync(imageBase64);
+            _logger.LogInfo($"Image URL: {imageUrl}");
+            return imageUrl;
+        }
+
+        private async Task SaveTaskAsync(TaskEntity taskEntity)
+        {
+            _dbContext.Tasks.Add(taskEntity);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

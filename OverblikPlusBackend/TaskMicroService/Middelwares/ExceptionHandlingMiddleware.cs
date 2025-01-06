@@ -8,7 +8,7 @@ namespace TaskMicroService.Middlewares
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILoggerService _logger; // Brug LoggerService
+        private readonly ILoggerService _logger; 
 
         public ExceptionHandlingMiddleware(RequestDelegate next, ILoggerService logger)
         {
