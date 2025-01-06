@@ -68,8 +68,12 @@ namespace TaskMicroService.Services
         public async Task<Result<int>> CreateTask(CreateTaskDto createTaskDto)
         {
             _logger.LogInfo($"Creating new task for user = {createTaskDto.UserId}");
+    
             if (string.IsNullOrEmpty(createTaskDto.UserId))
+            {
+                _logger.LogError("UserId is required for the task." , new Exception("UserId is required for the task."));
                 return Result<int>.ErrorResult("UserId is required for the task.");
+            }
 
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
@@ -79,15 +83,19 @@ namespace TaskMicroService.Services
 
                 if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
                 {
+                    _logger.LogInfo("Uploading image...");
                     taskEntity.ImageUrl = await UploadImageAsync(createTaskDto.ImageBase64);
                 }
 
+                _logger.LogInfo("Calculating next occurrence...");
                 taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
 
+                _logger.LogInfo("Saving task...");
                 await SaveTaskAsync(taskEntity);
 
                 await transaction.CommitAsync();
 
+                _logger.LogInfo($"Task created successfully with ID = {taskEntity.Id}");
                 return Result<int>.SuccessResult(taskEntity.Id);
             }
             catch (Exception ex)
