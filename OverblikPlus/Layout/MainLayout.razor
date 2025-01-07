@@ -1,6 +1,4 @@
 ﻿@using OverblikPlus.AuthHelpers
-@using OverblikPlus.Models
-@using OverblikPlus.Models.Dtos.User
 @using OverblikPlus.Services.Interfaces
 @using Microsoft.AspNetCore.Components.Authorization
 @inherits LayoutComponentBase
@@ -14,7 +12,6 @@
     </div>
 
     <main>
-        <!-- Topbar -->
         <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light shadow-sm">
             <AuthorizeView>
                 <Authorized>

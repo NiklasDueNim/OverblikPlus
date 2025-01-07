@@ -5,7 +5,7 @@ using OverblikPlus.Models.Dtos.TaskSteps;
 using OverblikPlus.Models.Dtos.User;
 using OverblikPlus.Models.FormModels;
 
-namespace OverblikPlus
+namespace OverblikPlus.Profiles
 {
     public class MappingProfile : Profile
     {

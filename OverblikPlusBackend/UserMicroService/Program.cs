@@ -118,7 +118,7 @@ public class Program
 
         if (app.Environment.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage();  // Viser fejlbeskeder i browseren
+            app.UseDeveloperExceptionPage(); 
             app.UseSwagger();
             app.UseSwaggerUI();
         }

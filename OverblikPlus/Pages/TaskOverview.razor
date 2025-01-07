@@ -10,7 +10,7 @@
 <div class="container mt-4">
     <h1 class="mb-4">Oversigt over opgaver</h1>
 
-    <!-- Date Navigation -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <button class="btn btn-secondary" @onclick="ShowPreviousDay">
             Forrige Dag
@@ -21,7 +21,6 @@
         </button>
     </div>
 
-    <!-- Task List for the Selected Day -->
     @if (FilteredTasks.Any())
     {
     <ul class="list-group">

@@ -17,8 +17,7 @@
 
 <div class="container mt-4">
     <h3 class="mb-4">Administrer Opgaver</h3>
-
-    <!-- Knap til at oprette en ny opgave -->
+    
     <button class="btn btn-success mb-3" @onclick="CreateTask">Opret Ny Opgave</button>
 
     @if (isTaskFormVisible)
@@ -85,13 +84,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var role = await AuthStateProvider.GetRoleAsync();
-        // if (role != "Admin" && role != "Staff")
-        // {
-        //     Navigation.NavigateTo("/unauthorized");
-        //     return;
-        // }
-
         await LoadTasks();
         await LoadUsers();
     }

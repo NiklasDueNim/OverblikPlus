@@ -23,208 +23,207 @@
     <div class="calendar-header">
         @foreach (var dayName in dayNames)
         {
-        <div>@dayName</div>
+            <div>@dayName</div>
         }
     </div>
     <div class="calendar-grid">
         @foreach (var day in daysInMonth)
         {
-        <div class="calendar-cell @(day.Date == DateTime.Today ? "today" : "")" @onclick="() => OpenDayDetails(day)">
-            <div class="date-number">@day.Day</div>
-            @if (tasksForMonth.ContainsKey(day.Date))
-            {
-            <ul class="task-list">
-                @foreach (var task in tasksForMonth[day.Date])
+            <div class="calendar-cell @(day.Date == DateTime.Today ? "today" : "")" @onclick="() => OpenDayDetails(day)">
+                <div class="date-number">@day.Day</div>
+                @if (tasksForMonth.ContainsKey(day.Date))
                 {
-                <li class="task-item">@task.Title</li>
+                    <ul class="task-list">
+                        @foreach (var task in tasksForMonth[day.Date])
+                        {
+                            <li class="task-item">@task.Title</li>
+                        }
+                    </ul>
                 }
-            </ul>
-            }
-        </div>
+            </div>
         }
     </div>
 
-    <!-- Modal for opgaveoplysninger -->
+    
     @if (showModal)
     {
-    <div class="modal-backdrop">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Aftaler for @selectedDate.ToShortDateString()</h5>
-                    <button type="button" class="btn-close" aria-label="Close" @onclick="CloseModal"></button>
-                </div>
-                <div class="modal-body">
-                    <ul class="task-list">
-                        @if (tasksForMonth.ContainsKey(selectedDate))
-                        {
-                        @foreach (var task in tasksForMonth[selectedDate])
-                        {
-                        <li>@task.Title</li>
-                        }
-                        }
-                        else
-                        {
-                        <li>Ingen aftaler</li>
-                        }
-                    </ul>
+        <div class="modal-backdrop">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Aftaler for @selectedDate.ToShortDateString()</h5>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="CloseModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="task-list">
+                            @if (tasksForMonth.ContainsKey(selectedDate))
+                            {
+                                @foreach (var task in tasksForMonth[selectedDate])
+                                {
+                                    <li>@task.Title</li>
+                                }
+                            }
+                            else
+                            {
+                                <li>Ingen aftaler</li>
+                            }
+                        </ul>
 
-                    <!-- Ny aftale felter -->
-                    <div class="mb-3">
-                        <label for="newTaskTitle" class="form-label">Titel:</label>
-                        <input type="text" id="newTaskTitle" @bind="newTaskTitle" class="form-control" />
+                    
+                        <div class="mb-3">
+                            <label for="newTaskTitle" class="form-label">Titel:</label>
+                            <input type="text" id="newTaskTitle" @bind="newTaskTitle" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="newTaskDescription" class="form-label">Beskrivelse:</label>
+                            <textarea id="newTaskDescription" @bind="newTaskDescription" class="form-control"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newStartTime" class="form-label">Starttidspunkt:</label>
+                            <input type="datetime-local" id="newStartTime" @bind="newStartTime" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="newEndTime" class="form-label">Sluttidspunkt:</label>
+                            <input type="datetime-local" id="newEndTime" @bind="newEndTime" class="form-control" />
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="newTaskDescription" class="form-label">Beskrivelse:</label>
-                        <textarea id="newTaskDescription" @bind="newTaskDescription" class="form-control"></textarea>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseModal">Luk</button>
+                        <button type="button" class="btn btn-primary" @onclick="AddTask">Tilføj</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="newStartTime" class="form-label">Starttidspunkt:</label>
-                        <input type="datetime-local" id="newStartTime" @bind="newStartTime" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label for="newEndTime" class="form-label">Sluttidspunkt:</label>
-                        <input type="datetime-local" id="newEndTime" @bind="newEndTime" class="form-control" />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Luk</button>
-                    <button type="button" class="btn btn-primary" @onclick="AddTask">Tilføj</button>
                 </div>
             </div>
         </div>
-    </div>
     }
 </div>
 
 @code {
-private DateTime selectedMonth = DateTime.Today;
-private List<DateTime> daysInMonth = new();
-private Dictionary<DateTime, List<ReadCalendarEventDto>> tasksForMonth = new();
-private string[] dayNames = { "Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn" };
-private bool showModal = false;
-private DateTime selectedDate;
+    private DateTime selectedMonth = DateTime.Today;
+    private List<DateTime> daysInMonth = new();
+    private Dictionary<DateTime, List<ReadCalendarEventDto>> tasksForMonth = new();
+    private string[] dayNames = { "Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn" };
+    private bool showModal = false;
+    private DateTime selectedDate;
 
-private string newTaskTitle;
-private string newTaskDescription;
-private DateTime newStartTime;
-private DateTime newEndTime;
+    private string newTaskTitle;
+    private string newTaskDescription;
+    private DateTime newStartTime;
+    private DateTime newEndTime;
 
-protected override async Task OnInitializedAsync()
-{
-await LoadTasksForMonth();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasksForMonth();
+    }
+
+    private async Task LoadTasksForMonth()
+    {
+        daysInMonth = Enumerable.Range(1, DateTime.DaysInMonth(selectedMonth.Year, selectedMonth.Month))
+            .Select(day => new DateTime(selectedMonth.Year, selectedMonth.Month, day))
+            .ToList();
+
+        tasksForMonth = new Dictionary<DateTime, List<ReadCalendarEventDto>>();
+
+        try 
+        {
+
+            string userId = "test-user";
+            var events = await CalendarEventService.GetAllEventsAsync(userId);
+
+            foreach (var evt in events)
+            {
+                var date = evt.StartTime.Date;
+                if (!tasksForMonth.ContainsKey(date))
+                {
+                    tasksForMonth[date] = new List<ReadCalendarEventDto>();
+                }
+
+                tasksForMonth[date].Add(evt);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Fejl ved hentning af kalender: {ex.Message}");
+        }
+    }
+
+    private async Task PreviousMonth()
+    {
+        selectedMonth = selectedMonth.AddMonths(-1);
+        await LoadTasksForMonth();
+    }
+
+    private async Task NextMonth()
+    {
+        selectedMonth = selectedMonth.AddMonths(1);
+        await LoadTasksForMonth();
+    }
+
+    private void OpenDayDetails(DateTime date)
+    {
+        selectedDate = date;
+        newTaskTitle = string.Empty;
+        newTaskDescription = string.Empty;
+        newStartTime = date;
+        newEndTime = date.AddHours(1);
+        showModal = true;
+    }
+
+    private async Task AddTask()
+    {
+        var newEvent = new CreateCalendarEventDto
+        {
+            Title = newTaskTitle,
+            Description = newTaskDescription,
+            StartTime = newStartTime,
+            EndTime = newEndTime,
+            UserId = "test-user" // TODO: Hent userId dynamisk
+        };
+
+        try
+        {
+            await CalendarEventService.CreateEventAsync(newEvent);
+
+            await LoadTasksForMonth();
+
+            showModal = false;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Fejl ved oprettelse af kalenderaftale: {ex.Message}");
+        }
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+    }
+
+    private async Task DownloadCalendarFile()
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("BEGIN:VCALENDAR");
+        builder.AppendLine("VERSION:2.0");
+        builder.AppendLine("PRODID:-//OverblikPlus//Calendar//EN");
+
+        foreach (var kvp in tasksForMonth)
+        {
+            foreach (var task in kvp.Value)
+            {
+                builder.AppendLine("BEGIN:VEVENT");
+                builder.AppendLine($"SUMMARY:{task.Title}");
+                builder.AppendLine($"DTSTART:{task.StartTime:yyyyMMddTHHmmssZ}");
+                builder.AppendLine($"DTEND:{task.EndTime:yyyyMMddTHHmmssZ}");
+                builder.AppendLine($"DESCRIPTION:{task.Description ?? ""}");
+                builder.AppendLine($"UID:{Guid.NewGuid()}");
+                builder.AppendLine("END:VEVENT");
+            }
+        }
+
+        builder.AppendLine("END:VCALENDAR");
+
+        var bytes = Encoding.UTF8.GetBytes(builder.ToString());
+        var base64 = Convert.ToBase64String(bytes);
+
+        await JS.InvokeVoidAsync("downloadFile", "calendar.ics", "text/calendar", base64);
+    }
 }
-
-private async Task LoadTasksForMonth()
-{
-daysInMonth = Enumerable.Range(1, DateTime.DaysInMonth(selectedMonth.Year, selectedMonth.Month))
-.Select(day => new DateTime(selectedMonth.Year, selectedMonth.Month, day))
-.ToList();
-
-tasksForMonth = new Dictionary<DateTime, List<ReadCalendarEventDto>>();
-
-try
-{
-// TODO: Hent userId dynamisk, fx fra login
-string userId = "test-user";
-var events = await CalendarEventService.GetAllEventsAsync(userId);
-
-foreach (var evt in events)
-{
-var date = evt.StartTime.Date;
-if (!tasksForMonth.ContainsKey(date))
-{
-tasksForMonth[date] = new List<ReadCalendarEventDto>();
-}
-
-tasksForMonth[date].Add(evt);
-}
-}
-catch (Exception ex)
-{
-Console.Error.WriteLine($"Fejl ved hentning af kalender: {ex.Message}");
-}
-}
-
-private async Task PreviousMonth()
-{
-selectedMonth = selectedMonth.AddMonths(-1);
-await LoadTasksForMonth();
-}
-
-private async Task NextMonth()
-{
-selectedMonth = selectedMonth.AddMonths(1);
-await LoadTasksForMonth();
-}
-
-private void OpenDayDetails(DateTime date)
-{
-selectedDate = date;
-newTaskTitle = string.Empty;
-newTaskDescription = string.Empty;
-newStartTime = date;
-newEndTime = date.AddHours(1);
-showModal = true;
-}
-
-private async Task AddTask()
-{
-var newEvent = new CreateCalendarEventDto
-{
-Title = newTaskTitle,
-Description = newTaskDescription,
-StartTime = newStartTime,
-EndTime = newEndTime,
-UserId = "test-user" // TODO: Hent userId dynamisk
-};
-
-try
-{
-await CalendarEventService.CreateEventAsync(newEvent);
-
-await LoadTasksForMonth();
-
-showModal = false;
-}
-catch (Exception ex)
-{
-Console.Error.WriteLine($"Fejl ved oprettelse af kalenderaftale: {ex.Message}");
-}
-}
-
-private void CloseModal()
-{
-showModal = false;
-}
-
-private async Task DownloadCalendarFile()
-{
-var builder = new StringBuilder();
-builder.AppendLine("BEGIN:VCALENDAR");
-builder.AppendLine("VERSION:2.0");
-builder.AppendLine("PRODID:-//OverblikPlus//Calendar//EN");
-
-foreach (var kvp in tasksForMonth)
-{
-foreach (var task in kvp.Value)
-{
-builder.AppendLine("BEGIN:VEVENT");
-builder.AppendLine($"SUMMARY:{task.Title}");
-builder.AppendLine($"DTSTART:{task.StartTime:yyyyMMddTHHmmssZ}");
-builder.AppendLine($"DTEND:{task.EndTime:yyyyMMddTHHmmssZ}");
-builder.AppendLine($"DESCRIPTION:{task.Description ?? ""}");
-builder.AppendLine($"UID:{Guid.NewGuid()}");
-builder.AppendLine("END:VEVENT");
-}
-}
-
-builder.AppendLine("END:VCALENDAR");
-
-var bytes = Encoding.UTF8.GetBytes(builder.ToString());
-var base64 = Convert.ToBase64String(bytes);
-
-await JS.InvokeVoidAsync("downloadFile", "calendar.ics", "text/calendar", base64);
-}
-}
-

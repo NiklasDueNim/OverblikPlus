@@ -40,7 +40,7 @@
     private async Task LoadTasks()
     {
         if (UserId == null)
-            throw new Exception("Are you oerhovedet logget ind?");
+            throw new Exception("Fejl ved hentning?");
         
         var result = await TaskService.GetTasksForDay(UserId, _selectedDate);
         if (result.Success)
