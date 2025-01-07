@@ -46,11 +46,9 @@
         try
         {
             var  result = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
-            
 
-            if (!string.IsNullOrEmpty(result.Data.Token))
+            if (result.Success)
             {
-                
                 Navigation.NavigateTo("/");
             }
             else
@@ -66,7 +64,7 @@
         }
         catch (Exception ex)
         {
-            errorMessage = $"Fejl ved login: {ex.Message}";
+            errorMessage = $"Fejl ved login";
             Console.WriteLine($"Fejl ved login: {ex.Message}");
         }
         finally
