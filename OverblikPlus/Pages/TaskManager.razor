@@ -1,12 +1,14 @@
 @page "/TaskManager"
 @using AutoMapper
 @using Newtonsoft.Json
+@using OverblikPlus.AuthHelpers
 @using OverblikPlus.Common
-@using OverblikPlus.Dtos.Tasks
-@using OverblikPlus.Dtos.TaskSteps
-@using OverblikPlus.Dtos.User
 @using OverblikPlus.Services.Interfaces
 @using OverblikPlus.Components
+@using OverblikPlus.Models.Dtos.Tasks
+@using OverblikPlus.Models.Dtos.TaskSteps
+@using OverblikPlus.Models.Dtos.User
+@using OverblikPlus.Models.FormModels
 @inject ITaskService TaskService
 @inject IUserService UserService
 @inject ITaskStepService TaskStepService

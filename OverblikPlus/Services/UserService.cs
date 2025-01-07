@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using OverblikPlus.Common;
-using OverblikPlus.Dtos.User;
+using OverblikPlus.Models.Dtos.User;
 using OverblikPlus.Services.Interfaces;
 
 namespace OverblikPlus.Services;

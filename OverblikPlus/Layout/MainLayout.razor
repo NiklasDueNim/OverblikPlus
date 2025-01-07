@@ -1,10 +1,11 @@
-﻿@using OverblikPlus.Dtos.User
+﻿@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models
+@using OverblikPlus.Models.Dtos.User
 @using OverblikPlus.Services.Interfaces
 @inherits LayoutComponentBase
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
-@inject IUserService UserService
 
 <div class="page">
     <div class="sidebar">
@@ -14,32 +15,36 @@
     <main>
         <!-- Topbar -->
         <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light shadow-sm">
+            @if(user != null)
+            {
+                <div class="dropdown ms-auto">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        @user.FirstName @user.LastName
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="dropdownMenuButton">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="@($"/user/{user.Id}")">
+                                <i class="fas fa-user me-2"></i> Profil
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="/settings">
+                                <i class="fas fa-cog me-2"></i> Indstillinger
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center text-danger" @onclick="Logout">
+                                <i class="fas fa-sign-out-alt me-2"></i> Log ud
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+            }
             
-            <div class="dropdown ms-auto">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    @user.FirstName @user.LastName
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="dropdownMenuButton">
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center" href="@($"/user/{user.Id}")">
-                            <i class="fas fa-user me-2"></i> Profil
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center" href="/settings">
-                            <i class="fas fa-cog me-2"></i> Indstillinger
-                        </a>
-                    </li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center text-danger" @onclick="Logout">
-                            <i class="fas fa-sign-out-alt me-2"></i> Log ud
-                        </a>
-                    </li>
-                </ul>
-            </div>
         </div>
         
         <article class="content px-4">
@@ -50,17 +55,12 @@
 
 
 @code {
-
-
-    private ReadUserDto user = new();
-
+    
+    private User user; 
+    
     protected override async Task OnInitializedAsync()
     {
-        var userId = AuthStateProvider.GetUserIdAsync();
-        if (!string.IsNullOrEmpty(userId))
-        {
-            user = await UserService.GetUserById(userId);
-        }
+        user = AuthStateProvider.User;
     }
 
     private async Task Logout()

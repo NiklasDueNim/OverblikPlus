@@ -1,8 +1,9 @@
 using AutoMapper;
-using OverblikPlus.Dtos.Tasks;
-using OverblikPlus.Dtos.TaskSteps;
-using OverblikPlus.Dtos.User;
-using OverblikPlus.Entities;
+using OverblikPlus.Models;
+using OverblikPlus.Models.Dtos.Tasks;
+using OverblikPlus.Models.Dtos.TaskSteps;
+using OverblikPlus.Models.Dtos.User;
+using OverblikPlus.Models.FormModels;
 
 namespace OverblikPlus
 {
@@ -13,10 +14,10 @@ namespace OverblikPlus
             CreateMap<ReadTaskDto, UpdateTaskDto>();
             CreateMap<ReadTaskStepDto, UpdateTaskStepDto>();
             CreateMap<UpdateTaskStepDto, ReadTaskStepDto>();
-            CreateMap<User, ReadUserDto>();
-            CreateMap<CreateUserDto, User>();
-            CreateMap<UpdateUserDto, User>();
+
+            CreateMap<ReadUserDto, User>(); 
             
+            CreateMap<User, ReadUserDto>();
             
             CreateMap<TaskFormModel, CreateTaskDto>();
             CreateMap<TaskFormModel, UpdateTaskDto>();

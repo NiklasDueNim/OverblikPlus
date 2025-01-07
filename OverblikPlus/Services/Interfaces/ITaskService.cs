@@ -1,5 +1,5 @@
 using OverblikPlus.Common;
-using OverblikPlus.Dtos.Tasks;
+using OverblikPlus.Models.Dtos.Tasks;
 
 namespace OverblikPlus.Services.Interfaces
 {

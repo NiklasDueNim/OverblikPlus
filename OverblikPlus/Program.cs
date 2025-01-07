@@ -5,6 +5,7 @@ using OverblikPlus.Services;
 using OverblikPlus.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.LocalStorage;
+using OverblikPlus.AuthHelpers;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

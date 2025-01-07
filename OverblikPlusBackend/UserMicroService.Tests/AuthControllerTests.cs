@@ -51,7 +51,7 @@ public class AuthControllerTests
         // Arrange
         var loginDto = new LoginDto { Email = "test@example.com", Password = "password" };
         _loginValidatorMock.Setup(v => v.Validate(loginDto)).Returns(new FluentValidation.Results.ValidationResult());
-        _authServiceMock.Setup(s => s.LoginAsync(loginDto)).ReturnsAsync(Result<(string, string)>.ErrorResult("Invalid login credentials."));
+        _authServiceMock.Setup(s => s.LoginAsync(loginDto)).ReturnsAsync(Result<LoginResponseDto>.ErrorResult("Invalid login credentials."));
 
         // Act
         var result = await _controller.Login(loginDto);
@@ -67,7 +67,7 @@ public class AuthControllerTests
         // Arrange
         var loginDto = new LoginDto { Email = "test@example.com", Password = "password" };
         _loginValidatorMock.Setup(v => v.Validate(loginDto)).Returns(new FluentValidation.Results.ValidationResult());
-        _authServiceMock.Setup(s => s.LoginAsync(loginDto)).ReturnsAsync(Result<(string, string)>.SuccessResult(("token", "refreshToken")));
+        _authServiceMock.Setup(s => s.LoginAsync(loginDto)).ReturnsAsync(Result<LoginResponseDto>.SuccessResult(new  LoginResponseDto()));
 
         // Act
         var result = await _controller.Login(loginDto);

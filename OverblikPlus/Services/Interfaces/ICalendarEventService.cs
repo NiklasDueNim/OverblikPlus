@@ -1,4 +1,4 @@
-using OverblikPlus.Dtos.Calendar;
+using OverblikPlus.Models.Dtos.Calendar;
 
 namespace OverblikPlus.Services.Interfaces;
 

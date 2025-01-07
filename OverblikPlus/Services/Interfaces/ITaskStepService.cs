@@ -1,4 +1,4 @@
-using OverblikPlus.Dtos.TaskSteps;
+using OverblikPlus.Models.Dtos.TaskSteps;
 
 namespace OverblikPlus.Services.Interfaces
 {

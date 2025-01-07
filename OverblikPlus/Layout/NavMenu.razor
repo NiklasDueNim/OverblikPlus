@@ -1,4 +1,5 @@
-﻿@inject CustomAuthStateProvider AuthStateProvider
+﻿@using OverblikPlus.AuthHelpers
+@inject CustomAuthStateProvider AuthStateProvider
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -71,7 +72,7 @@
 @code {
     private bool collapseNavMenu = true;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-    private string userId;
+    
     private bool isAdminOrStaff;
 
     private async Task ToggleNavMenu()
@@ -81,8 +82,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var role = await AuthStateProvider.GetRoleAsync();
-        isAdminOrStaff = role is "Admin" or "Staff";
-        userId = AuthStateProvider.GetUserIdAsync();
+        var user = AuthStateProvider.User;
+        
+        if(user != null)
+        {
+            isAdminOrStaff = AuthStateProvider.User.IsAdminOrStaff;
+            StateHasChanged();
+        }
     }
 }

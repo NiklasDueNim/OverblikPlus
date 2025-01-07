@@ -1,10 +1,10 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
-using OverblikPlus.Dtos.Tasks;
+using OverblikPlus.AuthHelpers;
 using OverblikPlus.Services.Interfaces;
 using OverblikPlus.Common;
-
+using OverblikPlus.Models.Dtos.Tasks;
 
 
 namespace OverblikPlus.Services;

@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using OverblikPlus.Dtos.Calendar;
+using OverblikPlus.Models.Dtos.Calendar;
 using OverblikPlus.Services.Interfaces;
 
 namespace OverblikPlus.Services;

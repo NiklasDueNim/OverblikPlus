@@ -1,23 +1,29 @@
 using System.Net.Http.Json;
-using OverblikPlus.Dtos.User;
-using OverblikPlus.Dtos.Auth;
+using AutoMapper;
 using OverblikPlus.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
+using OverblikPlus.AuthHelpers;
+using OverblikPlus.Common;
+using OverblikPlus.Models;
+using OverblikPlus.Models.Dtos.Auth;
+using OverblikPlus.Models.Dtos.User;
 
 namespace OverblikPlus.Services
 {
     public class AuthService : IAuthService
     {
         private readonly HttpClient _httpClient;
+        private readonly IMapper _mapper;
         private readonly CustomAuthStateProvider _authStateProvider;
 
-        public AuthService(HttpClient httpClient, AuthenticationStateProvider authStateProvider)
+        public AuthService(HttpClient httpClient, AuthenticationStateProvider authStateProvider, IMapper mapper)
         {
             _httpClient = httpClient;
+            _mapper = mapper;
             _authStateProvider = (CustomAuthStateProvider)authStateProvider;
         }
 
-        public async Task<(string Token, string RefreshToken)> LoginAsync(string email, string password)
+        public async Task<Result<LoginResponse>> LoginAsync(string email, string password)
         {
             var loginDto = new { Email = email, Password = password };
             Console.WriteLine("Sending login request...");
@@ -33,30 +39,33 @@ namespace OverblikPlus.Services
                     if (result != null && !string.IsNullOrEmpty(result.Token))
                     {
                         Console.WriteLine($"Login successful. Token: {result.Token}");
-                        await _authStateProvider.SetTokenAsync(result.Token, result.RefreshToken);
-                        return (result.Token, result.RefreshToken);
+                        
+                        var user = _mapper.Map<User>(result.User);
+                        await _authStateProvider.SetTokenAsync(result.Token, result.RefreshToken, user);
+                        return Result<LoginResponse>.SuccessResult(result);
                     }
                     else
                     {
                         Console.WriteLine("Login response is null or token is empty.");
-                        return (null, null);
+                        return Result<LoginResponse>.ErrorResult("Login response is null or token is empty");
                     }
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Login failed. Status: {response.StatusCode}, Error: {errorContent}");
-                    return (null, null);
+                    return Result<LoginResponse>.ErrorResult("Login failed");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception during login: {ex.Message}");
-                return (null, null);
+                return Result<LoginResponse>.ErrorResult("Login failed");
             }
         }
+    
 
-        public async Task LogoutAsync()
+    public async Task LogoutAsync()
         {
             await _authStateProvider.RemoveTokenAsync();
             Console.WriteLine("User logged out successfully.");
@@ -80,39 +89,6 @@ namespace OverblikPlus.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception during registration: {ex.Message}");
-                return false;
-            }
-        }
-
-        public async Task<bool> RefreshTokenAsync()
-        {
-            var refreshToken = await _authStateProvider.GetRefreshTokenAsync();
-            if (string.IsNullOrEmpty(refreshToken))
-            {
-                Console.WriteLine("No refresh token available.");
-                return false;
-            }
-
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync("api/Auth/refresh", new { refreshToken });
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                    if (result != null && !string.IsNullOrEmpty(result.Token))
-                    {
-                        await _authStateProvider.SetTokenAsync(result.Token, result.RefreshToken);
-                        return true;
-                    }
-                }
-
-                Console.WriteLine($"Failed to refresh token. Status code: {response.StatusCode}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception during token refresh: {ex.Message}");
                 return false;
             }
         }

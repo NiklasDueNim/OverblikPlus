@@ -1,5 +1,6 @@
 @page "/login"
-@using OverblikPlus.Dtos.Auth
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models.Dtos.Auth
 @using OverblikPlus.Services.Interfaces
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
@@ -44,13 +45,12 @@
 
         try
         {
-            var (jwtToken, refreshToken) = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
+            var  result = await AuthService.LoginAsync(loginDto.Email, loginDto.Password);
             
-            Console.WriteLine($"jwtToken: {jwtToken}");
-            Console.WriteLine($"refreshToken: {refreshToken}");
 
-            if (!string.IsNullOrEmpty(jwtToken))
+            if (!string.IsNullOrEmpty(result.Data.Token))
             {
+                
                 Navigation.NavigateTo("/");
             }
             else

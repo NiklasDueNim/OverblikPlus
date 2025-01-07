@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using OverblikPlus.Dtos.TaskSteps;
+using OverblikPlus.Models.Dtos.TaskSteps;
 using OverblikPlus.Services.Interfaces;
 
 namespace OverblikPlus.Services
