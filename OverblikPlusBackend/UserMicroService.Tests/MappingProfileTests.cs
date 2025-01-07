@@ -19,7 +19,7 @@ public class MappingProfileTests
     public void Should_Map_CreateUserDto_To_ApplicationUser()
     {
         // Arrange
-        var createUserDto = new CreateUserDto {  };
+        var createUserDto = new CreateUserDto();
 
         // Act
         var applicationUser = _mapper.Map<ApplicationUser>(createUserDto);
@@ -33,27 +33,26 @@ public class MappingProfileTests
     public void Should_Map_ApplicationUser_To_ReadUserDto()
     {
         // Arrange
-        var applicationUser = new ApplicationUser { /* initialize properties */ };
+        var applicationUser = new ApplicationUser();
 
         // Act
         var readUserDto = _mapper.Map<ReadUserDto>(applicationUser);
 
         // Assert
         Assert.NotNull(readUserDto);
-        // Add more assertions to verify the mapping
+    
     }
 
     [Fact]
     public void Should_Map_UpdateUserDto_To_ApplicationUser()
     {
         // Arrange
-        var updateUserDto = new UpdateUserDto { /* initialize properties */ };
+        var updateUserDto = new UpdateUserDto();
 
         // Act
         var applicationUser = _mapper.Map<ApplicationUser>(updateUserDto);
 
         // Assert
         Assert.NotNull(applicationUser);
-        // Add more assertions to verify the mapping
     }
 }
