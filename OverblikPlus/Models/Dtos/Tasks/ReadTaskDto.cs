@@ -22,6 +22,6 @@ public class ReadTaskDto
     public DateTime? NextOccurrence { get; set; }
 
     public DateTime StartDate { get; set; }
-    public bool HasSteps { get; set; }
+    public bool HasSteps => Steps.Any();
 
 }

@@ -1,5 +1,4 @@
 @page "/"
-@using AutoMapper
 @using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models.Dtos.Tasks
 @using OverblikPlus.Services.Interfaces
@@ -9,13 +8,9 @@
 @inject CustomAuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
-
 <div class="container mt-4">
-
-
     <AuthorizeView>
         <Authorized>
-
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1>Velkommen, @AuthStateProvider.User?.FirstName @AuthStateProvider.User?.LastName!</h1>
                 <select @bind="taskViewMode" class="form-select w-auto">
@@ -23,6 +18,7 @@
                     <option value="List">Listevisning</option>
                 </select>
             </div>
+            
             @if (taskViewMode == "Single")
             {
             <div class="card mb-4">
@@ -117,17 +113,7 @@
                 return;
             }
 
-            todaysTasks = result.Data
-                .Where(task =>
-                    string.IsNullOrEmpty(task.RecurrenceType) ||
-                    task.RecurrenceType == "None" ||
-                    (task.NextOccurrence.HasValue && task.NextOccurrence.Value.Date == DateTime.Today))
-                .ToList();
-
-            foreach (var task in todaysTasks)
-            {
-                task.HasSteps = (await TaskStepService.GetStepsForTask(task.Id)).Any();
-            }
+            todaysTasks = FilterTasks(result.Data);
 
             currentTaskIndex = 0;
             UpdateProgress();
@@ -137,6 +123,15 @@
             Console.WriteLine($"Uventet fejl i RefreshTasks: {ex.Message}");
             todaysTasks = new List<ReadTaskDto>();
         }
+    }
+
+    private static List<ReadTaskDto> FilterTasks(List<ReadTaskDto> tasks)
+    {
+        var today = DateTime.Today;
+        
+        return tasks .Where(task =>
+                task.NextOccurrence.HasValue && task.NextOccurrence.Value.Date == today || task.StartDate == today)
+            .ToList();
     }
 
     private void UpdateProgress()

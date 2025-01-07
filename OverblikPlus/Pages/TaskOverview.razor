@@ -77,12 +77,6 @@
                 {
                     AllTasks = result.Data ?? new List<ReadTaskDto>();
                     Console.WriteLine($"Loaded {AllTasks.Count} tasks for user {userId}");
-
-                    foreach (var task in AllTasks)
-                    {
-                        task.HasSteps = (await TaskStepService.GetStepsForTask(task.Id)).Any();
-                        Console.WriteLine($"Task: {task.Name}, NextOccurrence: {task.NextOccurrence}, HasSteps: {task.HasSteps}");
-                    }
                 }
                 else
                 {
