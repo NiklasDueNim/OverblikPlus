@@ -1,11 +1,12 @@
-using OverblikPlus.Dtos.User;
+using OverblikPlus.Common;
+using OverblikPlus.Models.Dtos.Auth;
+using OverblikPlus.Models.Dtos.User;
 
 namespace OverblikPlus.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<(string Token, string RefreshToken)> LoginAsync(string email, string password);
+    Task<Result<LoginResponse>> LoginAsync(string email, string password);
     Task LogoutAsync();
     Task<bool> RegisterAsync(CreateUserDto createUserDto);
-    Task<bool> RefreshTokenAsync();
 }

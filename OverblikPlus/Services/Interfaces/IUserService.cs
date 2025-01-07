@@ -1,6 +1,5 @@
 using OverblikPlus.Common;
-using OverblikPlus.Dtos;
-using OverblikPlus.Dtos.User;
+using OverblikPlus.Models.Dtos.User;
 
 namespace OverblikPlus.Services.Interfaces;
 

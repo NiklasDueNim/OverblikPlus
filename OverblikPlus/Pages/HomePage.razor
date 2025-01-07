@@ -1,88 +1,103 @@
 @page "/"
-@using OverblikPlus.Dtos.Tasks
-@using OverblikPlus.Dtos.User
+@using AutoMapper
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models.Dtos.Tasks
 @using OverblikPlus.Services.Interfaces
-@inject IUserService UserService
+@using Microsoft.AspNetCore.Components.Authorization
 @inject ITaskService TaskService
 @inject ITaskStepService TaskStepService
 @inject CustomAuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
+
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Velkommen, @user.FirstName @user.LastName!</h1>
-        <select @bind="taskViewMode" class="form-select w-auto">
-            <option value="Single">Én opgave ad gangen</option>
-            <option value="List">Listevisning</option>
-        </select>
-    </div>
 
-    @if (taskViewMode == "Single")
-    {
-    <div class="card mb-4">
-        @if (uncompletedTasks.Count > 0)
-        {
-        var currentTask = uncompletedTasks[currentTaskIndex];
-        <div class="card-header">
-            <h4>@currentTask.Name</h4>
-        </div>
-        <div class="card-body">
-            @if (!string.IsNullOrEmpty(currentTask.Image))
-            {
-            <img src="@currentTask.Image" alt="Task Image" class="img-fluid mb-3" style="max-width: 100%; height: auto; max-height: 300px;" />
-            }
-            <p>@currentTask.Description</p>
-            <div class="d-flex justify-content-between">
-                @if (currentTask.HasSteps)
-                {
-                <button class="btn btn-primary" @onclick="() => GoToTaskSteps(currentTask.Id)">Gå til trin</button>
-                }
-                <button class="btn btn-secondary" @onclick="NextTask">Næste</button>
+
+    <AuthorizeView>
+        <Authorized>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Velkommen, @AuthStateProvider.User?.FirstName @AuthStateProvider.User?.LastName!</h1>
+                <select @bind="taskViewMode" class="form-select w-auto">
+                    <option value="Single">Én opgave ad gangen</option>
+                    <option value="List">Listevisning</option>
+                </select>
             </div>
-        </div>
-        }
-        else
-        {
-        <p>Ingen uløste opgaver for i dag!</p>
-        }
-    </div>
-    }
-    else if (taskViewMode == "List")
-    {
-    <ul class="list-group mb-4">
-        @foreach (var task in todaysTasks)
-        {
-        <li class="list-group-item d-flex align-items-center">
-            @if (!string.IsNullOrEmpty(task.Image))
+            @if (taskViewMode == "Single")
             {
-            <img src="@task.Image" alt="Task Image" class="img-thumbnail me-3" style="max-width: 50px; max-height: 50px;" />
+            <div class="card mb-4">
+                @if (uncompletedTasks.Count > 0)
+                {
+                var currentTask = uncompletedTasks[currentTaskIndex];
+                <div class="card-header">
+                    <h4>@currentTask.Name</h4>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(currentTask.Image))
+                    {
+                    <img src="@currentTask.Image" alt="Task Image" class="img-fluid mb-3" style="max-width: 100%; height: auto; max-height: 300px;"/>
+                    }
+                    <p>@currentTask.Description</p>
+                    <div class="d-flex justify-content-between">
+                        @if (currentTask.HasSteps)
+                        {
+                        <button class="btn btn-primary" @onclick="() => GoToTaskSteps(currentTask.Id)">Gå til trin</button>
+                        }
+                        <button class="btn btn-secondary" @onclick="NextTask">Næste</button>
+                    </div>
+                </div>
+                }
+                else
+                {
+                <p>Ingen uløste opgaver for i dag!</p>
+                }
+            </div>
             }
-            <input
-                type="checkbox"
-                class="form-check-input me-2"
-                checked="@task.IsCompleted"
-                @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)" />
-            <span>@task.Name</span>
-        </li>
-        }
-    </ul>
-    }
+            else if (taskViewMode == "List")
+            {
+            <ul class="list-group mb-4">
+                @foreach (var task in todaysTasks)
+                {
+                <li class="list-group-item d-flex align-items-center">
+                    @if (!string.IsNullOrEmpty(task.Image))
+                    {
+                    <img src="@task.Image" alt="Task Image" class="img-thumbnail me-3" style="max-width: 50px; max-height: 50px;"/>
+                    }
+                    <input
+                        type="checkbox"
+                        class="form-check-input me-2"
+                        checked="@task.IsCompleted"
+                        @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)"/>
+                    <span>@task.Name</span>
+                </li>
+                }
+            </ul>
 
-    <h3 class="mb-3">Fremgangen med dine opgaver</h3>
-    <div class="progress mb-4" style="height: 25px;">
-        <div class="progress-bar bg-success" role="progressbar" style="width: @(taskCompletionPercentage)%;">
-            @(taskCompletionPercentage)%
-        </div>
-    </div>
+            <h3 class="mb-3">Fremgangen med dine opgaver</h3>
+            <div class="progress mb-4" style="height: 25px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: @(taskCompletionPercentage)%;">
+                    @(taskCompletionPercentage)%
+                </div>
+            </div>
+            }
+        </Authorized>
+        <NotAuthorized>
+            <h1>Velkommen, Gå til Login </h1>
+        </NotAuthorized>
+    </AuthorizeView>
+
 </div>
+    
+   
+
 
 @code {
-    private ReadUserDto user = new();
     private List<ReadTaskDto> todaysTasks = new();
     private List<ReadTaskDto> uncompletedTasks => todaysTasks.Where(t => !t.IsCompleted).ToList();
     private int taskCompletionPercentage = 0;
     private string taskViewMode = "Single";
     private int currentTaskIndex = 0;
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,17 +108,7 @@
     {
         try
         {
-            var userId = AuthStateProvider.GetUserIdAsync();
-            if (string.IsNullOrEmpty(userId))
-            {
-                Console.WriteLine("User ID is null or empty.");
-                todaysTasks = new List<ReadTaskDto>();
-                return;
-            }
-
-            user = await UserService.GetUserById(userId);
-
-            var result = await TaskService.GetTasksForUserAsync(userId);
+            var result = await TaskService.GetTasksForUserAsync(AuthStateProvider.User.Id);
 
             if (!result.Success)
             {

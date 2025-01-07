@@ -46,7 +46,7 @@ namespace UserMicroService.Controllers
             }
 
             _logger.LogInfo($"User {loginDto.Email} logged in successfully.");
-            return Ok(new { Token = result.Data.Item1, RefreshToken = result.Data.Item2 });
+            return Ok(result.Data);
         }
 
         [HttpPost("register")]

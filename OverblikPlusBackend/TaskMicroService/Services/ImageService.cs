@@ -13,10 +13,14 @@ public class ImageService : IImageService
 
     public async Task<string> UploadImageAsync(string imageBase64)
     {
+        
         var imageBytes = Convert.FromBase64String(imageBase64);
         using var stream = new MemoryStream(imageBytes);
         var blobFileName = $"{Guid.NewGuid()}.jpg";
-        return await _blobStorageService.UploadImageAsync(stream, blobFileName);
+    
+        var imageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
+        
+        return imageUrl;
     }
 
     public async Task DeleteImageAsync(string imageUrl)

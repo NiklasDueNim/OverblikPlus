@@ -27,7 +27,7 @@ namespace UserMicroService.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // GET /api/userservice/{id}
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(string id)
         {
@@ -44,7 +44,7 @@ namespace UserMicroService.Controllers
             return Ok(result.Data);
         }
 
-        // GET /api/userservice/users
+      
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsersAsync()
         {
@@ -61,7 +61,7 @@ namespace UserMicroService.Controllers
             return Ok(result.Data);
         }
 
-        // POST /api/userservice
+        
         [HttpPost]
         public async Task<IActionResult> CreateUserAsync([FromBody] CreateUserDto createUserDto)
         {
@@ -85,7 +85,6 @@ namespace UserMicroService.Controllers
             return CreatedAtAction(nameof(GetUserById), new { id = result.Data }, createUserDto);
         }
 
-        // PUT /api/userservice/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUserAsync(string id, UpdateUserDto updateUserDto)
         {
@@ -120,7 +119,6 @@ namespace UserMicroService.Controllers
             return NoContent();
         }
 
-        // DELETE /api/userservice/{id}
         [HttpDelete("{id}")]
         
         public async Task<IActionResult> DeleteUserAsync(string id)

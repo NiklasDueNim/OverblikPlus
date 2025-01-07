@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using UserMicroService.DataAccess;
@@ -23,13 +23,14 @@ namespace UserMicroService.Services
         private readonly UserDbContext _dbContext;
         private readonly ILoggerService _logger;
         private readonly IValidator<RegisterDto> _registerDtoValidator;
+        private readonly IMapper _mapper;
 
         public AuthService(UserManager<ApplicationUser> userManager,
                            SignInManager<ApplicationUser> signInManager,
                            IConfiguration configuration,
                            UserDbContext dbContext,
                            ILoggerService logger,
-                           IValidator<RegisterDto> registerDtoValidator)
+                           IValidator<RegisterDto> registerDtoValidator, IMapper  mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -37,28 +38,41 @@ namespace UserMicroService.Services
             _dbContext = dbContext;
             _logger = logger;
             _registerDtoValidator = registerDtoValidator;
+            _mapper = mapper;
         }
 
-        public async Task<Result<(string, string)>> LoginAsync(LoginDto loginDto)
+        public async Task<Result<LoginResponseDto>> LoginAsync(LoginDto loginDto)
         {
             try
             {
                 var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
-                if (!result.Succeeded) return Result<(string, string)>.ErrorResult("Invalid login attempt.");
+                if (!result.Succeeded) return Result<LoginResponseDto>.ErrorResult("Invalid login attempt.");
 
                 var user = await _userManager.FindByEmailAsync(loginDto.Email);
-                if (user == null) return Result<(string, string)>.ErrorResult("User not found.");
+                if (user == null) return Result<LoginResponseDto>.ErrorResult("User not found.");
+                
+               
 
                 var jwtToken = GenerateJwtToken(user);
                 var refreshToken = GenerateRefreshToken(user.Id);
                 await SaveRefreshTokenAsync(refreshToken);
+                
+                var userDto = _mapper.Map<ReadUserDto>(user);
+                
+                
+                var loginResponse = new LoginResponseDto
+                {
+                    Token = jwtToken,
+                    RefreshToken = refreshToken.Token,
+                    User = userDto
+                };
 
-                return Result<(string, string)>.SuccessResult((jwtToken, refreshToken.Token));
+                return Result<LoginResponseDto>.SuccessResult(loginResponse);
             }
             catch (Exception ex)
             {
                 _logger.LogError("An error occurred during login.", ex);
-                return Result<(string, string)>.ErrorResult("An error occurred during login.");
+                return Result<LoginResponseDto>.ErrorResult("An error occurred during login.");
             }
         }
 

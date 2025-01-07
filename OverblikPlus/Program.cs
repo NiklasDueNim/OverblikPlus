@@ -5,6 +5,7 @@ using OverblikPlus.Services;
 using OverblikPlus.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.LocalStorage;
+using OverblikPlus.AuthHelpers;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -50,5 +51,6 @@ ConfigureHttpClient<ITaskStepService, TaskStepService>(builder.Services, taskApi
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
 
 await builder.Build().RunAsync();

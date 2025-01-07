@@ -1,3 +1,4 @@
+using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -25,6 +26,7 @@ public class AuthServiceTests
     private readonly IValidator<RegisterDto> _registerValidator;
     private readonly UserDbContext _dbContext;
     private readonly AuthService _authService;
+    private readonly Mock<IMapper> _mockMapper;
 
     public AuthServiceTests()
     {
@@ -54,6 +56,7 @@ public class AuthServiceTests
         _mockConfiguration.Setup(c => c["Jwt:Audience"]).Returns("TestAudience");
 
         _mockLogger = new Mock<ILoggerService>();
+        _mockMapper = new Mock<IMapper>();
 
         _registerValidator = new RegisterDtoValidator();
 
@@ -68,7 +71,8 @@ public class AuthServiceTests
             _mockConfiguration.Object,
             _dbContext,
             _mockLogger.Object,
-            _registerValidator
+            _registerValidator,
+            _mockMapper.Object
         );
     }
 

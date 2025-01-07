@@ -18,7 +18,11 @@ namespace TaskMicroService.Profiles
             CreateMap<CreateTaskDto, TaskEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.ImageUrl, opt => opt.Ignore())
-                .ForMember(dest => dest.Steps, opt => opt.Ignore());
+                .ForMember(dest => dest.Steps, opt => opt.Ignore())
+                .ForMember(dest => dest.IsCompleted, opt => opt.Ignore())
+                .ForMember(dest => dest.NextOccurrence, opt => opt.Ignore());
+                
+            
             
             
             CreateMap<UpdateTaskDto, TaskEntity>()

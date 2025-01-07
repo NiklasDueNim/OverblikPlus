@@ -1,0 +1,37 @@
+@page "/user/{userId}"
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models.Dtos.User
+@using OverblikPlus.Services.Interfaces
+@inject IUserService UserService
+@inject CustomAuthStateProvider AuthStateProvider
+
+<h3>Brugerprofil</h3>
+
+@if (user == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <p>Username: @user.Username</p>
+    <p>Navn: @user.FirstName @user.LastName</p>
+    <p>Rolle: @user.Role</p>
+}
+
+@code {
+    [Parameter] public string userId { get; set; }
+    private ReadUserDto user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            userId = AuthStateProvider.GetUserIdAsync();
+        }
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            user = await UserService.GetUserById(userId);
+        }
+    }
+}

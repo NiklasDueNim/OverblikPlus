@@ -50,7 +50,7 @@ public class Program
         );
 
         
-        builder.Services.AddSingleton<Serilog.ILogger>(Log.Logger);
+        builder.Services.AddSingleton(Log.Logger);
         builder.Services.AddSingleton<ILoggerService, LoggerService>();
         
        
@@ -113,7 +113,9 @@ public class Program
                 {
                     policy.WithOrigins(
                             "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-                            "https://overblikplus.dk"
+                            "https://overblikplus.dk",
+                            "http://localhost:5226"
+                            
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()

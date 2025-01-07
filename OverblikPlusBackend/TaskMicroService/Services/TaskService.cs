@@ -21,7 +21,7 @@ namespace TaskMicroService.Services
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Result<IEnumerable<ReadTaskDto>>> GetAllTasks()
@@ -68,9 +68,7 @@ namespace TaskMicroService.Services
         public async Task<Result<int>> CreateTask(CreateTaskDto createTaskDto)
         {
             _logger.LogInfo($"Creating new task for user = {createTaskDto.UserId}");
-            if (string.IsNullOrEmpty(createTaskDto.UserId))
-                return Result<int>.ErrorResult("UserId is required for the task.");
-
+            
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
@@ -79,20 +77,18 @@ namespace TaskMicroService.Services
 
                 if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
                 {
-                    taskEntity.ImageUrl = await _imageService.UploadImageAsync(createTaskDto.ImageBase64);
-                    _logger.LogInfo($"Image URL: {taskEntity.ImageUrl}");
+                    taskEntity.ImageUrl = await UploadImageAsync(createTaskDto.ImageBase64);
                 }
 
-                taskEntity.NextOccurrence = createTaskDto.RecurrenceType == "None"
-                    ? createTaskDto.StartDate
-                    : CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType,
-                        createTaskDto.RecurrenceInterval);
+                _logger.LogInfo("Calculating next occurrence...");
+                taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
 
-                _dbContext.Tasks.Add(taskEntity);
-                await _dbContext.SaveChangesAsync();
+                _logger.LogInfo("Saving task...");
+                await SaveTaskAsync(taskEntity);
 
                 await transaction.CommitAsync();
 
+                _logger.LogInfo($"Task created successfully with ID = {taskEntity.Id}");
                 return Result<int>.SuccessResult(taskEntity.Id);
             }
             catch (Exception ex)
@@ -131,7 +127,7 @@ namespace TaskMicroService.Services
 
             if (!string.IsNullOrEmpty(updateTaskDto.ImageBase64))
             {
-                taskEntity.ImageUrl = await _imageService.UploadImageAsync(updateTaskDto.ImageBase64);
+                taskEntity.ImageUrl = await UploadImageAsync(updateTaskDto.ImageBase64);
             }
 
             await _dbContext.SaveChangesAsync();
@@ -176,11 +172,26 @@ namespace TaskMicroService.Services
         {
             return recurrenceType switch
             {
+                "None" => startDate,
                 "Daily" => startDate.AddDays(interval),
                 "Weekly" => startDate.AddDays(7 * interval),
                 "Monthly" => startDate.AddMonths(interval),
+                "Yearly" => startDate.AddYears(interval),
                 _ => throw new ArgumentException("Invalid recurrence type")
             };
+        }
+
+        private async Task<string> UploadImageAsync(string imageBase64)
+        {
+            var imageUrl = await _imageService.UploadImageAsync(imageBase64);
+            _logger.LogInfo($"Image URL: {imageUrl}");
+            return imageUrl;
+        }
+
+        private async Task SaveTaskAsync(TaskEntity taskEntity)
+        {
+            _dbContext.Tasks.Add(taskEntity);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }
