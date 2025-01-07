@@ -13,17 +13,13 @@ public class ImageService : IImageService
 
     public async Task<string> UploadImageAsync(string imageBase64)
     {
+        
         var imageBytes = Convert.FromBase64String(imageBase64);
         using var stream = new MemoryStream(imageBytes);
         var blobFileName = $"{Guid.NewGuid()}.jpg";
     
         var imageUrl = await _blobStorageService.UploadImageAsync(stream, blobFileName);
-    
-        if (string.IsNullOrEmpty(imageUrl))
-        {
-            throw new InvalidOperationException("Image upload failed.");
-        }
-    
+        
         return imageUrl;
     }
 

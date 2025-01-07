@@ -68,13 +68,7 @@ namespace TaskMicroService.Services
         public async Task<Result<int>> CreateTask(CreateTaskDto createTaskDto)
         {
             _logger.LogInfo($"Creating new task for user = {createTaskDto.UserId}");
-
-            if (string.IsNullOrEmpty(createTaskDto.UserId))
-            {
-                _logger.LogError("UserId is required for the task.", new Exception("UserId is required for the task."));
-                return Result<int>.ErrorResult("UserId is required for the task.");
-            }
-
+            
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
@@ -83,19 +77,11 @@ namespace TaskMicroService.Services
 
                 if (!string.IsNullOrEmpty(createTaskDto.ImageBase64))
                 {
-                    _logger.LogInfo("Uploading image...");
                     taskEntity.ImageUrl = await UploadImageAsync(createTaskDto.ImageBase64);
                 }
 
-                if (!string.IsNullOrEmpty(createTaskDto.RecurrenceType))
-                {
-                    _logger.LogInfo("Calculating next occurrence...");
-                    taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
-                }
-                else
-                {
-                    taskEntity.NextOccurrence = createTaskDto.StartDate;
-                }
+                _logger.LogInfo("Calculating next occurrence...");
+                taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
 
                 _logger.LogInfo("Saving task...");
                 await SaveTaskAsync(taskEntity);
@@ -186,6 +172,7 @@ namespace TaskMicroService.Services
         {
             return recurrenceType switch
             {
+                "None" => startDate,
                 "Daily" => startDate.AddDays(interval),
                 "Weekly" => startDate.AddDays(7 * interval),
                 "Monthly" => startDate.AddMonths(interval),
