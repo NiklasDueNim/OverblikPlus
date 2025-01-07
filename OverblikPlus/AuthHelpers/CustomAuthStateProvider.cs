@@ -10,9 +10,9 @@ namespace OverblikPlus.AuthHelpers;
 
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
+    public User User { get; private set; }
     private string _jwtToken;
     private string _refreshToken;
-    public User User { get; private set; }
     private readonly HttpClient _httpClient;
     private readonly IMapper _mapper;
 
@@ -23,17 +23,15 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         _mapper = mapper;
     }
 
-    public Task SetTokenAsync(string token, string refreshToken, User user)
+    public  void SetLogin(string token, string refreshToken, User user)
     {
-        Console.WriteLine($"SetTokenAsync called. JWT: {token}, RefreshToken: {refreshToken}");
         _jwtToken = token;
         _refreshToken = refreshToken;
         User = user;
         
-        Console.WriteLine($"SetTokenAsync called. JWT: {_jwtToken}, RefreshToken: {_refreshToken}");
-
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-        return Task.CompletedTask;
+        var identity = GetAuthenticationStateAsync();
+        
+        NotifyAuthenticationStateChanged(identity);
     }
 
     public async Task RemoveTokenAsync()
@@ -64,7 +62,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
         else
         {
-            Console.WriteLine($"JWT token found in GetTokenAsync: {_jwtToken}");
+            Console.WriteLine($"JWT token found in GetTokenAsync:");
         }
         return Task.FromResult(_jwtToken);
     }
@@ -91,7 +89,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
                     Console.WriteLine($"Token refreshed. New JWT: {result.Token}, New RefreshToken: {result.RefreshToken}");
                     
                     var user = _mapper.Map<User>(result.User);
-                    await SetTokenAsync(result.Token, result.RefreshToken, user);
+                    SetLogin(result.Token, result.RefreshToken, user);
                     return true;
                 }
             }

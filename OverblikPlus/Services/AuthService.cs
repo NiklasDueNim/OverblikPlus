@@ -41,7 +41,7 @@ namespace OverblikPlus.Services
                         Console.WriteLine($"Login successful. Token: {result.Token}");
                         
                         var user = _mapper.Map<User>(result.User);
-                        await _authStateProvider.SetTokenAsync(result.Token, result.RefreshToken, user);
+                        _authStateProvider.SetLogin(result.Token, result.RefreshToken, user);
                         return Result<LoginResponse>.SuccessResult(result);
                     }
                     else
