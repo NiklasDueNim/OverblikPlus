@@ -60,7 +60,7 @@ namespace TaskMicroService.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "User")]
+        [Authorize]
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetTasksByUserId(string userId)
         {
