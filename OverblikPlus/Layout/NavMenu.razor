@@ -13,64 +13,84 @@
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <i class="fas fa-home"></i> Hjem
-            </NavLink>
-        </div>
-        @if (IsAdminOrStaff())
-        {
+        
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <i class="fas fa-home"></i> Hjem
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="tasks">
+                        <i class="fas fa-tasks"></i> Dagens Opgaver
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="scan">
+                        <i class="fas fa-qrcode"></i> Scan QR-kode
+                    </NavLink>
+                </div>
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="employee-status">
-                    <i class="fas fa-users"></i> Personale
+                <NavLink class="nav-link" href="TaskManager">
+                    <i class="fas fa-plus-circle"></i> Opret Opgaver
                 </NavLink>
             </div>
-        }
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="tasks">
-                <i class="fas fa-tasks"></i> Dagens Opgaver
-            </NavLink>
-        </div>
-        @if (IsAdminOrStaff())
-        {
+                
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="create-user">
-                    <i class="fas fa-user-plus"></i> Opret Bruger
+                <NavLink class="nav-link" href="calendar">
+                    <i class="fas fa-calendar"></i> Kalender
                 </NavLink>
             </div>
-        }
+                @if (IsAdminOrStaff())
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="employee-status">
+                            <i class="fas fa-users"></i> Personale
+                        </NavLink>
+                    </div>
+                }
+            </Authorized>
+        </AuthorizeView>
+
+
+
         <AuthorizeView>
             <Authorized>
                 @if (IsAdminOrStaff())
                 {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="user-list">
+                            <i class="fas fa-users-cog"></i> Brugeroversigt
+                        </NavLink>
+                    </div>
+                }
+                @if (IsAdminOrStaff())
+                {
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="user-list">
-                        <i class="fas fa-users-cog"></i> Bruger Oversigt
+                    <NavLink class="nav-link" href="create-user">
+                        <i class="fas fa-user-plus"></i> Opret Bruger
                     </NavLink>
                 </div>
                 }
             </Authorized>
         </AuthorizeView>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="scan">
-                <i class="fas fa-qrcode"></i> Scan QR-kode
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="TaskManager">
-                <i class="fas fa-plus-circle"></i> Opret Opgaver
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="calendar">
-                <i class="fas fa-calendar"></i> Kalender
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Login">
-                <i class="fas fa-sign-in-alt"></i> Login
-            </NavLink>
-        </div>
+        
+        <AuthorizeView>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="create-user">
+                        <i class="fas fa-user-plus"></i> Opret Bruger
+                    </NavLink>
+                </div>
+                
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Login">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
     </nav>
 </div>
 

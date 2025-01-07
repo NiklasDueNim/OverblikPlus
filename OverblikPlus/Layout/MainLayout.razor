@@ -2,6 +2,7 @@
 @using OverblikPlus.Models
 @using OverblikPlus.Models.Dtos.User
 @using OverblikPlus.Services.Interfaces
+@using Microsoft.AspNetCore.Components.Authorization
 @inherits LayoutComponentBase
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
@@ -15,36 +16,35 @@
     <main>
         <!-- Topbar -->
         <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light shadow-sm">
-            @if(AuthStateProvider.User != null)
-            {
-                <div class="dropdown ms-auto">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        @AuthStateProvider.User.FirstName @AuthStateProvider.User.LastName
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="dropdownMenuButton">
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="@($"/user/{AuthStateProvider.User.Id}")">
-                                <i class="fas fa-user me-2"></i> Profil
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="/settings">
-                                <i class="fas fa-cog me-2"></i> Indstillinger
-                            </a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center text-danger" @onclick="Logout">
-                                <i class="fas fa-sign-out-alt me-2"></i> Log ud
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                
-            }
-            
+            <AuthorizeView>
+                <Authorized>
+                    <div class="dropdown ms-auto">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            @AuthStateProvider.User.FirstName @AuthStateProvider.User.LastName
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="dropdownMenuButton">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="@($"/user/{AuthStateProvider.User.Id}")">
+                                    <i class="fas fa-user me-2"></i> Profil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="/settings">
+                                    <i class="fas fa-cog me-2"></i> Indstillinger
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center text-danger" @onclick="Logout">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Log ud
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
         </div>
         
         <article class="content px-4">
