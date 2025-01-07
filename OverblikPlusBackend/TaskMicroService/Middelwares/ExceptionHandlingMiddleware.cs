@@ -35,8 +35,10 @@ namespace TaskMicroService.Middlewares
             var response = Result<object>.ErrorResult("An unexpected error occurred. Please try again later.");
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
             {
-                response.Error += $" Detail: {exception.Message}";
+                
             }
+            
+            response.Error += $" Detail: {exception.Message}";
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
