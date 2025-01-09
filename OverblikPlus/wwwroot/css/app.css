@@ -94,3 +94,24 @@
         padding: 1rem;
     }
 }
+
+.fixed-size-image {
+    width: 100px; /* Set the desired width */
+    height: 100px; /* Set the desired height */
+    object-fit: cover; /* Ensure the image covers the area without distortion */
+}
+
+/* Add this to your app.css file */
+.task-name {
+    max-width: 200px; /* Set the desired maximum width */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1rem; /* Match the font size of task steps */
+}
+
+@media (max-width: 768px) {
+    .task-name {
+        font-size: 1rem; /* Keep the same font size for smaller screens */
+    }
+}
