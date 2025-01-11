@@ -33,7 +33,7 @@
         messages = await localStorage.GetItemAsync<List<string>>(MessagesKey) ?? new List<string>();
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("http://localhost:5102/chatHub")
+            .WithUrl("https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net")
             .Build();
 
         hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
