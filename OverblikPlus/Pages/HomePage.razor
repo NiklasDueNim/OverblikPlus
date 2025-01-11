@@ -22,7 +22,6 @@
                 <option value="Single">Én opgave ad gangen</option>
                 <option value="List">Listevisning</option>
             </select>
-
             @if (taskViewMode == "Single")
             {
                 <div class="card mb-4">
@@ -52,6 +51,8 @@
                         <p>Ingen uløste opgaver for i dag!</p>
                     }
                 </div>
+                <ChatMessages/>
+                
             }
             else if (taskViewMode == "List")
             {

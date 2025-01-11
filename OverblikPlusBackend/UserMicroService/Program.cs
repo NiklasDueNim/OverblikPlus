@@ -15,6 +15,8 @@ using UserMicroService.Services;
 using UserMicroService.Services.Interfaces;
 using UserMicroService.Validators;
 using UserMicroService.Validators.Auth;
+using Microsoft.AspNetCore.ResponseCompression;
+using UserMicroService.Hubs;
 
 namespace UserMicroService;
 
@@ -113,6 +115,12 @@ public class Program
         builder.Services.AddScoped<IValidator<ReadUserDto>, ReadUserDtoValidator>();
         builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
         builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
+        builder.Services.AddSignalR();
+        builder.Services.AddResponseCompression(opts =>
+        {
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                new[] { "application/octet-stream" });
+        });
 
         var app = builder.Build();
 
@@ -136,6 +144,7 @@ public class Program
         app.UseCors("AllowAll");
         app.UseAuthentication();
         app.UseAuthorization();
+        app.MapHub <ChatHub> ("/chatHub");
 
         app.MapControllers();
 
