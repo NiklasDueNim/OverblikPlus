@@ -63,6 +63,7 @@ else
 
     private async Task EditUser(string userId)
     {
+        await UserService.UpdateUser(userId, new UpdateUserDto());
         
     }
 

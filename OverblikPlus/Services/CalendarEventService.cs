@@ -39,7 +39,7 @@ public class CalendarEventService : ICalendarEventService
     {
         try
         {
-            var response = await _httpClient.GetAsync($"api/CalendarEvent/{id}");
+            var response = await _httpClient.GetAsync($"/api/CalendarEvent/{id}");
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<ReadCalendarEventDto>();
@@ -55,7 +55,8 @@ public class CalendarEventService : ICalendarEventService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/CalendarEvent", dto);
+            var response = await _httpClient.PostAsJsonAsync("/api/CalendarEvent", dto);
+
             response.EnsureSuccessStatusCode();
         }
         catch (Exception ex)
@@ -69,7 +70,7 @@ public class CalendarEventService : ICalendarEventService
     {
         try
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/CalendarEvent/{id}", dto);
+            var response = await _httpClient.PutAsJsonAsync($"/api/CalendarEvent/{id}", dto);
             response.EnsureSuccessStatusCode();
         }
         catch (Exception ex)
@@ -83,7 +84,7 @@ public class CalendarEventService : ICalendarEventService
     {
         try
         {
-            var response = await _httpClient.DeleteAsync($"api/CalendarEvent/{id}");
+            var response = await _httpClient.DeleteAsync($"/api/CalendarEvent/{id}");
             response.EnsureSuccessStatusCode();
         }
         catch (Exception ex)

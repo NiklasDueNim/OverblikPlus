@@ -1,9 +1,12 @@
 @page "/calendar"
 @using System.Text
+@using Newtonsoft.Json
+@using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models.Dtos.Calendar
 @using OverblikPlus.Services.Interfaces
 @inject ICalendarEventService CalendarEventService
 @inject IJSRuntime JS
+@inject CustomAuthStateProvider AuthStateProvider
 
 <div class="container mt-4">
     <h3 class="mb-4">Kalender</h3>
@@ -14,7 +17,7 @@
         <h4>@selectedMonth.ToString("MMMM yyyy")</h4>
         <button class="btn btn-primary" @onclick="NextMonth">Næste måned</button>
     </div>
-    
+
     <div class="d-flex justify-content-end mb-3">
         <button class="btn btn-success" @onclick="DownloadCalendarFile">Download Kalender</button>
     </div>
@@ -44,7 +47,6 @@
         }
     </div>
 
-    
     @if (showModal)
     {
         <div class="modal-backdrop">
@@ -69,7 +71,6 @@
                             }
                         </ul>
 
-                    
                         <div class="mb-3">
                             <label for="newTaskTitle" class="form-label">Titel:</label>
                             <input type="text" id="newTaskTitle" @bind="newTaskTitle" class="form-control" />
@@ -123,11 +124,10 @@
 
         tasksForMonth = new Dictionary<DateTime, List<ReadCalendarEventDto>>();
 
-        try 
+        try
         {
-
-            string userId = "test-user";
-            var events = await CalendarEventService.GetAllEventsAsync(userId);
+            var user = AuthStateProvider.User.Id;
+            var events = await CalendarEventService.GetAllEventsAsync(user);
 
             foreach (var evt in events)
             {
@@ -176,8 +176,10 @@
             Description = newTaskDescription,
             StartTime = newStartTime,
             EndTime = newEndTime,
-            UserId = "test-user" // TODO: Hent userId dynamisk
+            UserId = AuthStateProvider.User.Id
         };
+        
+        Console.WriteLine($"Creating event: {JsonConvert.SerializeObject(newEvent)}");
 
         try
         {
