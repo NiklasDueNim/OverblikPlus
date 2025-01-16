@@ -6,57 +6,133 @@
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light shadow-sm">
-            <AuthorizeView>
-                <Authorized>
-                    <div class="dropdown ms-auto">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                            @AuthStateProvider.User.FirstName @AuthStateProvider.User.LastName
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="dropdownMenuButton">
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center" href="@($"/user/{AuthStateProvider.User.Id}")">
-                                    <i class="fas fa-user me-2"></i> Profil
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center" href="/settings">
-                                    <i class="fas fa-cog me-2"></i> Indstillinger
-                                </a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center text-danger" @onclick="Logout">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Log ud
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </Authorized>
-            </AuthorizeView>
+<!-- Desktop Sidebar -->
+<AuthorizeView>
+    <Authorized>
+        <div class="desktop-menu-bar">
+            <h2>OverblikPlus</h2>
+            <a href="/">
+                <span class="icon">🏠</span>
+                <span>Hjem</span>
+            </a>
+            <a href="/tasks">
+                <span class="icon">📋</span>
+                <span>Dagens Opgaver</span>
+            </a>
+            <a href="/scan">
+                <span class="icon">📷</span>
+                <span>Scan QR-kode</span>
+            </a>
+            <a href="/TaskManager">
+                <span class="icon">➕</span>
+                <span>Opret Opgaver</span>
+            </a>
+            <a href="/calendar">
+                <span class="icon">📅</span>
+                <span>Kalender</span>
+            </a>
+            <a href="/chatTest">
+                <span class="icon">✉️</span>
+                <span>Beskeder</span>
+            </a>
         </div>
-        
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    </Authorized>
+    <NotAuthorized>
+        <div class="desktop-menu-bar">
+            <h2>OverblikPlus</h2>
+            <a href="/create-user">
+                <span class="icon">📝</span>
+                <span>Register</span>
+            </a>
+            <a href="/login">
+                <span class="icon">🔑</span>
+                <span>Login</span>
+            </a>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+<!-- Mobile Bottom Navigation -->
+<AuthorizeView>
+    <Authorized>
+        <div class="mobile-menu-bar">
+            <a href="/">
+                <span class="icon">🏠</span>
+                <span class="label">Hjem</span>
+            </a>
+            <a href="/tasks">
+                <span class="icon">📋</span>
+                <span class="label">Opgaver</span>
+            </a>
+            <a href="/scan">
+                <span class="icon">📷</span>
+                <span class="label">Scan</span>
+            </a>
+            <a href="/TaskManager">
+                <span class="icon">➕</span>
+                <span class="label">Opret</span>
+            </a>
+            <a href="/calendar">
+                <span class="icon">📅</span>
+                <span class="label">Kalender</span>
+            </a>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="mobile-menu-bar">
+            <a href="/create-user">
+                <span class="icon">📝</span>
+                <span class="label">Register</span>
+            </a>
+            <a href="/login">
+                <span class="icon">🔑</span>
+                <span class="label">Login</span>
+            </a>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+<!-- Main Content -->
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light shadow-sm">
+        <AuthorizeView>
+            <Authorized>
+                <div class="dropdown ms-auto">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        @AuthStateProvider.User.FirstName @AuthStateProvider.User.LastName
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="dropdownMenuButton">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="@($"/user/{AuthStateProvider.User.Id}")">
+                                <i class="fas fa-user me-2"></i> Profil
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="/settings">
+                                <i class="fas fa-cog me-2"></i> Indstillinger
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center text-danger" @onclick="Logout">
+                                <i class="fas fa-sign-out-alt me-2"></i> Log ud
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+    <article class="content px-4">
+        @Body
+    </article>
 </div>
 
-
 @code {
-    
-    
     protected override async Task OnInitializedAsync()
     {
-       
     }
 
     private async Task Logout()

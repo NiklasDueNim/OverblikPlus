@@ -1,0 +1,82 @@
+@page "/chatTest"
+@using Microsoft.AspNetCore.SignalR.Client
+@using Blazored.LocalStorage
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService localStorage
+@implements IAsyncDisposable
+<h3>Beskeder</h3>
+
+<div class="form-group">
+    <input type="text" class="form-control" @bind="messageInput" />
+    <button class="btn btn-primary" @onclick="Send">Send</button>
+    <button class="btn btn-danger" @onclick="DeleteMessages">Slet beskeder</button>
+    
+</div>
+
+<ul>
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>
+
+@code {
+    private HubConnection hubConnection;
+    private List<string> messages = new List<string>();
+    private string? messageInput;
+    private const string MessagesKey = "chatMessages";
+
+    public static event Action OnMessageSent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        messages = await localStorage.GetItemAsync<List<string>>(MessagesKey) ?? new List<string>();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net/chatHub")
+            .Build();
+
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            var formattedMessage = $"{user}: {message}";
+            messages.Add(formattedMessage);
+            InvokeAsync(StateHasChanged);
+            SaveMessages();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task Send()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage", "User", messageInput);
+            messageInput = string.Empty;
+            OnMessageSent?.Invoke();
+        }
+    }
+
+    private async Task SaveMessages()
+    {
+        await localStorage.SetItemAsync(MessagesKey, messages);
+    }
+
+    public bool IsConnected =>
+        hubConnection.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+    
+    private async Task DeleteMessages()
+    {
+        messages.Clear();
+        await localStorage.SetItemAsync(MessagesKey, messages);
+        InvokeAsync(StateHasChanged);
+    }
+}

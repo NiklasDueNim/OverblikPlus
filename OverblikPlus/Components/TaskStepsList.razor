@@ -18,6 +18,12 @@
     .task-step-buttons {
         align-self: flex-end;
     }
+
+    .fixed-size-image {
+        width: 100px;
+        height: 100px; 
+        object-fit: cover;
+    }
 </style>
 
 <ul class="list-group">
@@ -30,7 +36,7 @@
         @if (!string.IsNullOrEmpty(step.Image))
         {
         <div class="task-step-image">
-            <img src="@step.Image" alt="Step Image" class="img-thumbnail" />
+            <img src="@step.Image" alt="Step Image" class="img-thumbnail fixed-size-image" />
         </div>
         }
         <div class="task-step-buttons">

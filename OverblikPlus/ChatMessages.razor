@@ -1,0 +1,36 @@
+@using Blazored.LocalStorage
+@using OverblikPlus.Pages
+@inject ILocalStorageService localStorage
+
+<h3>Seneste beskeder</h3>
+
+<ul>
+    @foreach (var message in messages.TakeLast(3))
+    {
+        <li>@message</li>
+    }
+</ul>
+
+
+
+@code {
+    private List<string> messages = new List<string>();
+    private const string MessagesKey = "chatMessages";
+
+    protected override async Task OnInitializedAsync()
+    {
+        messages = await localStorage.GetItemAsync<List<string>>(MessagesKey) ?? new List<string>();
+        ChatTest.OnMessageSent += UpdateMessages;
+    }
+
+    private async void UpdateMessages()
+    {
+        messages = await localStorage.GetItemAsync<List<string>>(MessagesKey) ?? new List<string>();
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        ChatTest.OnMessageSent -= UpdateMessages;
+    }
+}
