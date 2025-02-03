@@ -1,5 +1,5 @@
-using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using TaskMicroService.dtos.Task;
 using TaskMicroService.Services.Interfaces;
 
@@ -16,9 +16,8 @@ public class RelativeController : ControllerBase
         _relativeService = relativeService ?? throw new ArgumentNullException(nameof(relativeService));
     }
     
-    
     [HttpGet("{userId}/tasks-for-day")]
-    public async Task<ActionResult<IEnumerable<ReadTaskDto>>> GetTasksForDayForSpecificUser(string userId, [FromQuery] DateTime date)
+    public async Task<ActionResult<IEnumerable<ReadTaskDto>>> GetTasksForDayForSpecificUser(string userId, [FromQuery, BindRequired] DateTime date)
     {
         try
         {

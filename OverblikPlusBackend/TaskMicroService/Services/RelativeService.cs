@@ -10,6 +10,12 @@ public class RelativeService : IRelativeService
 {
     private readonly TaskDbContext _dbContext;
     private readonly IMapper _mapper;
+
+    public RelativeService(TaskDbContext dbContext, IMapper mapper)
+    {
+        _dbContext = dbContext;
+        _mapper = mapper;
+    }
     public async Task<IEnumerable<ReadTaskDto>> GetTasksForDayForSpecificUser(string userId, DateTime date)
     {
         var tasks =  await _dbContext.Tasks.Where(t => t.UserId == userId && t.StartDate.Date == date.Date).ToListAsync();

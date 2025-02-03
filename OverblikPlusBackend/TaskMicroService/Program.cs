@@ -2,7 +2,6 @@ using System.Text;
 using Azure.Storage.Blobs;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -14,12 +13,13 @@ using Serilog;
 using TaskMicroService.DataAccess;
 using TaskMicroService.Dtos.Calendar;
 using TaskMicroService.dtos.Task;
-using TaskMicroService.Entities;
 using TaskMicroService.Middlewares;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
 using TaskMicroService.Validators;
 using TaskMicroService.Validators.Calendar;
+
+namespace TaskMicroService;
 
 public class Program
 {
@@ -38,13 +38,13 @@ public class Program
         builder.Services.AddApplicationInsightsTelemetry(options =>
         {
             options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"]
-                ?? "InstrumentationKey=b97b1b86-165e-4cfd-a348-149f9d0c992d";
+                                       ?? "InstrumentationKey=b97b1b86-165e-4cfd-a348-149f9d0c992d";
         });
         builder.Logging.AddApplicationInsights(
             config =>
             {
                 config.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"]
-                    ?? "InstrumentationKey=b97b1b86-165e-4cfd-a348-149f9d0c992d";
+                                          ?? "InstrumentationKey=b97b1b86-165e-4cfd-a348-149f9d0c992d";
             },
             _ => { }
         );
@@ -135,6 +135,8 @@ public class Program
         builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
         builder.Services.AddScoped<ITaskDbContext, TaskDbContext>();
         builder.Services.AddScoped<IImageService, ImageService>();
+        builder.Services.AddScoped<IRelativeService, RelativeService>();
+
 
         builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();
         builder.Services.AddScoped<IValidator<CreateTaskDto>, CreateTaskDtoValidator>();
