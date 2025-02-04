@@ -1,3 +1,5 @@
+using System;
+
 namespace UserMicroService.Entities;
 
 public class RefreshToken
