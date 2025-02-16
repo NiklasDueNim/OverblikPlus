@@ -5,6 +5,7 @@
 @using OverblikPlus.Models.Dtos.Calendar
 @using OverblikPlus.Services.Interfaces
 @inject ICalendarEventService CalendarEventService
+@inject IRelativeService RelativeService
 @inject IJSRuntime JS
 @inject CustomAuthStateProvider AuthStateProvider
 
@@ -127,7 +128,7 @@
         try
         {
             var user = AuthStateProvider.User.Id;
-            var events = await CalendarEventService.GetAllEventsAsync(user);
+            var events = await RelativeService.GetEventsForDayForSpecificUser(user, selectedMonth);
 
             foreach (var evt in events)
             {
