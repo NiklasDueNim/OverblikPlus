@@ -10,5 +10,6 @@ public class RegisterDto
     
     public string Password { get; set; }
     
-    public string Role { get; set; } 
+    public string Role { get; set; }
+    public int BostedId { get; set; }
 }

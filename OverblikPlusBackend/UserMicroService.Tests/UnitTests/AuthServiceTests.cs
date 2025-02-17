@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,7 @@ using UserMicroService.Services;
 using OverblikPlus.Shared.Interfaces;
 using UserMicroService.Validators.Auth;
 using UserMicroService.Common;
+using Xunit;
 
 namespace UserMicroService.Tests.UnitTests;
 
@@ -51,7 +53,7 @@ public class AuthServiceTests
         );
 
         _mockConfiguration = new Mock<IConfiguration>();
-        _mockConfiguration.Setup(c => c["Jwt:Key"]).Returns("TestSecretKey12345678901234567890");
+        _mockConfiguration.Setup(c => c["Jwt:Key"]).Returns("MyVeryStrongSecretKeyForJWT1234567890123456789");
         _mockConfiguration.Setup(c => c["Jwt:Issuer"]).Returns("TestIssuer");
         _mockConfiguration.Setup(c => c["Jwt:Audience"]).Returns("TestAudience");
 
@@ -151,5 +153,37 @@ public class AuthServiceTests
         // Assert
         Assert.True(result.Success);
         _mockSignInManager.Verify(s => s.SignOutAsync(), Times.Once);
+    }
+    
+    [Fact]
+    public void GenerateJwtToken_ShouldIncludeBostedId()
+    {
+        // Arrange
+        var user = new ApplicationUser
+        {
+            Id = "test-user-id",
+            UserName = "testuser",
+            Email = "testuser@example.com",
+            Role = "User",
+            BostedId = 123
+        };
+
+        _mockConfiguration.Setup(c => c["Jwt:Key"]).Returns("MyVeryStrongSecretKeyForJWT1234567890123456789");
+        _mockConfiguration.Setup(c => c["Jwt:Issuer"]).Returns("testissuer");
+        _mockConfiguration.Setup(c => c["Jwt:Audience"]).Returns("testaudience");
+
+        // Use reflection to access the private GenerateJwtToken method
+        var methodInfo = typeof(AuthService).GetMethod("GenerateJwtToken", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        Assert.NotNull(methodInfo);
+
+        // Act
+        var token = (string)methodInfo.Invoke(_authService, new object[] { user });
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+
+        // Assert
+        var bostedIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "bostedId");
+        Assert.NotNull(bostedIdClaim);
+        Assert.Equal("123", bostedIdClaim.Value);
     }
 }

@@ -21,5 +21,10 @@ public class UserDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.Property(e => e.UserId).IsRequired();
         });
+
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.Property(e => e.BostedId).IsRequired(false);
+        });
     }
 }
