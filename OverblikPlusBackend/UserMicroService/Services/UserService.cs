@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -94,6 +98,12 @@ namespace UserMicroService.Services
                 _logger.LogWarning($"User with ID: {id} not found.");
                 return Result.ErrorResult("User not found");
             }
+        }
+
+
+        public async Task<Result> GetAllUsersForBosted(int bostedId)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<Result> UpdateUserAsync(string id, UpdateUserDto updateUserDto)

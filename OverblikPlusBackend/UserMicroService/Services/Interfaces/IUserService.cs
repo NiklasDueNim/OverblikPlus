@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UserMicroService.Common;
 using UserMicroService.dto;
 
@@ -10,5 +12,6 @@ namespace UserMicroService.Services.Interfaces
         Task<Result<string>> CreateUserAsync(CreateUserDto createUserDto);
         Task<Result> DeleteUserAsync(string id);
         Task<Result> UpdateUserAsync(string id, UpdateUserDto updateUserDto);
+        Task<Result> GetAllUsersForBosted(int bostedId);   
     }
 }

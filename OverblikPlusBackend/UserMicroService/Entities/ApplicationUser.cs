@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Identity;
 
 namespace UserMicroService.Entities;
@@ -12,6 +13,8 @@ public class ApplicationUser : IdentityUser
     public string? Medication { get; set; } = string.Empty;
     public string Role { get; set; }
     public string? Goals { get; set; } = string.Empty;
+
+    public int? BostedId { get; set; }
    
     public ApplicationUser()
     {

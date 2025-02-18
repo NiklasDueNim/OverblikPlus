@@ -1,8 +1,12 @@
+using System;
+using System.Collections.Generic;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +16,7 @@ using UserMicroService.Entities;
 using UserMicroService.Services.Interfaces;
 using OverblikPlus.Shared.Interfaces;
 using UserMicroService.Common;
+using Microsoft.Extensions.Configuration;
 
 namespace UserMicroService.Services
 {
@@ -97,7 +102,8 @@ namespace UserMicroService.Services
                 LastName = registerDto.LastName,
                 Email = registerDto.Email,
                 UserName = registerDto.Email,
-                Role = registerDto.Role
+                Role = registerDto.Role,
+                BostedId = registerDto.BostedId
             };
 
             try
@@ -209,7 +215,8 @@ namespace UserMicroService.Services
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim("nameid", user.Id),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("bostedId", user.BostedId.ToString())
             };
 
             var keyString = _configuration["Jwt:Key"];
