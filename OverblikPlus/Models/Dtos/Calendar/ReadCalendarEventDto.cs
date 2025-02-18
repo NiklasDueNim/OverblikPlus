@@ -2,7 +2,7 @@ namespace OverblikPlus.Models.Dtos.Calendar;
 
 public class ReadCalendarEventDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     public string UserId { get; set; }
     public string Title { get; set; } = string.Empty;

@@ -36,7 +36,7 @@ public class CalendarEventService : ICalendarEventService
         }
     }
 
-    public async Task<ReadCalendarEventDto?> GetEventByIdAsync(int id)
+    public async Task<ReadCalendarEventDto?> GetEventByIdAsync(Guid id)
     {
         try
         {
@@ -68,7 +68,7 @@ public class CalendarEventService : ICalendarEventService
         }
     }
 
-    public async Task UpdateEventAsync(int id, CreateCalendarEventDto dto)
+    public async Task UpdateEventAsync(Guid id, CreateCalendarEventDto dto)
     {
         try
         {
@@ -82,7 +82,7 @@ public class CalendarEventService : ICalendarEventService
         }
     }
 
-    public async Task DeleteEventAsync(int id)
+    public async Task DeleteEventAsync(Guid id)
     {
         try
         {

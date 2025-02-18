@@ -43,13 +43,10 @@ public class CalendarEventService : ICalendarEventService
         }
     }
 
-    public async Task<Result<ReadCalendarEventDto?>> GetEventByIdAsync(int id)
+    public async Task<Result<ReadCalendarEventDto?>> GetEventByIdAsync(Guid id)
     {
         try
         {
-            if (id <= 0)
-                return Result<ReadCalendarEventDto?>.ErrorResult("Invalid ID.");
-
             var calendarEvent = await _dbContext.CalendarEvents.FindAsync(id);
             if (calendarEvent == null)
                 return Result<ReadCalendarEventDto?>.ErrorResult("Event not found.");
@@ -82,7 +79,7 @@ public class CalendarEventService : ICalendarEventService
         }
     }
 
-    public async Task<Result<bool>> UpdateEventAsync(int id, CreateCalendarEventDto dto)
+    public async Task<Result<bool>> UpdateEventAsync(Guid id, CreateCalendarEventDto dto)
     {
         try
         {
@@ -103,7 +100,7 @@ public class CalendarEventService : ICalendarEventService
         }
     }
 
-    public async Task<Result<bool>> DeleteEventAsync(int id)
+    public async Task<Result<bool>> DeleteEventAsync(Guid id)
     {
         try
         {

@@ -1,7 +1,6 @@
 @page "/calendar"
 @using System.Globalization
 @using System.Text
-@using Newtonsoft.Json
 @using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models.Dtos.Calendar
 @using OverblikPlus.Models.Dtos.Tasks
@@ -33,8 +32,10 @@
     <!-- Søgning -->
     <div class="input-group mb-3">
         <span class="input-group-text">Søg</span>
-        <input type="text" class="form-control" @bind="searchTerm" @bind:event="oninput"
-               @onkeyup="FilterEventsAndTasks" placeholder="Søg i titel/beskrivelse..."/>
+        <input type="text" class="form-control" 
+               @bind="searchTerm" @bind:event="oninput"
+               @onkeyup="FilterEventsAndTasks"
+               placeholder="Søg i titel/beskrivelse..."/>
     </div>
 
     <!-- Navigationskontrol (måned/uge/dag) -->
@@ -77,6 +78,7 @@
                         }
                     </ul>
                 }
+
                 @if (day != DateTime.MinValue && filteredEventsForView.ContainsKey(day.Date))
                 {
                     <ul class="event-list">
@@ -90,16 +92,23 @@
         }
     </div>
 
+    <!-- Modal til visning / oprettelse / redigering af events for en dag -->
     @if (showModal)
     {
-        <div class="modal-backdrop">
-            <div class="modal-dialog modal-dialog-centered">
+        <!-- Baggrund -->
+        <div class="modal-backdrop" style="position: fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5); z-index:999;">
+            <div class="modal-dialog modal-dialog-centered" 
+                 style="max-width:600px; margin:auto; margin-top:10vh;">
                 <div class="modal-content">
+
                     <div class="modal-header">
-                        <h5 class="modal-title">Aftaler for @selectedDate.ToShortDateString()</h5>
-                        <button type="button" class="btn-close" aria-label="Close" @onclick="CloseModal"></button>
+                        <h5 class="modal-title">Aftaler & Opgaver for @selectedDate.ToShortDateString()</h5>
+                        <button type="button" class="btn-close" @onclick="CloseModal"></button>
                     </div>
-                    <div class="modal-body">
+
+                    <!-- Gør modal-body scrollbart med max-højde -->
+                    <div class="modal-body" style="max-height:60vh; overflow-y:auto;">
+                        <h6>Opgaver:</h6>
                         <ul class="task-list">
                             @if (filteredTasksForView.ContainsKey(selectedDate))
                             {
@@ -113,12 +122,28 @@
                                 <li>Ingen opgaver</li>
                             }
                         </ul>
+
+                        <h6>Begivenheder:</h6>
                         <ul class="event-list">
                             @if (filteredEventsForView.ContainsKey(selectedDate))
                             {
                                 @foreach (var evt in filteredEventsForView[selectedDate])
                                 {
-                                    <li>@evt.Title</li>
+                                    <li style="display:flex; justify-content:space-between; align-items:center;">
+                                        <span>@evt.Title</span>
+                                        <span class="btn-group">
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    @onclick:stopPropagation 
+                                                    @onclick="() => StartEditEvent(evt)">
+                                                Rediger
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" 
+                                                    @onclick:stopPropagation 
+                                                    @onclick="() => DeleteEvent(evt.Id)">
+                                                Slet
+                                            </button>
+                                        </span>
+                                    </li>
                                 }
                             }
                             else
@@ -127,115 +152,130 @@
                             }
                         </ul>
 
-                        <!-- Opret ny opgave/event -->
+                        <hr/>
+
+                        <!-- Formular til oprettelse/redigering -->
                         <div class="mb-3">
-                            <label for="newTaskTitle" class="form-label">Titel:</label>
-                            <input type="text" id="newTaskTitle" @bind="newTaskTitle" class="form-control"/>
+                            <label for="title" class="form-label">Titel:</label>
+                            <input type="text" id="title" @bind="newTaskTitle" class="form-control"/>
                         </div>
                         <div class="mb-3">
-                            <label for="newTaskDescription" class="form-label">Beskrivelse:</label>
-                            <textarea id="newTaskDescription" @bind="newTaskDescription" class="form-control"></textarea>
+                            <label for="desc" class="form-label">Beskrivelse:</label>
+                            <textarea id="desc" @bind="newTaskDescription" class="form-control"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="newStartDateTime" class="form-label">Starttidspunkt:</label>
-                            <input type="datetime-local" id="newStartDateTime" @bind="newStartDateTime" class="form-control"/>
+                            <label for="start" class="form-label">Starttidspunkt:</label>
+                            <input type="datetime-local" id="start" 
+                                   @bind="newStartDateTime" 
+                                   class="form-control"/>
                         </div>
                         <div class="mb-3">
-                            <label for="newEndDateTime" class="form-label">Sluttidspunkt:</label>
-                            <input type="datetime-local" id="newEndDateTime" @bind="newEndDateTime" class="form-control"/>
+                            <label for="end" class="form-label">Sluttidspunkt:</label>
+                            <input type="datetime-local" id="end" 
+                                   @bind="newEndDateTime" 
+                                   class="form-control"/>
                         </div>
                         <div class="mb-3">
-                            <label for="newIsRecurring" class="form-label">Gentagelse?</label>
-                            <input type="checkbox" id="newIsRecurring" @bind="newIsRecurring"/>
+                            <label for="recurring" class="form-label">Gentagelse?</label>
+                            <input type="checkbox" id="recurring" 
+                                   @bind="newIsRecurring"/>
                         </div>
                     </div>
-                    <div class="modal-footer">
+
+                    <!-- Sticky footer så knapper er synlige -->
+                    <div class="modal-footer" style="position:sticky; bottom:0; background:#fff;">
                         <button type="button" class="btn btn-secondary" @onclick="CloseModal">Luk</button>
-                        <button type="button" class="btn btn-primary" @onclick="AddCalendarEvent">Tilføj</button>
+                        @if (isEditMode)
+                        {
+                            <button type="button" class="btn btn-primary" @onclick="UpdateCalendarEvent">
+                                Opdater
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-primary" @onclick="AddCalendarEvent">
+                                Tilføj
+                            </button>
+                        }
                     </div>
+
                 </div>
             </div>
         </div>
     }
 </div>
 
+
 @code {
 
-    private enum ViewType
-    {
-        Month,
-        Week,
-        Day
-    }
-
+    private enum ViewType { Month, Week, Day }
     private ViewType currentView = ViewType.Month;
 
     private DateTime selectedMonth = DateTime.Today;
     private List<DateTime> daysInView = new();
 
-// Her gemmer vi ALLE tasks/events for den hentede periode
+    // Opgaver & begivenheder for hele perioden
     private Dictionary<DateTime, List<ReadTaskDto>> allTasksForView = new();
     private Dictionary<DateTime, List<ReadCalendarEventDto>> allEventsForView = new();
 
-// Og her gemmer vi de *filtrerede* tasks/events (styret af søgefeltet)
+    // Filtrerede (afhængigt af søgeterm)
     private Dictionary<DateTime, List<ReadTaskDto>> filteredTasksForView = new();
     private Dictionary<DateTime, List<ReadCalendarEventDto>> filteredEventsForView = new();
 
     private string[] dayNames = { "Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn" };
+
+    // Modal & valgte dato
     private bool showModal = false;
     private DateTime selectedDate;
 
-// Variabler til oprettelse af ny opgave/event
+    // Styrer om vi er i redigerings-tilstand (true) eller opret-tilstand (false)
+    private bool isEditMode = false;
+    private Guid editingEventId;
+
+    // Felter for event (opret/redigér)
     private string newTaskTitle;
     private string newTaskDescription;
     private DateTime newStartDateTime;
     private DateTime newEndDateTime;
     private bool? newIsRecurring;
 
+    // Søgning
     private string searchTerm = "";
 
     protected override async Task OnInitializedAsync()
     {
-// Start med at vise måned:
+        // Start med at vise måned
         await LoadTasksAndEventsForMonth();
     }
 
     private async Task LoadTasksAndEventsForMonth()
     {
-// Byg liste over alle dage i måneden:
         var daysReal = Enumerable.Range(1, DateTime.DaysInMonth(selectedMonth.Year, selectedMonth.Month))
-            .Select(day => new DateTime(selectedMonth.Year, selectedMonth.Month, day))
-            .ToList();
-// Lav evt. "leading" tomme cells, så måneden starter på en mandag:
+                                 .Select(day => new DateTime(selectedMonth.Year, selectedMonth.Month, day))
+                                 .ToList();
+        // Leading days, så måneden starter på en mandag:
         var firstDayOfMonth = new DateTime(selectedMonth.Year, selectedMonth.Month, 1);
-        var leadingDays = ((int)firstDayOfMonth.DayOfWeek + 6) % 7; // mandag=0, tirs=1, ...
+        var leadingDays = ((int)firstDayOfMonth.DayOfWeek + 6) % 7;
         daysInView = Enumerable.Repeat(DateTime.MinValue, leadingDays).Concat(daysReal).ToList();
 
-// Hent tasks og events fra backend:
-// (Her henter vi for hele måneden, men i en reel app kunne du hente for interval [start, end])
         await FetchTasksAndEventsForPeriod(firstDayOfMonth, firstDayOfMonth.AddMonths(1).AddDays(-1));
-
-// Filtrer
         FilterEventsAndTasks();
     }
 
     private async Task LoadTasksAndEventsForWeek()
     {
-// Find "mandag i den uge, der indeholder selectedMonth"
-// (selectedMonth kan være en vilkårlig dag)
         var diff = (int)selectedMonth.DayOfWeek - (int)DayOfWeek.Monday;
         if (diff < 0) diff += 7;
         var monday = selectedMonth.AddDays(-diff).Date;
         var daysReal = Enumerable.Range(0, 7).Select(i => monday.AddDays(i)).ToList();
-        daysInView = daysReal;
 
+        daysInView = daysReal;
         await FetchTasksAndEventsForPeriod(monday, monday.AddDays(6));
         FilterEventsAndTasks();
     }
 
     private async Task LoadTasksAndEventsForDay()
     {
-// Viser kun den ene dag, “selectedMonth”:
         daysInView = new List<DateTime> { selectedMonth.Date };
         await FetchTasksAndEventsForPeriod(selectedMonth.Date, selectedMonth.Date);
         FilterEventsAndTasks();
@@ -243,45 +283,45 @@
 
     private async Task FetchTasksAndEventsForPeriod(DateTime start, DateTime end)
     {
-        allTasksForView = new Dictionary<DateTime, List<ReadTaskDto>>();
-        allEventsForView = new Dictionary<DateTime, List<ReadCalendarEventDto>>();
+        allTasksForView.Clear();
+        allEventsForView.Clear();
 
         try
         {
-            var user = AuthStateProvider.User?.Id;
-            if (user == null) return;
+            var userId = AuthStateProvider.User?.Id;
+            if (userId == null) return;
 
-// Her bruger vi (for eksemplets skyld) GetTasksForDayForSpecificUser til "selectedMonth",
-// men du bør lave et API-kald, der håndterer intervaller (start/end) for at få præcis data.
-            var tasks = await RelativeService.GetTasksForDayForSpecificUser(user, selectedMonth);
-            var events = await CalendarEventService.GetAllEventsAsync(user);
+            // Eksempel: Henter “tasks” for hele selectedMonth, 
+            // men ideelt: opret nyt endpoint, der henter tasks i [start, end].
+            var tasks = await RelativeService.GetTasksForDayForSpecificUser(userId, selectedMonth);
+            var events = await CalendarEventService.GetAllEventsAsync(userId);
 
-// Opbyg ordbog for tasks
+            // Opgaver
             if (tasks != null)
             {
-                foreach (var task in tasks)
+                foreach (var t in tasks)
                 {
-                    var date = task.StartTime.Date;
-                    if (date >= start.Date && date <= end.Date)
+                    var date = t.StartTime.Date;
+                    if (date >= start && date <= end)
                     {
                         if (!allTasksForView.ContainsKey(date))
                             allTasksForView[date] = new List<ReadTaskDto>();
-                        allTasksForView[date].Add(task);
+                        allTasksForView[date].Add(t);
                     }
                 }
             }
 
-// Opbyg ordbog for events
+            // Begivenheder
             if (events != null)
             {
-                foreach (var evt in events)
+                foreach (var e in events)
                 {
-                    var date = evt.StartDateTime.Date;
-                    if (date >= start.Date && date <= end.Date)
+                    var date = e.StartDateTime.Date;
+                    if (date >= start && date <= end)
                     {
                         if (!allEventsForView.ContainsKey(date))
                             allEventsForView[date] = new List<ReadCalendarEventDto>();
-                        allEventsForView[date].Add(evt);
+                        allEventsForView[date].Add(e);
                     }
                 }
             }
@@ -292,19 +332,29 @@
         }
     }
 
-    private void OpenDayDetails(DateTime date)
+    private void OpenDayDetails(DateTime day)
     {
-        selectedDate = date;
-        newTaskTitle = string.Empty;
-        newTaskDescription = string.Empty;
-        newStartDateTime = date;
-        newEndDateTime = date.AddHours(1);
+        selectedDate = day;
         showModal = true;
+
+        // Som standard åbner vi i “opret ny” tilstand
+        StartCreateNewEvent();
     }
 
     private void CloseModal()
     {
         showModal = false;
+    }
+
+    private void StartCreateNewEvent()
+    {
+        isEditMode = false;
+        editingEventId = Guid.Empty;
+        newTaskTitle = "";
+        newTaskDescription = "";
+        newStartDateTime = selectedDate;
+        newEndDateTime = selectedDate.AddHours(1);
+        newIsRecurring = false;
     }
 
     private async Task AddCalendarEvent()
@@ -322,26 +372,99 @@
         try
         {
             await CalendarEventService.CreateEventAsync(newEvent);
-
-// Genindlæs data afhængigt af aktuel visning
-            switch (currentView)
-            {
-                case ViewType.Month:
-                    await LoadTasksAndEventsForMonth();
-                    break;
-                case ViewType.Week:
-                    await LoadTasksAndEventsForWeek();
-                    break;
-                case ViewType.Day:
-                    await LoadTasksAndEventsForDay();
-                    break;
-            }
-
-            showModal = false;
+            await ReloadCurrentView();
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fejl ved oprettelse af kalenderaftale: {ex.Message}");
+            Console.Error.WriteLine($"Fejl ved oprettelse af event: {ex.Message}");
+        }
+        finally
+        {
+            // Luk modal hvis du ønsker
+            // showModal = false;
+
+            isEditMode = false;
+        }
+    }
+
+    private void StartEditEvent(ReadCalendarEventDto evt)
+    {
+        isEditMode = true;
+        editingEventId = evt.Id;
+        newTaskTitle = evt.Title;
+        newTaskDescription = evt.Description;
+        newStartDateTime = evt.StartDateTime;
+        newEndDateTime = evt.EndDateTime;
+        newIsRecurring = evt.IsRecurring;
+    }
+
+    private async Task UpdateCalendarEvent()
+    {
+        if (editingEventId == Guid.Empty) return; // Sikkerhedstjek
+
+        var updatedEvent = new UpdateCalendarEventDto
+        {
+            Id = editingEventId,
+            Title = newTaskTitle,
+            Description = newTaskDescription,
+            StartDateTime = newStartDateTime,
+            EndDateTime = newEndDateTime,
+            IsRecurring = newIsRecurring,
+            UserId = AuthStateProvider.User.Id
+        };
+
+        try
+        {
+            // Eksempel på en API-signatur, der forventer (Guid eventId, CreateCalendarEventDto data)
+            await CalendarEventService.UpdateEventAsync(updatedEvent.Id, 
+                new CreateCalendarEventDto
+                {
+                    Title = updatedEvent.Title,
+                    Description = updatedEvent.Description,
+                    StartDateTime = updatedEvent.StartDateTime,
+                    EndDateTime = updatedEvent.EndDateTime,
+                    IsRecurring = updatedEvent.IsRecurring,
+                    UserId = updatedEvent.UserId
+                });
+
+            await ReloadCurrentView();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Fejl ved opdatering: {ex.Message}");
+        }
+        finally
+        {
+            isEditMode = false;
+        }
+    }
+
+    private async Task DeleteEvent(Guid eventId)
+    {
+        try
+        {
+            await CalendarEventService.DeleteEventAsync(eventId);
+            await ReloadCurrentView();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Fejl ved sletning: {ex.Message}");
+        }
+    }
+
+    private async Task ReloadCurrentView()
+    {
+        switch (currentView)
+        {
+            case ViewType.Month:
+                await LoadTasksAndEventsForMonth();
+                break;
+            case ViewType.Week:
+                await LoadTasksAndEventsForWeek();
+                break;
+            case ViewType.Day:
+                await LoadTasksAndEventsForDay();
+                break;
         }
     }
 
@@ -388,13 +511,12 @@
         return currentView switch
         {
             ViewType.Month => selectedMonth.ToString("MMMM yyyy"),
-            ViewType.Week => $"Uge {GetIso8601WeekOfYear(selectedMonth)} - {selectedMonth.Year}",
-            ViewType.Day => selectedMonth.ToString("dd. MMMM yyyy"),
+            ViewType.Week  => $"Uge {GetIso8601WeekOfYear(selectedMonth)} - {selectedMonth.Year}",
+            ViewType.Day   => selectedMonth.ToString("dd. MMMM yyyy"),
             _ => selectedMonth.ToString("MMMM yyyy")
         };
     }
 
-// Hjælper til at få uge-nummer (ISO 8601)
     private int GetIso8601WeekOfYear(DateTime date)
     {
         var day = CultureInfo.InvariantCulture.Calendar.GetDayOfWeek(date);
@@ -402,7 +524,6 @@
         {
             date = date.AddDays(3);
         }
-
         return CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
             date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
     }
@@ -424,12 +545,11 @@
         }
     }
 
-// Søgning/filtering
+    // Søgning/filtering
     private void FilterEventsAndTasks()
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
         {
-// Nulstil til alle
             filteredTasksForView = allTasksForView;
             filteredEventsForView = allEventsForView;
             return;
@@ -440,8 +560,8 @@
         {
             var matchingTasks = kvp.Value
                 .Where(t =>
-                    (!string.IsNullOrEmpty(t.Name) && t.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(t.Description) && t.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    (!string.IsNullOrEmpty(t.Name) && t.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrEmpty(t.Description) && t.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                 )
                 .ToList();
 
@@ -454,8 +574,8 @@
         {
             var matchingEvents = kvp.Value
                 .Where(e =>
-                    (!string.IsNullOrEmpty(e.Title) && e.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(e.Description) && e.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    (!string.IsNullOrEmpty(e.Title) && e.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    || (!string.IsNullOrEmpty(e.Description) && e.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                 )
                 .ToList();
 
@@ -471,7 +591,7 @@
         builder.AppendLine("VERSION:2.0");
         builder.AppendLine("PRODID:-//OverblikPlus//Calendar//EN");
 
-// Tasks
+        // Opgaver
         foreach (var kvp in allTasksForView)
         {
             foreach (var task in kvp.Value)
@@ -486,7 +606,7 @@
             }
         }
 
-// Events
+        // Begivenheder
         foreach (var kvp in allEventsForView)
         {
             foreach (var evt in kvp.Value)

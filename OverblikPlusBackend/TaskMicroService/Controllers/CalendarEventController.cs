@@ -25,7 +25,7 @@ namespace TaskMicroService.Controllers
         }
         
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetEvent(int id)
+        public async Task<IActionResult> GetEvent(Guid id)
         {
             var result = await _calendarEventService.GetEventByIdAsync(id);
 
@@ -76,7 +76,7 @@ namespace TaskMicroService.Controllers
         }
         
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEvent(int id, [FromBody] CreateCalendarEventDto dto)
+        public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] CreateCalendarEventDto dto)
         {
             var validationResult = await _validator.ValidateAsync(dto);
 
@@ -99,7 +99,7 @@ namespace TaskMicroService.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEvent(int id)
+        public async Task<IActionResult> DeleteEvent(Guid id)
         {
             var result = await _calendarEventService.DeleteEventAsync(id);
 
