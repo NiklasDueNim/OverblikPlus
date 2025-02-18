@@ -42,7 +42,28 @@ public class RelativeService : IRelativeService
     public async Task<IEnumerable<ReadCalendarEventDto>> GetEventsForDayForSpecificUser(string userId, DateTime date)
     {
         var events = await _dbContext.CalendarEvents
-            .Where(e => e.UserId == userId && e.StartDate.Date == date.Date)
+            .Where(e => e.UserId == userId && e.StartDateTime.Date == date.Date)
+            .ToListAsync();
+
+        if (events == null || !events.Any())
+        {
+            return Enumerable.Empty<ReadCalendarEventDto>();
+        }
+
+        var mappedEvents = _mapper.Map<IEnumerable<ReadCalendarEventDto>>(events);
+
+        if (mappedEvents == null || !mappedEvents.Any())
+        {
+            throw new InvalidOperationException("Mapping from CalendarEvent to ReadCalendarEventDto failed or resulted in an empty list.");
+        }
+
+        return mappedEvents;
+    }
+
+    public async Task<IEnumerable<ReadCalendarEventDto>> GetEventsForIntervalForUser(string userId, DateTime from, DateTime to)
+    {
+        var events = await _dbContext.CalendarEvents
+            .Where(e => e.UserId == userId && e.StartDateTime >= from && e.StartDateTime <= to)
             .ToListAsync();
 
         if (events == null || !events.Any())

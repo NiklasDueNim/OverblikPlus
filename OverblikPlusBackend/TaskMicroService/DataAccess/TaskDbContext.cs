@@ -41,9 +41,9 @@ namespace TaskMicroService.DataAccess
             modelBuilder.Entity<CalendarEvent>()
                 .Property(c => c.Title).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<CalendarEvent>()
-                .Property(c => c.StartTime).IsRequired();
+                .Property(c => c.StartDateTime).IsRequired();
             modelBuilder.Entity<CalendarEvent>()
-                .Property(c => c.EndTime).IsRequired();
+                .Property(c => c.EndDateTime).IsRequired();
 
 
             base.OnModelCreating(modelBuilder);

@@ -21,7 +21,7 @@ public class RelativeController : ControllerBase
     }
     
     [HttpGet("{userId}/tasks-for-day")]
-    public async Task<ActionResult<IEnumerable<ReadCalendarEventDto>>> GetTasksForDayForSpecificUser(string userId, [FromQuery, BindRequired] DateTime date)
+    public async Task<ActionResult<IEnumerable<ReadTaskDto>>> GetTasksForDayForSpecificUser(string userId, [FromQuery, BindRequired] DateTime date)
     {
         try
         {
@@ -49,6 +49,21 @@ public class RelativeController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest(new { Message = ex.Message });
+        }
+    }
+    
+    [HttpGet("{userId}/events")]
+    public async Task<ActionResult<IEnumerable<ReadCalendarEventDto>>> GetEventsForIntervalForUser(
+        string userId, [FromQuery] DateTime from, [FromQuery] DateTime to)
+    {
+        try
+        {
+            var events = await _relativeService.GetEventsForIntervalForUser(userId, from, to);
+            return Ok(events);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
         }
     }
 }

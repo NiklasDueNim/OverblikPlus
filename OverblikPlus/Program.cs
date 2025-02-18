@@ -47,6 +47,7 @@ ConfigureHttpClient<ICalendarEventService, CalendarEventService>(builder.Service
 ConfigureHttpClient<ITaskService, TaskService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<IAuthService, AuthService>(builder.Services, userApiBaseUrl);
 ConfigureHttpClient<ITaskStepService, TaskStepService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<IRelativeService, RelativeService>(builder.Services, taskApiBaseUrl);
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();

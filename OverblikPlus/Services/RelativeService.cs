@@ -17,13 +17,23 @@ public class RelativeService : IRelativeService
 
     public async Task<IEnumerable<ReadTaskDto>> GetTasksForDayForSpecificUser(string userId, DateTime date)
     {
-        var response = await _httpClient.GetFromJsonAsync<IEnumerable<ReadTaskDto>>($"/api/Relative/{userId}/tasks-for-day?date={date}");
+        var formattedDate = date.ToString("yyyy-MM-dd");
+        var response = await _httpClient.GetFromJsonAsync<IEnumerable<ReadTaskDto>>($"/api/Relative/{userId}/tasks-for-day?date={formattedDate}");
         return response ?? new List<ReadTaskDto>();
     }
 
     public async Task<IEnumerable<ReadCalendarEventDto>> GetEventsForDayForSpecificUser(string userId, DateTime date)
     {
-        var reponse = await _httpClient.GetFromJsonAsync<IEnumerable<ReadCalendarEventDto>>($"/api/Relative/{userId}/events-for-day?date={date}");
-        return reponse ?? new List<ReadCalendarEventDto>();
+        var formattedDate = date.ToString("yyyy-MM-dd");
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<IEnumerable<ReadCalendarEventDto>>($"/api/Relative/{userId}/events-for-day?date={formattedDate}");
+            return response ?? new List<ReadCalendarEventDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching events: {ex.Message}");
+            return new List<ReadCalendarEventDto>();
+        }
     }
 }

@@ -8,4 +8,6 @@ public interface IRelativeService
 {
     Task<IEnumerable<ReadTaskDto>> GetTasksForDayForSpecificUser(string userId, DateTime date);
     Task<IEnumerable<ReadCalendarEventDto>> GetEventsForDayForSpecificUser(string userId, DateTime date);
+    
+    Task<IEnumerable<ReadCalendarEventDto>> GetEventsForIntervalForUser(string userId, DateTime startDate, DateTime endDate);
 }

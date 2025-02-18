@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Newtonsoft.Json;
 using OverblikPlus.Models.Dtos.Calendar;
 using OverblikPlus.Services.Interfaces;
 
@@ -55,6 +56,7 @@ public class CalendarEventService : ICalendarEventService
     {
         try
         {
+            Console.WriteLine($"Creating event with data: {JsonConvert.SerializeObject(dto)}");
             var response = await _httpClient.PostAsJsonAsync("/api/CalendarEvent", dto);
 
             response.EnsureSuccessStatusCode();

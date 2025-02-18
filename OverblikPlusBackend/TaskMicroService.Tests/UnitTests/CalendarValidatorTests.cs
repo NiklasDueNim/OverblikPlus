@@ -21,8 +21,8 @@ namespace TaskMicroService.Tests.UnitTests
             {
                 Title = "",
                 Description = "Description",
-                StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddDays(1),
+                StartDateTime = DateTime.Now,
+                EndDateTime = DateTime.Now.AddDays(1),
                 UserId = "user123"
             };
 
@@ -39,8 +39,8 @@ namespace TaskMicroService.Tests.UnitTests
             {
                 Title = new string('A', 101),
                 Description = "Description",
-                StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddDays(1),
+                StartDateTime = DateTime.Now,
+                EndDateTime = DateTime.Now.AddDays(1),
                 UserId = "user123"
             };
 
@@ -57,8 +57,8 @@ namespace TaskMicroService.Tests.UnitTests
             {
                 Title = "Title",
                 Description = new string('A', 501),
-                StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddDays(1),
+                StartDateTime = DateTime.Now,
+                EndDateTime = DateTime.Now.AddDays(1),
                 UserId = "user123"
             };
 
@@ -75,14 +75,14 @@ namespace TaskMicroService.Tests.UnitTests
             {
                 Title = "Title",
                 Description = "Description",
-                StartDate = DateTime.Now.AddDays(1),
-                EndDate = DateTime.Now,
+                StartDateTime = DateTime.Now.AddDays(1),
+                EndDateTime = DateTime.Now,
                 UserId = "user123"
             };
 
             var result = _validator.TestValidate(calendarEventDto);
 
-            result.ShouldHaveValidationErrorFor(x => x.StartDate)
+            result.ShouldHaveValidationErrorFor(x => x.StartDateTime)
                 .WithErrorMessage("Startdato skal være før slutdato.");
         }
 
@@ -93,8 +93,8 @@ namespace TaskMicroService.Tests.UnitTests
             {
                 Title = "Title",
                 Description = "Description",
-                StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddDays(1),
+                StartDateTime = DateTime.Now,
+                EndDateTime = DateTime.Now.AddDays(1),
                 UserId = ""
             };
 
@@ -111,8 +111,8 @@ namespace TaskMicroService.Tests.UnitTests
             {
                 Title = "Title",
                 Description = "Description",
-                StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddDays(1),
+                StartDateTime = DateTime.Now,
+                EndDateTime = DateTime.Now.AddDays(1),
                 UserId = "user123"
             };
 
