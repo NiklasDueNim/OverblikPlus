@@ -14,8 +14,8 @@ public class CreateCalendarEventDtoValidator : AbstractValidator<CreateCalendarE
         RuleFor(x => x.Description)
             .MaximumLength(500).WithMessage("Beskrivelse må højst være 500 tegn.");
 
-        RuleFor(x => x.StartDate)
-            .LessThan(x => x.EndDate).WithMessage("Startdato skal være før slutdato.");
+        RuleFor(x => x.StartDateTime)
+            .LessThan(x => x.EndDateTime).WithMessage("Startdato skal være før slutdato.");
 
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Bruger-ID er påkrævet.");

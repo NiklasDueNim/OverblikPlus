@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Newtonsoft.Json;
 using OverblikPlus.Models.Dtos.Calendar;
 using OverblikPlus.Services.Interfaces;
 
@@ -35,7 +36,7 @@ public class CalendarEventService : ICalendarEventService
         }
     }
 
-    public async Task<ReadCalendarEventDto?> GetEventByIdAsync(int id)
+    public async Task<ReadCalendarEventDto?> GetEventByIdAsync(Guid id)
     {
         try
         {
@@ -55,6 +56,7 @@ public class CalendarEventService : ICalendarEventService
     {
         try
         {
+            Console.WriteLine($"Creating event with data: {JsonConvert.SerializeObject(dto)}");
             var response = await _httpClient.PostAsJsonAsync("/api/CalendarEvent", dto);
 
             response.EnsureSuccessStatusCode();
@@ -66,7 +68,7 @@ public class CalendarEventService : ICalendarEventService
         }
     }
 
-    public async Task UpdateEventAsync(int id, CreateCalendarEventDto dto)
+    public async Task UpdateEventAsync(Guid id, CreateCalendarEventDto dto)
     {
         try
         {
@@ -80,7 +82,7 @@ public class CalendarEventService : ICalendarEventService
         }
     }
 
-    public async Task DeleteEventAsync(int id)
+    public async Task DeleteEventAsync(Guid id)
     {
         try
         {

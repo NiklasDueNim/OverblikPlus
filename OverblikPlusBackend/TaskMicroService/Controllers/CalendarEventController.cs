@@ -23,9 +23,9 @@ namespace TaskMicroService.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         }
-
+        
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetEvent(int id)
+        public async Task<IActionResult> GetEvent(Guid id)
         {
             var result = await _calendarEventService.GetEventByIdAsync(id);
 
@@ -37,7 +37,7 @@ namespace TaskMicroService.Controllers
 
             return Ok(result.Data);
         }
-
+        
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetEventsForUser(string userId)
         {
@@ -51,7 +51,7 @@ namespace TaskMicroService.Controllers
 
             return Ok(result.Data);
         }
-
+        
         [HttpPost]
         public async Task<IActionResult> CreateEvent([FromBody] CreateCalendarEventDto dto)
         {
@@ -74,9 +74,9 @@ namespace TaskMicroService.Controllers
             _logger.LogInfo($"Event created successfully with ID {result.Data.Id}");
             return CreatedAtAction(nameof(GetEvent), new { id = result.Data.Id }, result.Data);
         }
-
+        
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEvent(int id, [FromBody] CreateCalendarEventDto dto)
+        public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] CreateCalendarEventDto dto)
         {
             var validationResult = await _validator.ValidateAsync(dto);
 
@@ -99,7 +99,7 @@ namespace TaskMicroService.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEvent(int id)
+        public async Task<IActionResult> DeleteEvent(Guid id)
         {
             var result = await _calendarEventService.DeleteEventAsync(id);
 

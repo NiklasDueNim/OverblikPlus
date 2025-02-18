@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using MockQueryable;
 using MockQueryable.Moq;
 using Moq;
@@ -9,6 +10,7 @@ using UserMicroService.Entities;
 using UserMicroService.Helpers;
 using UserMicroService.Services;
 using UserMicroService.Common;
+using UserMicroService.DataAccess;
 
 namespace UserMicroService.Tests.UnitTests;
 
@@ -200,5 +202,37 @@ public class UserServiceTests
 
         userManager.Setup(x => x.Users).Returns(users.AsQueryable());
         return userManager;
+    }
+
+    [Fact]
+    public void CanAssignBostedIdToUser()
+    {
+        var options = new DbContextOptionsBuilder<UserDbContext>()
+            .UseInMemoryDatabase(databaseName: "TestDatabase")
+            .Options;
+
+        using (var context = new UserDbContext(options))
+        {
+            var user = new ApplicationUser
+            {
+                UserName = "testUser",
+                FirstName = "Test",
+                LastName = "User",
+                Email = "tes",
+                Medication = "Med1",
+                Role = "User",
+                BostedId = null
+            };
+            
+            context.Users.Add(user);
+            context.SaveChanges();
+            
+            user.BostedId = 1;
+            context.SaveChanges();
+
+            var updatedUser = context.Users.Find(user.Id);
+            Assert.NotNull(updatedUser);
+            Assert.Equal(1, updatedUser.BostedId);
+        }
     }
 }

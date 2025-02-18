@@ -4,9 +4,9 @@ namespace OverblikPlus.Services.Interfaces;
 
 public interface ICalendarEventService
 {
-    Task<ReadCalendarEventDto?> GetEventByIdAsync(int id);
+    Task<ReadCalendarEventDto?> GetEventByIdAsync(Guid id);
     Task<IEnumerable<ReadCalendarEventDto>> GetAllEventsAsync(string userId);
     Task CreateEventAsync(CreateCalendarEventDto dto);
-    Task UpdateEventAsync(int id, CreateCalendarEventDto dto);
-    Task DeleteEventAsync(int id);
+    Task UpdateEventAsync(Guid id, CreateCalendarEventDto dto);
+    Task DeleteEventAsync(Guid id);
 }

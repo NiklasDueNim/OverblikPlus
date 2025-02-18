@@ -133,12 +133,15 @@ namespace TaskMicroService.Tests.Services
         [Fact]
         public async Task DeleteEventAsync_ShouldReturnError_WhenIdIsInvalid()
         {
+            // Arrange
+            var invalidId = Guid.Empty;
+
             // Act
-            var result = await _service.DeleteEventAsync(0);
+            var result = await _service.DeleteEventAsync(invalidId);
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal("Error deleting event.", result.Error);
+            Assert.Equal("Event not found.", result.Error);
         }
 
         // [Fact]

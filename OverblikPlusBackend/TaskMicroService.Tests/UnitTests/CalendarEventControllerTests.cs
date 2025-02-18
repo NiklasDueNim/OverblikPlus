@@ -33,7 +33,7 @@ public class CalendarEventControllerTests
     public async Task GetEvent_ReturnsOkResult_WhenEventExists()
     {
         // Arrange
-        var eventId = 1;
+        var eventId = Guid.NewGuid();
         var eventDto = new ReadCalendarEventDto { Title = "Test Event" };
         _mockCalendarEventService.Setup(s => s.GetEventByIdAsync(eventId))!
             .ReturnsAsync(Result<ReadCalendarEventDto>.SuccessResult(eventDto));
@@ -50,7 +50,7 @@ public class CalendarEventControllerTests
     public async Task GetEvent_ReturnsBadRequest_WhenEventDoesNotExist()
     {
         // Arrange
-        var eventId = 1;
+        var eventId = Guid.NewGuid();
         _mockCalendarEventService.Setup(s => s.GetEventByIdAsync(eventId))!
             .ReturnsAsync(Result<ReadCalendarEventDto>.ErrorResult("Event not found"));
 
@@ -105,7 +105,7 @@ public class CalendarEventControllerTests
     public async Task UpdateEvent_ReturnsNoContent_WhenEventIsUpdated()
     {
         // Arrange
-        var eventId = 1;
+        var eventId = Guid.NewGuid();
         var eventDto = new CreateCalendarEventDto { Title = "Updated Event" };
         _mockValidator.Setup(v => v.ValidateAsync(eventDto, default))
             .ReturnsAsync(new ValidationResult());
@@ -123,7 +123,7 @@ public class CalendarEventControllerTests
     public async Task DeleteEvent_ReturnsNoContent_WhenEventIsDeleted()
     {
         // Arrange
-        var eventId = 1;
+        var eventId = Guid.NewGuid();
         _mockCalendarEventService.Setup(s => s.DeleteEventAsync(eventId))
             .ReturnsAsync(Result<bool>.SuccessResult(true));
 

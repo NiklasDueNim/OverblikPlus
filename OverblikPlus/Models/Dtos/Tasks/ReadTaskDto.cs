@@ -1,3 +1,5 @@
+using System.Reflection.Metadata.Ecma335;
+using OpenQA.Selenium.BiDi.Modules.Script;
 using OverblikPlus.Models.Dtos.TaskSteps;
 
 namespace OverblikPlus.Models.Dtos.Tasks;
@@ -22,6 +24,10 @@ public class ReadTaskDto
     public DateTime? NextOccurrence { get; set; }
 
     public DateTime StartDate { get; set; }
+
+    public DateTime StartTime { get; set; }
+
+    public DateTime EndTime { get; set; }
     public bool HasSteps => Steps.Any();
 
 }

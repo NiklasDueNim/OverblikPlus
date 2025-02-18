@@ -22,15 +22,6 @@ namespace UserMicroService.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "RefreshTokens",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
-
             migrationBuilder.AddPrimaryKey(
                 name: "PK_RefreshTokens",
                 table: "RefreshTokens",
@@ -43,15 +34,6 @@ namespace UserMicroService.Migrations
             migrationBuilder.DropPrimaryKey(
                 name: "PK_RefreshTokens",
                 table: "RefreshTokens");
-
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "RefreshTokens",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "int")
-                .Annotation("SqlServer:Identity", "1, 1");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Token",
