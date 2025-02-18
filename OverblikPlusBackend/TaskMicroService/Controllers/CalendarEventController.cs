@@ -23,7 +23,7 @@ namespace TaskMicroService.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         }
-
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEvent(int id)
         {
@@ -37,7 +37,7 @@ namespace TaskMicroService.Controllers
 
             return Ok(result.Data);
         }
-
+        
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetEventsForUser(string userId)
         {
@@ -51,7 +51,7 @@ namespace TaskMicroService.Controllers
 
             return Ok(result.Data);
         }
-
+        
         [HttpPost]
         public async Task<IActionResult> CreateEvent([FromBody] CreateCalendarEventDto dto)
         {
@@ -74,7 +74,7 @@ namespace TaskMicroService.Controllers
             _logger.LogInfo($"Event created successfully with ID {result.Data.Id}");
             return CreatedAtAction(nameof(GetEvent), new { id = result.Data.Id }, result.Data);
         }
-
+        
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateEvent(int id, [FromBody] CreateCalendarEventDto dto)
         {

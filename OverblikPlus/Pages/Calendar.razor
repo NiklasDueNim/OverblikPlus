@@ -3,6 +3,7 @@
 @using Newtonsoft.Json
 @using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models.Dtos.Calendar
+@using OverblikPlus.Models.Dtos.Tasks
 @using OverblikPlus.Services.Interfaces
 @inject ICalendarEventService CalendarEventService
 @inject IRelativeService RelativeService
@@ -33,14 +34,23 @@
     <div class="calendar-grid">
         @foreach (var day in daysInMonth)
         {
-            <div class="calendar-cell @(day.Date == DateTime.Today ? "today" : "")" @onclick="() => OpenDayDetails(day)">
-                <div class="date-number">@day.Day</div>
-                @if (tasksForMonth.ContainsKey(day.Date))
+            <div class="calendar-cell @(day == DateTime.MinValue ? "leading-day" : day.Date == DateTime.Today ? "today" : "")" @onclick="@(day != DateTime.MinValue ? () => OpenDayDetails(day) : null)">
+                <div class="date-number">@((day == DateTime.MinValue) ? "" : day.Day.ToString())</div>
+                @if (day != DateTime.MinValue && tasksForMonth.ContainsKey(day.Date))
                 {
                     <ul class="task-list">
                         @foreach (var task in tasksForMonth[day.Date])
                         {
-                            <li class="task-item">@task.Title</li>
+                            <li class="task-item">@task.Name</li>
+                        }
+                    </ul>
+                }
+                @if (day != DateTime.MinValue && eventsForMonth.ContainsKey(day.Date))
+                {
+                    <ul class="event-list">
+                        @foreach (var evt in eventsForMonth[day.Date])
+                        {
+                            <li class="event-item">@evt.Title</li>
                         }
                     </ul>
                 }
@@ -63,35 +73,48 @@
                             {
                                 @foreach (var task in tasksForMonth[selectedDate])
                                 {
-                                    <li>@task.Title</li>
+                                    <li>@task.Name</li>
                                 }
                             }
                             else
                             {
-                                <li>Ingen aftaler</li>
+                                <li>Ingen opgaver</li>
+                            }
+                        </ul>
+                        <ul class="event-list">
+                            @if (eventsForMonth.ContainsKey(selectedDate))
+                            {
+                                @foreach (var evt in eventsForMonth[selectedDate])
+                                {
+                                    <li>@evt.Title</li>
+                                }
+                            }
+                            else
+                            {
+                                <li>Ingen begivenheder</li>
                             }
                         </ul>
 
                         <div class="mb-3">
                             <label for="newTaskTitle" class="form-label">Titel:</label>
-                            <input type="text" id="newTaskTitle" @bind="newTaskTitle" class="form-control" />
+                            <input type="text" id="newTaskTitle" @bind="newTaskTitle" class="form-control"/>
                         </div>
                         <div class="mb-3">
                             <label for="newTaskDescription" class="form-label">Beskrivelse:</label>
                             <textarea id="newTaskDescription" @bind="newTaskDescription" class="form-control"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="newStartTime" class="form-label">Starttidspunkt:</label>
-                            <input type="datetime-local" id="newStartTime" @bind="newStartTime" class="form-control" />
+                            <label for="newStartDateTime" class="form-label">Starttidspunkt:</label>
+                            <input type="datetime-local" id="newStartDateTime" @bind="newStartDateTime" class="form-control"/>
                         </div>
                         <div class="mb-3">
-                            <label for="newEndTime" class="form-label">Sluttidspunkt:</label>
-                            <input type="datetime-local" id="newEndTime" @bind="newEndTime" class="form-control" />
+                            <label for="newEndDateTime" class="form-label">Sluttidspunkt:</label>
+                            <input type="datetime-local" id="newEndDateTime" @bind="newEndDateTime" class="form-control"/>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @onclick="CloseModal">Luk</button>
-                        <button type="button" class="btn btn-primary" @onclick="AddTask">Tilføj</button>
+                        <button type="button" class="btn btn-primary" @onclick="AddCalendarEvent">Tilføj</button>
                     </div>
                 </div>
             </div>
@@ -102,61 +125,101 @@
 @code {
     private DateTime selectedMonth = DateTime.Today;
     private List<DateTime> daysInMonth = new();
-    private Dictionary<DateTime, List<ReadCalendarEventDto>> tasksForMonth = new();
+    private Dictionary<DateTime, List<ReadTaskDto>> tasksForMonth = new();
+    private Dictionary<DateTime, List<ReadCalendarEventDto>> eventsForMonth = new();
     private string[] dayNames = { "Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn" };
     private bool showModal = false;
     private DateTime selectedDate;
 
     private string newTaskTitle;
     private string newTaskDescription;
-    private DateTime newStartTime;
-    private DateTime newEndTime;
+    private DateTime newStartDateTime;
+    private DateTime newEndDateTime;
+    private bool? newIsRecurring;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadTasksForMonth();
+        //await GetAllEvents();
+        await LoadTasksAndEventsForMonth();
     }
 
-    private async Task LoadTasksForMonth()
+    private async Task LoadTasksAndEventsForMonth()
     {
         daysInMonth = Enumerable.Range(1, DateTime.DaysInMonth(selectedMonth.Year, selectedMonth.Month))
             .Select(day => new DateTime(selectedMonth.Year, selectedMonth.Month, day))
             .ToList();
 
-        tasksForMonth = new Dictionary<DateTime, List<ReadCalendarEventDto>>();
+        // Adjust days to match weekdays
+        var firstDayOfMonth = new DateTime(selectedMonth.Year, selectedMonth.Month, 1);
+        var leadingDays = ((int)firstDayOfMonth.DayOfWeek + 6) % 7; // Adjust to start the week on Monday
+
+        daysInMonth = Enumerable.Repeat(DateTime.MinValue, leadingDays)
+            .Concat(daysInMonth)
+            .ToList();
+
+        tasksForMonth = new Dictionary<DateTime, List<ReadTaskDto>>();
+        eventsForMonth = new Dictionary<DateTime, List<ReadCalendarEventDto>>();
 
         try
         {
-            var user = AuthStateProvider.User.Id;
-            var events = await RelativeService.GetEventsForDayForSpecificUser(user, selectedMonth);
-
-            foreach (var evt in events)
+            var user = AuthStateProvider.User?.Id;
+            if (user == null)
             {
-                var date = evt.StartTime.Date;
-                if (!tasksForMonth.ContainsKey(date))
-                {
-                    tasksForMonth[date] = new List<ReadCalendarEventDto>();
-                }
-
-                tasksForMonth[date].Add(evt);
+                Console.Error.WriteLine("User ID is null.");
+                return;
             }
+
+            var tasks = await RelativeService.GetTasksForDayForSpecificUser(user, selectedMonth);
+            var events = await CalendarEventService.GetAllEventsAsync(user);
+
+            if (tasks != null)
+            {
+                foreach (var task in tasks)
+                {
+                    var date = task.StartTime.Date;
+                    if (!tasksForMonth.ContainsKey(date))
+                    {
+                        tasksForMonth[date] = new List<ReadTaskDto>();
+                    }
+
+                    tasksForMonth[date].Add(task);
+                }
+            }
+
+            if (events != null)
+            {
+                foreach (var evt in events)
+                {
+                    var date = evt.StartDateTime.Date;
+                    if (!eventsForMonth.ContainsKey(date))
+                    {
+                        eventsForMonth[date] = new List<ReadCalendarEventDto>();
+                    }
+
+                    eventsForMonth[date].Add(evt);
+                }
+            }
+        }
+        catch (HttpRequestException httpEx)
+        {
+            Console.Error.WriteLine($"Network error while fetching calendar: {httpEx.Message}");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fejl ved hentning af kalender: {ex.Message}");
+            Console.Error.WriteLine($"Error while fetching calendar: {ex.Message}");
         }
     }
 
     private async Task PreviousMonth()
     {
         selectedMonth = selectedMonth.AddMonths(-1);
-        await LoadTasksForMonth();
+        await LoadTasksAndEventsForMonth();
     }
 
     private async Task NextMonth()
     {
         selectedMonth = selectedMonth.AddMonths(1);
-        await LoadTasksForMonth();
+        await LoadTasksAndEventsForMonth();
     }
 
     private void OpenDayDetails(DateTime date)
@@ -164,29 +227,58 @@
         selectedDate = date;
         newTaskTitle = string.Empty;
         newTaskDescription = string.Empty;
-        newStartTime = date;
-        newEndTime = date.AddHours(1);
+        newStartDateTime = date;
+        newEndDateTime = date.AddHours(1);
         showModal = true;
     }
 
-    private async Task AddTask()
+    private async Task GetAllEvents()
+    {
+        var user = AuthStateProvider.User?.Id;
+        if (user == null)
+        {
+            Console.Error.WriteLine("User ID is null.");
+            return;
+        }
+
+        var events = await CalendarEventService.GetAllEventsAsync(user);
+        if (events != null)
+        {
+            eventsForMonth.Clear();
+            foreach (var evt in events)
+            {
+                var date = evt.StartDateTime.Date;
+                if (!eventsForMonth.ContainsKey(date))
+                {
+                    eventsForMonth[date] = new List<ReadCalendarEventDto>();
+                }
+
+                eventsForMonth[date].Add(evt);
+            }
+        }
+
+        Console.WriteLine($"Events: {JsonConvert.SerializeObject(events)}");
+    }
+
+    private async Task AddCalendarEvent()
     {
         var newEvent = new CreateCalendarEventDto
         {
             Title = newTaskTitle,
             Description = newTaskDescription,
-            StartTime = newStartTime,
-            EndTime = newEndTime,
+            StartDateTime = newStartDateTime,
+            EndDateTime = newEndDateTime,
+            IsRecurring = newIsRecurring,
             UserId = AuthStateProvider.User.Id
         };
-        
+
         Console.WriteLine($"Creating event: {JsonConvert.SerializeObject(newEvent)}");
 
         try
         {
             await CalendarEventService.CreateEventAsync(newEvent);
 
-            await LoadTasksForMonth();
+            await GetAllEvents();
 
             showModal = false;
         }
@@ -213,10 +305,24 @@
             foreach (var task in kvp.Value)
             {
                 builder.AppendLine("BEGIN:VEVENT");
-                builder.AppendLine($"SUMMARY:{task.Title}");
+                builder.AppendLine($"SUMMARY:{task.Name}");
                 builder.AppendLine($"DTSTART:{task.StartTime:yyyyMMddTHHmmssZ}");
                 builder.AppendLine($"DTEND:{task.EndTime:yyyyMMddTHHmmssZ}");
                 builder.AppendLine($"DESCRIPTION:{task.Description ?? ""}");
+                builder.AppendLine($"UID:{Guid.NewGuid()}");
+                builder.AppendLine("END:VEVENT");
+            }
+        }
+
+        foreach (var kvp in eventsForMonth)
+        {
+            foreach (var evt in kvp.Value)
+            {
+                builder.AppendLine("BEGIN:VEVENT");
+                builder.AppendLine($"SUMMARY:{evt.Title}");
+                builder.AppendLine($"DTSTART:{evt.StartDateTime:yyyyMMddTHHmmssZ}");
+                builder.AppendLine($"DTEND:{evt.EndDateTime:yyyyMMddTHHmmssZ}");
+                builder.AppendLine($"DESCRIPTION:{evt.Description ?? ""}");
                 builder.AppendLine($"UID:{Guid.NewGuid()}");
                 builder.AppendLine("END:VEVENT");
             }
@@ -229,4 +335,5 @@
 
         await JS.InvokeVoidAsync("downloadFile", "calendar.ics", "text/calendar", base64);
     }
+
 }
