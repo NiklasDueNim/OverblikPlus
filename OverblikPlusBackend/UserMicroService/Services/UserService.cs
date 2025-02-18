@@ -96,6 +96,20 @@ namespace UserMicroService.Services
             }
         }
 
+        public async Task<Result<List<ApplicationUser>>> GetAllUsersForBosted(int bostedId)
+        {
+            var users = await _userManager.Users
+                .Where(u => u.BostedId == bostedId)
+                .ToListAsync();
+
+            if (users == null || !users.Any())
+            {
+                return Result<List<ApplicationUser>>.ErrorResult("No users found for the given BostedId");
+            }
+
+            return Result<List<ApplicationUser>>.SuccessResult(users);
+        }
+
         public async Task<Result> UpdateUserAsync(string id, UpdateUserDto updateUserDto)
         {
             _logger.LogInfo($"Updating user with ID: {id}");

@@ -1,7 +1,11 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using UserMicroService.dto;
 using UserMicroService.Services.Interfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using OverblikPlus.Shared.Interfaces;
 
 namespace UserMicroService.Controllers
@@ -42,6 +46,25 @@ namespace UserMicroService.Controllers
 
             _logger.LogInfo($"User with ID: {id} retrieved successfully");
             return Ok(result.Data);
+        }
+        
+        
+        [HttpGet("bosted/{bostedId}")]
+        public async Task<IActionResult> GetAllUsersInBosted(int bostedId)
+        {
+            var userBostedId = int.Parse(User.FindFirst("bostedId").Value);
+            if (userBostedId != bostedId)
+            {
+                return Forbid();
+            }
+
+            var result = await _userService.GetAllUsersForBosted(bostedId);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
 
       

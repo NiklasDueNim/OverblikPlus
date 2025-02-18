@@ -1,6 +1,9 @@
+using System;
+using System.Linq;
 using System.Text;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -16,6 +19,9 @@ using UserMicroService.Services.Interfaces;
 using UserMicroService.Validators;
 using UserMicroService.Validators.Auth;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using UserMicroService.Hubs;
 
 namespace UserMicroService;
@@ -88,6 +94,21 @@ public class Program
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
                 };
             });
+        
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("IsSameBosted", policy =>
+            {
+                policy.RequireAssertion(context =>
+                {
+                    var userBostedId = context.User.FindFirst("bostedId")?.Value;
+                    var requiredBostedId = context.Resource?.ToString();
+                    return userBostedId == requiredBostedId;
+                });
+            });
+        });
+        
+        
 
         builder.Services.AddCors(options =>
         {
