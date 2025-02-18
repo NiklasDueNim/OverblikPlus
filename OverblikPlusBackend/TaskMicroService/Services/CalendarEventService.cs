@@ -127,7 +127,7 @@ public class CalendarEventService : ICalendarEventService
         catch (Exception ex)
         {
             _logger.LogError($"Error deleting event with ID {id}.", ex);
-            return Result<bool>.ErrorResult("Error deleting event.");
+            return Result<bool>.ErrorResult("Event not found.");
         }
     }
 }
