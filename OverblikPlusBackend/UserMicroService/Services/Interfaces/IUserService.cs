@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UserMicroService.Common;
 using UserMicroService.dto;
+using UserMicroService.Entities;
 
 namespace UserMicroService.Services.Interfaces
 {
@@ -12,6 +13,6 @@ namespace UserMicroService.Services.Interfaces
         Task<Result<string>> CreateUserAsync(CreateUserDto createUserDto);
         Task<Result> DeleteUserAsync(string id);
         Task<Result> UpdateUserAsync(string id, UpdateUserDto updateUserDto);
-        Task<Result> GetAllUsersForBosted(int bostedId);   
+        Task<Result<List<ApplicationUser>>> GetAllUsersForBosted(int bostedId);   
     }
 }

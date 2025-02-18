@@ -49,12 +49,22 @@ namespace UserMicroService.Controllers
         }
         
         
-        [Authorize(Policy = "IsSameBosted")]
-        [HttpGet("{bostedId}/users")]
-        public IActionResult GetAllUsersInBosted(int bostedId)
+        [HttpGet("bosted/{bostedId}")]
+        public async Task<IActionResult> GetAllUsersInBosted(int bostedId)
         {
-            var users = _userService.GetAllUsersForBosted(bostedId); 
-            return Ok(users);
+            var userBostedId = int.Parse(User.FindFirst("bostedId").Value);
+            if (userBostedId != bostedId)
+            {
+                return Forbid();
+            }
+
+            var result = await _userService.GetAllUsersForBosted(bostedId);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
 
       

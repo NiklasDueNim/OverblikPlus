@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -100,10 +96,18 @@ namespace UserMicroService.Services
             }
         }
 
-
-        public async Task<Result> GetAllUsersForBosted(int bostedId)
+        public async Task<Result<List<ApplicationUser>>> GetAllUsersForBosted(int bostedId)
         {
-            throw new NotImplementedException();
+            var users = await _userManager.Users
+                .Where(u => u.BostedId == bostedId)
+                .ToListAsync();
+
+            if (users == null || !users.Any())
+            {
+                return Result<List<ApplicationUser>>.ErrorResult("No users found for the given BostedId");
+            }
+
+            return Result<List<ApplicationUser>>.SuccessResult(users);
         }
 
         public async Task<Result> UpdateUserAsync(string id, UpdateUserDto updateUserDto)
