@@ -1,0 +1,200 @@
+@page "/budget"
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models.Dtos.Budget
+@inject HttpClient Http
+@inject CustomAuthStateProvider AuthStateProvider
+
+<h3>Budget</h3>
+
+@if (isLoading)
+{
+    <p>Henter budgetposter...</p>
+}
+else
+{
+    <EditForm Model="@newBudget" OnValidSubmit="@AddBudget">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+
+        <h4>Tilføj ny post</h4>
+
+        <div class="mb-3">
+            <label for="activity" class="form-label">Aktivitet:</label>
+            <input id="activity" type="text" class="form-control" @bind="newBudget.Activity"/>
+        </div>
+
+        <div class="mb-3">
+            <label for="voucher" class="form-label">Bilag:</label>
+            <InputFile id="voucher" class="form-control" OnChange="UploadVoucher"/>
+        </div>
+
+        <div class="mb-3">
+            <label for="date" class="form-label">Dato:</label>
+            <input id="date" type="date" class="form-control" @bind="newBudget.Date"/>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label for="moneyIn" class="form-label">Penge ind:</label>
+                <input id="moneyIn" type="number" step="0.01" class="form-control" @bind="newBudget.MoneyIn"/>
+            </div>
+            <div class="col">
+                <label for="moneyOut" class="form-label">Penge ud:</label>
+                <input id="moneyOut" type="number" step="0.01" class="form-control" @bind="newBudget.MoneyOut"/>
+            </div>
+        </div>
+
+        <button class="btn btn-primary mt-3" type="submit">Tilføj</button>
+    </EditForm>
+
+    <hr/>
+
+    <h4>Budgetposter</h4>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Aktivitet</th>
+            <th>Bilag</th>
+            <th>Dato</th>
+            <th class="text-end">Penge ind</th>
+            <th class="text-end">Penge ud</th>
+            <th class="text-end">I alt</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in budgets.OrderByDescending(b => b.Date))
+        {
+            <tr>
+                <td>@item.Activity</td>
+                <td>@item.Voucher</td>
+                <td>@item.Date.ToShortDateString()</td>
+                <td class="text-end">@item.MoneyIn</td>
+                <td class="text-end">@item.MoneyOut</td>
+                <td class="text-end">@(item.MoneyIn - item.MoneyOut)</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-secondary"
+                            @onclick="() => EditBudget(item)">
+                        Rediger
+                    </button>
+                    <button class="btn btn-sm btn-danger ms-2"
+                            @onclick="() => DeleteBudget(item.Id)">
+                        Slet
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <p class="fw-bold">
+        Total balance: @TotalBalance
+    </p>
+}
+
+@code {
+    private List<BudgetDto> budgets = new();
+    private BudgetDto newBudget = new() { Date = DateTime.Today };
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBudgets();
+    }
+
+    private async Task LoadBudgets()
+    {
+        try
+        {
+            budgets = await Http.GetFromJsonAsync<List<BudgetDto>>("api/budget");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Fejl ved hentning af budget: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task AddBudget()
+    {
+        try
+        {
+            var user = AuthStateProvider.User?.Id;
+            if (user == null)
+            {
+                Console.Error.WriteLine("Bruger-ID er null.");
+                return;
+            }
+
+            newBudget.Id = Guid.NewGuid();
+//newBudget.User = user.Value;
+
+            var response = await Http.PostAsJsonAsync("api/budget", newBudget);
+            if (response.IsSuccessStatusCode)
+            {
+                budgets.Add(new BudgetDto
+                {
+                    Id = newBudget.Id,
+                    User = newBudget.User,
+                    Activity = newBudget.Activity,
+                    Voucher = newBudget.Voucher,
+                    MoneyIn = newBudget.MoneyIn,
+                    MoneyOut = newBudget.MoneyOut,
+                    Date = newBudget.Date
+                });
+                newBudget = new BudgetDto { Date = DateTime.Today };
+            }
+            else
+            {
+                Console.Error.WriteLine("Fejl ved oprettelse af budgetpost.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Fejl ved oprettelse af budgetpost: {ex.Message}");
+        }
+    }
+
+    private async Task UploadVoucher(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            var content = new MultipartFormDataContent();
+            content.Add(new StreamContent(file.OpenReadStream()), "file", file.Name);
+
+            var response = await Http.PostAsync("api/budget/upload", content);
+            if (response.IsSuccessStatusCode)
+            {
+                newBudget.Voucher = await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                Console.Error.WriteLine("Fejl ved upload af bilag.");
+            }
+        }
+    }
+
+
+    private decimal TotalBalance => budgets.Sum(b => b.MoneyIn - b.MoneyOut);
+
+    private void EditBudget(BudgetDto item)
+    {
+// Åbn en modal, sæt "isEditMode = true"
+// Forfyld felter med item. Ligesom i dine andre moduler
+// Lav en "UpdateBudget()" -> PUT api/budget + re-load
+    }
+
+    private async Task DeleteBudget(Guid id)
+    {
+        var result = await Http.DeleteAsync($"api/budget/{id}");
+        if (result.IsSuccessStatusCode)
+        {
+            budgets.RemoveAll(x => x.Id == id);
+        }
+    }
+
+}
