@@ -1,0 +1,73 @@
+@page "/activities"
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models.Dtos.Activity
+@using OverblikPlus.Services.Interfaces
+@inject IActivityService ActivityService
+@inject CustomAuthStateProvider AuthStateProvider
+
+@if (activities == null)
+{
+    <p>Henter aktiviteter...</p>
+}
+else
+{
+    @foreach (var act in activities)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>@act.Title</h5>
+                <p>@act.Description</p>
+                <p><small>Fra @act.StartDateTime til @act.EndDateTime</small></p>
+                
+                <p>Deltagere:</p>
+                <ul>
+                    @foreach (var pid in act.Participants)
+                    {
+                        <li>@GetUserName(pid)</li>
+                    }
+                </ul>
+
+                @if (!act.Participants.Contains(currentUserId))
+                {
+                    <button class="btn btn-primary" @onclick="() => Join(act.Id)">Tilmeld dig</button>
+                }
+                else
+                {
+                    <button class="btn btn-secondary" @onclick="() => Leave(act.Id)">Forlad</button>
+                }
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<ActivityDto> activities;
+    private Guid currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        activities = await ActivityService.GetAllActivitiesAsync();
+    }
+
+    private async Task Join(Guid activityId)
+    {
+        await ActivityService.JoinActivityAsync(activityId, currentUserId);
+        // Opdater lokal listen
+        var act = activities.First(a => a.Id == activityId);
+        act.Participants.Add(currentUserId);
+    }
+
+    private async Task Leave(Guid activityId)
+    {
+        await ActivityService.LeaveActivityAsync(activityId, currentUserId);
+        // Opdater lokal listen
+        var act = activities.First(a => a.Id == activityId);
+        act.Participants.Remove(currentUserId);
+    }
+
+    private string GetUserName(Guid userId)
+    {
+        // Slå navnet op i en liste eller kald et userService
+        return "Søren HK"; 
+    }
+}

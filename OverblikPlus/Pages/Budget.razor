@@ -183,9 +183,9 @@ else
 
     private void EditBudget(BudgetDto item)
     {
-// Åbn en modal, sæt "isEditMode = true"
-// Forfyld felter med item. Ligesom i dine andre moduler
-// Lav en "UpdateBudget()" -> PUT api/budget + re-load
+        // Åbn en modal, sæt "isEditMode = true"
+        // Forfyld felter med item. Ligesom i dine andre moduler
+        // Lav en "UpdateBudget()" -> PUT api/budget + re-load
     }
 
     private async Task DeleteBudget(Guid id)
@@ -196,5 +196,4 @@ else
             budgets.RemoveAll(x => x.Id == id);
         }
     }
-
 }

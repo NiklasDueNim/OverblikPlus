@@ -1,0 +1,60 @@
+@page "/schedule"
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models
+@using OverblikPlus.Models.Dtos.Shift
+@using OverblikPlus.Services.Interfaces
+@inject CustomAuthStateProvider AuthStateProvider
+
+<div>
+    <h3>Vagtplan i dag (@today.ToShortDateString())</h3>
+
+    @if (shifts == null)
+    {
+        <p>Henter vagtplan...</p>
+    }
+    else
+    {
+        <!-- Simpel tabel-liste -->
+        <table class="table">
+            <thead>
+            <tr><th>Navn</th><th>Fra</th><th>Til</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var s in shifts.OrderBy(s => s.StartTime))
+            {
+                <tr>
+                    <td>@(AuthStateProvider.User.Id)</td>
+                    <td>@s.StartTime.ToShortTimeString()</td>
+                    <td>@s.EndTime.ToShortTimeString()</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    private DateTime today = DateTime.Today;
+    private List<ShiftDto> shifts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        shifts = new List<ShiftDto>
+        {
+            new ShiftDto
+            {
+                Id = Guid.NewGuid(),
+                UserId = AuthStateProvider.User.Id,
+                StartTime = new DateTime(today.Year, today.Month, today.Day, 8, 0, 0),
+                EndTime = new DateTime(today.Year, today.Month, today.Day, 16, 0, 0)
+            },
+            new ShiftDto
+            {
+                Id = Guid.NewGuid(),
+                UserId = AuthStateProvider.User.Id,
+                StartTime = new DateTime(today.Year, today.Month, today.Day, 16, 0, 0),
+                EndTime = new DateTime(today.Year, today.Month, today.Day, 23, 59, 59)
+            }
+        };
+    }
+}

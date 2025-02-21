@@ -9,6 +9,6 @@ public class BudgetDto
     public string Voucher { get; set; }
     public decimal MoneyIn { get; set; }
     public decimal MoneyOut { get; set; }
-    
+
     public string Note { get; set; }
 }
