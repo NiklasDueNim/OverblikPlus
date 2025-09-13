@@ -1,0 +1,48 @@
+name: Backend Build and Test
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'OverblikPlusBackend/**' ]
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  build-and-test:
+    name: Build and Test Backend Services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Build both microservices
+        service: [TaskMicroService, UserMicroService]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          
+      - name: Restore dependencies
+        run: |
+          cd OverblikPlusBackend/${{ matrix.service }}
+          dotnet restore
+          
+      - name: Build ${{ matrix.service }}
+        run: |
+          cd OverblikPlusBackend/${{ matrix.service }}
+          dotnet build --configuration Release --no-restore
+          
+      - name: Test ${{ matrix.service }}
+        run: |
+          cd OverblikPlusBackend/${{ matrix.service }}.Tests
+          dotnet test --configuration Release --no-build --verbosity normal
+          
+      - name: Set build status
+        if: success()
+        run: echo "✅ ${{ matrix.service }} built and tested successfully"
+        
+      - name: Set build status
+        if: failure()
+        run: echo "❌ ${{ matrix.service }} build or test failed"
