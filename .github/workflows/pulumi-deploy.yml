@@ -1,12 +1,13 @@
 name: Deploy Infrastructure with Pulumi
 
 on:
-  push:
-    branches: [ main ]
-    paths: [ 'Pulumi/**' ]
-  pull_request:
-    branches: [ main ]
-    paths: [ 'Pulumi/**' ]
+  # Disabled - using manual Azure resource creation instead
+  # push:
+  #   branches: [ main ]
+  #   paths: [ 'Pulumi/**' ]
+  # pull_request:
+  #   branches: [ main ]
+  #   paths: [ 'Pulumi/**' ]
   workflow_dispatch: # Allow manual trigger
 
 env:
