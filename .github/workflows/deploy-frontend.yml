@@ -19,19 +19,15 @@ jobs:
         with:
           dotnet-version: '8.0.x'
           
-      - name: Build Blazor WebAssembly app
-        run: |
-          cd OverblikPlus
-          dotnet publish -c Release -o ./out/wwwroot
-          
       - name: Deploy to Azure Static Web App
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ca0ab16e82668b8754ce192f5a8f6bb99bc571cd59215c54f69a8e616444c2be02-f42b2064-4397-4119-a92b-8749d35e23e8003130604a4dfc03
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/OverblikPlus/out/wwwroot"
-          output_location: ""
+          app_location: "/OverblikPlus"
+          output_location: "out/wwwroot"
+          app_build_command: "dotnet publish -c Release -o ./out/wwwroot"
           
       - name: Set deployment status
         if: success()
