@@ -77,22 +77,20 @@ public class AuthServiceTests
             .Options;
         _dbContext = new UserDbContext(options);
 
-        // TODO: Fix AuthService constructor parameters
-        // _authService = new AuthService(
-        //     _mockUserManager.Object,
-        //     _mockSignInManager.Object,
-        //     _mockRoleManager.Object,
-        //     _mockConfiguration.Object,
-        //     _dbContext,
-        //     _mockLogger.Object,
-        //     _registerValidator,
-        //     _mockMapper.Object
-        // );
-        _authService = null!; // Temporarily disable tests
+        _authService = new AuthService(
+            _mockUserManager.Object,
+            _mockSignInManager.Object,
+            _mockRoleManager.Object,
+            _mockConfiguration.Object,
+            _dbContext,
+            _mockLogger.Object,
+            _registerValidator,
+            _mockMapper.Object
+        );
     }
 
-    // [Fact]
-    // public async Task RegisterAsync_ReturnsSuccess_WhenRegistrationIsValid()
+    [Fact]
+    public async Task RegisterAsync_ReturnsSuccess_WhenRegistrationIsValid()
     {
         // Arrange
         var registerDto = new RegisterDto
@@ -129,8 +127,8 @@ public class AuthServiceTests
         Assert.Null(result.Error);
     }
 
-    // [Fact]
-    // public async Task ChangePasswordAsync_ChangesPassword_WhenInputIsValid()
+    [Fact]
+    public async Task ChangePasswordAsync_ChangesPassword_WhenInputIsValid()
     {
         // Arrange
         var changePasswordDto = new ChangePasswordDto
@@ -154,8 +152,8 @@ public class AuthServiceTests
         Assert.True(result.Success);
     }
 
-    // [Fact]
-    // public async Task LogoutAsync_CallsSignOut()
+    [Fact]
+    public async Task LogoutAsync_CallsSignOut()
     {
         // Arrange
         _mockSignInManager.Setup(s => s.SignOutAsync()).Returns(Task.CompletedTask);
@@ -168,8 +166,8 @@ public class AuthServiceTests
         _mockSignInManager.Verify(s => s.SignOutAsync(), Times.Once);
     }
     
-    // [Fact]
-    // public void GenerateJwtToken_ShouldIncludeBostedId()
+    [Fact]
+    public void GenerateJwtToken_ShouldIncludeBostedId()
     {
         // Arrange
         var user = new ApplicationUser

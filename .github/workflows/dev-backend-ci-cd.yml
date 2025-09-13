@@ -1,12 +1,14 @@
 name: DEV - Backend CI/CD
 
 on:
-  push:
-    branches:
-      - Development
-  pull_request:
-    branches:
-      - Development
+  # Disabled - using manual Azure setup instead
+  # push:
+  #   branches:
+  #     - Development
+  # pull_request:
+  #   branches:
+  #     - Development
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   build-and-deploy:
