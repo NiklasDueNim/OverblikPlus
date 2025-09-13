@@ -19,6 +19,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
           
+      - name: Inspect build outputs
+        run: |
+          echo "Repo root:"
+          pwd
+          ls -la
+          echo "Search for index.html under OverblikPlus:"
+          find OverblikPlus -type f -name index.html | sed 's|^|FOUND: |'
+          
       - name: Deploy to Azure Static Web App
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -26,8 +34,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/OverblikPlus"
-          output_location: "out/wwwroot"
-          app_build_command: "dotnet publish -c Release -o ./out"
+          output_location: "wwwroot"
           
       - name: Set deployment status
         if: success()
