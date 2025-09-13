@@ -27,7 +27,7 @@ jobs:
           action: "upload"
           app_location: "/OverblikPlus"
           output_location: "out/wwwroot"
-          app_build_command: "dotnet publish -c Release -o ./out && cp -r ./wwwroot/* ./out/wwwroot/"
+          app_build_command: "dotnet publish -c Release -o ./out"
           
       - name: Set deployment status
         if: success()
