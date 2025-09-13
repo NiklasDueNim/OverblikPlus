@@ -1,0 +1,42 @@
+name: Deploy Frontend to Azure Static Web App
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'OverblikPlus/**' ]
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          
+      - name: Build Blazor WebAssembly app
+        run: |
+          cd OverblikPlus
+          dotnet publish -c Release -o ./out/wwwroot
+          
+      - name: Deploy to Azure Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/OverblikPlus/out/wwwroot"
+          output_location: ""
+          
+      - name: Set deployment status
+        if: success()
+        run: echo "✅ Frontend deployed successfully to Azure Static Web App"
+        
+      - name: Set deployment status
+        if: failure()
+        run: echo "❌ Frontend deployment failed"

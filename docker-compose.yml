@@ -1,28 +1,29 @@
 services:
   taskmicroservice:
     build:
-      context: ./OverblikPlusBackend/TaskMicroService
-      dockerfile: Dockerfile
+      context: ./OverblikPlusBackend
+      dockerfile: TaskMicroService/Dockerfile
     ports:
       - "5101:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - DB_CONNECTION_STRING=Server=host.docker.internal,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;
-      - BLOB_STORAGE_CONNECTION_STRING=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;
+      - ConnectionStrings__DBConnectionString=Server=sqlserver,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;
+      - ConnectionStrings__BlobStorageConnectionString=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;
     depends_on:
       - azurite
       - sqlserver
 
   usermicroservice:
     build:
-      context: ./OverblikPlusBackend/UserMicroService
-      dockerfile: Dockerfile
+      context: ./OverblikPlusBackend
+      dockerfile: UserMicroService/Dockerfile
     ports:
       - "5102:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - DB_CONNECTION_STRING=Server=host.docker.internal,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;
-      - BLOB_STORAGE_CONNECTION_STRING=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;
+      - ConnectionStrings__DBConnectionString=Server=sqlserver,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;
+      - ConnectionStrings__BlobStorageConnectionString=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;
+      - EF_CORE_MIGRATIONS=true
     depends_on:
       - azurite
       - sqlserver

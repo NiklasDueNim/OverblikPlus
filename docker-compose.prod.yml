@@ -1,0 +1,28 @@
+services:
+  taskmicroservice:
+    build:
+      context: ./OverblikPlusBackend
+      dockerfile: TaskMicroService/Dockerfile
+    ports:
+      - "5101:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DBConnectionString=${AZURE_SQL_CONNECTION_STRING}
+      - ConnectionStrings__BlobStorageConnectionString=${AZURE_BLOB_CONNECTION_STRING}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - BLOB_BASE_URL=${BLOB_BASE_URL}
+    restart: unless-stopped
+
+  usermicroservice:
+    build:
+      context: ./OverblikPlusBackend
+      dockerfile: UserMicroService/Dockerfile
+    ports:
+      - "5102:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DBConnectionString=${AZURE_SQL_CONNECTION_STRING}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+    restart: unless-stopped

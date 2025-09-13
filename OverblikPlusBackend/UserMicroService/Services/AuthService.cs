@@ -17,6 +17,7 @@ using UserMicroService.Services.Interfaces;
 using OverblikPlus.Shared.Interfaces;
 using UserMicroService.Common;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace UserMicroService.Services
 {
@@ -24,6 +25,7 @@ namespace UserMicroService.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly UserDbContext _dbContext;
         private readonly ILoggerService _logger;
@@ -32,6 +34,7 @@ namespace UserMicroService.Services
 
         public AuthService(UserManager<ApplicationUser> userManager,
                            SignInManager<ApplicationUser> signInManager,
+                           RoleManager<IdentityRole> roleManager,
                            IConfiguration configuration,
                            UserDbContext dbContext,
                            ILoggerService logger,
@@ -39,6 +42,7 @@ namespace UserMicroService.Services
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _configuration = configuration;
             _dbContext = dbContext;
             _logger = logger;
@@ -114,6 +118,13 @@ namespace UserMicroService.Services
                     var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
                     _logger.LogError("User creation failed: {Errors}", new Exception(errors));
                     return Result.ErrorResult(errors);
+                }
+
+                // Create role if it doesn't exist
+                if (!await _roleManager.RoleExistsAsync(registerDto.Role))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(registerDto.Role));
+                    _logger.LogInfo($"Created role: {registerDto.Role}");
                 }
 
                 var roleResult = await _userManager.AddToRoleAsync(user, registerDto.Role);

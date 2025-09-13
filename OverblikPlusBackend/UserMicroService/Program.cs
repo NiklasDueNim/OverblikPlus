@@ -28,7 +28,7 @@ namespace UserMicroService;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -171,6 +171,16 @@ public class Program
 
         try
         {
+            // Auto-migrate database in Development mode
+            if (app.Environment.IsDevelopment())
+            {
+                using (var scope = app.Services.CreateScope())
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                    await context.Database.MigrateAsync();
+                }
+            }
+            
             logger.LogInfo($"[UserMicroService] Starting in {app.Environment.EnvironmentName} mode.");
             app.Run();
         }

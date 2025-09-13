@@ -195,6 +195,16 @@ public class Program
 
         try
         {
+            // Auto-migrate database in Development mode
+            if (app.Environment.IsDevelopment())
+            {
+                using (var scope = app.Services.CreateScope())
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+                    context.Database.EnsureCreated();
+                }
+            }
+            
             logger.LogInfo($"[TaskMicroService] Starting application in {environment} mode.");
             app.Run();
         }
