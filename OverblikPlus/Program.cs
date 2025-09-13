@@ -92,3 +92,4 @@ builder.Services.AddCascadingAuthenticationState();
 
 await builder.Build().RunAsync();
 
+// Trigger deployment
