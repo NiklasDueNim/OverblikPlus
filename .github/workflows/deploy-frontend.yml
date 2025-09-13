@@ -27,7 +27,7 @@ jobs:
       - name: Deploy to Azure Static Web App
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ca0ab16e82668b8754ce192f5a8f6bb99bc571cd59215c54f69a8e616444c2be02-f42b2064-4397-4119-a92b-8749d35e23e8003130604a4dfc03
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "/OverblikPlus/out/wwwroot"
