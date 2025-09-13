@@ -27,15 +27,12 @@ jobs:
           echo "Search for index.html under OverblikPlus:"
           find OverblikPlus -type f -name index.html | sed 's|^|FOUND: |'
           
-      - name: Publish Blazor to out/
-        run: dotnet publish OverblikPlus/OverblikPlus.csproj -c Release -o out
-
-      - name: Assert index.html exists
+      - name: Assert index.html exists after SWA build
         run: |
-          echo "Checking for index.html in out/wwwroot:"
-          ls -la out/wwwroot/
-          test -f out/wwwroot/index.html
-          echo "✅ index.html found!"
+          echo "Checking for index.html in OverblikPlus/wwwroot:"
+          ls -la OverblikPlus/wwwroot/
+          test -f OverblikPlus/wwwroot/index.html
+          echo "✅ index.html found in source!"
 
       - name: Deploy to Azure Static Web App
         uses: Azure/static-web-apps-deploy@v1
@@ -43,8 +40,8 @@ jobs:
           azure_static_web_apps_api_token: 884ce92874acf016a6078f348ba25f4ee51521c1a11bfad5dfd42dac947ac34502-b766f250-4a47-42af-a8e1-091c062bd33e003130604a4dfc03
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "."
-          output_location: "out/wwwroot"
+          app_location: "OverblikPlus"
+          output_location: "wwwroot"
           
       - name: Set deployment status
         if: success()
