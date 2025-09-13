@@ -34,15 +34,10 @@ jobs:
           cd OverblikPlusBackend/${{ matrix.service }}
           dotnet build --configuration Release --no-restore
           
-      - name: Build ${{ matrix.service }} Tests
-        run: |
-          cd OverblikPlusBackend/${{ matrix.service }}.Tests
-          dotnet build --configuration Release --no-restore
-          
       - name: Test ${{ matrix.service }}
         run: |
           cd OverblikPlusBackend/${{ matrix.service }}.Tests
-          dotnet test --configuration Release --no-build --verbosity normal --logger "console;verbosity=detailed"
+          dotnet test --configuration Release --verbosity normal
           
       - name: Set build status
         if: success()
