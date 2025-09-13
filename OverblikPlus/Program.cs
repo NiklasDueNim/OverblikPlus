@@ -95,3 +95,4 @@ await builder.Build().RunAsync();
 // Trigger deployment
 // Updated for deployment
 // Final deployment trigger
+// Option B deployment trigger
