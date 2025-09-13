@@ -1,4 +1,0 @@
-config:
-  environment: dev
-  projectName: overblikplus
-  # sqlAdminPassword: # Set this with: pulumi config set sqlAdminPassword "YourPassword" --secret

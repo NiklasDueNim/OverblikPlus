@@ -1,5 +1,0 @@
-config:
-  overblikplus-azure:environment: prod
-  overblikplus-azure:projectName: overblikplus
-  overblikplus-azure:sqlAdminPassword:
-    secure: AAABAHh4ZWN0ZWQ=
