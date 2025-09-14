@@ -23,7 +23,7 @@ namespace TaskMicroService;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
@@ -195,18 +195,16 @@ public class Program
 
         try
         {
-            // Auto-migrate database in Development mode
-            if (app.Environment.IsDevelopment())
+            // Auto-migrate database in Development and Production mode
+            using (var scope = app.Services.CreateScope())
             {
-                using (var scope = app.Services.CreateScope())
-                {
-                    var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-                    context.Database.EnsureCreated();
-                }
+                var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+                await context.Database.MigrateAsync();
+                logger.LogInfo("[TaskMicroService] Database migrations completed successfully.");
             }
             
             logger.LogInfo($"[TaskMicroService] Starting application in {environment} mode.");
-            app.Run();
+            await app.RunAsync();
         }
         catch (Exception ex)
         {

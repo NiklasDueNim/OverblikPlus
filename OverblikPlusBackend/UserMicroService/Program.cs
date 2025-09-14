@@ -171,18 +171,16 @@ public class Program
 
         try
         {
-            // Auto-migrate database in Development mode
-            if (app.Environment.IsDevelopment())
+            // Auto-migrate database in Development and Production mode
+            using (var scope = app.Services.CreateScope())
             {
-                using (var scope = app.Services.CreateScope())
-                {
-                    var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-                    await context.Database.MigrateAsync();
-                }
+                var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                await context.Database.MigrateAsync();
+                logger.LogInfo("[UserMicroService] Database migrations completed successfully.");
             }
             
             logger.LogInfo($"[UserMicroService] Starting in {app.Environment.EnvironmentName} mode.");
-            app.Run();
+            await app.RunAsync();
         }
         catch (Exception ex)
         {
