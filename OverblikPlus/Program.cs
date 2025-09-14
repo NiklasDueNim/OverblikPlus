@@ -47,8 +47,8 @@ else
     if (host.Contains("overblikplus.dk") || host.Contains("azurestaticapps.net"))
     {
         // Use production Azure API endpoints
-        taskApiBaseUrl = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
-        userApiBaseUrl = "https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net";
+        taskApiBaseUrl = "https://overblikplus-task-api-dev.azurewebsites.net";
+        userApiBaseUrl = "https://overblikplus-user-api-dev.azurewebsites.net";
         envConfig = "production";
     }
 }
