@@ -192,3 +192,4 @@ public class Program
 // Trigger backend workflow test
 // Trigger backend deployment test
 // Trigger backend redeployment with database config
+// Trigger redeployment with storage settings

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>c1814c8b-9054-40b5-92b6-99d098aad8a8</id>
+  <author>N/A</author>
+  <deployer>GITHUB_ZIP_DEPLOY</deployer>
+  <authorEmail>N/A</authorEmail>
+  <message>{"type":"deployment","sha":"c153024385100b7ada99ae577144c1d74333ac50","repoName":"NiklasDueNim/OverblikPlus","actor":"NiklasNim","slotName":"production","commitMessage":"Enable database migrations in Production mode for both services"}</message>
+  <progress></progress>
+  <status>Success</status>
+  <statusText></statusText>
+  <lastSuccessEndTime>2025-09-14T10:42:51.5804243Z</lastSuccessEndTime>
+  <receivedTime>2025-09-14T10:42:36.0539827Z</receivedTime>
+  <startTime>2025-09-14T10:42:38.4278855Z</startTime>
+  <endTime>2025-09-14T10:42:51.5804243Z</endTime>
+  <complete>True</complete>
+  <is_temp>False</is_temp>
+  <is_readonly>True</is_readonly>
+  <buildSummary />
+</deployment>

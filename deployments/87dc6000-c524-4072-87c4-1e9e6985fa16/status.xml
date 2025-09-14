@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>87dc6000-c524-4072-87c4-1e9e6985fa16</id>
+  <author>N/A</author>
+  <deployer>GITHUB_ZIP_DEPLOY</deployer>
+  <authorEmail>N/A</authorEmail>
+  <message>{"type":"deployment","sha":"cc8c64107faf7c01f741857e695c880cdcc3ae21","repoName":"NiklasDueNim/OverblikPlus","actor":"NiklasNim","slotName":"production","commitMessage":"Trigger backend redeployment with database connection strings"}</message>
+  <progress></progress>
+  <status>Success</status>
+  <statusText></statusText>
+  <lastSuccessEndTime>2025-09-14T04:35:10.5875669Z</lastSuccessEndTime>
+  <receivedTime>2025-09-14T04:34:52.5301784Z</receivedTime>
+  <startTime>2025-09-14T04:34:55.1106772Z</startTime>
+  <endTime>2025-09-14T04:35:10.5875669Z</endTime>
+  <complete>True</complete>
+  <is_temp>False</is_temp>
+  <is_readonly>True</is_readonly>
+  <buildSummary />
+</deployment>
