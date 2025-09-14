@@ -194,3 +194,4 @@ public class Program
 // Trigger backend redeployment with database config
 // Trigger redeployment with storage settings
 // Trigger Azure deployment with build settings
+// Fix deployment - disable remote build
