@@ -199,8 +199,18 @@ public class Program
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-                await context.Database.MigrateAsync();
-                logger.LogInfo("[TaskMicroService] Database migrations completed successfully.");
+                try
+                {
+                    await context.Database.MigrateAsync();
+                    logger.LogInfo("[TaskMicroService] Database migrations completed successfully.");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError($"Migration failed: {ex.Message}", ex);
+                    // Try to ensure database is created if migration fails
+                    await context.Database.EnsureCreatedAsync();
+                    logger.LogInfo("[TaskMicroService] Database ensured created.");
+                }
             }
             
             logger.LogInfo($"[TaskMicroService] Starting application in {environment} mode.");
