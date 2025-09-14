@@ -1,0 +1,204 @@
+2025-09-14T04:02:59.4828490Z Container start method called.
+2025-09-14T04:02:59.4833244Z Establishing network.
+2025-09-14T04:02:59.4838258Z Pulling image: appsvc/dotnetcore:8.0_20250709.6.tuxprod.
+2025-09-14T04:06:15.0634113Z Image appsvc/dotnetcore:8.0_20250709.6.tuxprod is pulled from registry 10.1.0.4:13209
+2025-09-14T04:06:15.0637655Z Container is starting.
+2025-09-14T04:06:15.0638719Z Establishing user namespace if not established already.
+2025-09-14T04:06:15.0639596Z Establishing network if not established already.
+2025-09-14T04:06:15.0640521Z Mounting volumes.
+2025-09-14T04:06:15.0643730Z Nested mountpoint 
+2025-09-14T04:06:15.1444600Z Nested mountpoint volatile/logs
+2025-09-14T04:06:15.1560481Z Nested mountpoint 
+2025-09-14T04:06:15.3679263Z Nested mountpoint 
+2025-09-14T04:06:15.4564641Z Nested mountpoint 
+2025-09-14T04:07:00.6063392Z Creating container.
+2025-09-14T04:07:00.6167951Z Creating pipes for streaming container io.
+2025-09-14T04:07:00.6170254Z Creating stdout named pipe at /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stdout_646c33873f1f412abc61511869a0f2c7.
+2025-09-14T04:07:00.6370663Z Successfully created stdout named pipe at: /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stdout_646c33873f1f412abc61511869a0f2c7.
+2025-09-14T04:07:00.6372625Z Opening named pipe /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stdout_646c33873f1f412abc61511869a0f2c7 for reading in non-blocking mode.
+2025-09-14T04:07:00.6374023Z Successfully opened named pipe: /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stdout_646c33873f1f412abc61511869a0f2c7.
+2025-09-14T04:07:00.6375331Z Successfully removed non-blocking flag from /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stdout_646c33873f1f412abc61511869a0f2c7.
+2025-09-14T04:07:00.6376490Z Creating stderr named pipe at /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stderr_5682b2a5f47347f998ed71dba0b02397.
+2025-09-14T04:07:00.6450388Z Successfully created stderr named pipe at: /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stderr_5682b2a5f47347f998ed71dba0b02397.
+2025-09-14T04:07:00.6453219Z Opening named pipe /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stderr_5682b2a5f47347f998ed71dba0b02397 for reading in non-blocking mode.
+2025-09-14T04:07:00.6454854Z Successfully opened named pipe: /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stderr_5682b2a5f47347f998ed71dba0b02397.
+2025-09-14T04:07:00.6455909Z Successfully removed non-blocking flag from /podr/container/pipe/58dad3ea2e5b_overblikplus-user-api-dev/stderr_5682b2a5f47347f998ed71dba0b02397.
+2025-09-14T04:07:00.6457378Z Creating container with image: appsvc/dotnetcore:8.0_20250709.6.tuxprod from registry: 10.1.0.4:13209 and fully qualified image name: 10.1.0.4:13209/appsvc/dotnetcore:8.0_20250709.6.tuxprod
+2025-09-14T04:07:03.0705721Z Starting container: 58dad3ea2e5b_overblikplus-user-api-dev.
+2025-09-14T04:07:03.3603793Z Starting watchers and probes.
+2025-09-14T04:07:03.3609101Z Starting metrics collection.
+2025-09-14T04:07:03.3626175Z Container is running.
+2025-09-14T04:07:04.1355104Z Container start method finished after 244651 ms.
+2025-09-14T04:08:06.8444739Z Site startup probe succeeded after 62.6881611 seconds.
+2025-09-14T04:08:07.2973092Z Site started.
+2025-09-14T04:08:07.4184403Z Site is running with patch version: 8.0.18
+2025-09-14T04:09:42.4753588Z Container start method called.
+2025-09-14T04:09:42.6360455Z Establishing network.
+2025-09-14T04:09:42.6640147Z Pulling image: appsvc/dotnetcore:8.0_20250709.6.tuxprod.
+2025-09-14T04:09:44.6440985Z Container is starting.
+2025-09-14T04:09:44.6442996Z Establishing user namespace if not established already.
+2025-09-14T04:09:44.6444328Z Establishing network if not established already.
+2025-09-14T04:09:44.6445387Z Mounting volumes.
+2025-09-14T04:09:44.6454617Z Nested mountpoint 
+2025-09-14T04:09:44.7566770Z Nested mountpoint volatile/logs
+2025-09-14T04:09:44.8351256Z Nested mountpoint 
+2025-09-14T04:09:44.9550283Z Nested mountpoint 
+2025-09-14T04:09:44.9870243Z Nested mountpoint 
+2025-09-14T04:09:46.9573153Z Creating container.
+2025-09-14T04:09:46.9673355Z Creating pipes for streaming container io.
+2025-09-14T04:09:46.9853593Z Creating stdout named pipe at /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stdout_5426d6bd2bf14d679738c2f04f330ade.
+2025-09-14T04:09:47.0062452Z Successfully created stdout named pipe at: /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stdout_5426d6bd2bf14d679738c2f04f330ade.
+2025-09-14T04:09:47.0063821Z Opening named pipe /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stdout_5426d6bd2bf14d679738c2f04f330ade for reading in non-blocking mode.
+2025-09-14T04:09:47.0066292Z Successfully opened named pipe: /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stdout_5426d6bd2bf14d679738c2f04f330ade.
+2025-09-14T04:09:47.0069066Z Successfully removed non-blocking flag from /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stdout_5426d6bd2bf14d679738c2f04f330ade.
+2025-09-14T04:09:47.0070624Z Creating stderr named pipe at /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stderr_e2f29d9b5fb44db6baa881c58142486d.
+2025-09-14T04:09:47.0072140Z Successfully created stderr named pipe at: /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stderr_e2f29d9b5fb44db6baa881c58142486d.
+2025-09-14T04:09:47.0162725Z Opening named pipe /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stderr_e2f29d9b5fb44db6baa881c58142486d for reading in non-blocking mode.
+2025-09-14T04:09:47.0169905Z Successfully opened named pipe: /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stderr_e2f29d9b5fb44db6baa881c58142486d.
+2025-09-14T04:09:47.0177229Z Successfully removed non-blocking flag from /podr/container/pipe/be6a06ee273d_overblikplus-user-api-dev/stderr_e2f29d9b5fb44db6baa881c58142486d.
+2025-09-14T04:09:47.0181794Z Creating container with image: appsvc/dotnetcore:8.0_20250709.6.tuxprod from registry: 10.1.0.4:13209 and fully qualified image name: 10.1.0.4:13209/appsvc/dotnetcore:8.0_20250709.6.tuxprod
+2025-09-14T04:09:48.7972508Z Starting container: be6a06ee273d_overblikplus-user-api-dev.
+2025-09-14T04:09:49.1476687Z Starting watchers and probes.
+2025-09-14T04:09:49.1572111Z Starting metrics collection.
+2025-09-14T04:09:49.1581252Z Container is running.
+2025-09-14T04:09:50.1850785Z Container start method finished after 7709 ms.
+2025-09-14T04:10:23.0624069Z Site startup probe succeeded after 32.7909893 seconds.
+2025-09-14T04:10:23.4461832Z Site is running with deployment version: 1f4b49a8-5054-4cdb-b349-e721da25a7aa
+2025-09-14T04:10:23.4637165Z Site started.
+2025-09-14T04:10:23.5646581Z Site is running with patch version: 8.0.18
+2025-09-14T04:10:44.1597141Z Container is terminating. Grace period: 5 seconds.
+2025-09-14T04:10:44.3100656Z Stop and delete container. Retry count = 0
+2025-09-14T04:10:44.3397513Z Stopping container: 58dad3ea2e5b_overblikplus-user-api-dev.
+2025-09-14T04:10:49.7202704Z Deleting container: 58dad3ea2e5b_overblikplus-user-api-dev. Retry count = 0
+2025-09-14T04:10:51.2505346Z Container spec TerminationMessagePolicy  path 
+2025-09-14T04:10:51.3084516Z Container is terminated. Total time elapsed: 7133 ms.
+2025-09-14T04:10:51.3392237Z Site: overblikplus-user-api-dev stopped.
+2025-09-14T04:30:42.2440568Z Container start method called.
+2025-09-14T04:30:42.3629692Z Establishing network.
+2025-09-14T04:30:42.3632093Z Pulling image: appsvc/dotnetcore:8.0_20250709.6.tuxprod.
+2025-09-14T04:30:45.0356094Z Container is starting.
+2025-09-14T04:30:45.0376180Z Establishing user namespace if not established already.
+2025-09-14T04:30:45.1254562Z Establishing network if not established already.
+2025-09-14T04:30:45.1261101Z Mounting volumes.
+2025-09-14T04:30:45.1269906Z Nested mountpoint 
+2025-09-14T04:30:45.1571665Z Nested mountpoint volatile/logs
+2025-09-14T04:30:45.1859756Z Nested mountpoint 
+2025-09-14T04:30:45.3387489Z Nested mountpoint 
+2025-09-14T04:30:45.3775262Z Nested mountpoint 
+2025-09-14T04:30:46.3545831Z Creating container.
+2025-09-14T04:30:46.3555393Z Creating pipes for streaming container io.
+2025-09-14T04:30:46.3854437Z Creating stdout named pipe at /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stdout_87589336aecc4d68b1437633cd20c4bd.
+2025-09-14T04:30:46.3957573Z Successfully created stdout named pipe at: /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stdout_87589336aecc4d68b1437633cd20c4bd.
+2025-09-14T04:30:46.4055252Z Opening named pipe /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stdout_87589336aecc4d68b1437633cd20c4bd for reading in non-blocking mode.
+2025-09-14T04:30:46.4070521Z Successfully opened named pipe: /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stdout_87589336aecc4d68b1437633cd20c4bd.
+2025-09-14T04:30:46.4348444Z Successfully removed non-blocking flag from /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stdout_87589336aecc4d68b1437633cd20c4bd.
+2025-09-14T04:30:46.4352051Z Creating stderr named pipe at /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stderr_cd8d75d756954377bd5ff8011dd099fc.
+2025-09-14T04:30:46.4353800Z Successfully created stderr named pipe at: /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stderr_cd8d75d756954377bd5ff8011dd099fc.
+2025-09-14T04:30:46.4354715Z Opening named pipe /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stderr_cd8d75d756954377bd5ff8011dd099fc for reading in non-blocking mode.
+2025-09-14T04:30:46.4355585Z Successfully opened named pipe: /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stderr_cd8d75d756954377bd5ff8011dd099fc.
+2025-09-14T04:30:46.4356302Z Successfully removed non-blocking flag from /podr/container/pipe/f9fb9b73f0f1_overblikplus-user-api-dev/stderr_cd8d75d756954377bd5ff8011dd099fc.
+2025-09-14T04:30:46.4357253Z Creating container with image: appsvc/dotnetcore:8.0_20250709.6.tuxprod from registry: 10.1.0.4:13209 and fully qualified image name: 10.1.0.4:13209/appsvc/dotnetcore:8.0_20250709.6.tuxprod
+2025-09-14T04:30:47.6025136Z Starting container: f9fb9b73f0f1_overblikplus-user-api-dev.
+2025-09-14T04:30:48.5766338Z Starting watchers and probes.
+2025-09-14T04:30:48.5784877Z Starting metrics collection.
+2025-09-14T04:30:48.5886457Z Container is running.
+2025-09-14T04:30:49.4324199Z Container start method finished after 7099 ms.
+2025-09-14T04:30:50.9832289Z Site startup probe failed after 1.3195823 seconds.
+2025-09-14T04:30:52.1800273Z Failed to start site. Revert by stopping site.
+2025-09-14T04:30:52.7218232Z Container is terminating. Grace period: 5 seconds.
+2025-09-14T04:30:53.4576434Z Stop and delete container. Retry count = 0
+2025-09-14T04:30:53.4952525Z Stopping container: f9fb9b73f0f1_overblikplus-user-api-dev.
+2025-09-14T04:30:58.7553123Z Deleting container: f9fb9b73f0f1_overblikplus-user-api-dev. Retry count = 0
+2025-09-14T04:31:02.2726402Z Container spec TerminationMessagePolicy  path 
+2025-09-14T04:31:02.2728249Z Container is terminated. Total time elapsed: 9549 ms.
+2025-09-14T04:31:02.2729110Z Site container: overblikplus-user-api-dev terminated during site startup.
+2025-09-14T04:31:02.9072656Z Site: overblikplus-user-api-dev stopped.
+2025-09-14T04:31:28.4762791Z Container is terminating. Grace period: 5 seconds.
+2025-09-14T04:31:28.5171269Z Stop and delete container. Retry count = 0
+2025-09-14T04:31:28.5176200Z Stopping container: be6a06ee273d_overblikplus-user-api-dev.
+2025-09-14T04:31:35.4611672Z Deleting container: be6a06ee273d_overblikplus-user-api-dev. Retry count = 0
+2025-09-14T04:31:37.8113064Z Container spec TerminationMessagePolicy  path 
+2025-09-14T04:31:37.8119511Z Container is terminated. Total time elapsed: 9335 ms.
+2025-09-14T04:31:37.8120066Z Site: overblikplus-user-api-dev stopped.
+2025-09-14T04:40:02.2555164Z Container start method called.
+2025-09-14T04:40:02.2764273Z Establishing network.
+2025-09-14T04:40:02.2786071Z Pulling image: appsvc/dotnetcore:8.0_20250709.6.tuxprod.
+2025-09-14T04:40:05.4728064Z Container is starting.
+2025-09-14T04:40:05.4735872Z Establishing user namespace if not established already.
+2025-09-14T04:40:05.4736949Z Establishing network if not established already.
+2025-09-14T04:40:05.4737725Z Mounting volumes.
+2025-09-14T04:40:05.4947455Z Nested mountpoint 
+2025-09-14T04:40:05.6049588Z Nested mountpoint volatile/logs
+2025-09-14T04:40:05.6631528Z Nested mountpoint 
+2025-09-14T04:40:05.7144226Z Nested mountpoint 
+2025-09-14T04:40:05.7942335Z Nested mountpoint 
+2025-09-14T04:40:08.0676130Z Creating container.
+2025-09-14T04:40:08.1056442Z Creating pipes for streaming container io.
+2025-09-14T04:40:08.1067087Z Creating stdout named pipe at /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stdout_5fdfc3addc4942ad87b4ecb672d222bd.
+2025-09-14T04:40:08.1469866Z Successfully created stdout named pipe at: /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stdout_5fdfc3addc4942ad87b4ecb672d222bd.
+2025-09-14T04:40:08.1472440Z Opening named pipe /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stdout_5fdfc3addc4942ad87b4ecb672d222bd for reading in non-blocking mode.
+2025-09-14T04:40:08.1559104Z Successfully opened named pipe: /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stdout_5fdfc3addc4942ad87b4ecb672d222bd.
+2025-09-14T04:40:08.1561200Z Successfully removed non-blocking flag from /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stdout_5fdfc3addc4942ad87b4ecb672d222bd.
+2025-09-14T04:40:08.1562864Z Creating stderr named pipe at /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stderr_a30bff060b0f49339a40c847c33d80ef.
+2025-09-14T04:40:08.1568036Z Successfully created stderr named pipe at: /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stderr_a30bff060b0f49339a40c847c33d80ef.
+2025-09-14T04:40:08.1569500Z Opening named pipe /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stderr_a30bff060b0f49339a40c847c33d80ef for reading in non-blocking mode.
+2025-09-14T04:40:08.1570811Z Successfully opened named pipe: /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stderr_a30bff060b0f49339a40c847c33d80ef.
+2025-09-14T04:40:08.1571976Z Successfully removed non-blocking flag from /podr/container/pipe/c83fc5032774_overblikplus-user-api-dev/stderr_a30bff060b0f49339a40c847c33d80ef.
+2025-09-14T04:40:08.1749535Z Creating container with image: appsvc/dotnetcore:8.0_20250709.6.tuxprod from registry: 10.1.0.4:13209 and fully qualified image name: 10.1.0.4:13209/appsvc/dotnetcore:8.0_20250709.6.tuxprod
+2025-09-14T04:40:09.3163516Z Starting container: c83fc5032774_overblikplus-user-api-dev.
+2025-09-14T04:40:09.6108206Z Starting watchers and probes.
+2025-09-14T04:40:09.6391711Z Starting metrics collection.
+2025-09-14T04:40:09.6399619Z Container is running.
+2025-09-14T04:40:10.7891369Z Container start method finished after 8530 ms.
+2025-09-14T04:40:42.1289077Z Site startup probe succeeded after 31.2481469 seconds.
+2025-09-14T04:40:42.3843489Z Site is running with deployment version: 87dc6000-c524-4072-87c4-1e9e6985fa16
+2025-09-14T04:40:42.3969825Z Site started.
+2025-09-14T04:40:42.4902801Z Site is running with patch version: 8.0.18
+2025-09-14T10:42:56.4656849Z Container start method called.
+2025-09-14T10:42:56.4944368Z Establishing network.
+2025-09-14T10:42:56.5032838Z Pulling image: appsvc/dotnetcore:8.0_20250709.6.tuxprod.
+2025-09-14T10:42:59.5170049Z Container is starting.
+2025-09-14T10:42:59.5179838Z Establishing user namespace if not established already.
+2025-09-14T10:42:59.5193935Z Establishing network if not established already.
+2025-09-14T10:42:59.5289801Z Mounting volumes.
+2025-09-14T10:42:59.5583026Z Nested mountpoint 
+2025-09-14T10:42:59.7184974Z Nested mountpoint volatile/logs
+2025-09-14T10:42:59.7378015Z Nested mountpoint 
+2025-09-14T10:42:59.9703915Z Nested mountpoint 
+2025-09-14T10:43:00.1209117Z Nested mountpoint 
+2025-09-14T10:43:01.4596039Z Creating container.
+2025-09-14T10:43:01.4603663Z Creating pipes for streaming container io.
+2025-09-14T10:43:01.4614680Z Creating stdout named pipe at /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stdout_53141712900c4c8b8095c205c86d3c3e.
+2025-09-14T10:43:01.4706415Z Successfully created stdout named pipe at: /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stdout_53141712900c4c8b8095c205c86d3c3e.
+2025-09-14T10:43:01.4714572Z Opening named pipe /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stdout_53141712900c4c8b8095c205c86d3c3e for reading in non-blocking mode.
+2025-09-14T10:43:01.4900660Z Successfully opened named pipe: /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stdout_53141712900c4c8b8095c205c86d3c3e.
+2025-09-14T10:43:01.4906459Z Successfully removed non-blocking flag from /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stdout_53141712900c4c8b8095c205c86d3c3e.
+2025-09-14T10:43:01.4909223Z Creating stderr named pipe at /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stderr_36112ec56170442c87502e271e91c72a.
+2025-09-14T10:43:01.4915416Z Successfully created stderr named pipe at: /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stderr_36112ec56170442c87502e271e91c72a.
+2025-09-14T10:43:01.4992708Z Opening named pipe /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stderr_36112ec56170442c87502e271e91c72a for reading in non-blocking mode.
+2025-09-14T10:43:01.4995224Z Successfully opened named pipe: /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stderr_36112ec56170442c87502e271e91c72a.
+2025-09-14T10:43:01.5005724Z Successfully removed non-blocking flag from /podr/container/pipe/17193c7689d0_overblikplus-user-api-dev/stderr_36112ec56170442c87502e271e91c72a.
+2025-09-14T10:43:01.5091483Z Creating container with image: appsvc/dotnetcore:8.0_20250709.6.tuxprod from registry: 10.1.0.4:13209 and fully qualified image name: 10.1.0.4:13209/appsvc/dotnetcore:8.0_20250709.6.tuxprod
+2025-09-14T10:43:04.1454030Z Starting container: 17193c7689d0_overblikplus-user-api-dev.
+2025-09-14T10:43:04.2906836Z Starting watchers and probes.
+2025-09-14T10:43:04.3148163Z Starting metrics collection.
+2025-09-14T10:43:04.3156476Z Container is running.
+2025-09-14T10:43:04.6665583Z Container start method finished after 8092 ms.
+2025-09-14T10:45:38.8216528Z Container has finished running with exit code: 0.
+2025-09-14T10:45:38.8243910Z Container is terminating. Grace period: 5 seconds.
+2025-09-14T10:45:38.8374045Z Stop and delete container. Retry count = 0
+2025-09-14T10:45:38.8408338Z Stopping container: 17193c7689d0_overblikplus-user-api-dev.
+2025-09-14T10:45:38.9127252Z Deleting container: 17193c7689d0_overblikplus-user-api-dev. Retry count = 0
+2025-09-14T10:45:40.2541147Z Container spec TerminationMessagePolicy  path 
+2025-09-14T10:45:40.2573503Z Container is terminated. Total time elapsed: 1425 ms.
+2025-09-14T10:45:40.2656145Z Site container: overblikplus-user-api-dev terminated during site startup.
+2025-09-14T10:45:40.2692143Z Site startup probe failed after 155.5407386 seconds.
+2025-09-14T10:45:40.3899946Z Failed to start site. Revert by stopping site.
+2025-09-14T10:45:40.4103747Z Site: overblikplus-user-api-dev stopped.
+2025-09-14T10:46:02.8948600Z Container is terminating. Grace period: 5 seconds.
+2025-09-14T10:46:03.1951272Z Stop and delete container. Retry count = 0
+2025-09-14T10:46:03.1956069Z Stopping container: c83fc5032774_overblikplus-user-api-dev.
+2025-09-14T10:46:09.2093941Z Deleting container: c83fc5032774_overblikplus-user-api-dev. Retry count = 0
+2025-09-14T10:46:10.0871294Z Container spec TerminationMessagePolicy  path 
+2025-09-14T10:46:10.0884993Z Container is terminated. Total time elapsed: 7192 ms.
+2025-09-14T10:46:10.0885475Z Site: overblikplus-user-api-dev stopped.

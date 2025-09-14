@@ -28,7 +28,7 @@ namespace UserMicroService;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -169,14 +169,35 @@ public class Program
 
         app.MapControllers();
 
+        // Auto-migrate database in Development and Production mode
         try
         {
-            logger.LogInfo($"[UserMicroService] Starting in {app.Environment.EnvironmentName} mode.");
-            app.Run();
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                var conn = context.Database.GetDbConnection();
+                logger.LogInfo($"DB target: {conn.DataSource}/{conn.Database}");
+                await context.Database.MigrateAsync();
+                logger.LogInfo("[UserMicroService] Database migrations completed successfully.");
+            }
         }
         catch (Exception ex)
         {
-            logger.LogError("Application start-up failed", ex);
+            logger.LogError($"DB migration failed at startup - continuing without migration: {ex.Message}", ex);
+            // Don't throw - let the app start so we can hit /health and see logs
         }
+        
+        logger.LogInfo($"[UserMicroService] Starting in {app.Environment.EnvironmentName} mode.");
+        await app.RunAsync();
     }
 }
+// Test backend workflow
+// Trigger backend workflow test
+// Trigger backend deployment test
+// Trigger backend redeployment with database config
+// Trigger redeployment with storage settings
+// Trigger Azure deployment with build settings
+// Fix deployment - disable remote build
+// Test Docker workflow deployment
+// Trigger workflow manually
+// Test final deployment

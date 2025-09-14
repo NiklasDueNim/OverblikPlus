@@ -1,0 +1,96 @@
+name: DEV - Backend CI/CD
+
+on:
+  # DISABLED - manually managing deployment
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'OverblikPlusBackend/**'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Bygger og deployer både user-api og task-api
+        service: [user-api, task-api]
+
+    steps:
+      # 1. Tjekker koden ud
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Sætter .NET SDK op
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # 3. Azure Login (via secrets.AZURE_CREDENTIALS)
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # 4. Tjek login
+      - name: Azure Login Check
+        run: |
+          az account show
+      
+      # 5. Gendanner afhængigheder
+      - name: Restore dependencies
+        run: |
+          for csproj in $(find . -name '*.csproj'); do
+            dotnet restore "$csproj"
+          done
+
+      # 6. Bygger projekterne (Release)
+      - name: Build projects
+        run: |
+          for csproj in $(find . -name '*.csproj'); do
+            dotnet build "$csproj" --configuration Release --no-restore
+          done
+
+      # 7. Kører tests (ekskl. evt. frontend-tests)
+      - name: Run tests
+        run: |
+          for csproj in $(find . -name '*.Tests.csproj' ! -name '*OverblikPlus.Frontend.Tests*'); do
+            dotnet test "$csproj" --no-restore --verbosity normal
+          done
+
+      # 8. Login til Azure Container Registry (ACR)
+      - name: Login to Azure Container Registry
+        run: |
+          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+      # 9. Bygger Docker-billedet
+      - name: Build Docker image
+        run: |
+          docker build --platform linux/amd64 \
+            -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest \
+            -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService/Dockerfile' || 'TaskMicroService/Dockerfile' }} \
+            --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
+            OverblikPlusBackend
+
+      # 10. Pusher Docker-billedet til ACR
+      - name: Push Docker image to ACR
+        run: |
+          docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest
+
+      # 11. Opdater Azure App Service til det nyeste Docker-image
+      - name: Update Azure App Service
+        run: |
+          az webapp config container set \
+            --name overblikplus-${{ matrix.service }}-dev \
+            --resource-group overblikplus-dev-rg \
+            --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest \
+            --container-registry-url https://${{ secrets.ACR_REGISTRY }}
+
+      # 12. Genstart Azure App Service så ny config slår igennem
+      - name: Restart Azure App Service
+        run: |
+          az webapp restart \
+            --name overblikplus-${{ matrix.service }}-dev \
+            --resource-group overblikplus-dev-rg

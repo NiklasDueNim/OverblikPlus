@@ -1,0 +1,355 @@
+2025-09-14T12:11:27.575990433Z [12:11:27 INF] [TaskMicroService] DB Connection String: Server=tcp:overblikplusdev-db.database.windows.net,1433;Initial Catalog=Overblikplus_Dev;User ID=overblikplusadmin;Password=Password123!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+2025-09-14T12:11:27.617879199Z [12:11:27 INF] [TaskMicroService] JWT Issuer: https://overblikplus.azurewebsites.net
+2025-09-14T12:11:27.626056378Z [12:11:27 INF] [TaskMicroService] JWT Audience: https://overblikplus.azurewebsites.net
+2025-09-14T12:11:27.626623919Z [12:11:27 INF] [TaskMicroService] JWT Key Length: 46
+2025-09-14T12:11:27.646330993Z [12:11:27 INF] [TaskMicroService] Blob Connection: DefaultEndpointsProtocol=https;AccountName=overblikplusprodstorage;AccountKey=YOUR_STORAGE_KEY;EndpointSuffix=core.windows.net
+2025-09-14T12:11:27.646922601Z [12:11:27 INF] [TaskMicroService] Blob Base Url: https://overblikplusprodstorage.blob.core.windows.net/images
+2025-09-14T12:12:33.429446458Z [12:12:32 ERR] Migration failed: Login failed for user 'overblikplusadmin'. Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T12:12:33.438239157Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T12:12:33.438261867Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T12:12:33.438267931Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T12:12:33.438270952Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T12:12:33.438274633Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T12:12:33.438277485Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T12:12:33.438280388Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T12:12:33.438284264Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T12:12:33.438292248Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T12:12:33.438305837Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:12:33.438308259Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:12:33.438310394Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T12:12:33.438312601Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T12:12:33.438314455Z --- End of stack trace from previous location ---
+2025-09-14T12:12:33.438316319Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:12:33.438318442Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:12:33.438320378Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T12:12:33.438322300Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:12:33.438324730Z --- End of stack trace from previous location ---
+2025-09-14T12:12:33.438327375Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:12:33.438329616Z --- End of stack trace from previous location ---
+2025-09-14T12:12:33.438331429Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:12:33.438333564Z --- End of stack trace from previous location ---
+2025-09-14T12:12:33.438336032Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T12:12:33.438338157Z    at Microsoft.EntityFrameworkCore.Migrations.HistoryRepository.ExistsAsync(CancellationToken cancellationToken)
+2025-09-14T12:12:33.438340066Z    at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateAsync(String targetMigration, CancellationToken cancellationToken)
+2025-09-14T12:12:33.438341999Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 204
+2025-09-14T12:12:33.438344007Z ClientConnectionId:32e015a8-293a-42d0-a028-e9676dc35a7d
+2025-09-14T12:12:33.438345854Z Error Number:18456,State:1,Class:14
+2025-09-14T12:12:33.438352934Z ClientConnectionId before routing:b9dff01b-dd4e-4697-acaa-88c5ca767269
+2025-09-14T12:12:33.438354930Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+2025-09-14T12:13:38.133017370Z [12:13:38 ERR] Application start-up failed Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T12:13:38.133046193Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T12:13:38.133049961Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T12:13:38.133053345Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T12:13:38.133056217Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T12:13:38.133058917Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T12:13:38.133061867Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T12:13:38.133064898Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T12:13:38.133068146Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T12:13:38.133071658Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T12:13:38.133074321Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:13:38.133076902Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:13:38.133079623Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T12:13:38.133082410Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T12:13:38.133084872Z --- End of stack trace from previous location ---
+2025-09-14T12:13:38.133137683Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:13:38.133148693Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:13:38.133150964Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T12:13:38.133153000Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:13:38.133155406Z --- End of stack trace from previous location ---
+2025-09-14T12:13:38.133157303Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:13:38.133219957Z --- End of stack trace from previous location ---
+2025-09-14T12:13:38.133221900Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:13:38.133224308Z --- End of stack trace from previous location ---
+2025-09-14T12:13:38.133227270Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T12:13:38.133229469Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T12:13:38.133231404Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T12:13:38.133233326Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 211
+2025-09-14T12:13:38.133235240Z ClientConnectionId:a8656086-713e-45ae-a4a9-c8d8bf724c20
+2025-09-14T12:13:38.133237016Z Error Number:18456,State:1,Class:14
+2025-09-14T12:13:38.133238763Z ClientConnectionId before routing:843c9d8e-7c2a-456c-a0cf-1df252c5a717
+2025-09-14T12:13:38.133240742Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+
+2025-09-14T12:23:37.553109950Z [12:23:37 INF] [TaskMicroService] DB Connection String: Server=tcp:overblikplusdev-db.database.windows.net,1433;Initial Catalog=Overblikplus_Dev;User ID=overblikplusadmin;Password=Password123!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+2025-09-14T12:23:37.574575385Z [12:23:37 INF] [TaskMicroService] JWT Issuer: https://overblikplus.azurewebsites.net
+2025-09-14T12:23:37.591989740Z [12:23:37 INF] [TaskMicroService] JWT Audience: https://overblikplus.azurewebsites.net
+2025-09-14T12:23:37.592009646Z [12:23:37 INF] [TaskMicroService] JWT Key Length: 46
+2025-09-14T12:23:37.654369414Z [12:23:37 INF] [TaskMicroService] Blob Connection: DefaultEndpointsProtocol=https;AccountName=overblikplusprodstorage;AccountKey=YOUR_STORAGE_KEY;EndpointSuffix=core.windows.net
+2025-09-14T12:23:37.654395496Z [12:23:37 INF] [TaskMicroService] Blob Base Url: https://overblikplusprodstorage.blob.core.windows.net/images
+2025-09-14T12:24:46.628834627Z [12:24:46 ERR] Migration failed: Login failed for user 'overblikplusadmin'. Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T12:24:46.628871595Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T12:24:46.628875595Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T12:24:46.628879382Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T12:24:46.628882491Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T12:24:46.628885083Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T12:24:46.628888040Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T12:24:46.628890961Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T12:24:46.628894188Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T12:24:46.628898387Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T12:24:46.628913911Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:24:46.628916417Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:24:46.628918424Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T12:24:46.628920734Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T12:24:46.628922620Z --- End of stack trace from previous location ---
+2025-09-14T12:24:46.628924474Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:24:46.628926442Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:24:46.628928509Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T12:24:46.628930514Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:24:46.628932925Z --- End of stack trace from previous location ---
+2025-09-14T12:24:46.628934773Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:24:46.628937061Z --- End of stack trace from previous location ---
+2025-09-14T12:24:46.628938888Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:24:46.628940946Z --- End of stack trace from previous location ---
+2025-09-14T12:24:46.628943079Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T12:24:46.628945300Z    at Microsoft.EntityFrameworkCore.Migrations.HistoryRepository.ExistsAsync(CancellationToken cancellationToken)
+2025-09-14T12:24:46.628947475Z    at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateAsync(String targetMigration, CancellationToken cancellationToken)
+2025-09-14T12:24:46.628949458Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 204
+2025-09-14T12:24:46.628951374Z ClientConnectionId:a55f603f-08e0-469b-88e0-69d90103cc70
+2025-09-14T12:24:46.628953313Z Error Number:18456,State:1,Class:14
+2025-09-14T12:24:46.628955114Z ClientConnectionId before routing:43afc475-b6ae-456a-bce3-bc0c69dcbe56
+2025-09-14T12:24:46.628956961Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+2025-09-14T12:25:47.047535028Z [12:25:47 ERR] Application start-up failed Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T12:25:47.062920579Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T12:25:47.062942523Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T12:25:47.062946335Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T12:25:47.062949421Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T12:25:47.062952136Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T12:25:47.062955410Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T12:25:47.062958376Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T12:25:47.062961810Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T12:25:47.062969026Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T12:25:47.062971808Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:25:47.062974507Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:25:47.062977261Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T12:25:47.062980069Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T12:25:47.062982493Z --- End of stack trace from previous location ---
+2025-09-14T12:25:47.062984903Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:25:47.062998230Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:25:47.063000430Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T12:25:47.063002290Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:25:47.063004565Z --- End of stack trace from previous location ---
+2025-09-14T12:25:47.063006496Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:25:47.063008635Z --- End of stack trace from previous location ---
+2025-09-14T12:25:47.063010379Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:25:47.063012508Z --- End of stack trace from previous location ---
+2025-09-14T12:25:47.063014714Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T12:25:47.063016856Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T12:25:47.063018695Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T12:25:47.063020571Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 211
+2025-09-14T12:25:47.063022559Z ClientConnectionId:49ea803b-45c0-4d3a-b4e5-b59f88fe1c97
+2025-09-14T12:25:47.063024334Z Error Number:18456,State:1,Class:14
+2025-09-14T12:25:47.063026059Z ClientConnectionId before routing:6b29782a-aeff-43ef-84aa-841d40ddddba
+2025-09-14T12:25:47.063028365Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+
+2025-09-14T12:36:00.868657594Z [12:36:00 INF] [TaskMicroService] DB Connection String: Server=tcp:overblikplusdev-db.database.windows.net,1433;Initial Catalog=Overblikplus_Dev;User ID=overblikplusadmin;Password=Password123!;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+2025-09-14T12:36:00.938883231Z [12:36:00 INF] [TaskMicroService] JWT Issuer: https://overblikplus.azurewebsites.net
+2025-09-14T12:36:00.938920853Z [12:36:00 INF] [TaskMicroService] JWT Audience: https://overblikplus.azurewebsites.net
+2025-09-14T12:36:00.996750012Z [12:36:00 INF] [TaskMicroService] JWT Key Length: 46
+2025-09-14T12:36:01.118999407Z [12:36:01 INF] [TaskMicroService] Blob Connection: DefaultEndpointsProtocol=https;AccountName=overblikplusprodstorage;AccountKey=YOUR_STORAGE_KEY;EndpointSuffix=core.windows.net
+2025-09-14T12:36:01.119720710Z [12:36:01 INF] [TaskMicroService] Blob Base Url: https://overblikplusprodstorage.blob.core.windows.net/images
+2025-09-14T12:37:09.259170353Z [12:37:09 ERR] Migration failed: Login failed for user 'overblikplusadmin'. Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T12:37:09.259208239Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T12:37:09.259212046Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T12:37:09.259215327Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T12:37:09.259218530Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T12:37:09.259221366Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T12:37:09.259224305Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T12:37:09.259227150Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T12:37:09.259230447Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T12:37:09.259234052Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T12:37:09.259254552Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:37:09.259257072Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:37:09.259259195Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T12:37:09.259261533Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T12:37:09.259263366Z --- End of stack trace from previous location ---
+2025-09-14T12:37:09.259265170Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:37:09.259267164Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:37:09.259269188Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T12:37:09.259271098Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:37:09.259273394Z --- End of stack trace from previous location ---
+2025-09-14T12:37:09.259275281Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:37:09.259277545Z --- End of stack trace from previous location ---
+2025-09-14T12:37:09.259279320Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:37:09.259281415Z --- End of stack trace from previous location ---
+2025-09-14T12:37:09.259283518Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T12:37:09.259285694Z    at Microsoft.EntityFrameworkCore.Migrations.HistoryRepository.ExistsAsync(CancellationToken cancellationToken)
+2025-09-14T12:37:09.259287597Z    at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateAsync(String targetMigration, CancellationToken cancellationToken)
+2025-09-14T12:37:09.259289539Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 204
+2025-09-14T12:37:09.259291504Z ClientConnectionId:2ad55437-4b9c-4c49-b578-c3386a909fcf
+2025-09-14T12:37:09.259293449Z Error Number:18456,State:1,Class:14
+2025-09-14T12:37:09.259295225Z ClientConnectionId before routing:990cc26e-d9d2-4274-a2a4-dab99586c48a
+2025-09-14T12:37:09.259297097Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+2025-09-14T12:38:09.521114729Z [12:38:09 ERR] Application start-up failed Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T12:38:09.521157205Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T12:38:09.521161156Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T12:38:09.521164924Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T12:38:09.521167895Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T12:38:09.521171062Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T12:38:09.521174059Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T12:38:09.521176929Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T12:38:09.521180051Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T12:38:09.521183719Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T12:38:09.521186469Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:38:09.521189091Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T12:38:09.521191765Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T12:38:09.521194675Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T12:38:09.521197210Z --- End of stack trace from previous location ---
+2025-09-14T12:38:09.521199770Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:38:09.521214567Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T12:38:09.521216861Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T12:38:09.521219133Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:38:09.521221957Z --- End of stack trace from previous location ---
+2025-09-14T12:38:09.521223861Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:38:09.521226140Z --- End of stack trace from previous location ---
+2025-09-14T12:38:09.521227920Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T12:38:09.521230023Z --- End of stack trace from previous location ---
+2025-09-14T12:38:09.521232250Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T12:38:09.521234311Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T12:38:09.521236204Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T12:38:09.521238122Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 211
+2025-09-14T12:38:09.521240137Z ClientConnectionId:21878551-598b-489c-a4be-bfd48eae12ea
+2025-09-14T12:38:09.521241947Z Error Number:18456,State:1,Class:14
+2025-09-14T12:38:09.561893721Z ClientConnectionId before routing:8103fe37-c231-4408-bb0e-c19d8328cacd
+2025-09-14T12:38:09.561937062Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+
+2025-09-14T13:13:28.636032224Z [13:13:28 INF] [TaskMicroService] DB Connection String: Server=tcp:overblikplusdev-db.database.windows.net,1433;Initial Catalog=Overblikplus_Dev;User ID=overblikplusadmin;Password=zaDgyx-hypbi0-gotcak;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+2025-09-14T13:13:28.636110821Z [13:13:28 INF] [TaskMicroService] JWT Issuer: https://overblikplus.azurewebsites.net
+2025-09-14T13:13:28.636114354Z [13:13:28 INF] [TaskMicroService] JWT Audience: https://overblikplus.azurewebsites.net
+2025-09-14T13:13:28.636116583Z [13:13:28 INF] [TaskMicroService] JWT Key Length: 46
+2025-09-14T13:13:28.676905242Z [13:13:28 INF] [TaskMicroService] Blob Connection: DefaultEndpointsProtocol=https;AccountName=overblikplusprodstorage;AccountKey=YOUR_STORAGE_KEY;EndpointSuffix=core.windows.net
+2025-09-14T13:13:28.684750873Z [13:13:28 INF] [TaskMicroService] Blob Base Url: https://overblikplusprodstorage.blob.core.windows.net/images
+2025-09-14T13:14:36.067335407Z [13:14:35 ERR] Migration failed: Login failed for user 'overblikplusadmin'. Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T13:14:36.074699161Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T13:14:36.074719472Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T13:14:36.074725204Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T13:14:36.074728010Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T13:14:36.074730971Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T13:14:36.074733988Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T13:14:36.074737064Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T13:14:36.074740293Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T13:14:36.074747089Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T13:14:36.074770175Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T13:14:36.074772567Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T13:14:36.074774510Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T13:14:36.074776692Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T13:14:36.074778558Z --- End of stack trace from previous location ---
+2025-09-14T13:14:36.074780410Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T13:14:36.074782464Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T13:14:36.074784397Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T13:14:36.074786389Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:14:36.074788784Z --- End of stack trace from previous location ---
+2025-09-14T13:14:36.074790543Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:14:36.074792768Z --- End of stack trace from previous location ---
+2025-09-14T13:14:36.074794563Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:14:36.074796660Z --- End of stack trace from previous location ---
+2025-09-14T13:14:36.074799132Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T13:14:36.074801253Z    at Microsoft.EntityFrameworkCore.Migrations.HistoryRepository.ExistsAsync(CancellationToken cancellationToken)
+2025-09-14T13:14:36.074803268Z    at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateAsync(String targetMigration, CancellationToken cancellationToken)
+2025-09-14T13:14:36.074805847Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 204
+2025-09-14T13:14:36.074807669Z ClientConnectionId:f117899b-72a4-43fa-9522-fab92a78ce3b
+2025-09-14T13:14:36.074809419Z Error Number:18456,State:1,Class:14
+2025-09-14T13:14:36.074811208Z ClientConnectionId before routing:36e9aa25-e1f2-43d8-9d3c-d433a0d0458c
+2025-09-14T13:14:36.074812999Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+2025-09-14T13:15:36.101083713Z [13:15:36 ERR] Application start-up failed Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T13:15:36.108319222Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T13:15:36.108334489Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T13:15:36.108338452Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T13:15:36.108341332Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T13:15:36.108344045Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T13:15:36.108518563Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T13:15:36.108522256Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T13:15:36.108525419Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T13:15:36.108533048Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T13:15:36.108536028Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T13:15:36.108538767Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T13:15:36.108541502Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T13:15:36.108544509Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T13:15:36.108547005Z --- End of stack trace from previous location ---
+2025-09-14T13:15:36.108549544Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T13:15:36.108563154Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T13:15:36.108565412Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T13:15:36.108567400Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:15:36.108569845Z --- End of stack trace from previous location ---
+2025-09-14T13:15:36.108571712Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:15:36.108573923Z --- End of stack trace from previous location ---
+2025-09-14T13:15:36.108575755Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:15:36.108578045Z --- End of stack trace from previous location ---
+2025-09-14T13:15:36.109230327Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T13:15:36.109243363Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T13:15:36.109245820Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T13:15:36.109248063Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 211
+2025-09-14T13:15:36.109249984Z ClientConnectionId:61ce1fc8-acd4-4fed-ace7-996c6a55879d
+2025-09-14T13:15:36.109251859Z Error Number:18456,State:1,Class:14
+2025-09-14T13:15:36.109254342Z ClientConnectionId before routing:dccdc841-ee30-4ebb-a27e-00651d278486
+2025-09-14T13:15:36.109256315Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+
+2025-09-14T13:18:00.188084037Z [13:17:59 INF] [TaskMicroService] DB Connection String: Server=tcp:overblikplusdev-db.database.windows.net,1433;Initial Catalog=Overblikplus_Dev;Persist Security Info=False;User ID=overblikplusadmin;Password=Password123!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+2025-09-14T13:18:00.237055972Z [13:18:00 INF] [TaskMicroService] JWT Issuer: https://overblikplus.azurewebsites.net
+2025-09-14T13:18:00.245751341Z [13:18:00 INF] [TaskMicroService] JWT Audience: https://overblikplus.azurewebsites.net
+2025-09-14T13:18:00.247195859Z [13:18:00 INF] [TaskMicroService] JWT Key Length: 46
+2025-09-14T13:18:00.298029233Z [13:18:00 INF] [TaskMicroService] Blob Connection: DefaultEndpointsProtocol=https;AccountName=overblikplusprodstorage;AccountKey=YOUR_STORAGE_KEY;EndpointSuffix=core.windows.net
+2025-09-14T13:18:00.298874279Z [13:18:00 INF] [TaskMicroService] Blob Base Url: https://overblikplusprodstorage.blob.core.windows.net/images
+2025-09-14T13:19:07.127706200Z [13:19:07 ERR] Migration failed: Login failed for user 'overblikplusadmin'. Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T13:19:07.128277768Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T13:19:07.128287865Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T13:19:07.128292047Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T13:19:07.128300583Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T13:19:07.128303621Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T13:19:07.128306486Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T13:19:07.128309726Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T13:19:07.128312996Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T13:19:07.128317392Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T13:19:07.128333496Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T13:19:07.128335867Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T13:19:07.128337809Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T13:19:07.128339977Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T13:19:07.128341967Z --- End of stack trace from previous location ---
+2025-09-14T13:19:07.128343924Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T13:19:07.128345908Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T13:19:07.128347819Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T13:19:07.128349798Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:19:07.128352112Z --- End of stack trace from previous location ---
+2025-09-14T13:19:07.128353886Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:19:07.128355998Z --- End of stack trace from previous location ---
+2025-09-14T13:19:07.128357844Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:19:07.128360088Z --- End of stack trace from previous location ---
+2025-09-14T13:19:07.128366096Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T13:19:07.128368296Z    at Microsoft.EntityFrameworkCore.Migrations.HistoryRepository.ExistsAsync(CancellationToken cancellationToken)
+2025-09-14T13:19:07.128370290Z    at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.MigrateAsync(String targetMigration, CancellationToken cancellationToken)
+2025-09-14T13:19:07.128372262Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 204
+2025-09-14T13:19:07.128374103Z ClientConnectionId:6d9f063e-86cb-4e3b-b9b5-c354e21c2401
+2025-09-14T13:19:07.128375833Z Error Number:18456,State:1,Class:14
+2025-09-14T13:19:07.128377638Z ClientConnectionId before routing:ddb001af-6a97-4297-ad8c-0ed279629b36
+2025-09-14T13:19:07.128379580Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+2025-09-14T13:20:07.570964121Z [13:20:07 ERR] Application start-up failed Exception: Microsoft.Data.SqlClient.SqlException (0x80131904): Login failed for user 'overblikplusadmin'.
+2025-09-14T13:20:07.571633879Z    at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+2025-09-14T13:20:07.571642255Z    at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+2025-09-14T13:20:07.571645594Z    at Microsoft.Data.SqlClient.TdsParser.Run(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj)
+2025-09-14T13:20:07.571648482Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.CompleteLogin(Boolean enlistOK)
+2025-09-14T13:20:07.571651329Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.LoginNoFailover(ServerInfo serverInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString connectionOptions, SqlCredential credential, TimeoutTimer timeout)
+2025-09-14T13:20:07.571654675Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds.OpenLoginEnlist(TimeoutTimer timeout, SqlConnectionString connectionOptions, SqlCredential credential, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance)
+2025-09-14T13:20:07.571657595Z    at Microsoft.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, Boolean applyTransientFaultHandling, String accessToken, DbConnectionPool pool)
+2025-09-14T13:20:07.571660750Z    at Microsoft.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+2025-09-14T13:20:07.571666332Z    at Microsoft.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+2025-09-14T13:20:07.571669269Z    at Microsoft.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T13:20:07.571672017Z    at Microsoft.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+2025-09-14T13:20:07.571674701Z    at Microsoft.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+2025-09-14T13:20:07.581437859Z    at Microsoft.Data.ProviderBase.DbConnectionPool.WaitForPendingOpen()
+2025-09-14T13:20:07.581442483Z --- End of stack trace from previous location ---
+2025-09-14T13:20:07.581445244Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T13:20:07.581458097Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
+2025-09-14T13:20:07.581460332Z    at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+2025-09-14T13:20:07.581462351Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:20:07.581465054Z --- End of stack trace from previous location ---
+2025-09-14T13:20:07.581466912Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:20:07.581469125Z --- End of stack trace from previous location ---
+2025-09-14T13:20:07.581471085Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerDatabaseCreator.<>c__DisplayClass20_0.<<ExistsAsync>b__0>d.MoveNext()
+2025-09-14T13:20:07.581473258Z --- End of stack trace from previous location ---
+2025-09-14T13:20:07.581477904Z    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+2025-09-14T13:20:07.581480030Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T13:20:07.581482512Z    at Microsoft.EntityFrameworkCore.Storage.RelationalDatabaseCreator.EnsureCreatedAsync(CancellationToken cancellationToken)
+2025-09-14T13:20:07.581484436Z    at TaskMicroService.Program.Main(String[] args) in /app/TaskMicroService/Program.cs:line 211
+2025-09-14T13:20:07.581486415Z ClientConnectionId:5ac0238d-345b-4608-bcfd-e3dae070b1ca
+2025-09-14T13:20:07.581488233Z Error Number:18456,State:1,Class:14
+2025-09-14T13:20:07.581490088Z ClientConnectionId before routing:254704ff-8909-45f3-b750-850e38b630b5
+2025-09-14T13:20:07.581496102Z Routing Destination:e13527c45075.tr50948.westeurope1-a.worker.database.windows.net,11027
+

@@ -9,14 +9,28 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="manifest" href="manifest.json">
     <link href="OverblikPlus.styles.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
 </head>
 <body>
 <div id="app"></div>
 
-<!-- Globalt ZXing-bibliotek og QR-scanner script -->
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.6/umd/index.min.js"></script>
 <script src="js/qrScanner.js"></script>
-
+<script src="js/settings.js"></script>
+<script src="js/calendarHelper.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="_framework/blazor.webassembly.js"></script>
+
+<script>
+    function changeTheme(theme) {
+        if (theme === "dark") {
+            document.body.classList.add("dark-theme");
+        } else {
+            document.body.classList.remove("dark-theme");
+        }
+    }
+</script>
+
 </body>
 </html>

@@ -23,6 +23,6 @@ WORKDIR /app
 COPY --from=build /out .
 
 # Expose port
-ENV ASPNETCORE_URLS=https://+:443;http://+:80
-EXPOSE 80 443
+ENV ASPNETCORE_URLS=http://+:80
+EXPOSE 80
 ENTRYPOINT ["dotnet", "UserMicroService.dll"]

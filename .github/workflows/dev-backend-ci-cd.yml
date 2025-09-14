@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - Development
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   build-and-deploy:
@@ -53,6 +54,10 @@ jobs:
 
           echo "DB_CONN length: ${#DB_CONN}"
           echo "JWT_AUDIENCE: $JWT_AUDIENCE"
+          
+          # Echo connection string for debugging (mask sensitive parts)
+          DB_CONN_MASKED=$(echo "$DB_CONN" | sed 's/Password=[^;]*/Password=***MASKED***/g')
+          echo "DB_CONNECTION_STRING (masked): $DB_CONN_MASKED"
 
           echo "BLOB_CONN length: ${#BLOB_CONN}"
           echo "JWT_AUDIENCE length: ${#JWT_AUDIENCE}"

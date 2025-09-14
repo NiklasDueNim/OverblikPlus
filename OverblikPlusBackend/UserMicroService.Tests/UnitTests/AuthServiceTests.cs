@@ -23,6 +23,7 @@ public class AuthServiceTests
 {
     private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
     private readonly Mock<SignInManager<ApplicationUser>> _mockSignInManager;
+    private readonly Mock<RoleManager<IdentityRole>> _mockRoleManager;
     private readonly Mock<IConfiguration> _mockConfiguration;
     private readonly Mock<ILoggerService> _mockLogger;
     private readonly IValidator<RegisterDto> _registerValidator;
@@ -52,6 +53,15 @@ public class AuthServiceTests
             null, null, null, null
         );
 
+        var roleStore = new Mock<IRoleStore<IdentityRole>>();
+        _mockRoleManager = new Mock<RoleManager<IdentityRole>>(
+            roleStore.Object,
+            new IRoleValidator<IdentityRole>[0],
+            new Mock<ILookupNormalizer>().Object,
+            new Mock<IdentityErrorDescriber>().Object,
+            new Mock<ILogger<RoleManager<IdentityRole>>>().Object
+        );
+
         _mockConfiguration = new Mock<IConfiguration>();
         _mockConfiguration.Setup(c => c["Jwt:Key"]).Returns("MyVeryStrongSecretKeyForJWT1234567890123456789");
         _mockConfiguration.Setup(c => c["Jwt:Issuer"]).Returns("TestIssuer");
@@ -70,6 +80,7 @@ public class AuthServiceTests
         _authService = new AuthService(
             _mockUserManager.Object,
             _mockSignInManager.Object,
+            _mockRoleManager.Object,
             _mockConfiguration.Object,
             _dbContext,
             _mockLogger.Object,

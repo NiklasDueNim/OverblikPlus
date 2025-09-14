@@ -3,6 +3,7 @@
 @using Blazored.LocalStorage
 @inject NavigationManager NavigationManager
 @inject ILocalStorageService localStorage
+@inject IConfiguration Configuration
 @implements IAsyncDisposable
 <h3>Beskeder</h3>
 
@@ -32,8 +33,9 @@
     {
         messages = await localStorage.GetItemAsync<List<string>>(MessagesKey) ?? new List<string>();
 
+        var userApiBaseUrl = Configuration["USER_API_BASE_URL"];
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net/chatHub")
+            .WithUrl($"{userApiBaseUrl}/chatHub")
             .Build();
 
         hubConnection.On<string, string>("ReceiveMessage", (user, message) =>

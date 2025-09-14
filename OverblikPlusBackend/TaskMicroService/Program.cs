@@ -23,7 +23,7 @@ namespace TaskMicroService;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
@@ -195,12 +195,48 @@ public class Program
 
         try
         {
-            logger.LogInfo($"[TaskMicroService] Starting application in {environment} mode.");
-            app.Run();
+            // Auto-migrate database in Development and Production mode
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+                
+                // Log connection string for debugging
+                var connectionString = context.Database.GetConnectionString();
+                logger.LogInfo($"[TaskMicroService] Database connection string: {connectionString}");
+                
+                // Also log environment variables
+                var envConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+                logger.LogInfo($"[TaskMicroService] Environment ConnectionStrings__DefaultConnection: {envConnectionString}");
+                
+                try
+                {
+                    await context.Database.MigrateAsync();
+                    logger.LogInfo("[TaskMicroService] Database migrations completed successfully.");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError($"Migration failed: {ex.Message}", ex);
+                    // Try to ensure database is created if migration fails
+                    try
+                    {
+                        await context.Database.EnsureCreatedAsync();
+                        logger.LogInfo("[TaskMicroService] Database ensured created.");
+                    }
+                    catch (Exception ensureEx)
+                    {
+                        logger.LogError($"EnsureCreated failed: {ensureEx.Message}", ensureEx);
+                        // Continue anyway - app should still start
+                        logger.LogInfo("[TaskMicroService] Continuing despite database setup failure.");
+                    }
+                }
+            }
         }
         catch (Exception ex)
         {
-            logger.LogError("Application start-up failed", ex);
+            logger.LogError("Database setup failed", ex);
         }
+        
+        logger.LogInfo($"[TaskMicroService] Starting application in {environment} mode.");
+        await app.RunAsync();
     }
-}
+}// Backend workflow test trigger

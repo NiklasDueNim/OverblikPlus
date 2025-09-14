@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>1f4b49a8-5054-4cdb-b349-e721da25a7aa</id>
+  <author>N/A</author>
+  <deployer>GITHUB_ZIP_DEPLOY</deployer>
+  <authorEmail>N/A</authorEmail>
+  <message>{"type":"deployment","sha":"4be8b061c75ea1dca0cc995f4913567a121764e1","repoName":"NiklasDueNim/OverblikPlus","actor":"NiklasNim","slotName":"production","commitMessage":"Trigger backend deployment workflow"}</message>
+  <progress></progress>
+  <status>Success</status>
+  <statusText></statusText>
+  <lastSuccessEndTime>2025-09-14T04:09:35.4494085Z</lastSuccessEndTime>
+  <receivedTime>2025-09-14T04:09:19.6018858Z</receivedTime>
+  <startTime>2025-09-14T04:09:21.0492157Z</startTime>
+  <endTime>2025-09-14T04:09:35.4494085Z</endTime>
+  <complete>True</complete>
+  <is_temp>False</is_temp>
+  <is_readonly>True</is_readonly>
+  <buildSummary />
+</deployment>

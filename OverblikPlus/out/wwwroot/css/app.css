@@ -1,132 +1,117 @@
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-h1:focus {
-    outline: none;
-}
-
-/* Updating link and button-link colors for better consistency with the new color scheme */
-a, .btn-link {
-    color: #4a5568; /* Changed to a dark gray-blue for a professional look */
-}
-
-/* Adjusting primary button colors to fit with the new color scheme */
-.btn-primary {
-    color: #fff;
-    background-color: #4a5568; /* Dark gray-blue */
-    border-color: #2d3748; /* A darker shade of gray-blue for the border */
-}
-
-/* Focus styles for interactive elements */
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem rgba(255, 255, 255, 0.5), 0 0 0 0.2rem rgba(74, 85, 104, 0.5);
-}
-
-.content {
-    padding-top: 1.1rem;
-}
-
-/* Styles for form validation states */
-.valid.modified:not([type=checkbox]) {
-    outline: 1px solid #48bb78; /* Softer green for validation outline */
-}
-
-.invalid {
-    outline: 1px solid #e53e3e; /* Soft red for error outline */
-}
-
-.validation-message {
-    color: #e53e3e; /* Matching the error outline color */
-}
-
-/* Error UI enhancements */
-#blazor-error-ui {
-    background: #fed7d7; /* Lighter red background for error messages */
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+/* Desktop Sidebar */
+.desktop-menu-bar {
     position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 250px;
+    background-color: #f8f9fa;
+    box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    z-index: 1000;
+    display: block;
+}
+
+.desktop-menu-bar h2 {
+    color: #0071c1;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.desktop-menu-bar a {
+    display: flex;
+    align-items: center;
+    color: #0071c1;
+    text-decoration: none;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.desktop-menu-bar a:hover {
+    color: #0056a1;
+}
+
+.desktop-menu-bar .icon {
+    margin-right: 0.5rem;
+    font-size: 1.25rem;
+}
+
+/* Mobile Bottom Navigation */
+.mobile-menu-bar {
+    position: fixed;
+    bottom: 0;
     width: 100%;
+    background-color: #f8f9fa;
+    box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+    display: none; /* Skjul som standard */
+    justify-content: space-around;
+    padding: 0.5rem 0;
     z-index: 1000;
 }
 
-#blazor-error-ui .dismiss {
-    cursor: pointer;
-    position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
-}
-
-/* Progress bar during loading */
-.loading-progress {
-    position: relative;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    margin: 20vh auto 1rem auto;
-}
-
-.loading-progress circle {
-    fill: none;
-    stroke: #cbd5e0; /* Lighter gray for loading circle */
-    stroke-width: 0.6rem;
-    transform-origin: 50% 50%;
-    transform: rotate(-90deg);
-}
-
-/*.loading-progress circle:last-child {*/
-/*    stroke: #4a5568; !* Dark gray-blue for loading progress completion *!*/
-/*    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;*/
-/*    transition: stroke-dasharray 0.05s ease-in-out;*/
-/*}*/
-
-.loading-progress-text {
-    position: absolute;
+.mobile-menu-bar a {
     text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    flex-grow: 1;
+    color: #0071c1;
+    text-decoration: none;
 }
 
-/*.loading-progress-text:after {*/
-/*    content: var(--blazor-load-percentage-text, "Loading");*/
-/*}*/
-
-/* Task item and form styles adjustment */
-.task-item img {
-    width: 100%; /* Responsive width for images */
-    height: auto;
-    margin-right: 15px;
+.mobile-menu-bar a:hover {
+    color: #0056a1;
 }
 
-@media (min-width: 768px) {
-    .task-item img {
-        width: 120px; /* Fixed width on larger screens */
+.mobile-menu-bar a .icon {
+    display: block;
+    font-size: 1.5rem;
+}
+
+.mobile-menu-bar a .label {
+    font-size: 0.75rem;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+    margin-left: 250px;
+    padding: 2rem;
+    background-color: #ffffff;
+    min-height: 100vh;
+    color: #343a40;
+    transition: margin-left 0.3s ease;
+}
+
+/* Responsivt layout */
+@media (max-width: 768px) {
+    .desktop-menu-bar {
+        display: none;
+    }
+
+    .mobile-menu-bar {
+        display: flex;
+    }
+
+    .content-wrapper {
+        margin-left: 0;
+        padding: 1rem;
     }
 }
 
-.user-form {
-    max-width: 400px;
-    margin: 2rem auto;
-    padding: 20px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.fixed-size-image {
+    width: 100px; /* Set the desired width */
+    height: 100px; /* Set the desired height */
+    object-fit: cover; /* Ensure the image covers the area without distortion */
 }
 
-.user-form .form-control:focus {
-    border-color: #4a5568; /* Updated focus border color */
-    box-shadow: 0 0 0 0.2rem rgba(74, 85, 104, 0.25);
+/* Add this to your app.css file */
+.task-name {
+    max-width: 200px; /* Set the desired maximum width */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1rem; /* Match the font size of task steps */
 }
 
-.user-form button {
-    background-color: #4a5568; /* Consistent button background color */
-    color: white;
-}
-
-.user-form button:hover {
-    background-color: #2d3748; /* Darker gray-blue for hover state */
+@media (max-width: 768px) {
+    .task-name {
+        font-size: 1rem; /* Keep the same font size for smaller screens */
+    }
 }

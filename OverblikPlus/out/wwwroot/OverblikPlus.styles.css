@@ -21,13 +21,14 @@ main[b-asy42olhbk] {
     position: sticky;
     top: 0;
     background-image: linear-gradient(180deg, #f0f0f0 0%, #cccccc 100%);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Top row styling */
 .top-row[b-asy42olhbk] {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between; /* Align elements to opposite ends */
     background-color: #f8f9fa;
     border-bottom: 1px solid #e0e0e0;
     height: 3.5rem;
@@ -38,37 +39,49 @@ main[b-asy42olhbk] {
     padding-right: 1.5rem;
 }
 
-/* Style adjustments for top row links and buttons */
-/*.top-row ::deep a,*/
-/*.top-row ::deep .btn-link {*/
-/*    white-space: nowrap;*/
-/*    margin-left: 1.5rem;*/
-/*    text-decoration: none;*/
-/*}*/
+/* Dropdown styling for the user menu */
+.dropdown-menu[b-asy42olhbk] {
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 16px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
 
-.top-row[b-asy42olhbk]  a,
+.dropdown-item[b-asy42olhbk] {
+    padding: 8px 15px;
+    transition: background-color 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-item i[b-asy42olhbk] {
+    margin-right: 8px; /* Add spacing between icons and text */
+}
+
+.dropdown-item:hover[b-asy42olhbk] {
+    background-color: #f1f3f5;
+    color: #212529;
+}
+
+.text-danger[b-asy42olhbk] {
+    color: #dc3545;
+}
+
+.dropdown-divider[b-asy42olhbk] {
+    margin: 0.5rem 0;
+}
+
+/* Adjust top row button spacing */
 .top-row[b-asy42olhbk]  .btn-link {
     color: #333; /* Darker color for better readability */
     padding: 10px; /* Easier to click with more padding */
 }
 
-/*.top-row ::deep a:hover,*/
-/*.top-row ::deep .btn-link:hover {*/
-/*    text-decoration: underline;*/
-/*}*/
-
-.top-row[b-asy42olhbk]  a:focus,
-.top-row[b-asy42olhbk]  .btn-link:focus {
+/* Highlight dropdown toggle on focus */
+.dropdown-toggle:focus[b-asy42olhbk] {
     background-color: #dee2e6; /* Light background on focus for visibility */
     outline: none; /* Removing default outline */
     box-shadow: 0 0 0 3px rgba(33, 37, 41, 0.25); /* Custom focus style */
-}
-
-.top-row[b-asy42olhbk]  a:first-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 1; /* Ensure the first link can grow to use available space */
-    text-align: right;
 }
 
 /* Responsive adjustments */
@@ -80,6 +93,10 @@ main[b-asy42olhbk] {
     .top-row[b-asy42olhbk] {
         padding-left: 1rem;
         padding-right: 1rem; /* Less padding on smaller screens */
+    }
+
+    .dropdown-menu[b-asy42olhbk] {
+        font-size: 14px; /* Adjust dropdown font size for medium devices */
     }
 }
 
@@ -93,8 +110,11 @@ main[b-asy42olhbk] {
     .page[b-asy42olhbk] {
         flex-direction: column; /* Stack vertically on small screens */
     }
-}
 
+    .dropdown-menu[b-asy42olhbk] {
+        font-size: 14px;
+    }
+}
 /* /Layout/NavMenu.razor.rz.scp.css */
 /* Styling for navbar toggler, especially on smaller screens */
 .navbar-toggler[b-s6xfg7uek8] {
@@ -151,6 +171,60 @@ main[b-asy42olhbk] {
     color: #f7fafc; /* Keeps the text visible against the lighter background */
 }
 
+.nav-link i[b-s6xfg7uek8] {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* calendar.css */
+/*.calendar-grid {*/
+/*    display: grid;*/
+/*    grid-template-columns: repeat(7, 1fr);*/
+/*    gap: 5px;*/
+/*}*/
+
+/*.calendar-header {*/
+/*    display: contents;*/
+/*}*/
+
+/*.calendar-cell {*/
+/*    border: 1px solid #ddd;*/
+/*    padding: 10px;*/
+/*    border-radius: 4px;*/
+/*    min-height: 100px;*/
+/*    background-color: #f9f9f9;*/
+/*    text-align: center;*/
+/*    vertical-align: top;*/
+/*}*/
+
+/*.calendar-cell.today {*/
+/*    background-color: #e3f2fd;*/
+/*    border: 2px solid #2196f3;*/
+/*}*/
+
+/*.header-cell {*/
+/*    font-weight: bold;*/
+/*    text-align: center;*/
+/*    background-color: #f0f0f0;*/
+/*    padding: 10px;*/
+/*    border-bottom: 2px solid #ddd;*/
+/*}*/
+
+/*.task-list {*/
+/*    list-style: none;*/
+/*    padding: 0;*/
+/*    margin: 5px 0 0 0;*/
+/*}*/
+
+/*.task-item {*/
+/*    font-size: 12px;*/
+/*    white-space: nowrap;*/
+/*    overflow: hidden;*/
+/*    text-overflow: ellipsis;*/
+/*}*/
+
+
+
 /* Responsive behavior */
 @media (min-width: 641px) {
     .navbar-toggler[b-s6xfg7uek8] {
@@ -164,5 +238,275 @@ main[b-asy42olhbk] {
     .nav-scrollable[b-s6xfg7uek8] {
         height: calc(100vh - 3.5rem); /* Full height minus top row */
         overflow-y: auto; /* Enable scrolling for overflow content */
+    }
+}
+/* /Pages/Calendar.razor.rz.scp.css */
+/* Kalender-grid. 
+   Bemærk: For “dagvisning” bruger vi klassen .single-day (grid-template-columns: 1fr). 
+   For uge-/måned-visning sættes den tilbage til 7 kolonner. */
+.calendar-grid[b-9lsnwfjqvb] {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* default 7 kolonner */
+    grid-auto-rows: minmax(80px, auto);
+    gap: 1px;
+    background-color: #e6e6e6;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.calendar-grid.single-day[b-9lsnwfjqvb] {
+    grid-template-columns: repeat(1, 1fr); /* dag-visning: 1 kolonne */
+}
+
+/* Header for ugedage */
+.calendar-header[b-9lsnwfjqvb] {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    padding: 10px 0;
+    font-weight: bold;
+    color: white;
+    background-color: #0962a6;
+}
+
+/* Kalendercelle */
+.calendar-cell[b-9lsnwfjqvb] {
+    background-color: white;
+    padding: 5px;
+    border: 1px solid #ddd;
+    font-size: 12px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.calendar-cell:hover[b-9lsnwfjqvb] {
+    background-color: #f5f5f5;
+}
+
+.calendar-cell.today[b-9lsnwfjqvb] {
+    background-color: #e3f2fd;
+    border: 2px solid #42a5f5;
+}
+
+/* Leading days (grå celler) - tomme celler fra forrige måned i månedsvisning */
+.leading-day[b-9lsnwfjqvb] {
+    background-color: #f0f0f0;
+    pointer-events: none;
+}
+
+/* Dato-nummer i hjørnet */
+.date-number[b-9lsnwfjqvb] {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+/* Lister til tasks og events */
+.task-list[b-9lsnwfjqvb], .event-list[b-9lsnwfjqvb] {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+/* Farvekodning for tasks */
+.task-item[b-9lsnwfjqvb] {
+    font-size: 12px;
+    color: white;
+    background-color: #ff7043; /* Orange */
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin-bottom: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Farvekodning for events */
+.event-item[b-9lsnwfjqvb] {
+    font-size: 12px;
+    color: white;
+    background-color: #7e57c2; /* Lilla */
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin-bottom: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Modal-backdrop + modal-dialog = overlay */
+.modal-backdrop[b-9lsnwfjqvb] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-dialog[b-9lsnwfjqvb] {
+    background: white;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content[b-9lsnwfjqvb] {
+    position: relative;
+    padding: 20px;
+}
+
+.modal-header[b-9lsnwfjqvb], .modal-footer[b-9lsnwfjqvb] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.modal-title[b-9lsnwfjqvb] {
+    margin: 0;
+}
+
+.btn-close[b-9lsnwfjqvb] {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* Responsivt design */
+@media (max-width: 768px) {
+    .calendar-grid[b-9lsnwfjqvb] {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .calendar-header[b-9lsnwfjqvb] {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .modal-dialog[b-9lsnwfjqvb] {
+        width: 90%;
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-grid[b-9lsnwfjqvb] {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .calendar-header[b-9lsnwfjqvb] {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .calendar-cell[b-9lsnwfjqvb] {
+        font-size: 9px;
+    }
+    .modal-dialog[b-9lsnwfjqvb] {
+        width: 100%;
+        margin: 10px;
+    }
+}
+/* /Pages/LoginPage.razor.rz.scp.css */
+
+.login-container[b-wuitjeir5o] {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    text-align: center;
+}
+
+h3[b-wuitjeir5o] {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #4a5568;
+    margin-bottom: 1rem;
+}
+
+input[b-wuitjeir5o] {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 0.5rem auto;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    background-color: #f7fafc;
+}
+
+input:focus[b-wuitjeir5o] {
+    outline: none;
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+}
+
+button[b-wuitjeir5o] {
+    display: block;
+    margin: 1rem auto;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+button.btn-primary[b-wuitjeir5o] {
+    background-color: #4a5568;
+    color: #fff;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+button.btn-primary:hover[b-wuitjeir5o] {
+    background-color: #2d3748;
+}
+
+button.btn-secondary[b-wuitjeir5o] {
+    background-color: #e2e8f0;
+    color: #4a5568;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+button.btn-secondary:hover[b-wuitjeir5o] {
+    background-color: #cbd5e0;
+}
+
+
+
+button[disabled][b-wuitjeir5o] {
+    opacity: 0.6; /* Dim button */
+    cursor: not-allowed; /* Show 'not-allowed' cursor */
+}
+
+button[disabled] span[b-wuitjeir5o] {
+    position: relative;
+    padding-left: 2rem; /* Space for spinner */
+}
+
+button[disabled] span[b-wuitjeir5o]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #f3f3f3; /* Light gray */
+    border-top: 2px solid #4a5568; /* Matching theme color */
+    border-radius: 50%;
+    animation: spin-b-wuitjeir5o 1s linear infinite;
+    transform: translateY(-50%);
+}
+
+@keyframes spin-b-wuitjeir5o {
+    0% {
+        transform: translateY(-50%) rotate(0deg);
+    }
+    100% {
+        transform: translateY(-50%) rotate(360deg);
     }
 }

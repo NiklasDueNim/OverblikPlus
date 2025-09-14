@@ -1,0 +1,6 @@
+<step title="Incoming Request" date="2025-09-14T10:39:12.148" instance="d7204e" url="/logstream" method="GET" type="request" pid="831,1,84" Host="overblikplus-user-api-dev.scm.azurewebsites.net" User-Agent="AZURECLI/2.65.0 (HOMEBREW)" Accept-Encoding="identity" Authorization="Bas..." x-ms-client-request-id="09ff2394-9157-11f0-b8f8-42e6c6ba33d0" X-ARR-LOG-ID="09ff2394-9157-11f0-b8f8-42e6c6ba33d0" CLIENT-IP="62.107.245.19:58581" X-SITE-DEPLOYMENT-ID="overblikplus-user-api-dev" WAS-DEFAULT-HOSTNAME="overblikplus-user-api-dev.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/logstream" X-Client-IP="62.107.245.19" X-Client-Port="58581" >
+  <step title="Cleanup Xml Logs" date="2025-09-14T10:39:12.186" /><!-- duration: 25ms -->
+  <step title="LogStreamHandlerMiddleware.Invoke" date="2025-09-14T10:39:12.295" /><!-- duration: 578ms -->
+  <step title="Error occurred" date="2025-09-14T10:42:12.857" type="error" text="LogStreamManager: ProcessRequest end" /><!-- duration: 22ms -->
+  <step title="Outgoing response" date="2025-09-14T10:42:13.091" type="response" statusCode="200" statusText="OK" /><!-- duration: 29ms -->
+</step><!-- duration: 180993ms -->
