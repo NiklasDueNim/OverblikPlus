@@ -196,3 +196,4 @@ public class Program
 // Trigger Azure deployment with build settings
 // Fix deployment - disable remote build
 // Test Docker workflow deployment
+// Trigger workflow manually
