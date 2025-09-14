@@ -1,0 +1,15 @@
+<step title="Incoming Request" date="2025-09-14T11:01:51.727" instance="d7204e" url="/api/zipdeploy?isAsync=true&amp;deployer=GITHUB_ZIP_DEPLOY&amp;message=%7B%22type%22%3A%22deployment%22%2C%22sha%22%3A%22ac10d6e7f98da9e312e0a13c16a2b10dc5139623%22%2C%22repoName%22%3A%22NiklasDueNim%2FOverblikPlus%22%2C%22actor%22%3A%22NiklasNim%22%2C%22slotName%22%3A%22production%22%2C%22commitMessage%22%3A%22Trigger%20Azure%20deployment%20with%20SCM%20build%20settings%22%7D" method="POST" type="request" pid="827,1,20" Host="overblikplus-task-api-dev.scm.azurewebsites.net" User-Agent="GITHUBACTIONS_DeployWebAppToAzure_735aa2ce1ff57fafac1e187d985dca0f627900a41e77b4185a35f46dfdf966a0" Authorization="Bas..." Content-Type="application/octet-stream" Cookie="ARRAffinity=d7204e58bc6440e2561834b1cfb61b8955e435b21d3a048a8eefc7ef39a69118;Path=/;HttpOnly;Secure;Domain=overblikplus-task-api-dev.scm.azurewebsites.net; ARRAffinitySameSite=d7204e58bc6440e2561834b1cfb61b8955e435b21d3a048a8eefc7ef39a69118;Path=/;HttpOnly;SameSite=None;Secure;Domain=overblikplus-task-api-dev.scm.azurewebsites.net" Transfer-Encoding="chunked" X-ARR-LOG-ID="2d75f205-6a8d-4089-b003-b43bd4f5f706" CLIENT-IP="20.98.18.65:30728" X-SITE-DEPLOYMENT-ID="overblikplus-task-api-dev" WAS-DEFAULT-HOSTNAME="overblikplus-task-api-dev.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/api/zipdeploy?isAsync=true&amp;deployer=GITHUB_ZIP_DEPLOY&amp;message=%7B%22type%22%3A%22deployment%22%2C%22sha%22%3A%22ac10d6e7f98da9e312e0a13c16a2b10dc5139623%22%2C%22repoName%22%3A%22NiklasDueNim%2FOverblikPlus%22%2C%22actor%22%3A%22NiklasNim%22%2C%22slotName%22%3A%22production%22%2C%22commitMessage%22%3A%22Trigger%20Azure%20deployment%20with%20SCM%20build%20settings%22%7D" X-Client-IP="20.98.18.65" X-Client-Port="30728" >
+  <step title="Cleanup Xml Logs" date="2025-09-14T11:01:51.817" /><!-- duration: 42ms -->
+  <step title="ZipPushDeploy" date="2025-09-14T11:01:52.319" >
+    <step title="ZipDeploy. Extract zip." date="2025-09-14T11:01:52.371" /><!-- duration: 30ms -->
+    <step title="Starting PushDeployAsync" date="2025-09-14T11:01:52.442" /><!-- duration: 20ms -->
+    <step title="Writing artifact to /tmp/zipdeploy/7f61eab0-68ec-4f02-9861-b45d7e5a67ed.zip" date="2025-09-14T11:01:52.513" >
+      <step title="Writing multipart request body to /tmp/zipdeploy/7f61eab0-68ec-4f02-9861-b45d7e5a67ed.zip" date="2025-09-14T11:01:52.623" /><!-- duration: 120ms -->
+    </step><!-- duration: 6559ms -->
+    <step title="Start deployment in the background" date="2025-09-14T11:01:59.253" >
+      <step title="Acquiring Deployment Lock" date="2025-09-14T11:02:00.600" /><!-- duration: 150ms -->
+      <step title="Acquired Deployment Lock" date="2025-09-14T11:02:01.262" /><!-- duration: 283ms -->
+    </step><!-- duration: 5842ms -->
+  </step><!-- duration: 13792ms -->
+  <step title="Outgoing response" date="2025-09-14T11:02:06.826" type="response" statusCode="202" statusText="Accepted" /><!-- duration: 280ms -->
+</step><!-- duration: 15702ms -->
