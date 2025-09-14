@@ -169,23 +169,26 @@ public class Program
 
         app.MapControllers();
 
+        // Auto-migrate database in Development and Production mode
         try
         {
-            // Auto-migrate database in Development and Production mode
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                var conn = context.Database.GetDbConnection();
+                logger.LogInfo($"DB target: {conn.DataSource}/{conn.Database}");
                 await context.Database.MigrateAsync();
                 logger.LogInfo("[UserMicroService] Database migrations completed successfully.");
             }
-            
-            logger.LogInfo($"[UserMicroService] Starting in {app.Environment.EnvironmentName} mode.");
-            await app.RunAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError("Application start-up failed", ex);
+            logger.LogError($"DB migration failed at startup - continuing without migration: {ex.Message}", ex);
+            // Don't throw - let the app start so we can hit /health and see logs
         }
+        
+        logger.LogInfo($"[UserMicroService] Starting in {app.Environment.EnvironmentName} mode.");
+        await app.RunAsync();
     }
 }
 // Test backend workflow

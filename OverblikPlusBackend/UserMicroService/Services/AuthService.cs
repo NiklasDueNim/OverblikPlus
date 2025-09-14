@@ -87,18 +87,25 @@ namespace UserMicroService.Services
 
         public async Task<Result> RegisterAsync(RegisterDto registerDto)
         {
+            _logger.LogInfo($"Starting user registration for email: {registerDto?.Email}");
+            
             if (registerDto == null)
             {
                 _logger.LogError("RegisterDto is null.", new ArgumentNullException(nameof(registerDto)));
                 return Result.ErrorResult("Invalid registration data.");
             }
 
+            _logger.LogInfo($"Validating registration data for: {registerDto.Email}, Role: {registerDto.Role}");
+
             var validationResult = await _registerDtoValidator.ValidateAsync(registerDto);
             if (!validationResult.IsValid)
             {
-                _logger.LogWarning("Registration validation failed.");
-                return Result.ErrorResult("Validation failed.");
+                var validationErrors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                _logger.LogWarning($"Registration validation failed: {validationErrors}");
+                return Result.ErrorResult($"Validation failed: {validationErrors}");
             }
+
+            _logger.LogInfo($"Validation passed for: {registerDto.Email}");
 
             var user = new ApplicationUser
             {
@@ -107,41 +114,51 @@ namespace UserMicroService.Services
                 Email = registerDto.Email,
                 UserName = registerDto.Email,
                 Role = registerDto.Role,
-                BostedId = registerDto.BostedId
+                BostedId = 1 // Default BostedId for all users
             };
 
             try
             {
+                _logger.LogInfo($"Creating user in database for: {registerDto.Email}");
                 var createResult = await _userManager.CreateAsync(user, registerDto.Password);
                 if (!createResult.Succeeded)
                 {
                     var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
-                    _logger.LogError("User creation failed: {Errors}", new Exception(errors));
+                    _logger.LogError($"User creation failed for {registerDto.Email}: {errors}", new Exception(errors));
                     return Result.ErrorResult(errors);
                 }
 
+                _logger.LogInfo($"User created successfully for: {registerDto.Email}");
+
                 // Create role if it doesn't exist
+                _logger.LogInfo($"Checking if role exists: {registerDto.Role}");
                 if (!await _roleManager.RoleExistsAsync(registerDto.Role))
                 {
+                    _logger.LogInfo($"Creating role: {registerDto.Role}");
                     await _roleManager.CreateAsync(new IdentityRole(registerDto.Role));
                     _logger.LogInfo($"Created role: {registerDto.Role}");
                 }
+                else
+                {
+                    _logger.LogInfo($"Role already exists: {registerDto.Role}");
+                }
 
+                _logger.LogInfo($"Assigning role {registerDto.Role} to user {registerDto.Email}");
                 var roleResult = await _userManager.AddToRoleAsync(user, registerDto.Role);
                 if (!roleResult.Succeeded)
                 {
                     var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
-                    _logger.LogError("Failed to assign role to user: {Errors}", new Exception(errors));
+                    _logger.LogError($"Failed to assign role {registerDto.Role} to user {registerDto.Email}: {errors}", new Exception(errors));
                     return Result.ErrorResult(errors);
                 }
 
-                _logger.LogInfo($"User {registerDto.Email} registered successfully.");
+                _logger.LogInfo($"Role assigned successfully. User {registerDto.Email} registered successfully.");
                 return Result.SuccessResult();
             }
             catch (Exception ex)
             {
-                _logger.LogError("An error occurred during registration. Exception: {Exception}", ex);
-                return Result.ErrorResult("An error occurred during registration.");
+                _logger.LogError($"An error occurred during registration for {registerDto.Email}. Exception: {ex.Message}", ex);
+                return Result.ErrorResult($"An error occurred during registration: {ex.Message}");
             }
         }
 
