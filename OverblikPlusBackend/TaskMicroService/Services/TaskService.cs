@@ -58,9 +58,6 @@ namespace TaskMicroService.Services
                 .Where(t => t.UserId == userId)
                 .ToListAsync();
 
-            if (!tasks.Any())
-                return Result<IEnumerable<ReadTaskDto>>.ErrorResult($"No tasks found for user {userId}.");
-
             var taskDtos = _mapper.Map<List<ReadTaskDto>>(tasks);
             return Result<IEnumerable<ReadTaskDto>>.SuccessResult(taskDtos);
         }

@@ -1,11 +1,12 @@
 name: DEV - Backend CI/CD
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'OverblikPlusBackend/**'
+  # DISABLED - manually managing deployment
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'OverblikPlusBackend/**'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
