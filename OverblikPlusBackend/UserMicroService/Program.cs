@@ -193,3 +193,4 @@ public class Program
 // Trigger backend deployment test
 // Trigger backend redeployment with database config
 // Trigger redeployment with storage settings
+// Trigger Azure deployment with build settings
