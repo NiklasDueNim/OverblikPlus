@@ -1,77 +1,95 @@
-name: Deploy Backend APIs
+name: DEV - Backend CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
     paths:
       - 'OverblikPlusBackend/**'
-  workflow_dispatch:
-
-env:
-  AZURE_WEBAPP_NAME_USER: overblikplus-user-api-dev
-  AZURE_WEBAPP_NAME_TASK: overblikplus-task-api-dev
-  DOTNET_VERSION: '8.0.x'
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
-  build-and-deploy-user-api:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    name: Build and Deploy User API
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-        
-    - name: Build UserMicroService
-      run: |
-        cd OverblikPlusBackend/UserMicroService
-        dotnet restore
-        dotnet build --configuration Release --no-restore
-        
-    - name: Publish UserMicroService
-      run: |
-        cd OverblikPlusBackend/UserMicroService
-        dotnet publish --configuration Release --output ./publish
-        
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME_USER }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_USER }}
-        package: ./OverblikPlusBackend/UserMicroService/publish
+    strategy:
+      matrix:
+        # Bygger og deployer både user-api og task-api
+        service: [user-api, task-api]
 
-  build-and-deploy-task-api:
-    runs-on: ubuntu-latest
-    name: Build and Deploy Task API
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      # 1. Tjekker koden ud
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Sætter .NET SDK op
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # 3. Azure Login (via secrets.AZURE_CREDENTIALS)
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # 4. Tjek login
+      - name: Azure Login Check
+        run: |
+          az account show
       
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-        
-    - name: Build TaskMicroService
-      run: |
-        cd OverblikPlusBackend/TaskMicroService
-        dotnet restore
-        dotnet build --configuration Release --no-restore
-        
-    - name: Publish TaskMicroService
-      run: |
-        cd OverblikPlusBackend/TaskMicroService
-        dotnet publish --configuration Release --output ./publish
-        
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME_TASK }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_TASK }}
-        package: ./OverblikPlusBackend/TaskMicroService/publish
-        scm-type: git
+      # 5. Gendanner afhængigheder
+      - name: Restore dependencies
+        run: |
+          for csproj in $(find . -name '*.csproj'); do
+            dotnet restore "$csproj"
+          done
+
+      # 6. Bygger projekterne (Release)
+      - name: Build projects
+        run: |
+          for csproj in $(find . -name '*.csproj'); do
+            dotnet build "$csproj" --configuration Release --no-restore
+          done
+
+      # 7. Kører tests (ekskl. evt. frontend-tests)
+      - name: Run tests
+        run: |
+          for csproj in $(find . -name '*.Tests.csproj' ! -name '*OverblikPlus.Frontend.Tests*'); do
+            dotnet test "$csproj" --no-restore --verbosity normal
+          done
+
+      # 8. Login til Azure Container Registry (ACR)
+      - name: Login to Azure Container Registry
+        run: |
+          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+      # 9. Bygger Docker-billedet
+      - name: Build Docker image
+        run: |
+          docker build --platform linux/amd64 \
+            -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest \
+            -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService/Dockerfile' || 'TaskMicroService/Dockerfile' }} \
+            --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
+            OverblikPlusBackend
+
+      # 10. Pusher Docker-billedet til ACR
+      - name: Push Docker image to ACR
+        run: |
+          docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest
+
+      # 11. Opdater Azure App Service til det nyeste Docker-image
+      - name: Update Azure App Service
+        run: |
+          az webapp config container set \
+            --name overblikplus-${{ matrix.service }}-dev \
+            --resource-group overblikplus-dev-rg \
+            --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest \
+            --container-registry-url https://${{ secrets.ACR_REGISTRY }}
+
+      # 12. Genstart Azure App Service så ny config slår igennem
+      - name: Restart Azure App Service
+        run: |
+          az webapp restart \
+            --name overblikplus-${{ matrix.service }}-dev \
+            --resource-group overblikplus-dev-rg
