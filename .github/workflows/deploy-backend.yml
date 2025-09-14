@@ -1,0 +1,76 @@
+name: Deploy Backend APIs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'OverblikPlusBackend/**'
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME_USER: overblikplus-user-api-dev
+  AZURE_WEBAPP_NAME_TASK: overblikplus-task-api-dev
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  build-and-deploy-user-api:
+    runs-on: ubuntu-latest
+    name: Build and Deploy User API
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Build UserMicroService
+      run: |
+        cd OverblikPlusBackend/UserMicroService
+        dotnet restore
+        dotnet build --configuration Release --no-restore
+        
+    - name: Publish UserMicroService
+      run: |
+        cd OverblikPlusBackend/UserMicroService
+        dotnet publish --configuration Release --output ./publish
+        
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME_USER }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_USER }}
+        package: ./OverblikPlusBackend/UserMicroService/publish
+
+  build-and-deploy-task-api:
+    runs-on: ubuntu-latest
+    name: Build and Deploy Task API
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Build TaskMicroService
+      run: |
+        cd OverblikPlusBackend/TaskMicroService
+        dotnet restore
+        dotnet build --configuration Release --no-restore
+        
+    - name: Publish TaskMicroService
+      run: |
+        cd OverblikPlusBackend/TaskMicroService
+        dotnet publish --configuration Release --output ./publish
+        
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME_TASK }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_TASK }}
+        package: ./OverblikPlusBackend/TaskMicroService/publish
