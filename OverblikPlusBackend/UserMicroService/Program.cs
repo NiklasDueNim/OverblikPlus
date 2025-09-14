@@ -195,3 +195,4 @@ public class Program
 // Trigger redeployment with storage settings
 // Trigger Azure deployment with build settings
 // Fix deployment - disable remote build
+// Test Docker workflow deployment
