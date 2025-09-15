@@ -2,135 +2,133 @@ name: DEV - Backend CI/CD
 
 on:
   push:
-    branches:
-      - Development
+    branches: [Development]
   pull_request:
-    branches:
-      - Development
-  workflow_dispatch: # Allow manual trigger
+    branches: [Development]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: dev               # <- henter secrets fra Environment "dev"
     strategy:
       matrix:
-        # Bygger og deployer både user-api og task-api
         service: [user-api, task-api]
 
     steps:
-      # 1. Tjekker koden ud
+      # 1) Kode + .NET
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Sætter .NET SDK op
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      # 3. Azure Login (via secrets.AZURE_CREDENTIALS)
+      # 2) Azure login
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # 4. Tjek login
       - name: Azure Login Check
+        run: az account show -o table
+
+      # 3) Build & Test (uden at røre secrets i filer)
+      - name: Restore
         run: |
-          az account show
-      
+          find . -name '*.csproj' -print0 | xargs -0 -I {} dotnet restore {}
 
-     # 5. Overskriv placeholders
-      - name: Replace config placeholders (Dev)
+      - name: Build
         run: |
-          echo "Updating TaskMicroService configuration..."
-          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING_DEV }}" | tr -d '\n')
-          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" | tr -d '\n')
-          JWT_KEY=$(echo "${{ secrets.JWT_KEY_DEV }}" | tr -d '\n')
-          JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_DEV }}" | tr -d '\n')
-          JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE_DEV }}" | tr -d '\n')
-          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL_DEV }}" | tr -d '\n')
-          ENC_KEY=$(echo "${{ secrets.ENCRYPTION_KEY }}" | tr -d '\n')
+          find . -name '*.csproj' -print0 | xargs -0 -I {} dotnet build {} -c Release --no-restore
 
-          echo "DB_CONN length: ${#DB_CONN}"
-          echo "JWT_AUDIENCE: $JWT_AUDIENCE"
-          
-          # Echo connection string for debugging (mask sensitive parts)
-          DB_CONN_MASKED=$(echo "$DB_CONN" | sed 's/Password=[^;]*/Password=***MASKED***/g')
-          echo "DB_CONNECTION_STRING (masked): $DB_CONN_MASKED"
-
-          echo "BLOB_CONN length: ${#BLOB_CONN}"
-          echo "JWT_AUDIENCE length: ${#JWT_AUDIENCE}"
-
-          sed -i "s/\"dev-or-prod\"/\"dev\"/g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i "s#BlobStorageConnectionStringPlaceholder#$BLOB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i "s#BlobStorageBaseUrlPlaceholder#$BLOB_URL#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
-
-          echo "Updating UserMicroService configuration..."
-          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i "s#EncryptionKeyPlaceholder#$ENC_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
-          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
-
-          echo "Configuration updated successfully."
-      
-      # 6. Gendanner afhængigheder
-      - name: Restore dependencies
-        run: |
-          for csproj in $(find . -name '*.csproj'); do
-            dotnet restore "$csproj"
-          done
-
-      # 7. Bygger projekterne (Release)
-      - name: Build projects
-        run: |
-          for csproj in $(find . -name '*.csproj'); do
-            dotnet build "$csproj" --configuration Release --no-restore
-          done
-
-      # 8. Kører tests (ekskl. evt. frontend-tests)
-      - name: Run tests
+      - name: Test
         run: |
           for csproj in $(find . -name '*.Tests.csproj' ! -name '*OverblikPlus.Frontend.Tests*'); do
             dotnet test "$csproj" --no-restore --verbosity normal
           done
 
-      # 9. Login til Azure Container Registry (ACR)
+      # 4) Byg & push image til ACR
       - name: Login to Azure Container Registry
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      # 10. Bygger Docker-billedet
       - name: Build Docker image
         run: |
+          DOCKERFILE="OverblikPlusBackend/TaskMicroService/Dockerfile"
+          if [ "${{ matrix.service }}" = "user-api" ]; then
+            DOCKERFILE="OverblikPlusBackend/UserMicroService/Dockerfile"
+          fi
+
           docker build --platform linux/amd64 \
             -t ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest \
-            -f OverblikPlusBackend/${{ matrix.service == 'user-api' && 'UserMicroService/Dockerfile' || 'TaskMicroService/Dockerfile' }} \
+            -f "$DOCKERFILE" \
             --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
             OverblikPlusBackend
 
-      # 11. Pusher Docker-billedet til ACR
-      - name: Push Docker image to ACR
-        run: |
-          docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest
+      - name: Push Docker image
+        run: docker push ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest
 
-      # 12. Opdater Azure App Service til det nyeste Docker-image
-      - name: Update Azure App Service
+      # 5) Peg Web App på image
+      - name: Point Web App to image (DEV)
         run: |
           az webapp config container set \
             --name overblikplus-${{ matrix.service }}-dev \
-            --resource-group OverblikPlus-ResourceGroup \
+            --resource-group overblikplus-dev-rg \
             --container-image-name ${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest \
             --container-registry-url https://${{ secrets.ACR_REGISTRY }}
 
-      # 13. Genstart Azure App Service så ny config slår igennem
-      - name: Restart Azure App Service
+      # 6) Connection strings (navne skal matche din kode)
+      - name: Apply connection strings (DEV)
         run: |
-          az webapp restart \
-            --name overblikplus-${{ matrix.service }}-dev \
-            --resource-group OverblikPlus-ResourceGroup
+          APP="overblikplus-${{ matrix.service }}-dev"
+          RG="overblikplus-dev-rg"
+
+          # SQL (DBConnectionString)
+          az webapp config connection-string set -g "$RG" -n "$APP" \
+            --settings DBConnectionString="${{ secrets.DB_CONNECTION_STRING }}" \
+            --connection-string-type SQLAzure
+
+          # Blob (BlobStorageConnectionString) - bemærk secret med underscore
+          az webapp config connection-string set -g "$RG" -n "$APP" \
+            --settings BlobStorageConnectionString="${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}" \
+            --connection-string-type Custom
+
+      # 7) App settings (Jwt + BLOB_BASE_URL)
+      - name: Apply app settings (DEV)
+        run: |
+          APP="overblikplus-${{ matrix.service }}-dev"
+          RG="overblikplus-dev-rg"
+
+          az webapp config appsettings set -g "$RG" -n "$APP" --settings \
+            Jwt__Key="${{ secrets.JWT_KEY }}" \
+            Jwt__Issuer="${{ secrets.JWT_ISSUER }}" \
+            Jwt__Audience="${{ secrets.JWT_AUDIENCE }}" \
+            BLOB_BASE_URL="${{ secrets.BLOB_BASE_URL }}" \
+            ASPNETCORE_ENVIRONMENT="Production"
+
+          # Kun for user-api: ENCRYPTION_KEY hvis den findes som secret
+          if [ "${{ matrix.service }}" = "user-api" ] && [ -n "${{ secrets.ENCRYPTION_KEY }}" ]; then
+            az webapp config appsettings set -g "$RG" -n "$APP" --settings ENCRYPTION_KEY="${{ secrets.ENCRYPTION_KEY }}"
+          fi
+
+      # 8) Valgfrit: slå logning til for container + vis nøgler (ikke værdier)
+      - name: Enable container logs (once)
+        run: |
+          az webapp log config -g overblikplus-dev-rg -n overblikplus-${{ matrix.service }}-dev \
+            --docker-container-logging filesystem --application-logging true --level information
+
+      - name: Show applied config (safe)
+        run: |
+          APP="overblikplus-${{ matrix.service }}-dev"
+          RG="overblikplus-dev-rg"
+          echo "App settings keys:"
+          az webapp config appsettings list -g "$RG" -n "$APP" --query "[].name"
+          echo "Connection strings (names/types):"
+          az webapp config connection-string list -g "$RG" -n "$APP" --query "[].{name:name,type:type}"
+
+      # 9) Genstart Web App
+      - name: Restart Web App (DEV)
+        run: |
+          az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group overblikplus-dev-rg
