@@ -1,14 +1,13 @@
 name: PROD - Backend CI/CD
 
 on:
-  # Disabled - using manual Azure setup instead
-  # push:
-  #   branches:
-  #     - main
-  # pull_request:
-  #   branches:
-  #     - main
-  workflow_dispatch: # Allow manual trigger
+
+   push:
+     branches:
+       - main
+   pull_request:
+     branches:
+       - main
 
 jobs:
   build-and-deploy:
