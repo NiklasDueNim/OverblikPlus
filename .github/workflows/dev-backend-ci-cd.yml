@@ -159,21 +159,21 @@ jobs:
             --docker-registry-server-user "$ACR_USERNAME" \
             --docker-registry-server-password "$ACR_PASSWORD"
 
-      - name: Enable logs (once)
+      - name: Enable container logs (Linux)
+        shell: bash
         run: |
           APP="overblikplus-${{ matrix.service }}-dev"
           RG="overblikplus-dev-rg"
-
-          # Container logs til filesystem
+      
+          # Slå kun Docker container logging til (gælder Linux containers)
           az webapp log config -g "$RG" -n "$APP" --docker-container-logging filesystem
-
-          # (Valgfrit) App-logging til filesystem (ikke altid nødvendig på Linux containers)
-          az webapp log config -g "$RG" -n "$APP" --application-logging filesystem || true
-
+      
           echo "Log settings:"
           az webapp log show -g "$RG" -n "$APP"
+      
           echo "Kudu logstream URL:"
           echo "https://$APP.scm.azurewebsites.net/api/logstream"
+
 
       - name: Show applied config (safe)
         run: |
