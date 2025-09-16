@@ -62,13 +62,13 @@ public class Program
         
         if (string.IsNullOrEmpty(dbConnectionString))
         {
-            logger.LogError("[TaskMicroService] DB Connection String is missing or empty. Available connection strings:");
+            logger.LogError("[TaskMicroService] DB Connection String is missing or empty. Available connection strings:", new InvalidOperationException("DB Connection String is missing"));
             foreach (var connStr in builder.Configuration.GetSection("ConnectionStrings").GetChildren())
             {
-                logger.LogError($"  - {connStr.Key}: {connStr.Value}");
+                logger.LogError($"  - {connStr.Key}: {connStr.Value}", new InvalidOperationException("Configuration issue"));
             }
             // Don't throw exception, just log and continue
-            logger.LogError("[TaskMicroService] Continuing without database connection - this will likely cause issues later.");
+            logger.LogError("[TaskMicroService] Continuing without database connection - this will likely cause issues later.", new InvalidOperationException("DB Connection missing"));
         }
 
 
@@ -81,12 +81,12 @@ public class Program
 
         if (string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience) || string.IsNullOrEmpty(jwtKey))
         {
-            logger.LogError("[TaskMicroService] JWT configuration is missing or incomplete.");
-            logger.LogError($"[TaskMicroService] JWT Issuer: {jwtIssuer ?? "NULL"}");
-            logger.LogError($"[TaskMicroService] JWT Audience: {jwtAudience ?? "NULL"}");
-            logger.LogError($"[TaskMicroService] JWT Key: {(jwtKey != null ? "SET" : "NULL")}");
+            logger.LogError("[TaskMicroService] JWT configuration is missing or incomplete.", new InvalidOperationException("JWT configuration missing"));
+            logger.LogError($"[TaskMicroService] JWT Issuer: {jwtIssuer ?? "NULL"}", new InvalidOperationException("JWT Issuer missing"));
+            logger.LogError($"[TaskMicroService] JWT Audience: {jwtAudience ?? "NULL"}", new InvalidOperationException("JWT Audience missing"));
+            logger.LogError($"[TaskMicroService] JWT Key: {(jwtKey != null ? "SET" : "NULL")}", new InvalidOperationException("JWT Key missing"));
             // Don't throw exception, just log and continue
-            logger.LogError("[TaskMicroService] Continuing without JWT configuration - this will likely cause issues later.");
+            logger.LogError("[TaskMicroService] Continuing without JWT configuration - this will likely cause issues later.", new InvalidOperationException("JWT configuration incomplete"));
         }            
 
         
@@ -115,7 +115,7 @@ public class Program
 
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""))
                 };
             });
 
@@ -124,9 +124,9 @@ public class Program
         
         if (string.IsNullOrEmpty(blobConnectionString))
         {
-            logger.LogError("[TaskMicroService] Blob Storage Connection String is missing or empty.");
+            logger.LogError("[TaskMicroService] Blob Storage Connection String is missing or empty.", new InvalidOperationException("Blob connection string missing"));
             // Don't throw exception, just log and continue
-            logger.LogError("[TaskMicroService] Continuing without blob storage - this will likely cause issues later.");
+            logger.LogError("[TaskMicroService] Continuing without blob storage - this will likely cause issues later.", new InvalidOperationException("Blob storage unavailable"));
         }
         else
         {
@@ -135,8 +135,11 @@ public class Program
         }
 
         var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"];
-        builder.Services.AddSingleton(blobBaseUrl);
-        logger.LogInfo($"[TaskMicroService] Blob Base Url: {blobBaseUrl}");
+        if (!string.IsNullOrEmpty(blobBaseUrl))
+        {
+            builder.Services.AddSingleton(blobBaseUrl);
+        }
+        logger.LogInfo($"[TaskMicroService] Blob Base Url: {blobBaseUrl ?? "NULL"}");
 
         builder.Services.AddCors(options =>
         {
