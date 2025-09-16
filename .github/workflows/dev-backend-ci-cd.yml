@@ -64,7 +64,11 @@ jobs:
       - name: Replace config placeholders (Dev)  # ⚠️ Bager secrets ind i billedet
         run: |
           echo "Updating TaskMicroService configuration..."
-          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING }}" | tr -d '\n')
+          if [ "${{ matrix.service }}" = "task-api" ]; then
+            DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING_TASK }}" | tr -d '\n')
+          else
+            DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING_USER }}" | tr -d '\n')
+          fi
           BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" | tr -d '\n')
           JWT_KEY=$(echo "${{ secrets.JWT_KEY_DEV }}" | tr -d '\n')
           JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_DEV }}" | tr -d '\n')
