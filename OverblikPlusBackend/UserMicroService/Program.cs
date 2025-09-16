@@ -55,7 +55,7 @@ public class Program
         }
 
         builder.Services.AddDbContext<UserDbContext>(options =>
-            options.UseSqlServer(dbConnectionString));
+            options.UseSqlServer(dbConnectionString, x => x.MigrationsAssembly(typeof(UserDbContext).Assembly.FullName)));
 
         var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
         if (string.IsNullOrEmpty(encryptionKey))
