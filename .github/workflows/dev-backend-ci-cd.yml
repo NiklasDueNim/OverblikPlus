@@ -69,7 +69,7 @@ jobs:
           JWT_KEY=$(echo "${{ secrets.JWT_KEY_DEV }}" | tr -d '\n')
           JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_DEV }}" | tr -d '\n')
           JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE_DEV }}" | tr -d '\n')
-          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL_DEV }}" | tr -d '\n')
+          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL }}" | tr -d '\n')
           ENC_KEY=$(echo "${{ secrets.ENCRYPTION_KEY }}" | tr -d '\n')
 
           # Masket debug
