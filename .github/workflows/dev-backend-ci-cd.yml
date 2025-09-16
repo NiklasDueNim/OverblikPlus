@@ -95,6 +95,13 @@ jobs:
           sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
           sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
 
+          # Also update UserMicroService Development settings
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
+          sed -i "s#EncryptionKeyPlaceholder#$ENC_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
+
           echo "Configuration updated successfully."
 
       # 4) Docker build/push
@@ -149,7 +156,10 @@ jobs:
             --docker-registry-server-user ${{ secrets.ACR_USERNAME }} \
             --docker-registry-server-password ${{ secrets.ACR_PASSWORD }}
 
-    
+      # 6) Set Development Environment
+      - name: Set Development Environment
+        run: |
+          az webapp config appsettings set -g overblikplus-dev-rg -n overblikplus-${{ matrix.service }}-dev --settings ASPNETCORE_ENVIRONMENT=Development
 
       - name: Show applied config (safe)
         run: |
@@ -164,7 +174,7 @@ jobs:
           echo "Connection strings (name/type):"
           az webapp config connection-string list -g "$RG" -n "$APP" --query "[].{name:name,type:type}"
 
-      # 6) Restart app
+      # 7) Restart app
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group overblikplus-dev-rg
@@ -185,4 +195,5 @@ jobs:
       #     RG="overblikplus-dev-rg"
       #     az webapp config appsettings set -g "$RG" -n "$APP" --settings \
       #       Jwt__Key="${{ secrets.JWT_KEY_DEV }}" \
-      #       Jwt__Issuer="${{ secrets.JWT_ISSUER_DE
+      #       Jwt__Issuer="${{ secrets.JWT_ISSUER_DEV }}" \
+      #       Jwt__Audience="${{ secrets.JWT_AUDIENCE_DEV }}"
