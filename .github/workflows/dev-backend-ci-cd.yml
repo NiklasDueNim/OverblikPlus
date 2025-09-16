@@ -19,20 +19,6 @@ jobs:
       matrix:
         service: [user-api, task-api]
 
-    # Fallback-mapping: virker både med *_DEV og uden suffix
-    env:
-      DEV_DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING_DEV || secrets.DB_CONNECTION_STRING }}
-      DEV_BLOB_CONNECTION_STRING: ${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV || secrets.BLOB_STORAGE_CONNECTION_STRING || secrets.BLOBSTORAGECONNECTIONSTRING }}
-      DEV_JWT_KEY: ${{ secrets.JWT_KEY_DEV || secrets.JWT_KEY }}
-      DEV_JWT_ISSUER: ${{ secrets.JWT_ISSUER_DEV || secrets.JWT_ISSUER }}
-      DEV_JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE_DEV || secrets.JWT_AUDIENCE }}
-      DEV_BLOB_BASE_URL: ${{ secrets.BLOB_BASE_URL_DEV || secrets.BLOB_BASE_URL }}
-      DEV_ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
-
-      ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
-      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-
     steps:
       # 0) Repo + .NET
       - name: Checkout code
@@ -53,151 +39,145 @@ jobs:
         run: |
           az account show -o table
           az group show -n overblikplus-dev-rg -o table
-          ACR_NAME="${ACR_REGISTRY%%.azurecr.io}"
+          # ACR navn = registry uden .azurecr.io
+          ACR_NAME="${{ secrets.ACR_REGISTRY }}"
+          ACR_NAME="${ACR_NAME%%.azurecr.io}"
           az acr show -n "$ACR_NAME" -g overblikplus-dev-rg -o table
-
       # 2) Build & test
       - name: Restore
         run: |
           find . -name '*.csproj' -print0 | xargs -0 -I {} dotnet restore {}
-
       - name: Build
         run: |
           find . -name '*.csproj' -print0 | xargs -0 -I {} dotnet build {} -c Release --no-restore
-
       - name: Test
         run: |
           for csproj in $(find . -name '*.Tests.csproj' ! -name '*OverblikPlus.Frontend.Tests*'); do
             echo "Running tests in: $csproj"
             dotnet test "$csproj" --no-restore --verbosity normal
           done
-
-      # 3) ⚠️ Bager secrets ind i image (beholdt som du kører i dag)
-      - name: Replace config placeholders (Dev)
+      # 3) (NUVÆRENDE OPSÆTNING) Erstat placeholders i appsettings.json (ikke anbefalet i prod)
+      - name: Replace config placeholders (Dev)  # ⚠️ Bager secrets ind i billedet
         run: |
           echo "Updating TaskMicroService configuration..."
-          DB_CONN="${DEV_DB_CONNECTION_STRING//$'\n'/}"
-          BLOB_CONN="${DEV_BLOB_CONNECTION_STRING//$'\n'/}"
-          JWT_KEY="${DEV_JWT_KEY//$'\n'/}"
-          JWT_ISSUER="${DEV_JWT_ISSUER//$'\n'/}"
-          JWT_AUDIENCE="${DEV_JWT_AUDIENCE//$'\n'/}"
-          BLOB_URL="${DEV_BLOB_BASE_URL//$'\n'/}"
-          ENC_KEY="${DEV_ENCRYPTION_KEY//$'\n'/}"
-
+          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING }}" | tr -d '\n')
+          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}" | tr -d '\n')
+          JWT_KEY=$(echo "${{ secrets.JWT_KEY_DEV }}" | tr -d '\n')
+          JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_DEV }}" | tr -d '\n')
+          JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE_DEV }}" | tr -d '\n')
+          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL }}" | tr -d '\n')
+          ENC_KEY=$(echo "${{ secrets.ENCRYPTION_KEY }}" | tr -d '\n')
+          # Masket debug
           echo "DB_CONN length: ${#DB_CONN}"
           echo "BLOB_CONN length: ${#BLOB_CONN}"
           echo "JWT_ISSUER length: ${#JWT_ISSUER}"
           echo "JWT_AUDIENCE length: ${#JWT_AUDIENCE}"
           echo "JWT_KEY length: ${#JWT_KEY}"
-          echo "BLOB_URL set: $( [ -n "$BLOB_URL" ] && echo yes || echo no )"
-
+          echo "BLOB_URL: (set)"
           sed -i "s/\"dev-or-prod\"/\"dev\"/g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i "s#BlobStorageConnectionStringPlaceholder#$BLOB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
-          sed -i "s#BlobStorageBaseUrlPlaceholder#$BLOB_URL#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
-
+          sed -i "s~BlobStorageBaseUrlPlaceholder~$BLOB_URL~g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          # Also update TaskMicroService Development settings
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s#BlobStorageConnectionStringPlaceholder#$BLOB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s~BlobStorageBaseUrlPlaceholder~$BLOB_URL~g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
           echo "Updating UserMicroService configuration..."
           sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
           sed -i "s#EncryptionKeyPlaceholder#$ENC_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
           sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
           sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
           sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
-
+          # Also update UserMicroService Development settings
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
+          sed -i "s#EncryptionKeyPlaceholder#$ENC_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/UserMicroService/appsettings.Development.json
           echo "Configuration updated successfully."
-
       # 4) Docker build/push
       - name: Login to Azure Container Registry
         run: |
           docker version
-          echo "$ACR_PASSWORD" | docker login "$ACR_REGISTRY" -u "$ACR_USERNAME" --password-stdin
-
+          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
       - name: Build Docker image
         run: |
           DOCKERFILE="OverblikPlusBackend/TaskMicroService/Dockerfile"
           if [ "${{ matrix.service }}" = "user-api" ]; then
             DOCKERFILE="OverblikPlusBackend/UserMicroService/Dockerfile"
           fi
-
-          IMAGE="$ACR_REGISTRY/overblikplus-${{ matrix.service }}-dev:latest"
+          IMAGE="${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest"
           echo "Building $IMAGE with $DOCKERFILE"
           docker build --platform linux/amd64 \
             -t "$IMAGE" \
             -f "$DOCKERFILE" \
             --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
             OverblikPlusBackend
-
           docker images | head -n 20
-
       - name: Push Docker image to ACR
         run: |
-          IMAGE="$ACR_REGISTRY/overblikplus-${{ matrix.service }}-dev:latest"
+          IMAGE="${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest"
           echo "Pushing $IMAGE"
           docker push "$IMAGE"
-
       - name: Show ACR tags (sanity)
         run: |
-          ACR_NAME="${ACR_REGISTRY%%.azurecr.io}"
+          ACR_NAME="${{ secrets.ACR_REGISTRY }}"
+          ACR_NAME="${ACR_NAME%%.azurecr.io}"
           REPO="overblikplus-${{ matrix.service }}-dev"
           echo "Recent tags for $REPO in $ACR_NAME:"
           az acr repository show-tags -n "$ACR_NAME" --repository "$REPO" --top 10 -o table || true
-
       # 5) Peg Web App på image + giv pull-credentials
       - name: Update Azure App Service (container)
         run: |
           APP="overblikplus-${{ matrix.service }}-dev"
           RG="overblikplus-dev-rg"
-          IMAGE="$ACR_REGISTRY/overblikplus-${{ matrix.service }}-dev:latest"
-
+          IMAGE="${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest"
           az webapp config container set \
             --name "$APP" \
             --resource-group "$RG" \
             --container-image-name "$IMAGE" \
-            --docker-registry-server-url "https://$ACR_REGISTRY" \
-            --docker-registry-server-user "$ACR_USERNAME" \
-            --docker-registry-server-password "$ACR_PASSWORD"
-
-   
-
+            --docker-registry-server-url https://${{ secrets.ACR_REGISTRY }} \
+            --docker-registry-server-user ${{ secrets.ACR_USERNAME }} \
+            --docker-registry-server-password ${{ secrets.ACR_PASSWORD }}
+      # 6) Set Development Environment
+      - name: Set Development Environment
+        run: |
+          az webapp config appsettings set -g overblikplus-dev-rg -n overblikplus-${{ matrix.service }}-dev --settings ASPNETCORE_ENVIRONMENT=Development
       - name: Show applied config (safe)
         run: |
           APP="overblikplus-${{ matrix.service }}-dev"
           RG="overblikplus-dev-rg"
           echo "Container settings:"
           az webapp config container show -g "$RG" -n "$APP"
-
           echo "App settings keys:"
           az webapp config appsettings list -g "$RG" -n "$APP" --query "[].name"
-
           echo "Connection strings (name/type):"
           az webapp config connection-string list -g "$RG" -n "$APP" --query "[].{name:name,type:type}"
-
+      # 7) Restart app
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group overblikplus-dev-rg
-
-      # --- SIKKER ALTERNATIV (anbefalet): sæt settings i Web App i stedet for at bage dem ind ---
-      # - name: Apply connection strings (DEV)
+      # --- SIKKER ALTERNATIV (anbefalet): Sæt settings i Web App i stedet for at bage secrets ind ---
+      # - name: Apply connection strings (DEV)  # slå til og fjern "Replace config placeholders" ovenfor
       #   run: |
       #     APP="overblikplus-${{ matrix.service }}-dev"
       #     RG="overblikplus-dev-rg"
       #     az webapp config connection-string set -g "$RG" -n "$APP" \
-      #       --settings DBConnectionString="${DEV_DB_CONNECTION_STRING}" --connection-string-type SQLAzure
+      #       --settings DBConnectionString="${{ secrets.DB_CONNECTION_STRING }}" --connection-string-type SQLAzure
       #     az webapp config connection-string set -g "$RG" -n "$APP" \
-      #       --settings BlobStorageConnectionString="${DEV_BLOB_CONNECTION_STRING}" --connection-string-type Custom
+      #       --settings BlobStorageConnectionString="${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" --connection-string-type Custom
       #
       # - name: Apply app settings (DEV)
       #   run: |
       #     APP="overblikplus-${{ matrix.service }}-dev"
       #     RG="overblikplus-dev-rg"
       #     az webapp config appsettings set -g "$RG" -n "$APP" --settings \
-      #       Jwt__Key="${DEV_JWT_KEY}" \
-      #       Jwt__Issuer="${DEV_JWT_ISSUER}" \
-      #       Jwt__Audience="${DEV_JWT_AUDIENCE}" \
-      #       BLOB_BASE_URL="${DEV_BLOB_BASE_URL}" \
-      #       ASPNETCORE_ENVIRONMENT="Production"
-      #     if [ "${{ matrix.service }}" = "user-api" ] && [ -n "${DEV_ENCRYPTION_KEY}" ]; then
-      #       az webapp config appsettings set -g "$RG" -n "$APP" --settings ENCRYPTION_KEY="${DEV_ENCRYPTION_KEY}"
-      #     fi
+      #       Jwt__Key="${{ secrets.JWT_KEY_DEV }}" \
+      #       Jwt__Issuer="${{ secrets.JWT_ISSUER_DEV }}" \
+      #       Jwt__Audience="${{ secrets.JWT_AUDIENCE_DEV }}"
