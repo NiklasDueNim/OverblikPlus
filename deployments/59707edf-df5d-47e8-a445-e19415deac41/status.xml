@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>59707edf-df5d-47e8-a445-e19415deac41</id>
+  <author>N/A</author>
+  <deployer>GITHUB_ZIP_DEPLOY</deployer>
+  <authorEmail>N/A</authorEmail>
+  <message>{"type":"deployment","sha":"ac10d6e7f98da9e312e0a13c16a2b10dc5139623","repoName":"NiklasDueNim/OverblikPlus","actor":"NiklasNim","slotName":"production","commitMessage":"Trigger Azure deployment with SCM build settings"}</message>
+  <progress></progress>
+  <status>Failed</status>
+  <statusText></statusText>
+  <lastSuccessEndTime />
+  <receivedTime>2025-09-14T11:03:41.9760658Z</receivedTime>
+  <startTime>2025-09-14T11:03:43.6356664Z</startTime>
+  <endTime>2025-09-14T11:03:55.3464876Z</endTime>
+  <complete>True</complete>
+  <is_temp>False</is_temp>
+  <is_readonly>True</is_readonly>
+  <buildSummary />
+</deployment>

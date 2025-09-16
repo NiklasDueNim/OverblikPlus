@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>temp-e1c7b761</id>
+  <author>Deploying from pushed zip file</author>
+  <deployer>GITHUB_ZIP_DEPLOY</deployer>
+  <authorEmail>N/A</authorEmail>
+  <message>N/A</message>
+  <progress></progress>
+  <status>Failed</status>
+  <statusText>Deployment has been stopped due to SCM container restart. The restart can happen due to a management operation on site. Do not perform a management operation and a deployment operation in quick succession. Adding a small delay can help avoid any conflicts.</statusText>
+  <lastSuccessEndTime />
+  <receivedTime>2025-09-14T11:06:30.4455541Z</receivedTime>
+  <startTime>2025-09-14T11:06:30.4455541Z</startTime>
+  <endTime>2025-09-14T11:20:28.179081Z</endTime>
+  <complete>True</complete>
+  <is_temp>True</is_temp>
+  <is_readonly>False</is_readonly>
+  <buildSummary />
+</deployment>
