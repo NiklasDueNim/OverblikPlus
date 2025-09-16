@@ -149,13 +149,7 @@ jobs:
             --docker-registry-server-user ${{ secrets.ACR_USERNAME }} \
             --docker-registry-server-password ${{ secrets.ACR_PASSWORD }}
 
-      - name: Enable container logs (once)
-        run: |
-          APP="overblikplus-${{ matrix.service }}-dev"
-          RG="overblikplus-dev-rg"
-          az webapp log config -g "$RG" -n "$APP" \
-            --docker-container-logging filesystem --application-logging true --level information
-          echo "Log stream URL (SCM): https://$APP.scm.azurewebsites.net/api/logstream"
+    
 
       - name: Show applied config (safe)
         run: |
