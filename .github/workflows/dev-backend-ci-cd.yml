@@ -65,7 +65,7 @@ jobs:
         run: |
           echo "Updating TaskMicroService configuration..."
           DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING }}" | tr -d '\n')
-          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" | tr -d '\n')
+          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}" | tr -d '\n')
           JWT_KEY=$(echo "${{ secrets.JWT_KEY_DEV }}" | tr -d '\n')
           JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_DEV }}" | tr -d '\n')
           JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE_DEV }}" | tr -d '\n')
