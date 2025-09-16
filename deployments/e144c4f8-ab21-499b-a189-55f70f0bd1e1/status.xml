@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>e144c4f8-ab21-499b-a189-55f70f0bd1e1</id>
+  <author>N/A</author>
+  <deployer>GITHUB_ZIP_DEPLOY</deployer>
+  <authorEmail>N/A</authorEmail>
+  <message>{"type":"deployment","sha":"4ab79650f89e25db40c601a0020771276b1899aa","repoName":"NiklasDueNim/OverblikPlus","actor":"NiklasNim","slotName":"production","commitMessage":"Trigger redeployment with Azure storage settings"}</message>
+  <progress></progress>
+  <status>Failed</status>
+  <statusText>Deployment has been stopped due to SCM container restart. The restart can happen due to a management operation on site. Do not perform a management operation and a deployment operation in quick succession. Adding a small delay can help avoid any conflicts.</statusText>
+  <lastSuccessEndTime />
+  <receivedTime>2025-09-14T10:51:09.2218276Z</receivedTime>
+  <startTime>2025-09-14T10:51:09.2218276Z</startTime>
+  <endTime>2025-09-14T11:02:35.1994131Z</endTime>
+  <complete>True</complete>
+  <is_temp>False</is_temp>
+  <is_readonly>True</is_readonly>
+  <buildSummary />
+</deployment>

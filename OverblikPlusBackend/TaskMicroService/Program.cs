@@ -58,6 +58,11 @@ public class Program
         var logger = tempProvider.GetRequiredService<ILoggerService>();
 
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
+        if (string.IsNullOrEmpty(dbConnectionString))
+        {
+            logger.LogError("[TaskMicroService] DB Connection String is missing or empty.");
+            throw new InvalidOperationException("DB Connection String is required but not configured.");
+        }
         logger.LogInfo($"[TaskMicroService] DB Connection String: {dbConnectionString}");
 
 
@@ -66,7 +71,13 @@ public class Program
 
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];       
         var jwtAudience = builder.Configuration["Jwt:Audience"];   
-        var jwtKey = builder.Configuration["Jwt:Key"];            
+        var jwtKey = builder.Configuration["Jwt:Key"];
+
+        if (string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience) || string.IsNullOrEmpty(jwtKey))
+        {
+            logger.LogError("[TaskMicroService] JWT configuration is missing or incomplete.");
+            throw new InvalidOperationException("JWT configuration is required but not properly configured.");
+        }            
 
         
 
@@ -99,6 +110,11 @@ public class Program
             });
 
         var blobConnectionString = builder.Configuration.GetConnectionString("BlobStorageConnectionString");
+        if (string.IsNullOrEmpty(blobConnectionString))
+        {
+            logger.LogError("[TaskMicroService] Blob Storage Connection String is missing or empty.");
+            throw new InvalidOperationException("Blob Storage Connection String is required but not configured.");
+        }
         logger.LogInfo($"[TaskMicroService] Blob Connection: {blobConnectionString}");
         builder.Services.AddSingleton(_ => new BlobServiceClient(blobConnectionString));
 

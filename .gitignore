@@ -9,3 +9,5 @@ debug/
 .idea
 /out/
 *.txt
+LogFiles/
+*.zip
