@@ -7,3 +7,158 @@ on:
     branches: [Development]
   workflow_dispatch:
 
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    concurrency:
+      group: dev-${{ matrix.service }}-${{ github.ref }}
+      cancel-in-progress: true
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [user-api, task-api]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure context (sanity)
+        run: |
+          az account show -o table
+          az group show -n overblikplus-dev-rg -o table
+          ACR_NAME="${{ secrets.ACR_REGISTRY }}"
+          ACR_NAME="${ACR_NAME%%.azurecr.io}"
+          az acr show -n "$ACR_NAME" -g overblikplus-dev-rg -o table
+
+      - name: Restore
+        run: |
+          find . -name '*.csproj' -print0 | xargs -0 -I {} dotnet restore {}
+
+      - name: Build
+        run: |
+          find . -name '*.csproj' -print0 | xargs -0 -I {} dotnet build {} -c Release --no-restore
+
+      - name: Test
+        run: |
+          for csproj in $(find . -name '*.Tests.csproj' ! -name '*OverblikPlus.Frontend.Tests*'); do
+            echo "Running tests in: $csproj"
+            dotnet test "$csproj" --no-restore --verbosity normal
+          done
+
+      # --- Docker build/push ---
+      - name: Login to Azure Container Registry
+        run: |
+          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+      - name: Build Docker image
+        run: |
+          DOCKERFILE="OverblikPlusBackend/TaskMicroService/Dockerfile"
+          if [ "${{ matrix.service }}" = "user-api" ]; then
+            DOCKERFILE="OverblikPlusBackend/UserMicroService/Dockerfile"
+          fi
+          IMAGE="${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest"
+          docker build --platform linux/amd64 \
+            -t "$IMAGE" \
+            -f "$DOCKERFILE" \
+            --build-arg SHARED_PROJECT_PATH=OverblikPlusBackend/OverblikPlus.Shared \
+            OverblikPlusBackend
+
+      - name: Push Docker image to ACR
+        run: |
+          IMAGE="${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest"
+          docker push "$IMAGE"
+
+      - name: Show ACR tags (sanity)
+        run: |
+          ACR_NAME="${{ secrets.ACR_REGISTRY }}"
+          ACR_NAME="${ACR_NAME%%.azurecr.io}"
+          REPO="overblikplus-${{ matrix.service }}-dev"
+          az acr repository show-tags -n "$ACR_NAME" --repository "$REPO" --top 10 -o table || true
+
+      # --- Peg Web App på image + pull creds ---
+      - name: Update Azure App Service (container)
+        run: |
+          APP="overblikplus-${{ matrix.service }}-dev"
+          RG="overblikplus-dev-rg"
+          IMAGE="${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest"
+          az webapp config container set \
+            --name "$APP" \
+            --resource-group "$RG" \
+            --container-image-name "$IMAGE" \
+            --docker-registry-server-url https://${{ secrets.ACR_REGISTRY }} \
+            --docker-registry-server-user ${{ secrets.ACR_USERNAME }} \
+            --docker-registry-server-password ${{ secrets.ACR_PASSWORD }}
+
+      # --- Sæt miljø + settings/connection strings på Web App ---
+      - name: Set ASPNETCORE_ENVIRONMENT=Development
+        run: |
+          az webapp config appsettings set \
+            -g overblikplus-dev-rg \
+            -n overblikplus-${{ matrix.service }}-dev \
+            --settings ASPNETCORE_ENVIRONMENT=Development
+
+      - name: Apply shared app settings (JWT etc.)
+        run: |
+          az webapp config appsettings set \
+            -g overblikplus-dev-rg \
+            -n overblikplus-${{ matrix.service }}-dev \
+            --settings \
+              Jwt__Key='${{ secrets.JWT_KEY }}' \
+              Jwt__Issuer='${{ secrets.JWT_ISSUER }}' \
+              Jwt__Audience='${{ secrets.JWT_AUDIENCE }}'
+      
+      - name: Apply DB connection string
+        run: |
+          az webapp config connection-string set \
+            -g overblikplus-dev-rg \
+            -n overblikplus-${{ matrix.service }}-dev \
+            --settings DBConnectionString='${{ secrets.DB_CONNECTION_STRING }}' \
+            --connection-string-type SQLAzure
+
+      # --- Service-specifikke settings ---
+      - name: Apply Task API settings
+        if: matrix.service == 'task-api'
+        run: |
+          az webapp config appsettings set \
+            -g overblikplus-dev-rg \
+            -n overblikplus-task-api-dev \
+            --settings \
+              BlobStorageBaseUrl='${{ secrets.BLOB_BASE_URL }}'
+          az webapp config connection-string set \
+            -g overblikplus-dev-rg \
+            -n overblikplus-task-api-dev \
+            --settings BlobStorageConnectionString='${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}' \
+            --connection-string-type Custom
+
+      - name: Apply User API settings (encryption key)
+        if: matrix.service == 'user-api'
+        run: |
+          # Opret secret ENCRYPTION_KEY i GitHub, eller skift navnet her til din faktiske secret
+          az webapp config appsettings set \
+            -g overblikplus-dev-rg \
+            -n overblikplus-user-api-dev \
+            --settings \
+              Encryption__Key='${{ secrets.ENCRYPTION_KEY }}'
+
+      - name: Show applied config (safe)
+        run: |
+          APP="overblikplus-${{ matrix.service }}-dev"
+          RG="overblikplus-dev-rg"
+          echo "Container settings:" && az webapp config container show -g "$RG" -n "$APP"
+          echo "App settings keys:" && az webapp config appsettings list -g "$RG" -n "$APP" --query "[].name"
+          echo "Connection strings (name/type):" && az webapp config connection-string list -g "$RG" -n "$APP" --query "[].{name:name,type:type}"
+
+      - name: Restart Azure App Service
+        run: |
+          az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group overblikplus-dev-rg
