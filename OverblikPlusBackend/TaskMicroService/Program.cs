@@ -130,7 +130,28 @@ public class Program
         }
         else
         {
-            builder.Services.AddSingleton(_ => new BlobServiceClient(blobConnectionString));
+            // Parse the JSON connection string to extract the actual connection string
+            try
+            {
+                var blobConfig = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(blobConnectionString);
+                var actualConnectionString = blobConfig?["connectionString"];
+                
+                if (string.IsNullOrEmpty(actualConnectionString))
+                {
+                    logger.LogError("[TaskMicroService] Could not extract connectionString from BlobStorageConnectionString JSON.");
+                    logger.LogError("[TaskMicroService] Continuing without blob storage - this will likely cause issues later.");
+                }
+                else
+                {
+                    logger.LogInfo($"[TaskMicroService] Extracted Blob Connection String: {actualConnectionString.Substring(0, Math.Min(50, actualConnectionString.Length))}...");
+                    builder.Services.AddSingleton(_ => new BlobServiceClient(actualConnectionString));
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"[TaskMicroService] Failed to parse BlobStorageConnectionString JSON: {ex.Message}");
+                logger.LogError("[TaskMicroService] Continuing without blob storage - this will likely cause issues later.");
+            }
         }
 
         var blobBaseUrl = builder.Configuration["BLOB_BASE_URL"];
@@ -270,4 +291,4 @@ public class Program
         logger.LogInfo($"[TaskMicroService] Starting application in {environment} mode.");
         await app.RunAsync();
     }
-}// Backend workflow test trigger
+}
