@@ -159,14 +159,7 @@ jobs:
             --docker-registry-server-user "$ACR_USERNAME" \
             --docker-registry-server-password "$ACR_PASSWORD"
 
-      - name: Enable container logs (Linux)
-        run: |
-          APP="overblikplus-${{ matrix.service }}-dev"
-          RG="overblikplus-dev-rg"
-      
-          # Slå kun Docker container logging til (gælder Linux containers)
-          az webapp log config -g "$RG" -n "$APP" --docker-container-logging filesystem || true
-      
+   
 
       - name: Show applied config (safe)
         run: |
