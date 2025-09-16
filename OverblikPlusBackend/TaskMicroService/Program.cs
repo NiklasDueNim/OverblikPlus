@@ -62,7 +62,7 @@ public class Program
 
 
         builder.Services.AddDbContext<TaskDbContext>(options =>
-            options.UseSqlServer(dbConnectionString));
+            options.UseSqlServer(dbConnectionString, x => x.MigrationsAssembly(typeof(TaskDbContext).Assembly.FullName)));
 
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];       
         var jwtAudience = builder.Configuration["Jwt:Audience"];   
