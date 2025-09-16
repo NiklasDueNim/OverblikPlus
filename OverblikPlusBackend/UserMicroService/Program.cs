@@ -57,7 +57,7 @@ public class Program
         builder.Services.AddDbContext<UserDbContext>(options =>
             options.UseSqlServer(dbConnectionString, x => x.MigrationsAssembly(typeof(UserDbContext).Assembly.FullName)));
 
-        var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
+        var encryptionKey = builder.Configuration["Encryption__Key"];
         if (string.IsNullOrEmpty(encryptionKey))
         {
             throw new InvalidOperationException("Encryption key is missing.");
