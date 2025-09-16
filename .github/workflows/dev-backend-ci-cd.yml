@@ -88,6 +88,14 @@ jobs:
           sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
           sed -i "s#BlobStorageBaseUrlPlaceholder#$BLOB_URL#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
 
+          # Also update TaskMicroService Development settings
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s#BlobStorageConnectionStringPlaceholder#$BLOB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+          sed -i "s#BlobStorageBaseUrlPlaceholder#$BLOB_URL#g" ./OverblikPlusBackend/TaskMicroService/appsettings.Development.json
+
           echo "Updating UserMicroService configuration..."
           sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
           sed -i "s#EncryptionKeyPlaceholder#$ENC_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
