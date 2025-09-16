@@ -64,7 +64,7 @@ jobs:
       - name: Replace config placeholders (Dev)  # ⚠️ Bager secrets ind i billedet
         run: |
           echo "Updating TaskMicroService configuration..."
-          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING_DEV }}" | tr -d '\n')
+          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING }}" | tr -d '\n')
           BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" | tr -d '\n')
           JWT_KEY=$(echo "${{ secrets.JWT_KEY_DEV }}" | tr -d '\n')
           JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_DEV }}" | tr -d '\n')
@@ -175,7 +175,7 @@ jobs:
       #     APP="overblikplus-${{ matrix.service }}-dev"
       #     RG="overblikplus-dev-rg"
       #     az webapp config connection-string set -g "$RG" -n "$APP" \
-      #       --settings DBConnectionString="${{ secrets.DB_CONNECTION_STRING_DEV }}" --connection-string-type SQLAzure
+      #       --settings DBConnectionString="${{ secrets.DB_CONNECTION_STRING }}" --connection-string-type SQLAzure
       #     az webapp config connection-string set -g "$RG" -n "$APP" \
       #       --settings BlobStorageConnectionString="${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" --connection-string-type Custom
       #
