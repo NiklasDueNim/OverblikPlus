@@ -58,11 +58,35 @@ public class Program
         builder.Services.AddDbContext<UserDbContext>(options =>
             options.UseSqlServer(dbConnectionString, x => x.MigrationsAssembly(typeof(UserDbContext).Assembly.FullName)));
       
-        var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
-        if (string.IsNullOrEmpty(encryptionKey))
+        var encryptionKeyBase64 = builder.Configuration["EncryptionSettings:EncryptionKey"];
+        if (string.IsNullOrEmpty(encryptionKeyBase64))
         {
             throw new InvalidOperationException("Encryption key is missing.");
         }
+        
+        // Decode Base64 key to get the raw 32-byte key
+        string encryptionKey;
+        try
+        {
+            var keyBytes = Convert.FromBase64String(encryptionKeyBase64);
+            encryptionKey = Encoding.UTF8.GetString(keyBytes);
+            
+            // Ensure key is exactly 32 characters for AES-256
+            if (encryptionKey.Length > 32)
+            {
+                encryptionKey = encryptionKey.Substring(0, 32);
+            }
+            else if (encryptionKey.Length < 32)
+            {
+                encryptionKey = encryptionKey.PadRight(32, '0');
+            }
+        }
+        catch (FormatException)
+        {
+            // If not Base64, use as-is and ensure 32 characters
+            encryptionKey = encryptionKeyBase64.Length > 32 ? encryptionKeyBase64.Substring(0, 32) : encryptionKeyBase64.PadRight(32, '0');
+        }
+        
         EncryptionHelper.SetEncryptionKey(encryptionKey);
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
