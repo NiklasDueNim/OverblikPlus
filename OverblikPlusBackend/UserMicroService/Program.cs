@@ -47,6 +47,33 @@ public class Program
         var tempProvider = builder.Services.BuildServiceProvider();
         var logger = tempProvider.GetRequiredService<ILoggerService>();
 
+        // === COMPREHENSIVE CONFIGURATION DEBUGGING ===
+        Console.WriteLine("=== USER API CONFIGURATION DEBUG ===");
+        Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
+        Console.WriteLine($"ContentRoot: {builder.Environment.ContentRootPath}");
+        
+        // Log ALL configuration keys and values
+        Console.WriteLine("\n=== ALL CONFIGURATION VALUES ===");
+        foreach (var kvp in builder.Configuration.AsEnumerable())
+        {
+            var value = kvp.Value;
+            if (kvp.Key.Contains("Key", StringComparison.OrdinalIgnoreCase) || 
+                kvp.Key.Contains("Password", StringComparison.OrdinalIgnoreCase))
+            {
+                value = string.IsNullOrEmpty(value) ? "[NULL/EMPTY]" : $"[MASKED-{value.Length}chars]";
+            }
+            Console.WriteLine($"  {kvp.Key} = {value}");
+        }
+        
+        // Specific encryption key debugging
+        Console.WriteLine("\n=== ENCRYPTION KEY DEBUGGING ===");
+        var encKeyFromConfig = builder.Configuration["EncryptionSettings:EncryptionKey"];
+        Console.WriteLine($"EncryptionSettings:EncryptionKey = {(string.IsNullOrEmpty(encKeyFromConfig) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig.Length}chars]")}");
+        
+        if (!string.IsNullOrEmpty(encKeyFromConfig))
+        {
+            Console.WriteLine($"First 10 chars: {encKeyFromConfig.Substring(0, Math.Min(10, encKeyFromConfig.Length))}...");
+        }
 
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
         Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");

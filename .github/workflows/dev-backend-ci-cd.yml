@@ -56,6 +56,40 @@ jobs:
             dotnet test "$csproj" --no-restore --verbosity normal
           done
 
+      # --- Replace config placeholders ---
+      - name: Replace config placeholders (Dev)
+        run: |
+          echo "Updating TaskMicroService configuration..."
+          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING_DEV }}" | tr -d '\n')
+          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" | tr -d '\n')
+          JWT_KEY=$(echo "${{ secrets.JWT_KEY_DEV }}" | tr -d '\n')
+          JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_DEV }}" | tr -d '\n')
+          JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE_DEV }}" | tr -d '\n')
+          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL_DEV }}" | tr -d '\n')
+          ENC_KEY=$(echo "${{ secrets.ENCRYPTION_KEY }}" | tr -d '\n')
+
+          echo "DB_CONN length: ${#DB_CONN}"
+          echo "ENC_KEY length: ${#ENC_KEY}"
+          echo "JWT_KEY length: ${#JWT_KEY}"
+
+          sed -i "s/\"dev-or-prod\"/\"dev\"/g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#BlobStorageConnectionStringPlaceholder#$BLOB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#BlobStorageBaseUrlPlaceholder#$BLOB_URL#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+
+          echo "Updating UserMicroService configuration..."
+          sed -i "s/\"dev-or-prod\"/\"dev\"/g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#EncryptionKeyPlaceholder#$ENC_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+
+          echo "Configuration updated successfully."
+
       # --- Docker build/push ---
       - name: Login to Azure Container Registry
         run: |
