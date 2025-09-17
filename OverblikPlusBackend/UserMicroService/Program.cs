@@ -67,13 +67,13 @@ public class Program
         
         // Specific encryption key debugging
         Console.WriteLine("\n=== ENCRYPTION KEY DEBUGGING ===");
-        var encKeyFromConfig = builder.Configuration["EncryptionSettings:EncryptionKey"];
-        Console.WriteLine($"EncryptionSettings:EncryptionKey = {(string.IsNullOrEmpty(encKeyFromConfig) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig.Length}chars]")}");
+        var encKeyFromConfig1 = builder.Configuration["EncryptionSettings:EncryptionKey"];
+        var encKeyFromConfig2 = builder.Configuration["Encryption:Key"];
+        var encKeyFromConfig3 = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
         
-        if (!string.IsNullOrEmpty(encKeyFromConfig))
-        {
-            Console.WriteLine($"First 10 chars: {encKeyFromConfig.Substring(0, Math.Min(10, encKeyFromConfig.Length))}...");
-        }
+        Console.WriteLine($"EncryptionSettings:EncryptionKey = {(string.IsNullOrEmpty(encKeyFromConfig1) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig1.Length}chars]")}");
+        Console.WriteLine($"Encryption:Key = {(string.IsNullOrEmpty(encKeyFromConfig2) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig2.Length}chars]")}");
+        Console.WriteLine($"ENV ENCRYPTION_KEY = {(string.IsNullOrEmpty(encKeyFromConfig3) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig3.Length}chars]")}");
 
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
         Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
@@ -85,7 +85,10 @@ public class Program
         builder.Services.AddDbContext<UserDbContext>(options =>
             options.UseSqlServer(dbConnectionString, x => x.MigrationsAssembly(typeof(UserDbContext).Assembly.FullName)));
       
-        var encryptionKeyBase64 = builder.Configuration["EncryptionSettings:EncryptionKey"];
+        // Try multiple encryption key sources
+        var encryptionKeyBase64 = builder.Configuration["EncryptionSettings:EncryptionKey"] 
+                                 ?? builder.Configuration["Encryption:Key"] 
+                                 ?? Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
         if (string.IsNullOrEmpty(encryptionKeyBase64))
         {
             throw new InvalidOperationException("Encryption key is missing.");
