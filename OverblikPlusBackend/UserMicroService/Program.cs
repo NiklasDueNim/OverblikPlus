@@ -56,12 +56,13 @@ public class Program
 
         builder.Services.AddDbContext<UserDbContext>(options =>
             options.UseSqlServer(dbConnectionString, x => x.MigrationsAssembly(typeof(UserDbContext).Assembly.FullName)));
-
-        var encryptionKey = builder.Configuration["Encryption__Key"];
-        if (string.IsNullOrEmpty(encryptionKey))
-        {
+      
+        var encryptionKey =
+            builder.Configuration["EncryptionSettings:EncryptionKey"]
+            ?? builder.Configuration["Encryption__Key"]
+            ?? Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
+        if (string.IsNullOrWhiteSpace(encryptionKey))
             throw new InvalidOperationException("Encryption key is missing.");
-        }
         EncryptionHelper.SetEncryptionKey(encryptionKey);
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -192,13 +193,3 @@ public class Program
         await app.RunAsync();
     }
 }
-// Test backend workflow
-// Trigger backend workflow test
-// Trigger backend deployment test
-// Trigger backend redeployment with database config
-// Trigger redeployment with storage settings
-// Trigger Azure deployment with build settings
-// Fix deployment - disable remote build
-// Test Docker workflow deployment
-// Trigger workflow manually
-// Test final deployment
