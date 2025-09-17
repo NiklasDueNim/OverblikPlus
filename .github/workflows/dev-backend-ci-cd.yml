@@ -60,12 +60,12 @@ jobs:
       - name: Replace config placeholders (Dev)
         run: |
           echo "Updating TaskMicroService configuration..."
-          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING_DEV }}" | tr -d '\n')
-          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING_DEV }}" | tr -d '\n')
-          JWT_KEY=$(echo "${{ secrets.JWT_KEY_DEV }}" | tr -d '\n')
-          JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER_DEV }}" | tr -d '\n')
-          JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE_DEV }}" | tr -d '\n')
-          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL_DEV }}" | tr -d '\n')
+          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING }}" | tr -d '\n')
+          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}" | tr -d '\n')
+          JWT_KEY=$(echo "${{ secrets.JWT_KEY }}" | tr -d '\n')
+          JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER }}" | tr -d '\n')
+          JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE }}" | tr -d '\n')
+          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL }}" | tr -d '\n')
           ENC_KEY=$(echo "${{ secrets.ENCRYPTION_KEY }}" | tr -d '\n')
 
           echo "DB_CONN length: ${#DB_CONN}"
