@@ -97,9 +97,14 @@ public class Program
         var jwtAudience = builder.Configuration["Jwt:Audience"];
         var jwtKey = builder.Configuration["Jwt:Key"];
 
-        logger.LogInfo($"[UserMicroService] Jwt:Issuer   = {jwtIssuer}");
-        logger.LogInfo($"[UserMicroService] Jwt:Audience = {jwtAudience}");
-        logger.LogInfo($"[UserMicroService] Jwt:Key Len  = {jwtKey?.Length}");
+        logger.LogInfo($"[UserMicroService] Jwt:Issuer   = {jwtIssuer ?? "NULL"}");
+        logger.LogInfo($"[UserMicroService] Jwt:Audience = {jwtAudience ?? "NULL"}");
+        logger.LogInfo($"[UserMicroService] Jwt:Key Len  = {jwtKey?.Length ?? -1}");
+        
+        if (string.IsNullOrEmpty(jwtKey))
+        {
+            logger.LogError("[UserMicroService] JWT Key is null or empty! This will cause startup failure.", new InvalidOperationException("JWT Key missing"));
+        }
 
         builder.Services.AddAuthentication(options =>
             {
@@ -195,7 +200,9 @@ public class Program
 
         app.MapControllers();
 
-        // Auto-migrate database in Development and Production mode
+        // Auto-migrate database in Development and Production mode - TEMPORARILY DISABLED FOR DEBUGGING
+        logger.LogInfo("[UserMicroService] Database migrations temporarily disabled for debugging");
+        /*
         try
         {
             using (var scope = app.Services.CreateScope())
@@ -212,8 +219,20 @@ public class Program
             logger.LogError($"DB migration failed at startup - continuing without migration: {ex.Message}", ex);
             // Don't throw - let the app start so we can hit /health and see logs
         }
+        */
         
-        logger.LogInfo($"[UserMicroService] Starting in {app.Environment.EnvironmentName} mode.");
-        await app.RunAsync();
+        logger.LogInfo($"[UserMicroService] About to start application in {app.Environment.EnvironmentName} mode.");
+        
+        try
+        {
+            logger.LogInfo("[UserMicroService] Calling app.RunAsync()...");
+            await app.RunAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"[UserMicroService] FATAL ERROR during app.RunAsync(): {ex.Message}", ex);
+            logger.LogError($"[UserMicroService] Stack trace: {ex.StackTrace}", ex);
+            throw;
+        }
     }
 }
