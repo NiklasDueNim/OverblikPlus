@@ -47,48 +47,6 @@ public class Program
         var tempProvider = builder.Services.BuildServiceProvider();
         var logger = tempProvider.GetRequiredService<ILoggerService>();
 
-        // === EXTENSIVE LOGGING FOR DEBUGGING ===
-        Console.WriteLine("=== USER MICROSERVICE STARTUP DEBUGGING ===");
-        Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
-        Console.WriteLine($"ContentRoot: {builder.Environment.ContentRootPath}");
-        Console.WriteLine($"Args: [{string.Join(", ", args)}]");
-        
-        // Log all configuration sources
-        Console.WriteLine("\n=== CONFIGURATION SOURCES ===");
-        foreach (var source in builder.Configuration.Sources)
-        {
-            Console.WriteLine($"Config Source: {source.GetType().Name}");
-        }
-        
-        // Log all configuration keys and values (be careful with sensitive data)
-        Console.WriteLine("\n=== ALL CONFIGURATION KEYS ===");
-        foreach (var kvp in builder.Configuration.AsEnumerable())
-        {
-            var value = kvp.Value;
-            // Mask sensitive values
-            if (kvp.Key.Contains("Key", StringComparison.OrdinalIgnoreCase) || 
-                kvp.Key.Contains("Password", StringComparison.OrdinalIgnoreCase) ||
-                kvp.Key.Contains("Secret", StringComparison.OrdinalIgnoreCase))
-            {
-                value = string.IsNullOrEmpty(value) ? "[NULL/EMPTY]" : $"[MASKED-{value.Length}chars]";
-            }
-            Console.WriteLine($"  {kvp.Key} = {value}");
-        }
-        
-        // Log environment variables
-        Console.WriteLine("\n=== ENVIRONMENT VARIABLES (relevant) ===");
-        var envVars = new[] { "ASPNETCORE_ENVIRONMENT", "Encryption__Key", "Jwt__Key", "Jwt__Issuer", "Jwt__Audience", "ConnectionStrings__DBConnectionString" };
-        foreach (var envVar in envVars)
-        {
-            var value = Environment.GetEnvironmentVariable(envVar);
-            if (envVar.Contains("Key", StringComparison.OrdinalIgnoreCase))
-            {
-                value = string.IsNullOrEmpty(value) ? "[NULL/EMPTY]" : $"[MASKED-{value.Length}chars]";
-            }
-            Console.WriteLine($"  {envVar} = {value}");
-        }
-        
-        Console.WriteLine("\n=== SPECIFIC CONFIG LOOKUPS ===");
 
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
         Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
@@ -100,47 +58,20 @@ public class Program
         builder.Services.AddDbContext<UserDbContext>(options =>
             options.UseSqlServer(dbConnectionString, x => x.MigrationsAssembly(typeof(UserDbContext).Assembly.FullName)));
       
-        // Try multiple encryption key locations with detailed logging
-        Console.WriteLine("\n=== ENCRYPTION KEY LOOKUP ===");
-        var encryptionKey1 = builder.Configuration["EncryptionSettings:EncryptionKey"];
-        var encryptionKey2 = builder.Configuration["Encryption:Key"];
-        var encryptionKey3 = builder.Configuration["Encryption__Key"];
-        var encryptionKey4 = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
-        
-        Console.WriteLine($"EncryptionSettings:EncryptionKey = {(string.IsNullOrEmpty(encryptionKey1) ? "[NULL/EMPTY]" : $"[FOUND-{encryptionKey1.Length}chars]")}");
-        Console.WriteLine($"Encryption:Key = {(string.IsNullOrEmpty(encryptionKey2) ? "[NULL/EMPTY]" : $"[FOUND-{encryptionKey2.Length}chars]")}");
-        Console.WriteLine($"Encryption__Key = {(string.IsNullOrEmpty(encryptionKey3) ? "[NULL/EMPTY]" : $"[FOUND-{encryptionKey3.Length}chars]")}");
-        Console.WriteLine($"ENV ENCRYPTION_KEY = {(string.IsNullOrEmpty(encryptionKey4) ? "[NULL/EMPTY]" : $"[FOUND-{encryptionKey4.Length}chars]")}");
-        
-        var encryptionKey = encryptionKey1 ?? encryptionKey2 ?? encryptionKey3 ?? encryptionKey4;
-        Console.WriteLine($"Final encryption key selected: {(string.IsNullOrEmpty(encryptionKey) ? "[NULL/EMPTY]" : $"[FOUND-{encryptionKey.Length}chars]")}");
-        
-        if (string.IsNullOrWhiteSpace(encryptionKey))
+        var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
+        if (string.IsNullOrEmpty(encryptionKey))
         {
-            Console.WriteLine("ERROR: Encryption key is missing from all sources!");
             throw new InvalidOperationException("Encryption key is missing.");
         }
         EncryptionHelper.SetEncryptionKey(encryptionKey);
-        Console.WriteLine("Encryption key successfully set!");
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<UserDbContext>()
             .AddDefaultTokenProviders();
 
-        // JWT Configuration with detailed logging
-        Console.WriteLine("\n=== JWT CONFIGURATION LOOKUP ===");
-        var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? builder.Configuration["Jwt__Issuer"];
-        var jwtAudience = builder.Configuration["Jwt:Audience"] ?? builder.Configuration["Jwt__Audience"];
-        var jwtKey = builder.Configuration["Jwt:Key"] ?? builder.Configuration["Jwt__Key"];
-
-        Console.WriteLine($"Jwt:Issuer = {jwtIssuer ?? "[NULL/EMPTY]"}");
-        Console.WriteLine($"Jwt:Audience = {jwtAudience ?? "[NULL/EMPTY]"}");
-        Console.WriteLine($"Jwt:Key = {(string.IsNullOrEmpty(jwtKey) ? "[NULL/EMPTY]" : $"[FOUND-{jwtKey.Length}chars]")}");
-        
-        // Also try the double underscore versions
-        Console.WriteLine($"Jwt__Issuer = {builder.Configuration["Jwt__Issuer"] ?? "[NULL/EMPTY]"}");
-        Console.WriteLine($"Jwt__Audience = {builder.Configuration["Jwt__Audience"] ?? "[NULL/EMPTY]"}");
-        Console.WriteLine($"Jwt__Key = {(string.IsNullOrEmpty(builder.Configuration["Jwt__Key"]) ? "[NULL/EMPTY]" : $"[FOUND-{builder.Configuration["Jwt__Key"].Length}chars]")}");
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+        var jwtAudience = builder.Configuration["Jwt:Audience"];
+        var jwtKey = builder.Configuration["Jwt:Key"];
 
         logger.LogInfo($"[UserMicroService] Jwt:Issuer   = {jwtIssuer}");
         logger.LogInfo($"[UserMicroService] Jwt:Audience = {jwtAudience}");
