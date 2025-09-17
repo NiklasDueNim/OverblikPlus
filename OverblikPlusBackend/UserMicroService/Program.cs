@@ -59,7 +59,7 @@ public class Program
       
         var encryptionKey =
             builder.Configuration["EncryptionSettings:EncryptionKey"]
-            ?? builder.Configuration["Encryption__Key"]
+            ?? builder.Configuration["Encryption:Key"] 
             ?? Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
         if (string.IsNullOrWhiteSpace(encryptionKey))
             throw new InvalidOperationException("Encryption key is missing.");
