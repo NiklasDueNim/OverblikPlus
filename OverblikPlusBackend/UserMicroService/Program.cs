@@ -76,7 +76,7 @@ public class Program
         Console.WriteLine($"ENV ENCRYPTION_KEY = {(string.IsNullOrEmpty(encKeyFromConfig3) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig3.Length}chars]")}");
 
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
-        Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
+        Console.WriteLine($"DB_CONNECTION_STRING: {(string.IsNullOrEmpty(dbConnectionString) ? "[NULL/EMPTY]" : "[FOUND-MASKED]")}");
         if (string.IsNullOrEmpty(dbConnectionString))
         {
             throw new Exception("DB_CONNECTION_STRING is missing or empty.");
@@ -85,13 +85,21 @@ public class Program
         builder.Services.AddDbContext<UserDbContext>(options =>
             options.UseSqlServer(dbConnectionString, x => x.MigrationsAssembly(typeof(UserDbContext).Assembly.FullName)));
       
-        // Try multiple encryption key sources
-        var encryptionKeyBase64 = builder.Configuration["EncryptionSettings:EncryptionKey"] 
-                                 ?? builder.Configuration["Encryption:Key"] 
-                                 ?? Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
-        if (string.IsNullOrEmpty(encryptionKeyBase64))
+        // Robust fallback - first non-empty value
+        string FirstNonEmpty(params string?[] values) =>
+            values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v)) ?? "";
+
+        var encryptionKeyBase64 = FirstNonEmpty(
+            builder.Configuration["EncryptionSettings:EncryptionKey"],
+            builder.Configuration["Encryption:Key"],
+            Environment.GetEnvironmentVariable("ENCRYPTION_KEY")
+        );
+        
+        Console.WriteLine($"Selected encryption key source: {(string.IsNullOrEmpty(encryptionKeyBase64) ? "[NONE FOUND]" : $"[FOUND-{encryptionKeyBase64.Length}chars]")}");
+        
+        if (string.IsNullOrWhiteSpace(encryptionKeyBase64))
         {
-            throw new InvalidOperationException("Encryption key is missing.");
+            throw new InvalidOperationException("Encryption key is missing from all sources.");
         }
         
         // Decode Base64 key to get the raw 32-byte key
