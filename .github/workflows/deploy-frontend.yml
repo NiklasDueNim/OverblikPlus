@@ -2,7 +2,7 @@ name: Deploy Frontend to Azure Static Web App
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, Development ]
     paths: [ 'OverblikPlus/**' ]
   workflow_dispatch: # Allow manual trigger
 

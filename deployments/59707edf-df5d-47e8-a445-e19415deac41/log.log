@@ -1,0 +1,34 @@
+2025-09-14T11:03:42.3182542Z,Updating submodules.,7de29a64-f667-4acd-a27d-1b65a30348a8,0
+2025-09-14T11:03:43.5302146Z,Preparing deployment for commit id '59707edf-d'.,f3cf43d9-7863-4874-9f09-f69f44c1cff8,0
+2025-09-14T11:03:44.0353111Z,PreDeployment: context.CleanOutputPath False,68f2bc18-c9f8-4f76-b5a3-511e2d31dbb7,0
+2025-09-14T11:03:44.1797185Z,PreDeployment: context.OutputPath /home/site/wwwroot,d416dfdb-03cb-4796-b648-53528b5b3f63,0
+2025-09-14T11:03:44.4161857Z,Repository path is /tmp/zipdeploy/extracted,6c6a2434-19ab-448b-ae57-35f91d6116d4,0
+2025-09-14T11:03:44.5674321Z,Running oryx build...,64a7cb87-56f9-4d2f-9c31-5291a5c44aa0,0
+	2025-09-14T11:03:44.5749044Z,Command: oryx build /tmp/zipdeploy/extracted -o /home/site/wwwroot --platform dotnet --platform-version 8.0 -p virtualenv_name= --log-file /tmp/build-debug.log  -i /tmp/8ddf37e5ec7a497 | tee /tmp/oryx-build.log,,0
+	2025-09-14T11:03:50.1703593Z,Operation performed by Microsoft Oryx&comma; https://github.com/Microsoft/Oryx,,0
+	2025-09-14T11:03:50.2398992Z,You can report issues at https://github.com/Microsoft/Oryx/issues,,0
+	2025-09-14T11:03:50.2615731Z,,,0
+	2025-09-14T11:03:50.2903455Z,Oryx Version: 0.2.20250611.1+0649de32f1279969c9023dd41b389cce4bb94493&comma; Commit: 0649de32f1279969c9023dd41b389cce4bb94493&comma; ReleaseTagName: 20250611.1,,0
+	2025-09-14T11:03:50.3121667Z,,,0
+	2025-09-14T11:03:50.3495914Z,Build Operation ID: 089c8f300154f157,,0
+	2025-09-14T11:03:50.3614986Z,Repository Commit : 59707edf-df5d-47e8-a445-e19415deac41,,0
+	2025-09-14T11:03:50.4020553Z,OS Type           : bookworm,,0
+	2025-09-14T11:03:50.4330986Z,Image Type        : githubactions,,0
+	2025-09-14T11:03:50.4932589Z,,,0
+	2025-09-14T11:03:50.5412021Z,Primary SDK Storage URL: https://oryx-cdn.microsoft.io,,0
+	2025-09-14T11:03:50.6311813Z,Backup SDK Storage URL: https://oryxsdks-cdn.azureedge.net,,0
+	2025-09-14T11:03:50.6620804Z,Detecting platforms...,,0
+	2025-09-14T11:03:50.7116811Z,Could not detect any platform in the source directory.,,0
+	2025-09-14T11:03:50.8056960Z,Error: Couldn't detect a version for the platform 'dotnet' in the repo.,,1
+	2025-09-14T11:03:53.7919786Z,Error: Couldn't detect a version for the platform 'dotnet' in the repo.\n/bin/bash -c "oryx build /tmp/zipdeploy/extracted -o /home/site/wwwroot --platform dotnet --platform-version 8.0 -p virtualenv_name= --log-file /tmp/build-debug.log  -i /tmp/8ddf37e5ec7a497 | tee /tmp/oryx-build.log ; exit $PIPESTATUS ",,2
+2025-09-14T11:03:54.0016111Z,,a164f7b1-55ce-4ae0-bd54-15266e2b0b25,0
+2025-09-14T11:03:54.1404950Z,Generating summary of Oryx build,a65feff9-bf6e-45c1-8dad-06e86dd19c53,0
+2025-09-14T11:03:54.2891388Z,Parsing the build logs,6f3380cf-d42a-4f91-9942-71156672176f,0
+2025-09-14T11:03:54.4557610Z,Found 0 issue(s),ac790623-4e7a-4750-982f-0d936363ceac,0
+2025-09-14T11:03:54.6168060Z,,0b30ad8e-30cd-432f-b810-1d798c2f4714,0
+2025-09-14T11:03:54.7684592Z,Build Summary :,b214d8b4-f110-4f9f-8a37-4deff99afe7d,0
+2025-09-14T11:03:54.9133657Z,===============,41892a62-e6ca-4e02-91c6-cb30a1d33e44,0
+2025-09-14T11:03:55.0680885Z,Errors (0),2a6f3741-37e2-44a5-91f0-e78245e3199f,0
+2025-09-14T11:03:55.2071480Z,Warnings (0),1dc76c6d-3686-4ae4-a4e4-20d21eee82b0,0
+2025-09-14T11:03:55.3390466Z,,6bb554da-b57c-420c-af44-b994a05958ed,0
+2025-09-14T11:03:56.0121261Z,Deployment Failed. deployer = GITHUB_ZIP_DEPLOY deploymentPath = ZipDeploy. Extract zip. Remote build.,b59f7540-1343-4443-9f56-3d6cf9595f27,0

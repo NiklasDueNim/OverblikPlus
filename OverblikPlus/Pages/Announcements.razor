@@ -1,0 +1,143 @@
+@page "/announcements"
+@using OverblikPlus.Models.Dtos.Announcement
+@using OverblikPlus.Services.Interfaces
+@inject IAnnouncementService AnnouncementService
+
+<h3>Opslagstavle</h3>
+
+<button class="btn btn-primary mb-3" @onclick="OpenCreateModal">Opret nyt opslag</button>
+
+@if (announcements == null)
+{
+    <p>Henter data...</p>
+}
+else
+{
+    <div>
+        @foreach (var ann in announcements)
+        {
+            <!-- Vis kun hvis indenfor StartDate/EndDate -->
+            @if (DateTime.Today >= ann.StartDate && DateTime.Today <= ann.EndDate)
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5>@ann.Title</h5>
+                        <p>@ann.Body</p>
+                        <small>Fra: @ann.StartDate.ToShortDateString() - Til: @ann.EndDate.ToShortDateString()</small>
+                        <br />
+                        <button class="btn btn-sm btn-secondary" @onclick="() => OpenEditModal(ann)">Rediger</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteAnnouncement(ann.Id)">Slet</button>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+}
+
+@* Modal *@
+@if (showModal)
+{
+    <div class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>@(isEditMode ? "Rediger opslag" : "Opret nyt opslag")</h5>
+                    <button @onclick="CloseModal" class="btn-close"></button>
+                </div>
+                <div class="modal-body">
+                    <label>Titel:</label>
+                    <input type="text" class="form-control" @bind="currentAnnouncement.Title" />
+                    <label>Tekst:</label>
+                    <textarea class="form-control" @bind="currentAnnouncement.Body"></textarea>
+                    <label>Start dato:</label>
+                    <input type="date" class="form-control" @bind="currentAnnouncement.StartDate" />
+                    <label>Slut dato:</label>
+                    <input type="date" class="form-control" @bind="currentAnnouncement.EndDate" />
+                    <div class="form-check mt-2">
+                        <input type="checkbox" class="form-check-input" id="chkImportant" @bind="currentAnnouncement.IsImportant" />
+                        <label class="form-check-label" for="chkImportant">Vigtigt opslag?</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button @onclick="CloseModal" class="btn btn-secondary">Luk</button>
+                    @if (isEditMode)
+                    {
+                        <button @onclick="UpdateAnnouncement" class="btn btn-primary">Gem</button>
+                    }
+                    else
+                    {
+                        <button @onclick="CreateAnnouncement" class="btn btn-primary">Opret</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<AnnouncementDto> announcements;
+    private bool showModal = false;
+    private bool isEditMode = false;
+    private AnnouncementDto currentAnnouncement = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        announcements = await AnnouncementService.GetAllAsync();
+    }
+
+    private void OpenCreateModal()
+    {
+        showModal = true;
+        isEditMode = false;
+        currentAnnouncement = new AnnouncementDto 
+        { 
+            StartDate = DateTime.Today, 
+            EndDate = DateTime.Today.AddDays(7) 
+        };
+    }
+
+    private void OpenEditModal(AnnouncementDto ann)
+    {
+        showModal = true;
+        isEditMode = true;
+        currentAnnouncement = new AnnouncementDto
+        {
+            Id = ann.Id,
+            Title = ann.Title,
+            Body = ann.Body,
+            StartDate = ann.StartDate,
+            EndDate = ann.EndDate,
+            IsImportant = ann.IsImportant
+        };
+    }
+
+    private async Task CreateAnnouncement()
+    {
+        await AnnouncementService.CreateAsync(currentAnnouncement);
+        await ReloadAnnouncements();
+    }
+
+    private async Task UpdateAnnouncement()
+    {
+        await AnnouncementService.UpdateAsync(currentAnnouncement);
+        await ReloadAnnouncements();
+    }
+
+    private async Task DeleteAnnouncement(Guid id)
+    {
+        await AnnouncementService.DeleteAsync(id);
+        await ReloadAnnouncements();
+    }
+
+    private async Task ReloadAnnouncements()
+    {
+        showModal = false;
+        announcements = await AnnouncementService.GetAllAsync();
+        StateHasChanged();
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+    }
+}

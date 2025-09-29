@@ -78,7 +78,9 @@ namespace TaskMicroService.Services
                 }
 
                 _logger.LogInfo("Calculating next occurrence...");
-                taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval);
+                taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval,
+                    createTaskDto.MonthlyType, createTaskDto.MonthlyDay, createTaskDto.SelectedWeekDays, 
+                    createTaskDto.EndType, createTaskDto.EndAfterCount, createTaskDto.EndDate);
 
                 _logger.LogInfo("Saving task...");
                 await SaveTaskAsync(taskEntity);
@@ -141,8 +143,23 @@ namespace TaskMicroService.Services
 
             if (!string.IsNullOrEmpty(task.RecurrenceType) && task.RecurrenceType != "None")
             {
-                task.NextOccurrence =
-                    CalculateNextOccurrence(task.NextOccurrence, task.RecurrenceType, task.RecurrenceInterval);
+                // Parse SelectedWeekDays from JSON string
+                var selectedWeekDays = new Dictionary<string, bool>();
+                if (!string.IsNullOrEmpty(task.SelectedWeekDays))
+                {
+                    try
+                    {
+                        selectedWeekDays = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(task.SelectedWeekDays) ?? new Dictionary<string, bool>();
+                    }
+                    catch
+                    {
+                        selectedWeekDays = new Dictionary<string, bool>();
+                    }
+                }
+                
+                task.NextOccurrence = CalculateNextOccurrence(task.NextOccurrence, task.RecurrenceType, task.RecurrenceInterval,
+                    task.MonthlyType, task.MonthlyDay, selectedWeekDays, 
+                    task.EndType, task.EndAfterCount, task.EndDate);
                 task.IsCompleted = false;
             }
 
@@ -165,16 +182,107 @@ namespace TaskMicroService.Services
             return Result<IEnumerable<ReadTaskDto>>.SuccessResult(taskDtos);
         }
 
-        private DateTime CalculateNextOccurrence(DateTime startDate, string recurrenceType, int interval)
+        private DateTime CalculateNextOccurrence(DateTime startDate, string recurrenceType, int interval, 
+            string monthlyType = "SameDay", int monthlyDay = 1, Dictionary<string, bool> selectedWeekDays = null, 
+            string endType = "Never", int endAfterCount = 1, DateTime? endDate = null)
         {
-            return recurrenceType switch
+            if (recurrenceType == "None") return startDate;
+            
+            var currentDate = startDate;
+            var occurrenceCount = 0;
+            
+            while (occurrenceCount < 100) // Safety limit
             {
-                "None" => startDate,
-                "Daily" => startDate.AddDays(interval),
-                "Weekly" => startDate.AddDays(7 * interval),
-                "Monthly" => startDate.AddMonths(interval),
-                "Yearly" => startDate.AddYears(interval),
-                _ => throw new ArgumentException("Invalid recurrence type")
+                currentDate = recurrenceType switch
+                {
+                    "Daily" => currentDate.AddDays(interval),
+                    "Weekly" => GetNextWeeklyOccurrence(currentDate, interval, selectedWeekDays),
+                    "Monthly" => CalculateMonthlyOccurrence(currentDate, interval, monthlyType, monthlyDay),
+                    "Yearly" => currentDate.AddYears(interval),
+                    _ => throw new ArgumentException("Invalid recurrence type")
+                };
+                
+                occurrenceCount++;
+                
+                // Check end conditions
+                if (endType == "After" && occurrenceCount >= endAfterCount) break;
+                if (endType == "Date" && endDate.HasValue && currentDate > endDate.Value) break;
+                
+                // For weekly, check if we have a valid day
+                if (recurrenceType == "Weekly" && IsValidWeekDay(currentDate, selectedWeekDays))
+                {
+                    return currentDate;
+                }
+                else if (recurrenceType != "Weekly")
+                {
+                    return currentDate;
+                }
+            }
+            
+            return currentDate;
+        }
+        
+        private DateTime CalculateMonthlyOccurrence(DateTime startDate, int interval, string monthlyType, int monthlyDay)
+        {
+            var nextDate = startDate.AddMonths(interval);
+            
+            return monthlyType switch
+            {
+                "SameDay" => nextDate, // Beholder samme dag (kan være problematisk)
+                "FirstDay" => new DateTime(nextDate.Year, nextDate.Month, 1),
+                "LastDay" => new DateTime(nextDate.Year, nextDate.Month, 1).AddMonths(1).AddDays(-1),
+                "SpecificDay" => GetSpecificDayInMonth(nextDate, monthlyDay),
+                _ => nextDate
+            };
+        }
+        
+        private DateTime GetSpecificDayInMonth(DateTime month, int day)
+        {
+            // Sikrer at vi ikke overskrider månedens antal dage
+            var daysInMonth = DateTime.DaysInMonth(month.Year, month.Month);
+            var targetDay = Math.Min(day, daysInMonth);
+            
+            return new DateTime(month.Year, month.Month, targetDay);
+        }
+        
+        private DateTime GetNextWeeklyOccurrence(DateTime currentDate, int interval, Dictionary<string, bool> selectedWeekDays)
+        {
+            var nextDate = currentDate.AddDays(7 * interval);
+            
+            // Find next valid weekday
+            for (int i = 0; i < 7; i++)
+            {
+                var dayName = GetDanishDayName(nextDate.DayOfWeek);
+                if (selectedWeekDays?.ContainsKey(dayName) == true && selectedWeekDays[dayName])
+                {
+                    return nextDate;
+                }
+                nextDate = nextDate.AddDays(1);
+            }
+            
+            return nextDate;
+        }
+        
+        private bool IsValidWeekDay(DateTime date, Dictionary<string, bool> selectedWeekDays)
+        {
+            if (selectedWeekDays == null || !selectedWeekDays.Any()) return true;
+            
+            var dayName = GetDanishDayName(date.DayOfWeek);
+            return selectedWeekDays.ContainsKey(dayName) && selectedWeekDays[dayName];
+        }
+        
+        private string GetDanishDayName(DayOfWeek dayOfWeek)
+        {
+            return dayOfWeek switch
+            {
+                DayOfWeek.Monday => "Mandag",
+                DayOfWeek.Tuesday => "Tirsdag",
+                DayOfWeek.Wednesday => "Onsdag",
+                DayOfWeek.Thursday => "Torsdag",
+                DayOfWeek.Friday => "Fredag",
+                DayOfWeek.Saturday => "Lørdag",
+                DayOfWeek.Sunday => "Søndag",
+                _ => ""
             };
         }
 

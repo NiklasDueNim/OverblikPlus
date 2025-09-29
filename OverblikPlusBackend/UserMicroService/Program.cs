@@ -1,12 +1,14 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using OverblikPlus.Shared.Interfaces;
 using OverblikPlus.Shared.Logging;
 using Serilog;
@@ -46,21 +48,84 @@ public class Program
         var tempProvider = builder.Services.BuildServiceProvider();
         var logger = tempProvider.GetRequiredService<ILoggerService>();
 
+        // === COMPREHENSIVE CONFIGURATION DEBUGGING ===
+        Console.WriteLine("=== USER API CONFIGURATION DEBUG ===");
+        Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
+        Console.WriteLine($"ContentRoot: {builder.Environment.ContentRootPath}");
+        
+        // Log ALL configuration keys and values
+        Console.WriteLine("\n=== ALL CONFIGURATION VALUES ===");
+        foreach (var kvp in builder.Configuration.AsEnumerable())
+        {
+            var value = kvp.Value;
+            if (kvp.Key.Contains("Key", StringComparison.OrdinalIgnoreCase) || 
+                kvp.Key.Contains("Password", StringComparison.OrdinalIgnoreCase))
+            {
+                value = string.IsNullOrEmpty(value) ? "[NULL/EMPTY]" : $"[MASKED-{value.Length}chars]";
+            }
+            Console.WriteLine($"  {kvp.Key} = {value}");
+        }
+        
+        // Specific encryption key debugging
+        Console.WriteLine("\n=== ENCRYPTION KEY DEBUGGING ===");
+        var encKeyFromConfig1 = builder.Configuration["EncryptionSettings:EncryptionKey"];
+        var encKeyFromConfig2 = builder.Configuration["Encryption:Key"];
+        var encKeyFromConfig3 = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
+        
+        Console.WriteLine($"EncryptionSettings:EncryptionKey = {(string.IsNullOrEmpty(encKeyFromConfig1) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig1.Length}chars]")}");
+        Console.WriteLine($"Encryption:Key = {(string.IsNullOrEmpty(encKeyFromConfig2) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig2.Length}chars]")}");
+        Console.WriteLine($"ENV ENCRYPTION_KEY = {(string.IsNullOrEmpty(encKeyFromConfig3) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig3.Length}chars]")}");
+
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
-        Console.WriteLine($"DB_CONNECTION_STRING: {dbConnectionString}");
+        Console.WriteLine($"DB_CONNECTION_STRING: {(string.IsNullOrEmpty(dbConnectionString) ? "[NULL/EMPTY]" : "[FOUND-MASKED]")}");
         if (string.IsNullOrEmpty(dbConnectionString))
         {
             throw new Exception("DB_CONNECTION_STRING is missing or empty.");
         }
 
         builder.Services.AddDbContext<UserDbContext>(options =>
-            options.UseSqlServer(dbConnectionString));
+            options.UseSqlServer(dbConnectionString, x => x.MigrationsAssembly(typeof(UserDbContext).Assembly.FullName)));
+      
+        // Robust fallback - first non-empty value
+        string FirstNonEmpty(params string?[] values) =>
+            values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v)) ?? "";
 
-        var encryptionKey = builder.Configuration["EncryptionSettings:EncryptionKey"];
-        if (string.IsNullOrEmpty(encryptionKey))
+        var encryptionKeyBase64 = FirstNonEmpty(
+            builder.Configuration["EncryptionSettings:EncryptionKey"],
+            builder.Configuration["Encryption:Key"],
+            Environment.GetEnvironmentVariable("ENCRYPTION_KEY")
+        );
+        
+        Console.WriteLine($"Selected encryption key source: {(string.IsNullOrEmpty(encryptionKeyBase64) ? "[NONE FOUND]" : $"[FOUND-{encryptionKeyBase64.Length}chars]")}");
+        
+        if (string.IsNullOrWhiteSpace(encryptionKeyBase64))
         {
-            throw new InvalidOperationException("Encryption key is missing.");
+            throw new InvalidOperationException("Encryption key is missing from all sources.");
         }
+        
+        // Decode Base64 key to get the raw 32-byte key
+        string encryptionKey;
+        try
+        {
+            var keyBytes = Convert.FromBase64String(encryptionKeyBase64);
+            encryptionKey = Encoding.UTF8.GetString(keyBytes);
+            
+            // Ensure key is exactly 32 characters for AES-256
+            if (encryptionKey.Length > 32)
+            {
+                encryptionKey = encryptionKey.Substring(0, 32);
+            }
+            else if (encryptionKey.Length < 32)
+            {
+                encryptionKey = encryptionKey.PadRight(32, '0');
+            }
+        }
+        catch (FormatException)
+        {
+            // If not Base64, use as-is and ensure 32 characters
+            encryptionKey = encryptionKeyBase64.Length > 32 ? encryptionKeyBase64.Substring(0, 32) : encryptionKeyBase64.PadRight(32, '0');
+        }
+        
         EncryptionHelper.SetEncryptionKey(encryptionKey);
 
         builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -71,9 +136,14 @@ public class Program
         var jwtAudience = builder.Configuration["Jwt:Audience"];
         var jwtKey = builder.Configuration["Jwt:Key"];
 
-        logger.LogInfo($"[UserMicroService] Jwt:Issuer   = {jwtIssuer}");
-        logger.LogInfo($"[UserMicroService] Jwt:Audience = {jwtAudience}");
-        logger.LogInfo($"[UserMicroService] Jwt:Key Len  = {jwtKey?.Length}");
+        logger.LogInfo($"[UserMicroService] Jwt:Issuer   = {jwtIssuer ?? "NULL"}");
+        logger.LogInfo($"[UserMicroService] Jwt:Audience = {jwtAudience ?? "NULL"}");
+        logger.LogInfo($"[UserMicroService] Jwt:Key Len  = {jwtKey?.Length ?? -1}");
+        
+        if (string.IsNullOrEmpty(jwtKey))
+        {
+            logger.LogError("[UserMicroService] JWT Key is null or empty! This will cause startup failure.", new InvalidOperationException("JWT Key missing"));
+        }
 
         builder.Services.AddAuthentication(options =>
             {
@@ -124,7 +194,38 @@ public class Program
         });
 
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "UserMicroService API", Version = "v1" });
+            
+            // Add JWT Bearer Authentication
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        },
+                        Scheme = "oauth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+                    },
+                    new List<string>()
+                }
+            });
+        });
         builder.Services.AddControllers();
         builder.Services.AddAutoMapper(typeof(Program));
 
@@ -149,12 +250,20 @@ public class Program
         {
             app.UseDeveloperExceptionPage(); 
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "UserMicroService API V1");
+                c.RoutePrefix = "swagger";
+            });
         }
         else
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "UserMicroService API V1");
+                c.RoutePrefix = "swagger";
+            });
         }
 
         app.UseHttpsRedirection();
@@ -169,7 +278,9 @@ public class Program
 
         app.MapControllers();
 
-        // Auto-migrate database in Development and Production mode
+        // Auto-migrate database in Development and Production mode - TEMPORARILY DISABLED FOR DEBUGGING
+        logger.LogInfo("[UserMicroService] Database migrations temporarily disabled for debugging");
+        /*
         try
         {
             using (var scope = app.Services.CreateScope())
@@ -186,18 +297,20 @@ public class Program
             logger.LogError($"DB migration failed at startup - continuing without migration: {ex.Message}", ex);
             // Don't throw - let the app start so we can hit /health and see logs
         }
+        */
         
-        logger.LogInfo($"[UserMicroService] Starting in {app.Environment.EnvironmentName} mode.");
-        await app.RunAsync();
+        logger.LogInfo($"[UserMicroService] About to start application in {app.Environment.EnvironmentName} mode.");
+        
+        try
+        {
+            logger.LogInfo("[UserMicroService] Calling app.RunAsync()...");
+            await app.RunAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"[UserMicroService] FATAL ERROR during app.RunAsync(): {ex.Message}", ex);
+            logger.LogError($"[UserMicroService] Stack trace: {ex.StackTrace}", ex);
+            throw;
+        }
     }
 }
-// Test backend workflow
-// Trigger backend workflow test
-// Trigger backend deployment test
-// Trigger backend redeployment with database config
-// Trigger redeployment with storage settings
-// Trigger Azure deployment with build settings
-// Fix deployment - disable remote build
-// Test Docker workflow deployment
-// Trigger workflow manually
-// Test final deployment

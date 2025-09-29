@@ -1,0 +1,41 @@
+@page "/mood"
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models
+@using OverblikPlus.Models.Dtos.Mood
+@using OverblikPlus.Services.Interfaces
+@inject IMoodService MoodService
+@inject CustomAuthStateProvider AuthStateProvider
+
+
+
+<h3>Hej @AuthStateProvider.User.FirstName</h3>
+<p>Hvordan har du det?</p>
+<button class="btn btn-success btn-lg me-2" @onclick="() => SaveMood(MoodDto.MoodRating.Good)">God</button>
+<button class="btn btn-warning btn-lg me-2" @onclick="() => SaveMood(MoodDto.MoodRating.Okay)">Okay</button>
+<button class="btn btn-danger btn-lg" @onclick="() => SaveMood(MoodDto.MoodRating.Bad)">Dårlig</button>
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+    }
+
+
+    private async Task SaveMood(MoodDto.MoodRating mood)
+    {
+        var newMood = new MoodDto()
+        {
+            Id = Guid.NewGuid(),
+            UserId = AuthStateProvider.User.Id,
+            Date = DateTime.Now,
+            Note = "",
+            Rating = mood,
+        };
+
+        await MoodService.CreateMood(newMood);
+
+    }
+    
+}

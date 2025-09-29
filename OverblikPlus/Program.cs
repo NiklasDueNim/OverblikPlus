@@ -85,6 +85,10 @@ ConfigureHttpClient<ITaskService, TaskService>(builder.Services, taskApiBaseUrl)
 ConfigureHttpClient<IAuthService, AuthService>(builder.Services, userApiBaseUrl);
 ConfigureHttpClient<ITaskStepService, TaskStepService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<IRelativeService, RelativeService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<IAnnouncementService, AnnouncementService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<IMoodService, MoodService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<IShiftService, ShiftService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<IActivityService, ActivityService>(builder.Services, taskApiBaseUrl);
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();

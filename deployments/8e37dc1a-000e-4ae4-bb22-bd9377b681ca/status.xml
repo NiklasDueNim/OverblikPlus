@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<deployment>
+  <id>8e37dc1a-000e-4ae4-bb22-bd9377b681ca</id>
+  <author>N/A</author>
+  <deployer>GITHUB_ZIP_DEPLOY</deployer>
+  <authorEmail>N/A</authorEmail>
+  <message>{"type":"deployment","sha":"8746c93add4ae181006566e7f579f41105ffb320","repoName":"NiklasDueNim/OverblikPlus","actor":"NiklasNim","slotName":"production","commitMessage":"Fix TaskMicroService migration error handling and compilation error"}</message>
+  <progress></progress>
+  <status>Success</status>
+  <statusText></statusText>
+  <lastSuccessEndTime>2025-09-14T10:57:29.5204003Z</lastSuccessEndTime>
+  <receivedTime>2025-09-14T10:57:08.5578712Z</receivedTime>
+  <startTime>2025-09-14T10:57:10.2614494Z</startTime>
+  <endTime>2025-09-14T10:57:29.5204003Z</endTime>
+  <complete>True</complete>
+  <is_temp>False</is_temp>
+  <is_readonly>True</is_readonly>
+  <buildSummary />
+</deployment>

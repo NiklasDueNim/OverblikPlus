@@ -37,24 +37,239 @@
             </div>
 
             <div class="mb-3">
-                <label for="recurrenceType" class="form-label">Gentagelsestype:</label>
-                <select id="recurrenceType" @bind="Task.RecurrenceType" class="form-select">
-                    <option value="None">Ingen gentagelse</option>
-                    <option value="Daily">Daglig</option>
-                    <option value="Weekly">Ugentlig</option>
-                    <option value="Monthly">Månedlig</option>
-                </select>
+                <label class="form-label">Gentagelse:</label>
+                <div class="recurrence-options">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="recurrence" id="noRecurrence" 
+                               @onchange="@(() => Task.RecurrenceType = "None")" 
+                               checked="@(Task.RecurrenceType == "None")" />
+                        <label class="form-check-label" for="noRecurrence">
+                            Ingen gentagelse
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="recurrence" id="dailyRecurrence" 
+                               @onchange="@(() => Task.RecurrenceType = "Daily")" 
+                               checked="@(Task.RecurrenceType == "Daily")" />
+                        <label class="form-check-label" for="dailyRecurrence">
+                            Daglig
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="recurrence" id="weeklyRecurrence" 
+                               @onchange="@(() => Task.RecurrenceType = "Weekly")" 
+                               checked="@(Task.RecurrenceType == "Weekly")" />
+                        <label class="form-check-label" for="weeklyRecurrence">
+                            Ugentlig
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="recurrence" id="monthlyRecurrence" 
+                               @onchange="@(() => Task.RecurrenceType = "Monthly")" 
+                               checked="@(Task.RecurrenceType == "Monthly")" />
+                        <label class="form-check-label" for="monthlyRecurrence">
+                            Månedlig
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="recurrence" id="yearlyRecurrence" 
+                               @onchange="@(() => Task.RecurrenceType = "Yearly")" 
+                               checked="@(Task.RecurrenceType == "Yearly")" />
+                        <label class="form-check-label" for="yearlyRecurrence">
+                            Årlig
+                        </label>
+                    </div>
+                </div>
             </div>
 
-            <div class="mb-3" style="display:@(Task.RecurrenceType == "None" ? "none" : "block")">
-                <label for="recurrenceInterval" class="form-label">Gentagelsesinterval:</label>
-                <input id="recurrenceInterval" type="number" @bind="Task.RecurrenceInterval" class="form-control" min="1" />
-            </div>
+            @if (Task.RecurrenceType == "Monthly")
+            {
+                <div class="mb-3">
+                    <label class="form-label">Månedlig gentagelse:</label>
+                    <div class="monthly-options">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="monthlyType" id="monthlySameDay" 
+                                   @onchange="@(() => Task.MonthlyType = "SameDay")" 
+                                   checked="@(Task.MonthlyType == "SameDay")" />
+                            <label class="form-check-label" for="monthlySameDay">
+                                Samme dag i måneden (@Task.StartDate.Day.)
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="monthlyType" id="monthlyFirstDay" 
+                                   @onchange="@(() => Task.MonthlyType = "FirstDay")" 
+                                   checked="@(Task.MonthlyType == "FirstDay")" />
+                            <label class="form-check-label" for="monthlyFirstDay">
+                                Første dag i måneden
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="monthlyType" id="monthlyLastDay" 
+                                   @onchange="@(() => Task.MonthlyType = "LastDay")" 
+                                   checked="@(Task.MonthlyType == "LastDay")" />
+                            <label class="form-check-label" for="monthlyLastDay">
+                                Sidste dag i måneden
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="monthlyType" id="monthlySpecificDay" 
+                                   @onchange="@(() => Task.MonthlyType = "SpecificDay")" 
+                                   checked="@(Task.MonthlyType == "SpecificDay")" />
+                            <label class="form-check-label" for="monthlySpecificDay">
+                                Specifik dag i måneden
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                @if (Task.MonthlyType == "SpecificDay")
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Hvilken dag:</label>
+                        <select @bind="Task.MonthlyDay" class="form-select">
+                            @for (int i = 1; i <= 31; i++)
+                            {
+                                <option value="@i">@i.</option>
+                            }
+                        </select>
+                    </div>
+                }
+                
+                <div class="mb-3">
+                    <label class="form-label">Hvor ofte:</label>
+                    <div class="recurrence-interval-container">
+                        <span>Hver</span>
+                        <select @bind="Task.RecurrenceInterval" class="form-select d-inline-block" 
+                                style="width: 120px; margin: 0 8px;">
+                            <option value="1">1. måned</option>
+                            <option value="2">2. måned</option>
+                            <option value="3">3. måned</option>
+                            <option value="6">6. måned</option>
+                            <option value="12">12. måned</option>
+                        </select>
+                    </div>
+                </div>
+            }
+
+            @if (Task.RecurrenceType == "Weekly")
+            {
+                <div class="mb-3">
+                    <label class="form-label">Hvilke dage:</label>
+                    <div class="weekday-selection">
+                        @foreach (var day in weekDays)
+                        {
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="day@(day.Key)" 
+                                       checked="@(Task.SelectedWeekDays.ContainsKey(day.Key) && Task.SelectedWeekDays[day.Key])"
+                                       @onchange="@((e) => UpdateWeekDay(day.Key, ((ChangeEventArgs)e).Value?.ToString() == "True"))" />
+                                <label class="form-check-label" for="day@(day.Key)">
+                                    @day.Key
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Hvor ofte:</label>
+                    <div class="recurrence-interval-container">
+                        <span>Hver</span>
+                        <input type="number" @bind="Task.RecurrenceInterval" class="form-control d-inline-block" 
+                               style="width: 80px; margin: 0 8px;" min="1" max="52" />
+                        <span>@(Task.RecurrenceInterval == 1 ? "uge" : "uger")</span>
+                    </div>
+                </div>
+            }
+
+            @if (Task.RecurrenceType == "Daily")
+            {
+                <div class="mb-3">
+                    <label class="form-label">Hvor ofte:</label>
+                    <div class="recurrence-interval-container">
+                        <span>Hver</span>
+                        <input type="number" @bind="Task.RecurrenceInterval" class="form-control d-inline-block" 
+                               style="width: 80px; margin: 0 8px;" min="1" max="365" />
+                        <span>@(Task.RecurrenceInterval == 1 ? "dag" : "dage")</span>
+                    </div>
+                </div>
+            }
+
+            @if (Task.RecurrenceType == "Yearly")
+            {
+                <div class="mb-3">
+                    <label class="form-label">Hvor ofte:</label>
+                    <div class="recurrence-interval-container">
+                        <span>Hver</span>
+                        <input type="number" @bind="Task.RecurrenceInterval" class="form-control d-inline-block" 
+                               style="width: 80px; margin: 0 8px;" min="1" max="10" />
+                        <span>@(Task.RecurrenceInterval == 1 ? "år" : "år")</span>
+                    </div>
+                </div>
+            }
 
             <div class="mb-3">
                 <label for="startDate" class="form-label">Startdato:</label>
                 <input id="startDate" type="date" @bind="Task.StartDate" class="form-control" />
             </div>
+
+            @if (Task.RecurrenceType != "None")
+            {
+                <div class="mb-3">
+                    <label class="form-label">Gentag indtil:</label>
+                    <div class="end-options">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="endType" id="neverEnd" 
+                                   @onchange="@(() => Task.EndType = "Never")" 
+                                   checked="@(Task.EndType == "Never")" />
+                            <label class="form-check-label" for="neverEnd">
+                                Aldrig
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="endType" id="endAfter" 
+                                   @onchange="@(() => Task.EndType = "After")" 
+                                   checked="@(Task.EndType == "After")" />
+                            <label class="form-check-label" for="endAfter">
+                                Efter
+                                <input type="number" @bind="Task.EndAfterCount" class="form-control d-inline-block" 
+                                       style="width: 80px; margin: 0 8px;" min="1" max="999" />
+                                gange
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="endType" id="endOnDate" 
+                                   @onchange="@(() => Task.EndType = "Date")" 
+                                   checked="@(Task.EndType == "Date")" />
+                            <label class="form-check-label" for="endOnDate">
+                                På dato
+                                <input type="date" @bind="Task.EndDate" class="form-control d-inline-block" 
+                                       style="width: 150px; margin-left: 8px;" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preview af gentagelser -->
+                <div class="mb-3">
+                    <label class="form-label">Preview af næste gentagelser:</label>
+                    <div class="recurrence-preview">
+                        @foreach (var occurrence in GetNextOccurrences(5))
+                        {
+                            <span class="badge bg-secondary me-1">@occurrence.ToString("dd/MM/yyyy")</span>
+                        }
+                    </div>
+                </div>
+            }
 
 
             <div class="d-flex justify-content-end">
@@ -73,6 +288,13 @@
     [Parameter] public List<ReadUserDto> Users { get; set; }
     private bool isAdminOrStaff;
     
+    // Ugedage for ugentlig gentagelse
+    private readonly Dictionary<string, bool> weekDays = new()
+    {
+        {"Mandag", false}, {"Tirsdag", false}, {"Onsdag", false}, 
+        {"Torsdag", false}, {"Fredag", false}, {"Lørdag", false}, {"Søndag", false}
+    };
+    
     protected override async Task OnInitializedAsync()
     {
         var role = await AuthStateProvider.GetRoleAsync();
@@ -83,6 +305,16 @@
             Task.RecurrenceType = "None";
             Task.RecurrenceInterval = 1;
             Task.StartDate = DateTime.Now;
+            Task.MonthlyType = "SameDay";
+            Task.MonthlyDay = 1;
+            Task.EndType = "Never";
+            Task.EndAfterCount = 1;
+        }
+        
+        // Initialiser ugedage hvis de ikke er sat
+        if (Task.SelectedWeekDays == null || !Task.SelectedWeekDays.Any())
+        {
+            Task.SelectedWeekDays = new Dictionary<string, bool>(weekDays);
         }
     }
 
@@ -95,6 +327,64 @@
             var buffer = new byte[file.Size];
             await stream.ReadAsync(buffer);
             Task.ImageBase64 = Convert.ToBase64String(buffer);
+        }
+    }
+
+    private List<DateTime> GetNextOccurrences(int count)
+    {
+        var occurrences = new List<DateTime>();
+        var currentDate = Task.StartDate;
+        
+        for (int i = 0; i < count; i++)
+        {
+            currentDate = Task.RecurrenceType switch
+            {
+                "Daily" => currentDate.AddDays(Task.RecurrenceInterval),
+                "Weekly" => currentDate.AddDays(7 * Task.RecurrenceInterval),
+                "Monthly" => CalculateMonthlyOccurrence(currentDate, Task.RecurrenceInterval, Task.MonthlyType, Task.MonthlyDay),
+                "Yearly" => currentDate.AddYears(Task.RecurrenceInterval),
+                _ => currentDate
+            };
+            
+            if (currentDate > DateTime.Now.AddYears(1)) break; // Don't show too far ahead
+            occurrences.Add(currentDate);
+        }
+        
+        return occurrences;
+    }
+    
+    private DateTime CalculateMonthlyOccurrence(DateTime startDate, int interval, string monthlyType, int monthlyDay)
+    {
+        var nextDate = startDate.AddMonths(interval);
+        
+        return monthlyType switch
+        {
+            "SameDay" => nextDate, // Beholder samme dag (kan være problematisk)
+            "FirstDay" => new DateTime(nextDate.Year, nextDate.Month, 1),
+            "LastDay" => new DateTime(nextDate.Year, nextDate.Month, 1).AddMonths(1).AddDays(-1),
+            "SpecificDay" => GetSpecificDayInMonth(nextDate, monthlyDay),
+            _ => nextDate
+        };
+    }
+    
+    private DateTime GetSpecificDayInMonth(DateTime month, int day)
+    {
+        // Sikrer at vi ikke overskrider månedens antal dage
+        var daysInMonth = DateTime.DaysInMonth(month.Year, month.Month);
+        var targetDay = Math.Min(day, daysInMonth);
+        
+        return new DateTime(month.Year, month.Month, targetDay);
+    }
+
+    private void UpdateWeekDay(string dayName, bool isChecked)
+    {
+        if (Task.SelectedWeekDays.ContainsKey(dayName))
+        {
+            Task.SelectedWeekDays[dayName] = isChecked;
+        }
+        else
+        {
+            Task.SelectedWeekDays.Add(dayName, isChecked);
         }
     }
 

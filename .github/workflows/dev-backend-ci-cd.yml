@@ -20,16 +20,14 @@ jobs:
         service: [user-api, task-api]
 
     steps:
-      # 0) Repo + .NET
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Setup .NET SDK
+      - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      # 1) Azure login
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -39,50 +37,10 @@ jobs:
         run: |
           az account show -o table
           az group show -n overblikplus-dev-rg -o table
-          ACR_NAME="${{ secrets.ACR_REGISTRY }}"; ACR_NAME="${ACR_NAME%%.azurecr.io}"
+          ACR_NAME="${{ secrets.ACR_REGISTRY }}"
+          ACR_NAME="${ACR_NAME%%.azurecr.io}"
           az acr show -n "$ACR_NAME" -g overblikplus-dev-rg -o table
 
-      # 1.1) Tjek at nødvendige secrets findes i env: dev
-      - name: Sanity check required secrets
-        shell: bash
-        run: |
-          missing=0
-          req=(
-            "AZURE_CREDENTIALS"
-            "ACR_REGISTRY" "ACR_USERNAME" "ACR_PASSWORD"
-            "DB_CONNECTION_STRING"
-            "JWT_KEY" "JWT_ISSUER" "JWT_AUDIENCE"
-          )
-          for k in "${req[@]}"; do
-            v="${{ secrets.AZURE_CREDENTIALS }}"
-            case "$k" in
-              ACR_REGISTRY) v="${{ secrets.ACR_REGISTRY }}" ;;
-              ACR_USERNAME) v="${{ secrets.ACR_USERNAME }}" ;;
-              ACR_PASSWORD) v="${{ secrets.ACR_PASSWORD }}" ;;
-              DB_CONNECTION_STRING) v="${{ secrets.DB_CONNECTION_STRING }}" ;;
-              JWT_KEY) v="${{ secrets.JWT_KEY }}" ;;
-              JWT_ISSUER) v="${{ secrets.JWT_ISSUER }}" ;;
-              JWT_AUDIENCE) v="${{ secrets.JWT_AUDIENCE }}" ;;
-            esac
-            if [ -z "$v" ]; then echo "❌ Missing secret: $k"; missing=1; fi
-          done
-
-          if [ "${{ matrix.service }}" = "task-api" ]; then
-            if [ -z "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}" ]; then echo "❌ Missing secret: BLOB_STORAGE_CONNECTION_STRING"; missing=1; fi
-            if [ -z "${{ secrets.BLOB_BASE_URL }}" ]; then echo "❌ Missing secret: BLOB_BASE_URL"; missing=1; fi
-          fi
-
-          if [ "${{ matrix.service }}" = "user-api" ]; then
-            if [ -z "${{ secrets.ENCRYPTION_KEY }}" ]; then echo "❌ Missing secret: ENCRYPTION_KEY"; missing=1; fi
-          fi
-
-          if [ $missing -ne 0 ]; then
-            echo "One or more required secrets are missing in Environment: dev"
-            exit 1
-          fi
-          echo "✅ All required secrets present."
-
-      # 2) Build & test
       - name: Restore
         run: |
           find . -name '*.csproj' -print0 | xargs -0 -I {} dotnet restore {}
@@ -98,7 +56,41 @@ jobs:
             dotnet test "$csproj" --no-restore --verbosity normal
           done
 
-      # 3) Docker build/push (ingen secrets bages ind)
+      # --- Replace config placeholders ---
+      - name: Replace config placeholders (Dev)
+        run: |
+          echo "Updating TaskMicroService configuration..."
+          DB_CONN=$(echo "${{ secrets.DB_CONNECTION_STRING }}" | tr -d '\n')
+          BLOB_CONN=$(echo "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}" | tr -d '\n')
+          JWT_KEY=$(echo "${{ secrets.JWT_KEY }}" | tr -d '\n')
+          JWT_ISSUER=$(echo "${{ secrets.JWT_ISSUER }}" | tr -d '\n')
+          JWT_AUDIENCE=$(echo "${{ secrets.JWT_AUDIENCE }}" | tr -d '\n')
+          BLOB_URL=$(echo "${{ secrets.BLOB_BASE_URL }}" | tr -d '\n')
+          ENC_KEY=$(echo "${{ secrets.ENCRYPTION_KEY }}" | tr -d '\n')
+
+          echo "DB_CONN length: ${#DB_CONN}"
+          echo "ENC_KEY length: ${#ENC_KEY}"
+          echo "JWT_KEY length: ${#JWT_KEY}"
+
+          sed -i "s/\"dev-or-prod\"/\"dev\"/g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#BlobStorageConnectionStringPlaceholder#$BLOB_CONN#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+          sed -i "s#BlobStorageBaseUrlPlaceholder#$BLOB_URL#g" ./OverblikPlusBackend/TaskMicroService/appsettings.json
+
+          echo "Updating UserMicroService configuration..."
+          sed -i "s/\"dev-or-prod\"/\"dev\"/g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#DBConnectionStringPlaceholder#$DB_CONN#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#EncryptionKeyPlaceholder#$ENC_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#KeyPlaceholder#$JWT_KEY#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#IssuerPlaceholder#$JWT_ISSUER#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+          sed -i "s#AudiencePlaceholder#$JWT_AUDIENCE#g" ./OverblikPlusBackend/UserMicroService/appsettings.json
+
+          echo "Configuration updated successfully."
+
+      # --- Docker build/push ---
       - name: Login to Azure Container Registry
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_REGISTRY }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
@@ -110,7 +102,6 @@ jobs:
             DOCKERFILE="OverblikPlusBackend/UserMicroService/Dockerfile"
           fi
           IMAGE="${{ secrets.ACR_REGISTRY }}/overblikplus-${{ matrix.service }}-dev:latest"
-          echo "Building $IMAGE with $DOCKERFILE"
           docker build --platform linux/amd64 \
             -t "$IMAGE" \
             -f "$DOCKERFILE" \
@@ -124,12 +115,12 @@ jobs:
 
       - name: Show ACR tags (sanity)
         run: |
-          ACR_NAME="${{ secrets.ACR_REGISTRY }}"; ACR_NAME="${ACR_NAME%%.azurecr.io}"
+          ACR_NAME="${{ secrets.ACR_REGISTRY }}"
+          ACR_NAME="${ACR_NAME%%.azurecr.io}"
           REPO="overblikplus-${{ matrix.service }}-dev"
-          echo "Recent tags for $REPO in $ACR_NAME:"
           az acr repository show-tags -n "$ACR_NAME" --repository "$REPO" --top 10 -o table || true
 
-      # 4) Peg Web App på nyt image + pull-credentials
+      # --- Peg Web App på image + pull creds ---
       - name: Update Azure App Service (container)
         run: |
           APP="overblikplus-${{ matrix.service }}-dev"
@@ -139,11 +130,11 @@ jobs:
             --name "$APP" \
             --resource-group "$RG" \
             --container-image-name "$IMAGE" \
-            --docker-registry-server-url "https://${{ secrets.ACR_REGISTRY }}" \
-            --docker-registry-server-user "${{ secrets.ACR_USERNAME }}" \
-            --docker-registry-server-password "${{ secrets.ACR_PASSWORD }}"
+            --docker-registry-server-url https://${{ secrets.ACR_REGISTRY }} \
+            --docker-registry-server-user ${{ secrets.ACR_USERNAME }} \
+            --docker-registry-server-password ${{ secrets.ACR_PASSWORD }}
 
-      # 5) Sæt miljø + app settings/connection strings (sikre nøgler)
+      # --- Sæt miljø + settings/connection strings på Web App ---
       - name: Set ASPNETCORE_ENVIRONMENT=Development
         run: |
           az webapp config appsettings set \
@@ -151,7 +142,7 @@ jobs:
             -n overblikplus-${{ matrix.service }}-dev \
             --settings ASPNETCORE_ENVIRONMENT=Development
 
-      - name: Apply shared app settings (JWT)
+      - name: Apply shared app settings (JWT etc.)
         run: |
           az webapp config appsettings set \
             -g overblikplus-dev-rg \
@@ -160,7 +151,7 @@ jobs:
               Jwt__Key='${{ secrets.JWT_KEY }}' \
               Jwt__Issuer='${{ secrets.JWT_ISSUER }}' \
               Jwt__Audience='${{ secrets.JWT_AUDIENCE }}'
-
+      
       - name: Apply DB connection string
         run: |
           az webapp config connection-string set \
@@ -169,13 +160,15 @@ jobs:
             --settings DBConnectionString='${{ secrets.DB_CONNECTION_STRING }}' \
             --connection-string-type SQLAzure
 
+      # --- Service-specifikke settings ---
       - name: Apply Task API settings
         if: matrix.service == 'task-api'
         run: |
           az webapp config appsettings set \
             -g overblikplus-dev-rg \
             -n overblikplus-task-api-dev \
-            --settings BlobStorageBaseUrl='${{ secrets.BLOB_BASE_URL }}'
+            --settings \
+              BlobStorageBaseUrl='${{ secrets.BLOB_BASE_URL }}'
           az webapp config connection-string set \
             -g overblikplus-dev-rg \
             -n overblikplus-task-api-dev \
@@ -185,19 +178,12 @@ jobs:
       - name: Apply User API settings (encryption key)
         if: matrix.service == 'user-api'
         run: |
+          # Opret secret ENCRYPTION_KEY i GitHub, eller skift navnet her til din faktiske secret
           az webapp config appsettings set \
             -g overblikplus-dev-rg \
             -n overblikplus-user-api-dev \
-            --settings EncryptionSettings__EncryptionKey='${{ secrets.ENCRYPTION_KEY }}'
-
-      # (valgfrit) slå container-logging til så du ser stdout fra appen
-      - name: Enable container logging (filesystem)
-        run: |
-          az webapp log config \
-            -g overblikplus-dev-rg \
-            -n overblikplus-${{ matrix.service }}-dev \
-            --docker-container-logging filesystem \
-            --level information
+            --settings \
+              Encryption__Key='${{ secrets.ENCRYPTION_KEY }}'
 
       - name: Show applied config (safe)
         run: |
@@ -207,7 +193,6 @@ jobs:
           echo "App settings keys:" && az webapp config appsettings list -g "$RG" -n "$APP" --query "[].name"
           echo "Connection strings (name/type):" && az webapp config connection-string list -g "$RG" -n "$APP" --query "[].{name:name,type:type}"
 
-      # 6) Restart app
       - name: Restart Azure App Service
         run: |
           az webapp restart --name overblikplus-${{ matrix.service }}-dev --resource-group overblikplus-dev-rg
