@@ -1,0 +1,282 @@
+@page "/create-activity"
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models.Dtos.Activity
+@using OverblikPlus.Models.Dtos.User
+@using OverblikPlus.Models.FormModels
+@using OverblikPlus.Services.Interfaces
+@inject IActivityService ActivityService
+@inject IUserService UserService
+@inject CustomAuthStateProvider AuthStateProvider
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Opret Ny Aktivitet
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @successMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            @errorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <EditForm Model="@activityForm" OnValidSubmit="@HandleCreateActivity">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">
+                                        <i class="fas fa-heading me-1"></i>
+                                        Titel *
+                                    </label>
+                                    <InputText id="title" @bind-Value="activityForm.Title" class="form-control" placeholder="F.eks. Morgen gymnastik" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="activityType" class="form-label">
+                                        <i class="fas fa-tags me-1"></i>
+                                        Aktivitetstype *
+                                    </label>
+                                    <InputSelect id="activityType" @bind-Value="activityForm.ActivityType" class="form-select">
+                                        <option value="@ActivityType.FysiskAktivitet">Fysisk Aktivitet</option>
+                                        <option value="@ActivityType.SocialAktivitet">Social Aktivitet</option>
+                                        <option value="@ActivityType.KreativAktivitet">Kreativ Aktivitet</option>
+                                        <option value="@ActivityType.KognitivAktivitet">Kognitiv Aktivitet</option>
+                                        <option value="@ActivityType.MusikAktivitet">Musik Aktivitet</option>
+                                        <option value="@ActivityType.MadAktivitet">Mad Aktivitet</option>
+                                        <option value="@ActivityType.Udflugt">Udflugt</option>
+                                    </InputSelect>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>
+                                Beskrivelse *
+                            </label>
+                            <InputTextArea id="description" @bind-Value="activityForm.Description" class="form-control" rows="3" placeholder="Beskriv aktiviteten..." />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="startDateTime" class="form-label">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Starttidspunkt *
+                                    </label>
+                                    <InputDate id="startDateTime" @bind-Value="activityForm.StartDateTime" class="form-control" />
+                                    <InputTime id="startTime" @bind-Value="activityForm.StartDateTime" class="form-control mt-1" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="endDateTime" class="form-label">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Sluttidspunkt *
+                                    </label>
+                                    <InputDate id="endDateTime" @bind-Value="activityForm.EndDateTime" class="form-control" />
+                                    <InputTime id="endTime" @bind-Value="activityForm.EndDateTime" class="form-control mt-1" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        Sted
+                                    </label>
+                                    <InputText id="location" @bind-Value="activityForm.Location" class="form-control" placeholder="F.eks. Stue, Gård, Fitnessrum" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="maxParticipants" class="form-label">
+                                        <i class="fas fa-users me-1"></i>
+                                        Maksimalt antal deltagere *
+                                    </label>
+                                    <InputNumber id="maxParticipants" @bind-Value="activityForm.MaxParticipants" class="form-control" min="1" max="50" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="responsibleStaff" class="form-label">
+                                <i class="fas fa-user-tie me-1"></i>
+                                Ansvarlige medarbejdere
+                            </label>
+                            <div class="form-control" style="min-height: 100px; max-height: 150px; overflow-y: auto;">
+                                @if (staffUsers != null)
+                                {
+                                    @foreach (var staff in staffUsers)
+                                    {
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="staff_@staff.Id" 
+                                                   checked="@activityForm.ResponsibleStaff.Contains(staff.Id)"
+                                                   @onchange="@(() => ToggleStaffMember(staff.Id))" />
+                                            <label class="form-check-label" for="staff_@staff.Id">
+                                                @staff.FirstName @staff.LastName
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Henter medarbejdere...</p>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="specialRequirements" class="form-label">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                Særlige krav
+                            </label>
+                            <InputTextArea id="specialRequirements" @bind-Value="activityForm.SpecialRequirements" class="form-control" rows="2" placeholder="F.eks. Kræver hjælp til transport, særlige materialer..." />
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <InputCheckbox id="requiresAssistance" @bind-Value="activityForm.RequiresAssistance" class="form-check-input" />
+                                <label class="form-check-label" for="requiresAssistance">
+                                    <i class="fas fa-wheelchair me-1"></i>
+                                    Kræver hjælp
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="/activities" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Tilbage til aktiviteter
+                            </a>
+                            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    Opretter...
+                                }
+                                else
+                                {
+                                    <i class="fas fa-plus me-1"></i>
+                                    Opret Aktivitet
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateActivityFormModel activityForm = new();
+    private List<ReadUserDto>? staffUsers;
+    private string successMessage = string.Empty;
+    private string errorMessage = string.Empty;
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Tjek om brugeren er staff eller admin
+        var userRole = await AuthStateProvider.GetRoleAsync();
+        if (userRole != "Staff" && userRole != "Admin")
+        {
+            // Redirect til activities siden hvis ikke staff/admin
+            // I en rigtig app ville man bruge NavigationManager
+            return;
+        }
+
+        await LoadStaffUsers();
+    }
+
+    private async Task LoadStaffUsers()
+    {
+        try
+        {
+            var allUsers = await UserService.GetAllUsersAsync();
+            staffUsers = allUsers.Where(u => u.Role == "Staff" || u.Role == "Admin").ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading staff users: {ex.Message}");
+            staffUsers = new List<ReadUserDto>();
+        }
+    }
+
+    private void ToggleStaffMember(Guid staffId)
+    {
+        if (activityForm.ResponsibleStaff.Contains(staffId))
+        {
+            activityForm.ResponsibleStaff.Remove(staffId);
+        }
+        else
+        {
+            activityForm.ResponsibleStaff.Add(staffId);
+        }
+    }
+
+    private async Task HandleCreateActivity()
+    {
+        if (isSubmitting) return;
+
+        isSubmitting = true;
+        successMessage = string.Empty;
+        errorMessage = string.Empty;
+
+        try
+        {
+            // Valider at sluttidspunkt er efter starttidspunkt
+            if (activityForm.EndDateTime <= activityForm.StartDateTime)
+            {
+                errorMessage = "Sluttidspunkt skal være efter starttidspunkt.";
+                return;
+            }
+
+            var createDto = activityForm.ToCreateActivityDto();
+            var result = await ActivityService.CreateActivityAsync(createDto);
+
+            if (result.Success)
+            {
+                successMessage = "Aktivitet oprettet succesfuldt!";
+                activityForm = new CreateActivityFormModel(); // Reset form
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage ?? "Der opstod en fejl ved oprettelse af aktiviteten.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Der opstod en uventet fejl: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}
