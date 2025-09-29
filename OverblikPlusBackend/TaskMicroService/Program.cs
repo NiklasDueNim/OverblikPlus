@@ -112,15 +112,18 @@ public class Program
             });
 
         var blobConnectionString = builder.Configuration.GetConnectionString("BlobStorageConnectionString");
-        if (!string.IsNullOrEmpty(blobConnectionString))
+        var blobBaseUrl = builder.Configuration["BlobStorageBaseUrl"];
+        
+        if (!string.IsNullOrEmpty(blobConnectionString) && !string.IsNullOrEmpty(blobBaseUrl))
         {
             builder.Services.AddSingleton(_ => new BlobServiceClient(blobConnectionString));
-        }
-
-        var blobBaseUrl = builder.Configuration["BlobStorageBaseUrl"];
-        if (!string.IsNullOrEmpty(blobBaseUrl))
-        {
             builder.Services.AddSingleton(blobBaseUrl);
+        }
+        else
+        {
+            // Fallback for local development
+            builder.Services.AddSingleton(_ => new BlobServiceClient("UseDevelopmentStorage=true"));
+            builder.Services.AddSingleton("http://localhost:10000/devstoreaccount1");
         }
 
         builder.Services.AddCors(options =>
