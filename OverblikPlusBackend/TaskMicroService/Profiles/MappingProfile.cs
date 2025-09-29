@@ -12,7 +12,10 @@ namespace TaskMicroService.Profiles
             // Task mappings
             CreateMap<TaskEntity, ReadTaskDto>()
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.ImageUrl))
-                .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.Steps));
+                .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.Steps))
+                .ForMember(dest => dest.SelectedWeekDays, opt => opt.MapFrom(src => 
+                    string.IsNullOrEmpty(src.SelectedWeekDays) ? new Dictionary<string, bool>() : 
+                    System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(src.SelectedWeekDays, (System.Text.Json.JsonSerializerOptions)null) ?? new Dictionary<string, bool>()));
 
 
             CreateMap<CreateTaskDto, TaskEntity>()
@@ -20,7 +23,9 @@ namespace TaskMicroService.Profiles
                 .ForMember(dest => dest.ImageUrl, opt => opt.Ignore())
                 .ForMember(dest => dest.Steps, opt => opt.Ignore())
                 .ForMember(dest => dest.IsCompleted, opt => opt.Ignore())
-                .ForMember(dest => dest.NextOccurrence, opt => opt.Ignore());
+                .ForMember(dest => dest.NextOccurrence, opt => opt.Ignore())
+                .ForMember(dest => dest.SelectedWeekDays, opt => opt.MapFrom(src => 
+                    System.Text.Json.JsonSerializer.Serialize(src.SelectedWeekDays ?? new Dictionary<string, bool>(), (System.Text.Json.JsonSerializerOptions)null)));
                 
             
             

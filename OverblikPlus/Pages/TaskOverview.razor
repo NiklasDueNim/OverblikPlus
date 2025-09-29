@@ -100,21 +100,73 @@
     private void FilterTasksByDate()
     {
         FilteredTasks = AllTasks
-            .Where(task =>
-                    (!task.NextOccurrence.HasValue && task.RecurrenceType == "None" 
-                                                   && task.StartDate.Date == SelectedDate.Date)
-
-                    || (task.NextOccurrence.HasValue 
-                        && task.NextOccurrence.Value.Date == SelectedDate.Date)
-
-                    || (task.RecurrenceType == "Daily" && task.NextOccurrence.HasValue
-                                                       && (SelectedDate.Date - task.NextOccurrence.Value.Date).Days % task.RecurrenceInterval == 0)
-
-                    || (task.RecurrenceType == "Weekly" && task.NextOccurrence.HasValue
-                                                        && (SelectedDate.Date - task.NextOccurrence.Value.Date).Days % (task.RecurrenceInterval * 7) == 0))
+            .Where(task => IsTaskOccurringOnDate(task, SelectedDate))
             .ToList();
 
         Console.WriteLine($"Filtered {FilteredTasks.Count} tasks for date {SelectedDate.Date}");
+    }
+    
+    private bool IsTaskOccurringOnDate(ReadTaskDto task, DateTime selectedDate)
+    {
+        if (task.RecurrenceType == "None")
+        {
+            return task.StartDate.Date == selectedDate.Date;
+        }
+        
+        if (!task.NextOccurrence.HasValue) return false;
+        
+        return task.RecurrenceType switch
+        {
+            "Daily" => IsDailyMatch(task, selectedDate),
+            "Weekly" => IsWeeklyMatch(task, selectedDate),
+            "Monthly" => IsMonthlyMatch(task, selectedDate),
+            "Yearly" => IsYearlyMatch(task, selectedDate),
+            _ => false
+        };
+    }
+    
+    private bool IsDailyMatch(ReadTaskDto task, DateTime selectedDate)
+    {
+        var daysDiff = (selectedDate.Date - task.StartDate.Date).Days;
+        return daysDiff >= 0 && daysDiff % task.RecurrenceInterval == 0;
+    }
+    
+    private bool IsWeeklyMatch(ReadTaskDto task, DateTime selectedDate)
+    {
+        var daysDiff = (selectedDate.Date - task.StartDate.Date).Days;
+        return daysDiff >= 0 && daysDiff % (task.RecurrenceInterval * 7) == 0;
+    }
+    
+    private bool IsMonthlyMatch(ReadTaskDto task, DateTime selectedDate)
+    {
+        if (selectedDate.Date < task.StartDate.Date) return false;
+        
+        var monthsDiff = ((selectedDate.Year - task.StartDate.Year) * 12) + 
+                         (selectedDate.Month - task.StartDate.Month);
+        
+        if (monthsDiff < 0 || monthsDiff % task.RecurrenceInterval != 0) 
+            return false;
+        
+        // Tjek om dagen matcher baseret på monthly type
+        return task.MonthlyType switch
+        {
+            "SameDay" => selectedDate.Day == task.StartDate.Day,
+            "FirstDay" => selectedDate.Day == 1,
+            "LastDay" => selectedDate.Day == DateTime.DaysInMonth(selectedDate.Year, selectedDate.Month),
+            "SpecificDay" => selectedDate.Day == task.MonthlyDay,
+            _ => false
+        };
+    }
+    
+    private bool IsYearlyMatch(ReadTaskDto task, DateTime selectedDate)
+    {
+        if (selectedDate.Date < task.StartDate.Date) return false;
+        
+        var yearsDiff = selectedDate.Year - task.StartDate.Year;
+        
+        return yearsDiff >= 0 && yearsDiff % task.RecurrenceInterval == 0 && 
+               selectedDate.Month == task.StartDate.Month && 
+               selectedDate.Day == task.StartDate.Day;
     }
 
 

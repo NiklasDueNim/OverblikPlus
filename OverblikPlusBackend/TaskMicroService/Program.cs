@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using OverblikPlus.Shared.Interfaces;
 using OverblikPlus.Shared.Logging;
 using Serilog;
@@ -141,7 +142,38 @@ public class Program
         });
 
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "TaskMicroService API", Version = "v1" });
+            
+            // Add JWT Bearer Authentication
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        },
+                        Scheme = "oauth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+                    },
+                    new List<string>()
+                }
+            });
+        });
         builder.Services.AddControllers();
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -192,15 +224,19 @@ public class Program
             ForwardedHeaders = ForwardedHeaders.XForwardedProto
         });
 
-        app.UseSwagger();
-        app.UseSwaggerUI();
-
         // Fjernes i produktion
         app.UseDeveloperExceptionPage();
 
         app.UseHttpsRedirection();
         app.UseRouting();
         app.UseCors("AllowSpecificOrigins");
+
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "TaskMicroService API V1");
+            c.RoutePrefix = "swagger"; // Standard Swagger path
+        });
 
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
