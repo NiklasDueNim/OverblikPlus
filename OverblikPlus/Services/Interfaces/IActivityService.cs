@@ -5,12 +5,16 @@ namespace OverblikPlus.Services.Interfaces;
 public interface IActivityService
 {
     Task<List<ActivityDto>> GetAllActivitiesAsync();
-    Task<ActivityDto> GetActivityByIdAsync(Guid id);
-    Task CreateActivityAsync(ActivityDto activity);
-    Task UpdateActivityAsync(ActivityDto activity);
-    Task DeleteActivityAsync(Guid id);
+    Task<ActivityDto?> GetActivityByIdAsync(Guid id);
+    Task<bool> CreateActivityAsync(CreateActivityDto activity);
+    Task<bool> UpdateActivityAsync(Guid id, CreateActivityDto activity);
+    Task<bool> DeleteActivityAsync(Guid id);
+    Task<ApiResult> JoinActivityAsync(Guid activityId, Guid userId);
+    Task<ApiResult> LeaveActivityAsync(Guid activityId, Guid userId);
+}
 
-    Task JoinActivityAsync(Guid activityId, Guid userId);
-    Task LeaveActivityAsync(Guid activityId, Guid userId);
-    
+public class ApiResult
+{
+    public bool Success { get; set; }
+    public string? ErrorMessage { get; set; }
 }

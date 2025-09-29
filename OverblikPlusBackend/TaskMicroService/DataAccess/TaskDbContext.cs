@@ -13,6 +13,7 @@ namespace TaskMicroService.DataAccess
         public DbSet<TaskEntity> Tasks { get; set; }
         public DbSet<TaskStep> TaskSteps { get; set; }
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
+        public DbSet<ActivityEntity> Activities { get; set; }
         public DatabaseFacade Database => base.Database;
 
         
@@ -45,6 +46,25 @@ namespace TaskMicroService.DataAccess
             modelBuilder.Entity<CalendarEvent>()
                 .Property(c => c.EndDateTime).IsRequired();
 
+            // ActivityEntity configuration
+            modelBuilder.Entity<ActivityEntity>()
+                .HasKey(a => a.Id);
+            modelBuilder.Entity<ActivityEntity>()
+                .Property(a => a.Title).IsRequired().HasMaxLength(200);
+            modelBuilder.Entity<ActivityEntity>()
+                .Property(a => a.Description).IsRequired().HasMaxLength(1000);
+            modelBuilder.Entity<ActivityEntity>()
+                .Property(a => a.StartDateTime).IsRequired();
+            modelBuilder.Entity<ActivityEntity>()
+                .Property(a => a.EndDateTime).IsRequired();
+            modelBuilder.Entity<ActivityEntity>()
+                .Property(a => a.Location).HasMaxLength(200);
+            modelBuilder.Entity<ActivityEntity>()
+                .Property(a => a.SpecialRequirements).HasMaxLength(500);
+            modelBuilder.Entity<ActivityEntity>()
+                .Property(a => a.ResponsibleStaff).HasMaxLength(2000); // JSON array
+            modelBuilder.Entity<ActivityEntity>()
+                .Property(a => a.Participants).HasMaxLength(2000); // JSON array
 
             base.OnModelCreating(modelBuilder);
         }

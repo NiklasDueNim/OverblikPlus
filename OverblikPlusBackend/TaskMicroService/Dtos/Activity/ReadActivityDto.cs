@@ -1,15 +1,15 @@
-namespace OverblikPlus.Models.Dtos.Activity;
+namespace TaskMicroService.dtos.Activity;
 
-public class ActivityDto
+public class ReadActivityDto
 {
     public Guid Id { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public DateTime StartDateTime { get; set; }
     public DateTime EndDateTime { get; set; }
     public List<Guid> Participants { get; set; } = new();
     public List<Guid> ResponsibleStaff { get; set; } = new();
-    public ActivityType ActivityType { get; set; }
+    public int ActivityType { get; set; }
     public string Location { get; set; } = string.Empty;
     public int MaxParticipants { get; set; } = 20;
     public bool RequiresAssistance { get; set; } = false;
@@ -17,16 +17,4 @@ public class ActivityDto
     public string? SpecialRequirements { get; set; }
     public DateTime CreatedAt { get; set; }
     public Guid CreatedBy { get; set; }
-}
-
-public enum ActivityType
-{
-    FysiskAktivitet,    // Motion, gåture
-    SocialAktivitet,    // Kaffe, spil
-    KreativAktivitet,   // Håndarbejde, maleri
-    KognitivAktivitet,  // Læsning, puslespil
-    MusikAktivitet,     // Sang, musik
-    MadAktivitet,       // Kogning, bagning
-    Udflugt,           // Ture udenfor institutionen
-    Andet              // Andre aktiviteter
 }

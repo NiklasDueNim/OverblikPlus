@@ -3,71 +3,337 @@
 @using OverblikPlus.Models.Dtos.Activity
 @using OverblikPlus.Services.Interfaces
 @inject IActivityService ActivityService
+@inject IUserService UserService
 @inject CustomAuthStateProvider AuthStateProvider
 
-@if (activities == null)
-{
-    <p>Henter aktiviteter...</p>
-}
-else
-{
-    @foreach (var act in activities)
-    {
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5>@act.Title</h5>
-                <p>@act.Description</p>
-                <p><small>Fra @act.StartDateTime til @act.EndDateTime</small></p>
-                
-                <p>Deltagere:</p>
-                <ul>
-                    @foreach (var pid in act.Participants)
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Aktiviteter for @DateTime.Today.ToString("dddd, dd. MMMM yyyy")</h2>
+            
+            @if (activities == null)
+            {
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Henter aktiviteter...</span>
+                    </div>
+                    <p class="mt-2">Henter aktiviteter...</p>
+                </div>
+            }
+            else if (!activities.Any())
+            {
+                <div class="alert alert-info">
+                    <h5>Ingen aktiviteter i dag</h5>
+                    <p>Der er ingen planlagte aktiviteter for i dag.</p>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var act in activities.OrderBy(a => a.StartDateTime))
                     {
-                        <li>@GetUserName(pid)</li>
-                    }
-                </ul>
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 @GetActivityCardClass(act)">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">@act.Title</h5>
+                                    <span class="badge @GetActivityTypeBadgeClass(act.ActivityType)">@GetActivityTypeName(act.ActivityType)</span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">@act.Description</p>
+                                    
+                                    <div class="mb-3">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="fas fa-clock me-2"></i>
+                                            <strong>Tid:</strong>
+                                        </div>
+                                        <p class="mb-0">@act.StartDateTime.ToString("HH:mm") - @act.EndDateTime.ToString("HH:mm")</p>
+                                        
+                                        @if (!string.IsNullOrEmpty(act.Location))
+                                        {
+                                            <div class="d-flex align-items-center mb-1 mt-2">
+                                                <i class="fas fa-map-marker-alt me-2"></i>
+                                                <strong>Sted:</strong>
+                                            </div>
+                                            <p class="mb-0">@act.Location</p>
+                                        }
+                                    </div>
 
-                @if (!act.Participants.Contains(currentUserId))
-                {
-                    <button class="btn btn-primary" @onclick="() => Join(act.Id)">Tilmeld dig</button>
-                }
-                else
-                {
-                    <button class="btn btn-secondary" @onclick="() => Leave(act.Id)">Forlad</button>
-                }
-            </div>
+                                    <!-- Ansvarspersoner -->
+                                    @if (act.ResponsibleStaff.Any())
+                                    {
+                                        <div class="mb-3">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <i class="fas fa-user-tie me-2"></i>
+                                                <strong>Ansvarlige:</strong>
+                                            </div>
+                                            <div>
+                                                @foreach (var staffId in act.ResponsibleStaff)
+                                                {
+                                                    <span class="badge bg-info me-1">@GetStaffNameSync(staffId)</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <!-- Deltagere -->
+                                    <div class="mb-3">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="fas fa-users me-2"></i>
+                                            <strong>Deltagere (@act.Participants.Count/@act.MaxParticipants):</strong>
+                                        </div>
+                                        @if (act.Participants.Any())
+                                        {
+                                            <div class="d-flex flex-wrap">
+                                                @foreach (var participantId in act.Participants)
+                                                {
+                                                    <span class="badge bg-secondary me-1 mb-1">@GetResidentNameSync(participantId)</span>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <p class="text-muted small mb-0">Ingen deltagere endnu</p>
+                                        }
+                                    </div>
+
+                                    <!-- Særlige krav -->
+                                    @if (!string.IsNullOrEmpty(act.SpecialRequirements))
+                                    {
+                                        <div class="alert alert-warning alert-sm">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            <strong>Bemærk:</strong> @act.SpecialRequirements
+                                        </div>
+                                    }
+
+                                    <!-- Tilgængelighed -->
+                                    @if (act.RequiresAssistance)
+                                    {
+                                        <div class="alert alert-info alert-sm">
+                                            <i class="fas fa-wheelchair me-1"></i>
+                                            Kræver hjælp
+                                        </div>
+                                    }
+                                </div>
+                                
+                                <div class="card-footer">
+                                    @if (CanParticipate(act))
+                                    {
+                                        <button class="btn btn-primary w-100" 
+                                                disabled="@isJoining" 
+                                                @onclick="() => Join(act.Id)">
+                                            @(isJoining ? "Tilmelder..." : "Deltag i aktivitet")
+                                        </button>
+                                    }
+                                    else if (act.Participants.Contains(currentUserId))
+                                    {
+                                        <button class="btn btn-secondary w-100" 
+                                                disabled="@isLeaving" 
+                                                @onclick="() => Leave(act.Id)">
+                                            @(isLeaving ? "Forlader..." : "Forlad aktivitet")
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-outline-secondary w-100" disabled>
+                                            @GetCannotParticipateReason(act)
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
         </div>
-    }
-}
+    </div>
+</div>
 
 @code {
-    private List<ActivityDto> activities;
+    private List<ActivityDto> activities = new();
     private Guid currentUserId;
+    private bool isJoining = false;
+    private bool isLeaving = false;
+    private string userRole = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        activities = await ActivityService.GetAllActivitiesAsync();
+        currentUserId = Guid.Parse(AuthStateProvider.User.Id);
+        userRole = await AuthStateProvider.GetRoleAsync();
+        await LoadActivities();
+    }
+
+    private async Task LoadActivities()
+    {
+        try
+        {
+            activities = await ActivityService.GetAllActivitiesAsync();
+        }
+        catch (Exception ex)
+        {
+            // Log error and show empty list
+            Console.WriteLine($"Error loading activities: {ex.Message}");
+            activities = new List<ActivityDto>();
+        }
     }
 
     private async Task Join(Guid activityId)
     {
-        await ActivityService.JoinActivityAsync(activityId, currentUserId);
-        // Opdater lokal listen
-        var act = activities.First(a => a.Id == activityId);
-        act.Participants.Add(currentUserId);
+        if (isJoining) return;
+        
+        isJoining = true;
+        try
+        {
+            var result = await ActivityService.JoinActivityAsync(activityId, currentUserId);
+            if (result.Success)
+            {
+                var act = activities.First(a => a.Id == activityId);
+                act.Participants.Add(currentUserId);
+                StateHasChanged();
+            }
+            else
+            {
+                // Show error message to user
+                Console.WriteLine($"Error joining activity: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception joining activity: {ex.Message}");
+        }
+        finally
+        {
+            isJoining = false;
+        }
     }
 
     private async Task Leave(Guid activityId)
     {
-        await ActivityService.LeaveActivityAsync(activityId, currentUserId);
-        // Opdater lokal listen
-        var act = activities.First(a => a.Id == activityId);
-        act.Participants.Remove(currentUserId);
+        if (isLeaving) return;
+        
+        isLeaving = true;
+        try
+        {
+            var result = await ActivityService.LeaveActivityAsync(activityId, currentUserId);
+            if (result.Success)
+            {
+                var act = activities.First(a => a.Id == activityId);
+                act.Participants.Remove(currentUserId);
+                StateHasChanged();
+            }
+            else
+            {
+                // Show error message to user
+                Console.WriteLine($"Error leaving activity: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception leaving activity: {ex.Message}");
+        }
+        finally
+        {
+            isLeaving = false;
+        }
     }
 
-    private string GetUserName(Guid userId)
+    private bool CanParticipate(ActivityDto activity)
     {
-        // Slå navnet op i en liste eller kald et userService
-        return "Søren HK"; 
+        // Kun beboere kan tilmelde sig
+        if (userRole != "Beboer") return false;
+        
+        // Tjek om beboeren allerede er tilmeldt
+        if (activity.Participants.Contains(currentUserId)) return false;
+        
+        // Tjek om aktivitet er i fremtiden
+        if (activity.StartDateTime <= DateTime.Now) return false;
+        
+        // Tjek om der er plads
+        if (activity.Participants.Count >= activity.MaxParticipants) return false;
+        
+        return true;
+    }
+
+    private string GetCannotParticipateReason(ActivityDto activity)
+    {
+        if (userRole != "Beboer") return "Kun for beboere";
+        if (activity.Participants.Contains(currentUserId)) return "Allerede tilmeldt";
+        if (activity.StartDateTime <= DateTime.Now) return "Aktivitet er startet";
+        if (activity.Participants.Count >= activity.MaxParticipants) return "Aktivitet er fuld";
+        return "Kan ikke deltage";
+    }
+
+    private string GetActivityCardClass(ActivityDto activity)
+    {
+        if (activity.StartDateTime <= DateTime.Now) return "border-secondary";
+        if (activity.Participants.Count >= activity.MaxParticipants) return "border-warning";
+        return "border-primary";
+    }
+
+    private string GetActivityTypeBadgeClass(ActivityType activityType)
+    {
+        return activityType switch
+        {
+            ActivityType.FysiskAktivitet => "bg-success",
+            ActivityType.SocialAktivitet => "bg-primary",
+            ActivityType.KreativAktivitet => "bg-warning",
+            ActivityType.KognitivAktivitet => "bg-info",
+            ActivityType.MusikAktivitet => "bg-danger",
+            ActivityType.MadAktivitet => "bg-secondary",
+            ActivityType.Udflugt => "bg-dark",
+            _ => "bg-light text-dark"
+        };
+    }
+
+    private string GetActivityTypeName(ActivityType activityType)
+    {
+        return activityType switch
+        {
+            ActivityType.FysiskAktivitet => "Fysisk",
+            ActivityType.SocialAktivitet => "Social",
+            ActivityType.KreativAktivitet => "Kreativ",
+            ActivityType.KognitivAktivitet => "Kognitiv",
+            ActivityType.MusikAktivitet => "Musik",
+            ActivityType.MadAktivitet => "Mad",
+            ActivityType.Udflugt => "Udflugt",
+            _ => "Andet"
+        };
+    }
+
+    private string GetStaffNameSync(Guid userId)
+    {
+        // For now, return a placeholder. In a real implementation, you might want to cache user data
+        return "Medarbejder " + userId.ToString().Substring(0, 8);
+    }
+
+    private string GetResidentNameSync(Guid userId)
+    {
+        // For now, return a placeholder. In a real implementation, you might want to cache user data
+        return "Beboer " + userId.ToString().Substring(0, 8);
+    }
+
+    private async Task<string> GetStaffName(Guid userId)
+    {
+        try
+        {
+            var user = await UserService.GetUserById(userId.ToString());
+            return user?.FirstName + " " + user?.LastName ?? "Ukendt medarbejder";
+        }
+        catch
+        {
+            return "Ukendt medarbejder";
+        }
+    }
+
+    private async Task<string> GetResidentName(Guid userId)
+    {
+        try
+        {
+            var user = await UserService.GetUserById(userId.ToString());
+            return user?.FirstName + " " + user?.LastName ?? "Ukendt beboer";
+        }
+        catch
+        {
+            return "Ukendt beboer";
+        }
     }
 }
