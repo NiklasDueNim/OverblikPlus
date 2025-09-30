@@ -97,11 +97,11 @@
                                                     @if (act.Participants.Count == act.MaxParticipants)
                                                     {
                                                         <i class="fas fa-exclamation-triangle text-warning me-1"></i>
-                                                        Fuldt booket
+                                                        <text>Fuldt booket</text>
                                                     }
                                                     else
                                                     {
-                                                        @(act.MaxParticipants - act.Participants.Count) pladser tilbage
+                                                        <text>@(act.MaxParticipants - act.Participants.Count) pladser tilbage</text>
                                                     }
                                                 </small>
                                             }

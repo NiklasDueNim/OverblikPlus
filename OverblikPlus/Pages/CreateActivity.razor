@@ -7,8 +7,11 @@
 @inject IActivityService ActivityService
 @inject IUserService UserService
 @inject CustomAuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
 
-<div class="container mt-4">
+@if (userRole == "Admin" || userRole == "Staff")
+{
+    <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card">
@@ -86,7 +89,7 @@
                                         Starttidspunkt *
                                     </label>
                                     <InputDate id="startDateTime" @bind-Value="activityForm.StartDateTime" class="form-control" />
-                                    <InputTime id="startTime" @bind-Value="activityForm.StartDateTime" class="form-control mt-1" />
+                                    <input type="time" @bind="activityForm.StartDateTime" class="form-control mt-1" />
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -96,7 +99,7 @@
                                         Sluttidspunkt *
                                     </label>
                                     <InputDate id="endDateTime" @bind-Value="activityForm.EndDateTime" class="form-control" />
-                                    <InputTime id="endTime" @bind-Value="activityForm.EndDateTime" class="form-control mt-1" />
+                                    <input type="time" @bind="activityForm.EndDateTime" class="form-control mt-1" />
                                 </div>
                             </div>
                         </div>
@@ -177,12 +180,12 @@
                                 @if (isSubmitting)
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                    Opretter...
+                                    <text>Opretter</text>
                                 }
                                 else
                                 {
                                     <i class="fas fa-plus me-1"></i>
-                                    Opret Aktivitet
+                                    <text>Opret Aktivitet</text>
                                 }
                             </button>
                         </div>
@@ -199,26 +202,27 @@
     private string successMessage = string.Empty;
     private string errorMessage = string.Empty;
     private bool isSubmitting = false;
+    private string userRole = string.Empty;
+    private string currentUserId = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        // Tjek om brugeren er staff eller admin
-        var userRole = await AuthStateProvider.GetRoleAsync();
-        if (userRole != "Staff" && userRole != "Admin")
+        // Hent brugerens rolle og ID
+        userRole = await AuthStateProvider.GetRoleAsync();
+        currentUserId = AuthStateProvider.GetUserIdAsync();
+        
+        // Hvis brugeren er staff eller admin, load staff users
+        if (userRole == "Staff" || userRole == "Admin")
         {
-            // Redirect til activities siden hvis ikke staff/admin
-            // I en rigtig app ville man bruge NavigationManager
-            return;
+            await LoadStaffUsers();
         }
-
-        await LoadStaffUsers();
     }
 
     private async Task LoadStaffUsers()
     {
         try
         {
-            var allUsers = await UserService.GetAllUsersAsync();
+            var allUsers = await UserService.GetAllUsers();
             staffUsers = allUsers.Where(u => u.Role == "Staff" || u.Role == "Admin").ToList();
         }
         catch (Exception ex)
@@ -228,7 +232,7 @@
         }
     }
 
-    private void ToggleStaffMember(Guid staffId)
+    private void ToggleStaffMember(string staffId)
     {
         if (activityForm.ResponsibleStaff.Contains(staffId))
         {
@@ -257,17 +261,17 @@
                 return;
             }
 
-            var createDto = activityForm.ToCreateActivityDto();
+            var createDto = activityForm.ToCreateActivityDto(Guid.Parse(currentUserId));
             var result = await ActivityService.CreateActivityAsync(createDto);
 
-            if (result.Success)
+            if (result)
             {
                 successMessage = "Aktivitet oprettet succesfuldt!";
                 activityForm = new CreateActivityFormModel(); // Reset form
             }
             else
             {
-                errorMessage = result.ErrorMessage ?? "Der opstod en fejl ved oprettelse af aktiviteten.";
+                errorMessage = "Der opstod en fejl ved oprettelse af aktiviteten.";
             }
         }
         catch (Exception ex)
@@ -279,4 +283,26 @@
             isSubmitting = false;
         }
     }
+}
+}
+else
+{
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-lock fa-3x text-warning mb-3"></i>
+                        <h3>Adgang nægtet</h3>
+                        <p class="text-muted">Du har ikke tilladelse til at oprette aktiviteter. Kun administratorer og medarbejdere kan oprette aktiviteter.</p>
+                        <p class="text-muted">Din rolle: @userRole</p>
+                        <a href="/activities" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Tilbage til aktiviteter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 }

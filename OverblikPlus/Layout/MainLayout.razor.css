@@ -13,6 +13,25 @@ main {
     flex: 1;
 }
 
+/* Content wrapper for better centering */
+.content-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 2rem 0;
+    margin: 0;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Content styling */
+.content {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 /* Sidebar styling with a linear gradient background */
 .sidebar {
     width: 250px;
@@ -23,65 +42,9 @@ main {
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Top row styling */
-.top-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Align elements to opposite ends */
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
-    height: 3.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    padding-left: 2rem;
-    padding-right: 1.5rem;
-}
+/* Top row styling - removed as we no longer use it */
 
-/* Dropdown styling for the user menu */
-.dropdown-menu {
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 16px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.dropdown-item {
-    padding: 8px 15px;
-    transition: background-color 0.2s ease-in-out;
-    display: flex;
-    align-items: center;
-}
-
-.dropdown-item i {
-    margin-right: 8px; /* Add spacing between icons and text */
-}
-
-.dropdown-item:hover {
-    background-color: #f1f3f5;
-    color: #212529;
-}
-
-.text-danger {
-    color: #dc3545;
-}
-
-.dropdown-divider {
-    margin: 0.5rem 0;
-}
-
-/* Adjust top row button spacing */
-.top-row ::deep .btn-link {
-    color: #333; /* Darker color for better readability */
-    padding: 10px; /* Easier to click with more padding */
-}
-
-/* Highlight dropdown toggle on focus */
-.dropdown-toggle:focus {
-    background-color: #dee2e6; /* Light background on focus for visibility */
-    outline: none; /* Removing default outline */
-    box-shadow: 0 0 0 3px rgba(33, 37, 41, 0.25); /* Custom focus style */
-}
+/* Dropdown styling removed as we no longer use it */
 
 /* Responsive adjustments */
 @media (max-width: 991px) {
@@ -89,13 +52,8 @@ main {
         width: 200px; /* Smaller sidebar on medium devices */
     }
 
-    .top-row {
-        padding-left: 1rem;
-        padding-right: 1rem; /* Less padding on smaller screens */
-    }
-
-    .dropdown-menu {
-        font-size: 14px; /* Adjust dropdown font size for medium devices */
+    .content-wrapper {
+        padding: 1rem 0.5rem;
     }
 }
 
@@ -110,7 +68,7 @@ main {
         flex-direction: column; /* Stack vertically on small screens */
     }
 
-    .dropdown-menu {
-        font-size: 14px;
+    .content-wrapper {
+        padding: 0.5rem;
     }
 }

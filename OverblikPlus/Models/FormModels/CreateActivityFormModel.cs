@@ -33,9 +33,9 @@ public class CreateActivityFormModel
 
     public bool RequiresAssistance { get; set; } = false;
 
-    public List<Guid> ResponsibleStaff { get; set; } = new();
+    public List<string> ResponsibleStaff { get; set; } = new();
 
-    public CreateActivityDto ToCreateActivityDto()
+    public CreateActivityDto ToCreateActivityDto(Guid createdBy)
     {
         return new CreateActivityDto
         {
@@ -48,7 +48,8 @@ public class CreateActivityFormModel
             MaxParticipants = MaxParticipants,
             SpecialRequirements = SpecialRequirements,
             RequiresAssistance = RequiresAssistance,
-            ResponsibleStaff = ResponsibleStaff
+            ResponsibleStaff = ResponsibleStaff,
+            CreatedBy = createdBy
         };
     }
 }
