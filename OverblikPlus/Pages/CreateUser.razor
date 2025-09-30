@@ -3,61 +3,120 @@
 @using OverblikPlus.Models.Dtos.User
 @using OverblikPlus.Services.Interfaces
 @inject CustomAuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
 
-<h3>Opret Bruger</h3>
-
-@if (!string.IsNullOrEmpty(successMessage))
-{
-    <div class="alert alert-success">
-        @successMessage
-    </div>
-}
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger">
-        @errorMessage
-    </div>
-}
-
-
-<EditForm Model="@newUser" OnValidSubmit="@HandleCreateUser" class="user-form">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="form-group">
-        <label for="firstName">Fornavn</label>
-        <InputText id="firstName" @bind-Value="newUser.FirstName" class="form-control" />
-    </div>
-
-    <div class="form-group">
-        <label for="lastName">Efternavn</label>
-        <InputText id="lastName" @bind-Value="newUser.LastName" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label for="email">Email</label>
-        <InputText id="email" @bind-Value="newUser.Email" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label for="password">Password</label>
-        <InputText id="password" @bind-Value="newUser.Password" class="form-control" />
-    </div>
-    @if (isAdmin)
-    {
-        <div class="form-group">
-            <label for="role">Rolle</label>
-            <InputText id="role" @bind-Value="newUser.Role" class="form-control" />
+<div class="create-user-page">
+    <div class="create-user-container">
+        <div class="create-user-header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1 class="create-user-title">Opret Bruger</h1>
+            </div>
+            <p class="create-user-subtitle">Opret en ny bruger til OverblikPlus systemet</p>
         </div>
-    }
 
+        <div class="create-user-card">
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @successMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @errorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
 
-    <button type="submit" class="btn btn-primary">Opret Bruger</button>
-</EditForm>
+            <EditForm Model="@newUser" OnValidSubmit="@HandleCreateUser" class="create-user-form">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="alert alert-danger" />
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName" class="form-label">
+                            <i class="fas fa-user me-1"></i>
+                            Fornavn *
+                        </label>
+                        <InputText id="firstName" @bind-Value="newUser.FirstName" class="form-control" placeholder="Indtast fornavn" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName" class="form-label">
+                            <i class="fas fa-user me-1"></i>
+                            Efternavn *
+                        </label>
+                        <InputText id="lastName" @bind-Value="newUser.LastName" class="form-control" placeholder="Indtast efternavn" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope me-1"></i>
+                        Email *
+                    </label>
+                    <InputText id="email" @bind-Value="newUser.Email" class="form-control" placeholder="Indtast email adresse" />
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock me-1"></i>
+                        Adgangskode *
+                    </label>
+                    <InputText id="password" @bind-Value="newUser.Password" type="password" class="form-control" placeholder="Indtast adgangskode" />
+                </div>
+
+                @if (isAdmin)
+                {
+                    <div class="form-group">
+                        <label for="role" class="form-label">
+                            <i class="fas fa-user-tag me-1"></i>
+                            Rolle
+                        </label>
+                        <InputSelect id="role" @bind-Value="newUser.Role" class="form-select">
+                            <option value="Beboer">Beboer</option>
+                            <option value="Medarbejder">Medarbejder</option>
+                            <option value="Admin">Admin</option>
+                        </InputSelect>
+                    </div>
+                }
+
+                <div class="form-actions">
+                    <a href="/login" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Tilbage til login
+                    </a>
+                    <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <text>Opretter bruger...</text>
+                        }
+                        else
+                        {
+                            <i class="fas fa-user-plus me-1"></i>
+                            <text>Opret Bruger</text>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
 
 @code {
     private CreateUserDto newUser = new CreateUserDto();
     private string successMessage = string.Empty;
     private string errorMessage = string.Empty;
     private bool isAdmin = false;
+    private bool isSubmitting = false;
 
     [Inject] public IUserService UserService { get; set; }
 
@@ -69,31 +128,41 @@
 
     private async Task HandleCreateUser()
     {
+        if (isSubmitting) return;
+        isSubmitting = true;
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+
         try
         {
             if (string.IsNullOrEmpty(newUser.Role))
             {
-                newUser.Role = "User";
+                newUser.Role = "Beboer";
             }
 
             var result = await UserService.CreateUser(newUser);
 
             if (result.Success)
             {
-                successMessage = "Bruger er oprettet";
-                errorMessage = string.Empty;
+                successMessage = "Bruger oprettet succesfuldt!";
                 newUser = new CreateUserDto();
+                
+                // Redirect to login after 2 seconds
+                await Task.Delay(2000);
+                NavigationManager.NavigateTo("/login");
             }
             else
             {
-                errorMessage = $"Error creating user: {result.Error}";
-                successMessage = string.Empty;
+                errorMessage = $"Fejl ved oprettelse af bruger: {result.Error}";
             }
         }
         catch (Exception ex)
         {
-            successMessage = string.Empty;
-            errorMessage = $"Error creating user: {ex.Message}";
+            errorMessage = $"Der opstod en uventet fejl: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
         }
     }
 }
