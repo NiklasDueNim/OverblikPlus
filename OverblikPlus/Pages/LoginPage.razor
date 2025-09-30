@@ -6,31 +6,82 @@
 @inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthStateProvider
 
-<div class="login-container">
-    <h3>Login</h3>
-    <input @bind="loginDto.Email" placeholder="Email" class="form-control mb-2" />
-    <input @bind="loginDto.Password" type="password" placeholder="Adgangskode" class="form-control mb-2" />
+<div class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-sign-in-alt"></i>
+                </div>
+                <h1 class="login-title">Log ind</h1>
+            </div>
+            <p class="login-subtitle">Velkommen tilbage til OverblikPlus</p>
+        </div>
 
-    <button id="loginButton" @onclick="Login" class="btn btn-primary" disabled="@isLoading">
-        @if (isLoading)
-        {
-            <span>Logger ind...</span>
-        }
-        else
-        {
-            <span>Log ind</span>
-        }
-    </button>
+        <div class="login-card">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @errorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
 
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@errorMessage</div>
-    }
+            <form @onsubmit="Login" class="login-form">
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i class="fas fa-envelope me-1"></i>
+                        Email *
+                    </label>
+                    <input 
+                        id="email" 
+                        @bind="loginDto.Email" 
+                        type="email" 
+                        class="form-control" 
+                        placeholder="Indtast din email adresse" 
+                        required />
+                </div>
 
-    <h3 class="mt-4">Ny bruger?</h3>
-    <button @onclick="NavigateToRegister" class="btn btn-secondary" disabled="@isLoading">
-        Registrer
-    </button>
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock me-1"></i>
+                        Adgangskode *
+                    </label>
+                    <input 
+                        id="password" 
+                        @bind="loginDto.Password" 
+                        type="password" 
+                        class="form-control" 
+                        placeholder="Indtast din adgangskode" 
+                        required />
+                </div>
+
+                <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <text>Logger ind...</text>
+                    }
+                    else
+                    {
+                        <i class="fas fa-sign-in-alt me-1"></i>
+                        <text>Log ind</text>
+                    }
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p class="text-center">
+                    Ny bruger? 
+                    <a href="/create-user" class="register-link">
+                        <i class="fas fa-user-plus me-1"></i>
+                        Opret konto
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
@@ -73,8 +124,4 @@
         }
     }
 
-    private void NavigateToRegister()
-    {
-        Navigation.NavigateTo("/create-user");
-    }
 }
