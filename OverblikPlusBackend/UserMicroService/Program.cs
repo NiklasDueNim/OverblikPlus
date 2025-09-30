@@ -280,6 +280,9 @@ public class Program
 
         // Auto-migrate database in Development and Production mode - TEMPORARILY DISABLED FOR DEBUGGING
         logger.LogInfo("[UserMicroService] Database migrations temporarily disabled for debugging");
+        
+        // Seed admin user
+        await SeedAdminUser(app);
         /*
         try
         {
@@ -311,6 +314,60 @@ public class Program
             logger.LogError($"[UserMicroService] FATAL ERROR during app.RunAsync(): {ex.Message}", ex);
             logger.LogError($"[UserMicroService] Stack trace: {ex.StackTrace}", ex);
             throw;
+        }
+    }
+
+    private static async Task SeedAdminUser(WebApplication app)
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+            // Check if admin user already exists
+            var adminUser = await userManager.FindByEmailAsync("admin@overblikplus.dk");
+            if (adminUser != null)
+            {
+                logger.LogInformation("Admin user already exists.");
+                return;
+            }
+
+            // Create admin role if it doesn't exist
+            if (!await roleManager.RoleExistsAsync("Admin"))
+            {
+                await roleManager.CreateAsync(new IdentityRole("Admin"));
+                logger.LogInformation("Admin role created.");
+            }
+
+            // Create admin user
+            var admin = new ApplicationUser
+            {
+                FirstName = "Admin",
+                LastName = "User",
+                Email = "admin@overblikplus.dk",
+                UserName = "admin@overblikplus.dk",
+                Role = "Admin",
+                BostedId = 1,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(admin, "Admin123!");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(admin, "Admin");
+                logger.LogInformation("Admin user created successfully with email: admin@overblikplus.dk and password: Admin123!");
+            }
+            else
+            {
+                logger.LogError("Failed to create admin user: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+        }
+        catch (Exception ex)
+        {
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "Error seeding admin user");
         }
     }
 }

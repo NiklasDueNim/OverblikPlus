@@ -6,7 +6,7 @@ public class CreateActivityDto
     public string Description { get; set; } = string.Empty;
     public DateTime StartDateTime { get; set; }
     public DateTime EndDateTime { get; set; }
-    public List<Guid> ResponsibleStaff { get; set; } = new();
+    public List<string> ResponsibleStaff { get; set; } = new();
     public int ActivityType { get; set; }
     public string Location { get; set; } = string.Empty;
     public int MaxParticipants { get; set; } = 20;
