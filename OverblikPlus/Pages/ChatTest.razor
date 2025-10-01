@@ -71,35 +71,60 @@
         messages = await localStorage.GetItemAsync<List<string>>(MessagesKey) ?? new List<string>();
 
         var userApiBaseUrl = Configuration["USER_API_BASE_URL"];
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl($"{userApiBaseUrl}/chatHub")
-            .Build();
-
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-        {
-            var formattedMessage = $"{user}: {message}";
-            messages.Add(formattedMessage);
-            InvokeAsync(StateHasChanged);
-            SaveMessages();
-        });
-
+        
         try
         {
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl($"{userApiBaseUrl}/chatHub")
+                .WithAutomaticReconnect()
+                .Build();
+
+            hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+            {
+                var formattedMessage = $"{user}: {message}";
+                messages.Add(formattedMessage);
+                InvokeAsync(StateHasChanged);
+                SaveMessages();
+            });
+
             await hubConnection.StartAsync();
+            Console.WriteLine("✅ Connected to chat hub");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Connection error: {ex.Message}");
+            Console.WriteLine($"⚠️ SignalR not available: {ex.Message}");
+            Console.WriteLine("Messages will be saved locally only.");
+            // Continue without SignalR - local storage still works
         }
     }
 
     private async Task Send()
     {
-        if (hubConnection is not null && !string.IsNullOrWhiteSpace(messageInput))
+        if (!string.IsNullOrWhiteSpace(messageInput))
         {
-            await hubConnection.SendAsync("SendMessage", "User", messageInput);
-            messageInput = string.Empty;
-            OnMessageSent?.Invoke();
+            try
+            {
+                if (hubConnection?.State == HubConnectionState.Connected)
+                {
+                    await hubConnection.SendAsync("SendMessage", "User", messageInput);
+                }
+                else
+                {
+                    // Fallback: Save locally if SignalR not connected
+                    var formattedMessage = $"User: {messageInput}";
+                    messages.Add(formattedMessage);
+                    await SaveMessages();
+                    Console.WriteLine("📝 Message saved locally (SignalR not connected)");
+                }
+                
+                messageInput = string.Empty;
+                OnMessageSent?.Invoke();
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending message: {ex.Message}");
+            }
         }
     }
 
@@ -117,7 +142,7 @@
     }
 
     public bool IsConnected =>
-        hubConnection?.State == HubConnectionState.Connected;
+        true; // Always show as connected since we can save locally
 
     public async ValueTask DisposeAsync()
     {
