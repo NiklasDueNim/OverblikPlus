@@ -6,8 +6,8 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components
 @using System.Timers
-<AuthorizeView>
-    <Authorized>
+    <AuthorizeView>
+        <Authorized>
         <!-- Widget-based Dashboard for logged in users -->
         <div class="dashboard-container">
             @if (showWelcomeMessage)
@@ -47,7 +47,7 @@
                         {
                             <div class="drag-handle">
                                 <i class="fas fa-grip-vertical"></i>
-                            </div>
+                        </div>
                         }
                         @if (widget.Type == "Tasks")
                         {
@@ -112,7 +112,7 @@
                             <i class="fas fa-users"></i>
                             <h4>Aktiviteter</h4>
                             <p>Planlæg og deltag i fælles aktiviteter</p>
-                        </div>
+                            </div>
                         <div class="feature-card">
                             <i class="fas fa-comments"></i>
                             <h4>Kommunikation</h4>
@@ -151,8 +151,8 @@
                 </div>
             </div>
         </div>
-    </NotAuthorized>
-</AuthorizeView>
+        </NotAuthorized>
+    </AuthorizeView>
 
 @code {
     private List<WidgetInfo> widgets = new();
@@ -178,6 +178,22 @@
             InvokeAsync(StateHasChanged);
         };
         welcomeTimer.Start();
+        
+        // Listen for navigation events to refresh dashboard
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+    
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        // Refresh dashboard when returning to home page
+        if (e.Location.EndsWith("/") || e.Location.Contains("localhost:5226/#"))
+        {
+            InvokeAsync(async () =>
+            {
+                await LoadDashboardSettings();
+                StateHasChanged();
+            });
+        }
     }
 
     private async Task LoadDashboardSettings()
@@ -371,5 +387,6 @@
     public void Dispose()
     {
         welcomeTimer?.Dispose();
+        NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }

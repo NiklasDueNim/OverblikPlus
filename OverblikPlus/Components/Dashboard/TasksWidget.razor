@@ -40,6 +40,13 @@
                 <span class="progress-text">@(completionPercentage)% færdig</span>
             </div>
 
+            <div class="widget-controls">
+                <label class="toggle-images">
+                    <input type="checkbox" @bind="showImages" />
+                    <span>Vis billeder</span>
+                </label>
+            </div>
+
             <div class="tasks-list">
                 @foreach (var task in todaysTasks.Take(3))
                 {
@@ -47,6 +54,12 @@
                         <div class="task-checkbox">
                             <input type="checkbox" checked="@task.IsCompleted" @onchange="@(() => ToggleTask(task))" />
                         </div>
+                        @if (showImages && !string.IsNullOrEmpty(task.Image))
+                        {
+                            <div class="task-image">
+                                <img src="@task.Image" alt="@task.Name" />
+                            </div>
+                        }
                         <div class="task-info">
                             <span class="task-name">@task.Name</span>
                             @if (!string.IsNullOrEmpty(task.Description))
@@ -83,6 +96,7 @@
 
     private List<ReadTaskDto> todaysTasks = new();
     private bool isLoading = true;
+    private bool showImages = false;
     private int completedTasks => todaysTasks.Count(t => t.IsCompleted);
     private int pendingTasks => todaysTasks.Count(t => !t.IsCompleted);
     private int completionPercentage => todaysTasks.Any() ? (int)((double)completedTasks / todaysTasks.Count * 100) : 0;
@@ -97,37 +111,38 @@
         try
         {
             isLoading = true;
-            // For now, use mock data - replace with actual service call when available
-            todaysTasks = new List<ReadTaskDto>
+            
+            var userId = await AuthStateProvider.GetUserIdAsync();
+            if (!string.IsNullOrEmpty(userId))
             {
-                new ReadTaskDto
-                {
-                    Id = 1,
-                    Name = "Morgen rutine",
-                    Description = "Vask tænder og gør dig klar",
-                    IsCompleted = false,
-                    StartDate = DateTime.Today,
-                    RecurrenceType = "Daily"
-                },
-                new ReadTaskDto
-                {
-                    Id = 2,
-                    Name = "Aftensmad",
-                    Description = "Lav aftensmad",
-                    IsCompleted = true,
-                    StartDate = DateTime.Today,
-                    RecurrenceType = "Daily"
-                }
-            };
+                var allTasks = await TaskService.GetTasksByUserAsync(userId);
+                Console.WriteLine($"Loaded {allTasks?.Count ?? 0} tasks for user {userId}");
+                
+                // Filter for today's tasks
+                var today = DateTime.Today;
+                todaysTasks = allTasks?
+                    .Where(t => t.StartDate.Date == today || 
+                               (t.RecurrenceType != "None" && t.NextOccurrence?.Date == today))
+                    .ToList() ?? new List<ReadTaskDto>();
+                
+                Console.WriteLine($"Filtered {todaysTasks.Count} tasks for date {today}");
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading tasks: {ex.Message}");
+            todaysTasks = new List<ReadTaskDto>();
         }
         finally
         {
             isLoading = false;
+            StateHasChanged();
         }
+    }
+    
+    public async Task RefreshTasks()
+    {
+        await LoadTasks();
     }
 
     private async Task ToggleTask(ReadTaskDto task)

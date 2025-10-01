@@ -51,7 +51,50 @@
 }
 
 .progress-container {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.widget-controls {
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.toggle-images {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #666;
+    user-select: none;
+}
+
+.toggle-images input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: #2196F3;
+    width: 16px;
+    height: 16px;
+}
+
+.toggle-images:hover {
+    color: #2196F3;
+}
+
+.task-image {
+    width: 60px;
+    height: 60px;
+    margin-right: 0.75rem;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.task-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .progress {
