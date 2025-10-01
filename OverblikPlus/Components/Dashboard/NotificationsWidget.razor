@@ -1,0 +1,233 @@
+@using OverblikPlus.Models.Dashboard
+@using OverblikPlus.Services.Interfaces
+@using OverblikPlus.AuthHelpers
+@inject INotificationService NotificationService
+@inject CustomAuthStateProvider AuthStateProvider
+
+<BaseWidget WidgetInfo="@WidgetInfo" OnWidgetClicked="@OnWidgetClicked">
+    @if (isLoading)
+    {
+        <div class="widget-loading">
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="sr-only">Henter notifikationer...</span>
+            </div>
+            <span class="ms-2">Henter notifikationer...</span>
+        </div>
+    }
+    else if (notifications.Any())
+    {
+        <div class="notifications-summary">
+            <div class="notifications-header">
+                <h4>Notifikationer</h4>
+                <div class="notifications-actions">
+                    <button class="btn btn-sm btn-outline-primary" @onclick="MarkAllAsRead">
+                        <i class="fas fa-check-double"></i>
+                        Marker alle som læst
+                    </button>
+                </div>
+            </div>
+            
+            <div class="notifications-list">
+                @foreach (var notification in notifications.Take(5))
+                {
+                    <div class="notification-item @(notification.IsRead ? "read" : "unread") @GetNotificationTypeClass(notification.Type)">
+                        <div class="notification-icon">
+                            <i class="@GetNotificationIcon(notification.Type)"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">@notification.Title</div>
+                            <div class="notification-message">@notification.Message</div>
+                            <div class="notification-meta">
+                                <span class="notification-time">@GetTimeAgo(notification.CreatedAt)</span>
+                                @if (notification.Priority == NotificationPriority.High || notification.Priority == NotificationPriority.Critical)
+                                {
+                                    <span class="notification-priority @notification.Priority.ToString().ToLower()">
+                                        @GetPriorityText(notification.Priority)
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                        <div class="notification-actions">
+                            @if (!notification.IsRead)
+                            {
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => MarkAsRead(notification.Id))">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            }
+                            <button class="btn btn-sm btn-outline-danger" @onclick="@(() => DeleteNotification(notification.Id))">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+                @if (notifications.Count > 5)
+                {
+                    <div class="more-notifications">
+                        <a href="/notifications" class="btn btn-sm btn-outline-primary">
+                            Se alle @notifications.Count notifikationer
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-notifications">
+            <i class="fas fa-bell-slash text-muted"></i>
+            <p>Ingen notifikationer</p>
+            <small class="text-muted">Du er helt opdateret!</small>
+        </div>
+    }
+</BaseWidget>
+
+@code {
+    [Parameter] public WidgetInfo WidgetInfo { get; set; } = new();
+    [Parameter] public EventCallback<WidgetInfo> OnWidgetClicked { get; set; }
+
+    private List<Notification> notifications = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNotifications();
+    }
+
+    private async Task LoadNotifications()
+    {
+        try
+        {
+            isLoading = true;
+            var userId = AuthStateProvider.User?.Id ?? "";
+            if (!string.IsNullOrEmpty(userId))
+            {
+                notifications = await NotificationService.GetNotificationsAsync(userId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading notifications: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task MarkAsRead(string notificationId)
+    {
+        try
+        {
+            var success = await NotificationService.MarkAsReadAsync(notificationId);
+            if (success)
+            {
+                var notification = notifications.FirstOrDefault(n => n.Id == notificationId);
+                if (notification != null)
+                {
+                    notification.IsRead = true;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error marking notification as read: {ex.Message}");
+        }
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        try
+        {
+            var userId = AuthStateProvider.User?.Id ?? "";
+            var success = await NotificationService.MarkAllAsReadAsync(userId);
+            if (success)
+            {
+                foreach (var notification in notifications)
+                {
+                    notification.IsRead = true;
+                }
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error marking all notifications as read: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteNotification(string notificationId)
+    {
+        try
+        {
+            var success = await NotificationService.DeleteNotificationAsync(notificationId);
+            if (success)
+            {
+                notifications.RemoveAll(n => n.Id == notificationId);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting notification: {ex.Message}");
+        }
+    }
+
+    private string GetNotificationTypeClass(NotificationType type)
+    {
+        return type switch
+        {
+            NotificationType.Success => "notification-success",
+            NotificationType.Warning => "notification-warning",
+            NotificationType.Error => "notification-error",
+            NotificationType.Task => "notification-task",
+            NotificationType.Shift => "notification-shift",
+            NotificationType.Activity => "notification-activity",
+            NotificationType.Message => "notification-message",
+            NotificationType.System => "notification-system",
+            _ => "notification-info"
+        };
+    }
+
+    private string GetNotificationIcon(NotificationType type)
+    {
+        return type switch
+        {
+            NotificationType.Success => "fas fa-check-circle",
+            NotificationType.Warning => "fas fa-exclamation-triangle",
+            NotificationType.Error => "fas fa-times-circle",
+            NotificationType.Task => "fas fa-tasks",
+            NotificationType.Shift => "fas fa-clock",
+            NotificationType.Activity => "fas fa-users",
+            NotificationType.Message => "fas fa-envelope",
+            NotificationType.System => "fas fa-cog",
+            _ => "fas fa-info-circle"
+        };
+    }
+
+    private string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+        
+        if (timeSpan.TotalMinutes < 1)
+            return "Lige nu";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} min siden";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} timer siden";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} dage siden";
+        
+        return dateTime.ToString("dd/MM/yyyy");
+    }
+
+    private string GetPriorityText(NotificationPriority priority)
+    {
+        return priority switch
+        {
+            NotificationPriority.High => "Høj",
+            NotificationPriority.Critical => "Kritisk",
+            _ => ""
+        };
+    }
+}

@@ -1,6 +1,8 @@
 ﻿@using OverblikPlus.AuthHelpers
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Components.Dashboard
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components
 @inherits LayoutComponentBase
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
@@ -10,6 +12,10 @@
 <AuthorizeView>
     <Authorized>
         <div class="desktop-menu-bar">
+            <div class="sidebar-logo">
+                <img src="/images/logo-blue.png" alt="OverblikPlus Logo" />
+                <h2>OverblikPlus</h2>
+            </div>
             <a href="/">
                 <span class="icon">🏠</span>
                 <span>Hjem</span>
@@ -54,6 +60,9 @@
                 <span class="icon">😎</span>
                 <span>Aktiviteter</span>
             </a>
+            <div class="notification-bell-wrapper">
+                <NotificationBell />
+            </div>
         </div>
     </Authorized>
     <NotAuthorized>
@@ -93,11 +102,22 @@
 </AuthorizeView>
 
 <!-- Main Content -->
-<div class="content-wrapper">
-    <article class="content">
-        @Body
-    </article>
-</div>
+<AuthorizeView>
+    <Authorized>
+        <div class="content-wrapper authenticated">
+            <article class="content">
+                @Body
+            </article>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="content-wrapper">
+            <article class="content">
+                @Body
+            </article>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     protected override async Task OnInitializedAsync()

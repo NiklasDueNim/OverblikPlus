@@ -1,120 +1,65 @@
 @page "/"
 @using OverblikPlus.AuthHelpers
-@using OverblikPlus.Models.Dtos.Tasks
+@using OverblikPlus.Models.Dashboard
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Components.Dashboard
 @using Microsoft.AspNetCore.Components.Authorization
-@inject ITaskService TaskService
-@inject ITaskStepService TaskStepService
-@inject CustomAuthStateProvider AuthStateProvider
-@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components
 @using System.Timers
-
 <AuthorizeView>
     <Authorized>
-        <!-- Dashboard for logged in users -->
+        <!-- Widget-based Dashboard for logged in users -->
         <div class="dashboard-container">
             @if (showWelcomeMessage)
             {
                 <div class="welcome-section">
                     <h1 class="welcome-title">Velkommen tilbage, @AuthStateProvider.User?.FirstName!</h1>
-                    <p class="welcome-subtitle">Her er dit daglige overblik</p>
+                    <p class="welcome-subtitle">Her er dit personlige dashboard</p>
                 </div>
             }
             
             <div class="dashboard-controls">
-                <select @bind="taskViewMode" class="view-selector">
-                    <option value="Single">Én opgave ad gangen</option>
-                    <option value="List">Listevisning</option>
-                </select>
+                <div class="dashboard-actions">
+                    <button class="btn btn-outline-primary btn-sm" @onclick="ToggleEditMode">
+                        <i class="fas fa-cog me-1"></i>
+                        @(isEditMode ? "Færdig" : "Tilpas")
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="ResetLayout">
+                        <i class="fas fa-undo me-1"></i>
+                        Nulstil
+                    </button>
+                </div>
             </div>
 
-            @if (taskViewMode == "Single")
-            {
-                <div class="task-card">
-                    @if (uncompletedTasks.Count > 0)
-                    {
-                        var currentTask = uncompletedTasks[currentTaskIndex];
-                        <div class="task-header">
-                            <h3 class="task-title">@currentTask.Name</h3>
-                            <div class="task-progress">
-                                <span class="progress-text">@(currentTaskIndex + 1) af @uncompletedTasks.Count</span>
-                            </div>
-                        </div>
-                        <div class="task-content">
-                            @if (!string.IsNullOrEmpty(currentTask.Image))
-                            {
-                                <img src="@currentTask.Image" alt="Task Image" class="task-image" />
-                            }
-                            <p class="task-description">@currentTask.Description</p>
-                            <div class="task-actions">
-                                @if (currentTask.HasSteps)
-                                {
-                                    <button class="btn-primary" @onclick="() => GoToTaskSteps(currentTask.Id)">
-                                        <i class="fas fa-list-ol me-2"></i>
-                                        Gå til trin
-                                    </button>
-                                }
-                                <button class="btn-secondary" @onclick="NextTask">
-                                    <i class="fas fa-arrow-right me-2"></i>
-                                    Næste opgave
-                                </button>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="no-tasks">
-                            <i class="fas fa-check-circle"></i>
-                            <h3>Alle opgaver er færdige!</h3>
-                            <p>Du har ingen uløste opgaver for i dag. Godt klaret!</p>
-                        </div>
-                    }
-                </div>
-                <ChatMessages/>
-            }
-            else if (taskViewMode == "List")
-            {
-                <div class="task-list-container">
-                    <div class="list-header">
-                        <h3 class="list-title">Dagens opgaver</h3>
-                        <div class="completion-stats">
-                            <span class="stats-text">@todaysTasks.Count(t => t.IsCompleted) af @todaysTasks.Count færdige</span>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-container">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: @(taskCompletionPercentage)%;"></div>
-                        </div>
-                        <span class="progress-percentage">@(taskCompletionPercentage)%</span>
-                    </div>
-
-                    <div class="task-list">
-                        @foreach (var task in todaysTasks)
+            <div class="widgets-grid @(isEditMode ? "edit-mode" : "")">
+                @foreach (var widget in GetVisibleWidgets())
+                {
+                    <div class="widget-container @GetWidgetSizeClass(widget.Size)" 
+                         @onclick="@(() => OnWidgetClick(widget))"
+                         @onclick:stopPropagation="true">
+                        @if (widget.Type == "Tasks")
                         {
-                            <div class="task-item @(task.IsCompleted ? "completed" : "")">
-                                <div class="task-checkbox">
-                                    <input
-                                        type="checkbox"
-                                        checked="@task.IsCompleted"
-                                        @onchange="async (e) => await OnTaskStatusChanged(task.Id, ((ChangeEventArgs)e).Value is bool value && value)"/>
-                                </div>
-                                @if (!string.IsNullOrEmpty(task.Image))
-                                {
-                                    <img src="@task.Image" alt="Task Image" class="task-thumbnail" />
-                                }
-                                <div class="task-info">
-                                    <span class="task-name">@task.Name</span>
-                                    @if (!string.IsNullOrEmpty(task.Description))
-                                    {
-                                        <span class="task-desc">@task.Description</span>
-                                    }
-                                </div>
-                            </div>
+                            <TasksWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
+                        }
+                        else if (widget.Type == "Shifts")
+                        {
+                            <ShiftsWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
+                        }
+                        else if (widget.Type == "Activities")
+                        {
+                            <ActivitiesWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
+                        }
+                        else if (widget.Type == "QuickActions")
+                        {
+                            <QuickActionsWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
+                        }
+                        else if (widget.Type == "Notifications")
+                        {
+                            <NotificationsWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
                         }
                     </div>
-                </div>
-            }
+                }
+            </div>
         </div>
     </Authorized>
     <NotAuthorized>
@@ -124,7 +69,7 @@
                 <div class="hero-content">
                     <div class="logo-section">
                         <div class="logo-icon">
-                            <i class="fas fa-chart-line"></i>
+                            <img src="/images/logo-blue.png" alt="OverblikPlus Logo" />
                         </div>
                         <h1 class="hero-title">OverblikPlus</h1>
                     </div>
@@ -198,179 +143,171 @@
 </AuthorizeView>
 
 @code {
-    private List<ReadTaskDto> todaysTasks = new();
-    private List<ReadTaskDto> uncompletedTasks => todaysTasks.Where(t => !t.IsCompleted).ToList();
-    private int taskCompletionPercentage = 0;
-    private string taskViewMode = "Single";
-    private int currentTaskIndex = 0;
+    private List<WidgetInfo> widgets = new();
+    private bool isEditMode = false;
     private bool showWelcomeMessage = true;
-    private Timer welcomeMessageTimer;
+    private System.Timers.Timer? welcomeTimer;
+    private string userRole = string.Empty;
+
+    [Inject] public CustomAuthStateProvider AuthStateProvider { get; set; } = default!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshTasks();
-        StartWelcomeMessageTimer();
+        userRole = await AuthStateProvider.GetRoleAsync();
+        await LoadDashboardSettings();
+        
+        // Set up welcome message timer
+        welcomeTimer = new System.Timers.Timer(5000); // 5 seconds
+        welcomeTimer.Elapsed += (sender, e) => {
+            showWelcomeMessage = false;
+            InvokeAsync(StateHasChanged);
+        };
+        welcomeTimer.Start();
     }
 
-    private async Task RefreshTasks()
+    private async Task LoadDashboardSettings()
     {
-        try
-        {
-            var result = await TaskService.GetTasksForUserAsync(AuthStateProvider.User.Id);
+        // Initialize default widgets based on user role
+        widgets = GetDefaultWidgets(userRole);
+        
+        // TODO: Load user's saved dashboard settings from backend
+        // This would integrate with a DashboardSettingsService
+    }
 
-            if (!result.Success)
+    private List<WidgetInfo> GetDefaultWidgets(string role)
+    {
+        var defaultWidgets = new List<WidgetInfo>();
+
+        // Common widgets for all users
+        defaultWidgets.Add(new WidgetInfo
+        {
+            Id = "tasks",
+            Title = "Mine Opgaver",
+            Type = "Tasks",
+            Position = 1,
+            Size = 2,
+            IsVisible = true,
+            Role = "All"
+        });
+
+        defaultWidgets.Add(new WidgetInfo
+        {
+            Id = "quickactions",
+            Title = "Hurtige Handlinger",
+            Type = "QuickActions",
+            Position = 2,
+            Size = 1,
+            IsVisible = true,
+            Role = "All"
+        });
+
+        defaultWidgets.Add(new WidgetInfo
+        {
+            Id = "activities",
+            Title = "Aktiviteter",
+            Type = "Activities",
+            Position = 3,
+            Size = 2,
+            IsVisible = true,
+            Role = "All"
+        });
+
+        // Role-specific widgets
+        if (role == "Admin" || role == "Staff")
+        {
+            defaultWidgets.Add(new WidgetInfo
             {
-                Console.WriteLine($"Fejl ved hentning af opgaver: {result.Error}");
-                todaysTasks = new List<ReadTaskDto>();
-                return;
-            }
+                Id = "shifts",
+                Title = "Vagtplan",
+                Type = "Shifts",
+                Position = 4,
+                Size = 2,
+                IsVisible = true,
+                Role = "Staff"
+            });
 
-            todaysTasks = FilterTasks(result.Data);
+            defaultWidgets.Add(new WidgetInfo
+            {
+                Id = "notifications",
+                Title = "Notifikationer",
+                Type = "Notifications",
+                Position = 5,
+                Size = 1,
+                IsVisible = true,
+                Role = "Staff"
+            });
+        }
 
-            currentTaskIndex = 0;
-            UpdateProgress();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Uventet fejl i RefreshTasks: {ex.Message}");
-            todaysTasks = new List<ReadTaskDto>();
-        }
+        return defaultWidgets.OrderBy(w => w.Position).ToList();
     }
 
-    private static List<ReadTaskDto> FilterTasks(List<ReadTaskDto> tasks)
+    private List<WidgetInfo> GetVisibleWidgets()
     {
-        var today = DateTime.Today;
-
-        return tasks.Where(task => IsTaskOccurringOnDate(task, today)).ToList();
+        return widgets.Where(w => w.IsVisible).ToList();
     }
-    
-    private static bool IsTaskOccurringOnDate(ReadTaskDto task, DateTime selectedDate)
+
+    private string GetWidgetSizeClass(int size)
     {
-        if (task.RecurrenceType == "None")
+        return size switch
         {
-            return task.StartDate.Date == selectedDate.Date;
-        }
-        
-        if (!task.NextOccurrence.HasValue) return false;
-        
-        return task.RecurrenceType switch
-        {
-            "Daily" => IsDailyMatch(task, selectedDate),
-            "Weekly" => IsWeeklyMatch(task, selectedDate),
-            "Monthly" => IsMonthlyMatch(task, selectedDate),
-            "Yearly" => IsYearlyMatch(task, selectedDate),
-            _ => false
+            1 => "widget-small",
+            2 => "widget-medium",
+            3 => "widget-large",
+            _ => "widget-small"
         };
     }
-    
-    private static bool IsDailyMatch(ReadTaskDto task, DateTime selectedDate)
-    {
-        var daysDiff = (selectedDate.Date - task.StartDate.Date).Days;
-        return daysDiff >= 0 && daysDiff % task.RecurrenceInterval == 0;
-    }
-    
-    private static bool IsWeeklyMatch(ReadTaskDto task, DateTime selectedDate)
-    {
-        var daysDiff = (selectedDate.Date - task.StartDate.Date).Days;
-        return daysDiff >= 0 && daysDiff % (task.RecurrenceInterval * 7) == 0;
-    }
-    
-    private static bool IsMonthlyMatch(ReadTaskDto task, DateTime selectedDate)
-    {
-        if (selectedDate.Date < task.StartDate.Date) return false;
-        
-        var monthsDiff = ((selectedDate.Year - task.StartDate.Year) * 12) + 
-                         (selectedDate.Month - task.StartDate.Month);
-        
-        if (monthsDiff < 0 || monthsDiff % task.RecurrenceInterval != 0) 
-            return false;
-        
-        // Tjek om dagen matcher baseret på monthly type
-        return task.MonthlyType switch
-        {
-            "SameDay" => selectedDate.Day == task.StartDate.Day,
-            "FirstDay" => selectedDate.Day == 1,
-            "LastDay" => selectedDate.Day == DateTime.DaysInMonth(selectedDate.Year, selectedDate.Month),
-            "SpecificDay" => selectedDate.Day == task.MonthlyDay,
-            _ => false
-        };
-    }
-    
-    private static bool IsYearlyMatch(ReadTaskDto task, DateTime selectedDate)
-    {
-        if (selectedDate.Date < task.StartDate.Date) return false;
-        
-        var yearsDiff = selectedDate.Year - task.StartDate.Year;
-        
-        return yearsDiff >= 0 && yearsDiff % task.RecurrenceInterval == 0 && 
-               selectedDate.Month == task.StartDate.Month && 
-               selectedDate.Day == task.StartDate.Day;
-    }
 
-    private void UpdateProgress()
+    private async Task OnWidgetClick(WidgetInfo widget)
     {
-        if (todaysTasks.Count > 0)
+        if (isEditMode)
         {
-            var completedTasks = todaysTasks.Count(t => t.IsCompleted);
-            taskCompletionPercentage = (int)Math.Round((double)completedTasks / todaysTasks.Count * 100);
+            // Handle widget editing (resize, move, etc.)
+            await HandleWidgetEdit(widget);
         }
         else
         {
-            taskCompletionPercentage = 0;
+            // Handle widget click (navigate to full page)
+            await HandleWidgetNavigation(widget);
         }
+    }
 
+    private async Task HandleWidgetEdit(WidgetInfo widget)
+    {
+        // TODO: Implement widget editing logic
+        // This could include resizing, moving, or configuring widgets
+        Console.WriteLine($"Editing widget: {widget.Title}");
+    }
+
+    private async Task HandleWidgetNavigation(WidgetInfo widget)
+    {
+        var url = widget.Type switch
+        {
+            "Tasks" => "/tasks",
+            "Shifts" => "/schedule",
+            "Activities" => "/activities",
+            "Notifications" => "/notifications",
+            _ => "/"
+        };
+        
+        NavigationManager.NavigateTo(url);
+    }
+
+    private void ToggleEditMode()
+    {
+        isEditMode = !isEditMode;
+    }
+
+    private async Task ResetLayout()
+    {
+        widgets = GetDefaultWidgets(userRole);
         StateHasChanged();
+        
+        // TODO: Save reset layout to backend
     }
 
-    private async Task NextTask()
+    public void Dispose()
     {
-        if (uncompletedTasks.Count == 0)
-            return;
-
-        currentTaskIndex = (currentTaskIndex + 1) % uncompletedTasks.Count;
-        await Task.CompletedTask;
+        welcomeTimer?.Dispose();
     }
-
-    private async Task GoToTaskSteps(int taskId)
-    {
-        var steps = await TaskStepService.GetStepsForTask(taskId);
-        if (steps != null && steps.Count > 0)
-        {
-            NavigationManager.NavigateTo($"/task-step-view/{taskId}/step/{steps.First().Id}");
-        }
-        else
-        {
-            Console.WriteLine($"No steps found for task {taskId}");
-        }
-    }
-
-    private async Task OnTaskStatusChanged(int taskId, bool isCompleted)
-    {
-        if (isCompleted)
-        {
-            await TaskService.MarkTaskAsCompleted(taskId);
-        }
-
-        var task = todaysTasks.FirstOrDefault(t => t.Id == taskId);
-        if (task != null)
-        {
-            task.IsCompleted = isCompleted;
-            UpdateProgress();
-        }
-    }
-
-    private void StartWelcomeMessageTimer()
-    {
-        welcomeMessageTimer = new Timer(5000); 
-        welcomeMessageTimer.Elapsed += HideWelcomeMessage;
-        welcomeMessageTimer.AutoReset = false;
-        welcomeMessageTimer.Start();
-    }
-
-    private void HideWelcomeMessage(object sender, ElapsedEventArgs e)
-    {
-        showWelcomeMessage = false;
-        InvokeAsync(StateHasChanged);
-    }
-
 }

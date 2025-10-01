@@ -1,0 +1,114 @@
+@using OverblikPlus.Models.Dashboard
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="widget @GetWidgetClasses()" @onclick="OnWidgetClick">
+    <div class="widget-header">
+        <div class="widget-title">
+            <i class="@GetWidgetIcon()"></i>
+            <span>@WidgetInfo.Title</span>
+        </div>
+        <div class="widget-actions">
+            <button class="btn btn-sm btn-outline-secondary" @onclick="ToggleSettings" @onclick:stopPropagation="true">
+                <i class="fas fa-cog"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="ToggleVisibility" @onclick:stopPropagation="true">
+                <i class="fas fa-eye"></i>
+            </button>
+        </div>
+    </div>
+    <div class="widget-content">
+        @ChildContent
+    </div>
+    @if (ShowSettings)
+    {
+        <div class="widget-settings">
+            <div class="form-group">
+                <label>Størrelse:</label>
+                <select @bind="WidgetInfo.Size" @bind:after="OnSizeChanged">
+                    <option value="1">Lille</option>
+                    <option value="2">Medium</option>
+                    <option value="3">Stor</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" @bind="WidgetInfo.IsVisible" @bind:after="OnVisibilityChanged" />
+                    Synlig
+                </label>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public WidgetInfo WidgetInfo { get; set; } = new();
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback<WidgetInfo> OnWidgetChanged { get; set; }
+    [Parameter] public EventCallback<WidgetInfo> OnWidgetClicked { get; set; }
+
+    private bool ShowSettings { get; set; } = false;
+
+    private string GetWidgetClasses()
+    {
+        var classes = $"widget-{WidgetInfo.Type.ToLower()}";
+        classes += $" widget-size-{WidgetInfo.Size}";
+        if (!WidgetInfo.IsVisible) classes += " widget-hidden";
+        return classes;
+    }
+
+    private string GetWidgetIcon()
+    {
+        return WidgetInfo.Type switch
+        {
+            "Tasks" => "fas fa-tasks",
+            "Shifts" => "fas fa-clock",
+            "Activities" => "fas fa-users",
+            "Messages" => "fas fa-envelope",
+            "Mood" => "fas fa-smile",
+            "Budget" => "fas fa-dollar-sign",
+            "Announcements" => "fas fa-bullhorn",
+            "QuickActions" => "fas fa-bolt",
+            "Weather" => "fas fa-cloud-sun",
+            "Calendar" => "fas fa-calendar",
+            _ => "fas fa-square"
+        };
+    }
+
+    private async Task OnWidgetClick()
+    {
+        if (OnWidgetClicked.HasDelegate)
+        {
+            await OnWidgetClicked.InvokeAsync(WidgetInfo);
+        }
+    }
+
+    private void ToggleSettings()
+    {
+        ShowSettings = !ShowSettings;
+    }
+
+    private async Task ToggleVisibility()
+    {
+        WidgetInfo.IsVisible = !WidgetInfo.IsVisible;
+        if (OnWidgetChanged.HasDelegate)
+        {
+            await OnWidgetChanged.InvokeAsync(WidgetInfo);
+        }
+    }
+
+    private async Task OnSizeChanged()
+    {
+        if (OnWidgetChanged.HasDelegate)
+        {
+            await OnWidgetChanged.InvokeAsync(WidgetInfo);
+        }
+    }
+
+    private async Task OnVisibilityChanged()
+    {
+        if (OnWidgetChanged.HasDelegate)
+        {
+            await OnWidgetChanged.InvokeAsync(WidgetInfo);
+        }
+    }
+}

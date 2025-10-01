@@ -1,0 +1,168 @@
+/* Quick Actions Widget Styles */
+.quick-actions {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+    padding: 0.5rem;
+}
+
+.action-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.5rem;
+    border: none;
+    border-radius: 8px;
+    background: #f8f9fa;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 80px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid #e9ecef;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+    color: #333;
+}
+
+.action-button i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.action-button span {
+    line-height: 1.2;
+    word-wrap: break-word;
+}
+
+/* Action Button Variants */
+.action-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-color: #007bff;
+}
+
+.action-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    color: white;
+}
+
+.action-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+    color: white;
+    border-color: #6c757d;
+}
+
+.action-secondary:hover {
+    background: linear-gradient(135deg, #545b62 0%, #3d4449 100%);
+    color: white;
+}
+
+.action-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    color: white;
+    border-color: #28a745;
+}
+
+.action-success:hover {
+    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+    color: white;
+}
+
+.action-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+    color: white;
+    border-color: #17a2b8;
+}
+
+.action-info:hover {
+    background: linear-gradient(135deg, #117a8b 0%, #0c5460 100%);
+    color: white;
+}
+
+.action-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: #212529;
+    border-color: #ffc107;
+}
+
+.action-warning:hover {
+    background: linear-gradient(135deg, #e0a800 0%, #d39e00 100%);
+    color: #212529;
+}
+
+.action-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border-color: #dc3545;
+}
+
+.action-danger:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    color: white;
+}
+
+.action-dark {
+    background: linear-gradient(135deg, #343a40 0%, #23272b 100%);
+    color: white;
+    border-color: #343a40;
+}
+
+.action-dark:hover {
+    background: linear-gradient(135deg, #23272b 0%, #1d2124 100%);
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .action-button {
+        min-height: 70px;
+        padding: 0.75rem 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    .action-button i {
+        font-size: 1.2rem;
+        margin-bottom: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-button {
+        min-height: 60px;
+        flex-direction: row;
+        text-align: left;
+        padding: 0.75rem;
+    }
+    
+    .action-button i {
+        margin-right: 0.75rem;
+        margin-bottom: 0;
+        font-size: 1.1rem;
+    }
+}
+

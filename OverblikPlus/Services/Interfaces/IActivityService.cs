@@ -9,8 +9,8 @@ public interface IActivityService
     Task<bool> CreateActivityAsync(CreateActivityDto activity);
     Task<bool> UpdateActivityAsync(Guid id, CreateActivityDto activity);
     Task<bool> DeleteActivityAsync(Guid id);
-    Task<ApiResult> JoinActivityAsync(Guid activityId, Guid userId);
-    Task<ApiResult> LeaveActivityAsync(Guid activityId, Guid userId);
+    Task<ApiResult> JoinActivityAsync(Guid activityId, string userId);
+    Task<ApiResult> LeaveActivityAsync(Guid activityId, string userId);
 }
 
 public class ApiResult

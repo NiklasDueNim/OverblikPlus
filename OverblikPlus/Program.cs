@@ -29,28 +29,59 @@ else if (environment == "Production")
 
 var configuration = builder.Configuration;
 var envConfig = configuration["ENVIRONMENT"] ?? "dev";
-var taskApiBaseUrl = configuration["TASK_API_BASE_URL"];
-var userApiBaseUrl = configuration["USER_API_BASE_URL"];
 
-// Override with localhost URLs if running in Development mode
-if (environment == "Development")
+// Determine environment based on where the app is running
+var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
+var host = baseUri.Host;
+
+string taskApiBaseUrl;
+string userApiBaseUrl;
+
+// Check if running on production domain
+if (host.Contains("overblikplus.dk") || host.Contains("azurestaticapps.net"))
 {
-    taskApiBaseUrl = "http://localhost:5101";
-    userApiBaseUrl = "http://localhost:5102";
+    // Production: Use Azure API endpoints
+    taskApiBaseUrl = "https://overblikplus-task-api-dev.azurewebsites.net";
+    userApiBaseUrl = "https://overblikplus-user-api-dev.azurewebsites.net";
+    envConfig = "production";
+}
+else if (host == "localhost" || host == "127.0.0.1")
+{
+    // Local development: Check URL for backend preference
+    // URL examples:
+    // - http://localhost:5226 (default: Rider ports 5001/5002)
+    // - http://localhost:5226?backend=docker (Docker ports 5101/5102)
+    // - http://localhost:5226?backend=azure (Azure cloud)
+    
+    var uri = new Uri(baseUri.ToString());
+    var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+    var backendType = query["backend"]?.ToLower();
+    
+    if (backendType == "docker")
+    {
+        taskApiBaseUrl = "http://localhost:5101";
+        userApiBaseUrl = "http://localhost:5102";
+        envConfig = "development-docker";
+    }
+    else if (backendType == "azure")
+    {
+        taskApiBaseUrl = "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net";
+        userApiBaseUrl = "https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net";
+        envConfig = "development-azure";
+    }
+    else
+    {
+        // Default: Rider ports
+        taskApiBaseUrl = "http://localhost:5002";
+        userApiBaseUrl = "http://localhost:5001";
+        envConfig = "development";
+    }
 }
 else
 {
-    // Check if running on production domain
-    var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
-    var host = baseUri.Host;
-    
-    if (host.Contains("overblikplus.dk") || host.Contains("azurestaticapps.net"))
-    {
-        // Use production Azure API endpoints
-        taskApiBaseUrl = "https://overblikplus-task-api-dev.azurewebsites.net";
-        userApiBaseUrl = "https://overblikplus-user-api-dev.azurewebsites.net";
-        envConfig = "production";
-    }
+    // Fallback: Read from appsettings.json
+    taskApiBaseUrl = configuration["TASK_API_BASE_URL"] ?? "http://localhost:5002";
+    userApiBaseUrl = configuration["USER_API_BASE_URL"] ?? "http://localhost:5001";
 }
 
 Console.WriteLine($"Host Environment: {environment}");
@@ -89,6 +120,7 @@ ConfigureHttpClient<IAnnouncementService, AnnouncementService>(builder.Services,
 ConfigureHttpClient<IMoodService, MoodService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<IActivityService, ActivityService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<IShiftService, ShiftService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<INotificationService, NotificationService>(builder.Services, taskApiBaseUrl);
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();

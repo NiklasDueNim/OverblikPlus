@@ -1,0 +1,148 @@
+@using OverblikPlus.Models.Dashboard
+@using OverblikPlus.Models.Dtos.Tasks
+@using OverblikPlus.Services.Interfaces
+@using OverblikPlus.AuthHelpers
+@inject ITaskService TaskService
+@inject CustomAuthStateProvider AuthStateProvider
+
+<BaseWidget WidgetInfo="@WidgetInfo" OnWidgetClicked="@OnWidgetClicked">
+    @if (isLoading)
+    {
+        <div class="widget-loading">
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="sr-only">Henter opgaver...</span>
+            </div>
+            <span class="ms-2">Henter opgaver...</span>
+        </div>
+    }
+    else if (todaysTasks.Any())
+    {
+        <div class="tasks-summary">
+            <div class="tasks-stats">
+                <div class="stat-item">
+                    <span class="stat-number">@todaysTasks.Count</span>
+                    <span class="stat-label">I alt</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number completed">@completedTasks</span>
+                    <span class="stat-label">Færdige</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number pending">@pendingTasks</span>
+                    <span class="stat-label">Venter</span>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress">
+                    <div class="progress-bar" style="width: @(completionPercentage)%"></div>
+                </div>
+                <span class="progress-text">@(completionPercentage)% færdig</span>
+            </div>
+
+            <div class="tasks-list">
+                @foreach (var task in todaysTasks.Take(3))
+                {
+                    <div class="task-item @(task.IsCompleted ? "completed" : "")">
+                        <div class="task-checkbox">
+                            <input type="checkbox" checked="@task.IsCompleted" @onchange="@(() => ToggleTask(task))" />
+                        </div>
+                        <div class="task-info">
+                            <span class="task-name">@task.Name</span>
+                            @if (!string.IsNullOrEmpty(task.Description))
+                            {
+                                <span class="task-desc">@task.Description</span>
+                            }
+                        </div>
+                    </div>
+                }
+                @if (todaysTasks.Count > 3)
+                {
+                    <div class="more-tasks">
+                        <a href="/tasks" class="btn btn-sm btn-outline-primary">
+                            Se alle @(todaysTasks.Count - 3) flere opgaver
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-tasks">
+            <i class="fas fa-check-circle text-success"></i>
+            <p>Ingen opgaver i dag!</p>
+            <a href="/TaskManager" class="btn btn-sm btn-primary">Opret opgave</a>
+        </div>
+    }
+</BaseWidget>
+
+@code {
+    [Parameter] public WidgetInfo WidgetInfo { get; set; } = new();
+    [Parameter] public EventCallback<WidgetInfo> OnWidgetClicked { get; set; }
+
+    private List<ReadTaskDto> todaysTasks = new();
+    private bool isLoading = true;
+    private int completedTasks => todaysTasks.Count(t => t.IsCompleted);
+    private int pendingTasks => todaysTasks.Count(t => !t.IsCompleted);
+    private int completionPercentage => todaysTasks.Any() ? (int)((double)completedTasks / todaysTasks.Count * 100) : 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasks();
+    }
+
+    private async Task LoadTasks()
+    {
+        try
+        {
+            isLoading = true;
+            // For now, use mock data - replace with actual service call when available
+            todaysTasks = new List<ReadTaskDto>
+            {
+                new ReadTaskDto
+                {
+                    Id = 1,
+                    Name = "Morgen rutine",
+                    Description = "Vask tænder og gør dig klar",
+                    IsCompleted = false,
+                    StartDate = DateTime.Today,
+                    RecurrenceType = "Daily"
+                },
+                new ReadTaskDto
+                {
+                    Id = 2,
+                    Name = "Aftensmad",
+                    Description = "Lav aftensmad",
+                    IsCompleted = true,
+                    StartDate = DateTime.Today,
+                    RecurrenceType = "Daily"
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tasks: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ToggleTask(ReadTaskDto task)
+    {
+        try
+        {
+            // For now, just toggle the task locally
+            task.IsCompleted = !task.IsCompleted;
+            StateHasChanged();
+            
+            // TODO: Implement actual API call when service is available
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error toggling task: {ex.Message}");
+        }
+    }
+}

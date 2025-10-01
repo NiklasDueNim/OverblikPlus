@@ -19,9 +19,9 @@
                     </a>
                 }
             </div>
-            
-            @if (activities == null)
-            {
+
+@if (activities == null)
+{
                 <div class="text-center">
                     <div class="spinner-border" role="status">
                         <span class="visually-hidden">Henter aktiviteter...</span>
@@ -35,9 +35,9 @@
                     <h5>Ingen aktiviteter i dag</h5>
                     <p>Der er ingen planlagte aktiviteter for i dag.</p>
                 </div>
-            }
-            else
-            {
+}
+else
+{
                 <div class="row">
                     @foreach (var act in activities.OrderBy(a => a.StartDateTime))
                     {
@@ -168,33 +168,33 @@
                                                 @onclick="() => Leave(act.Id)">
                                             @(isLeaving ? "Forlader..." : "Forlad aktivitet")
                                         </button>
-                                    }
-                                    else
-                                    {
+                }
+                else
+                {
                                         <button class="btn btn-outline-secondary w-100" disabled>
                                             @GetCannotParticipateReason(act)
                                         </button>
-                                    }
+                }
                                 </div>
-                            </div>
-                        </div>
-                    }
+            </div>
+        </div>
+    }
                 </div>
-            }
+}
         </div>
     </div>
 </div>
 
 @code {
     private List<ActivityDto> activities = new();
-    private Guid currentUserId;
+    private string currentUserId = string.Empty;
     private bool isJoining = false;
     private bool isLeaving = false;
     private string userRole = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        currentUserId = Guid.Parse(AuthStateProvider.User.Id);
+        currentUserId = AuthStateProvider.User?.Id ?? string.Empty;
         userRole = await AuthStateProvider.GetRoleAsync();
         await LoadActivities();
     }
@@ -202,8 +202,8 @@
     private async Task LoadActivities()
     {
         try
-        {
-            activities = await ActivityService.GetAllActivitiesAsync();
+    {
+        activities = await ActivityService.GetAllActivitiesAsync();
         }
         catch (Exception ex)
         {
@@ -223,8 +223,8 @@
             var result = await ActivityService.JoinActivityAsync(activityId, currentUserId);
             if (result.Success)
             {
-                var act = activities.First(a => a.Id == activityId);
-                act.Participants.Add(currentUserId);
+        var act = activities.First(a => a.Id == activityId);
+        act.Participants.Add(currentUserId);
                 StateHasChanged();
             }
             else
@@ -253,8 +253,8 @@
             var result = await ActivityService.LeaveActivityAsync(activityId, currentUserId);
             if (result.Success)
             {
-                var act = activities.First(a => a.Id == activityId);
-                act.Participants.Remove(currentUserId);
+        var act = activities.First(a => a.Id == activityId);
+        act.Participants.Remove(currentUserId);
                 StateHasChanged();
             }
             else
@@ -336,16 +336,16 @@
         };
     }
 
-    private string GetStaffNameSync(Guid userId)
+    private string GetStaffNameSync(string userId)
     {
         // For now, return a placeholder. In a real implementation, you might want to cache user data
-        return "Medarbejder " + userId.ToString().Substring(0, 8);
+        return "Medarbejder " + userId.Substring(0, Math.Min(8, userId.Length));
     }
 
-    private string GetResidentNameSync(Guid userId)
+    private string GetResidentNameSync(string userId)
     {
         // For now, return a placeholder. In a real implementation, you might want to cache user data
-        return "Beboer " + userId.ToString().Substring(0, 8);
+        return "Beboer " + userId.Substring(0, Math.Min(8, userId.Length));
     }
 
     private async Task<string> GetStaffName(Guid userId)

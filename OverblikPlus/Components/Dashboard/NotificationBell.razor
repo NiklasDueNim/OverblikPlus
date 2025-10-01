@@ -1,0 +1,188 @@
+@using OverblikPlus.Models.Dashboard
+@using OverblikPlus.Services.Interfaces
+@using OverblikPlus.AuthHelpers
+@inject INotificationService NotificationService
+@inject CustomAuthStateProvider AuthStateProvider
+
+<div class="notification-bell-container">
+    <button class="notification-bell @(hasUnread ? "has-unread" : "")" @onclick="ToggleDropdown">
+        <i class="fas fa-bell"></i>
+        @if (unreadCount > 0)
+        {
+            <span class="notification-badge">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span>
+        }
+    </button>
+    
+    @if (showDropdown)
+    {
+        <div class="notification-dropdown">
+            <div class="dropdown-header">
+                <h5>Notifikationer</h5>
+                @if (unreadCount > 0)
+                {
+                    <button class="btn btn-sm btn-outline-primary" @onclick="MarkAllAsRead">
+                        <i class="fas fa-check-double"></i>
+                        Marker alle som læst
+                    </button>
+                }
+            </div>
+            
+            <div class="dropdown-content">
+                @if (recentNotifications.Any())
+                {
+                    @foreach (var notification in recentNotifications.Take(5))
+                    {
+                        <div class="notification-item @(notification.IsRead ? "read" : "unread")" @onclick="@(() => HandleNotificationClick(notification))">
+                            <div class="notification-icon">
+                                <i class="@GetNotificationIcon(notification.Type)"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">@notification.Title</div>
+                                <div class="notification-message">@notification.Message</div>
+                                <div class="notification-time">@GetTimeAgo(notification.CreatedAt)</div>
+                            </div>
+                            @if (!notification.IsRead)
+                            {
+                                <div class="unread-indicator"></div>
+                            }
+                        </div>
+                    }
+                    
+                    @if (notifications.Count > 5)
+                    {
+                        <div class="dropdown-footer">
+                            <a href="/notifications" class="btn btn-sm btn-outline-primary w-100">
+                                Se alle @notifications.Count notifikationer
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-notifications">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>Ingen notifikationer</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool showDropdown = false;
+    private bool hasUnread = false;
+    private int unreadCount = 0;
+    private List<Notification> notifications = new();
+    private List<Notification> recentNotifications = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadNotifications();
+        
+        // Set up periodic refresh
+        var timer = new System.Timers.Timer(30000); // 30 seconds
+        timer.Elapsed += async (sender, e) => await LoadNotifications();
+        timer.Start();
+    }
+
+    private async Task LoadNotifications()
+    {
+        try
+        {
+            var userId = AuthStateProvider.User?.Id ?? "";
+            if (!string.IsNullOrEmpty(userId))
+            {
+                notifications = await NotificationService.GetNotificationsAsync(userId);
+                unreadCount = await NotificationService.GetUnreadCountAsync(userId);
+                hasUnread = unreadCount > 0;
+                recentNotifications = notifications.OrderByDescending(n => n.CreatedAt).ToList();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading notifications: {ex.Message}");
+        }
+    }
+
+    private void ToggleDropdown()
+    {
+        showDropdown = !showDropdown;
+    }
+
+    private async Task HandleNotificationClick(Notification notification)
+    {
+        if (!notification.IsRead)
+        {
+            await NotificationService.MarkAsReadAsync(notification.Id);
+            notification.IsRead = true;
+            unreadCount--;
+            hasUnread = unreadCount > 0;
+        }
+        
+        if (!string.IsNullOrEmpty(notification.ActionUrl))
+        {
+            // Navigate to action URL
+            // This would need NavigationManager injection
+        }
+        
+        showDropdown = false;
+        StateHasChanged();
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        try
+        {
+            var userId = AuthStateProvider.User?.Id ?? "";
+            var success = await NotificationService.MarkAllAsReadAsync(userId);
+            if (success)
+            {
+                foreach (var notification in notifications)
+                {
+                    notification.IsRead = true;
+                }
+                unreadCount = 0;
+                hasUnread = false;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error marking all notifications as read: {ex.Message}");
+        }
+    }
+
+    private string GetNotificationIcon(NotificationType type)
+    {
+        return type switch
+        {
+            NotificationType.Success => "fas fa-check-circle",
+            NotificationType.Warning => "fas fa-exclamation-triangle",
+            NotificationType.Error => "fas fa-times-circle",
+            NotificationType.Task => "fas fa-tasks",
+            NotificationType.Shift => "fas fa-clock",
+            NotificationType.Activity => "fas fa-users",
+            NotificationType.Message => "fas fa-envelope",
+            NotificationType.System => "fas fa-cog",
+            _ => "fas fa-info-circle"
+        };
+    }
+
+    private string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+        
+        if (timeSpan.TotalMinutes < 1)
+            return "Lige nu";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} min siden";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} timer siden";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} dage siden";
+        
+        return dateTime.ToString("dd/MM/yyyy");
+    }
+}

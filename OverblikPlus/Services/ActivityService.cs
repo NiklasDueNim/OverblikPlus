@@ -110,7 +110,7 @@ public class ActivityService : IActivityService
         }
     }
 
-    public async Task<ApiResult> JoinActivityAsync(Guid activityId, Guid userId)
+    public async Task<ApiResult> JoinActivityAsync(Guid activityId, string userId)
     {
         try
         {
@@ -135,7 +135,7 @@ public class ActivityService : IActivityService
         }
     }
 
-    public async Task<ApiResult> LeaveActivityAsync(Guid activityId, Guid userId)
+    public async Task<ApiResult> LeaveActivityAsync(Guid activityId, string userId)
     {
         try
         {

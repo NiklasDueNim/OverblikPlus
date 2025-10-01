@@ -9,6 +9,42 @@
     }
   },
   "profiles": {
+    "Rider (Local Backend)": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "http://localhost:5226",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "TASK_API_BASE_URL": "http://localhost:5002",
+        "USER_API_BASE_URL": "http://localhost:5001"
+      }
+    },
+    "Docker (Local Backend)": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "http://localhost:5226",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "TASK_API_BASE_URL": "http://localhost:5101",
+        "USER_API_BASE_URL": "http://localhost:5102"
+      }
+    },
+    "Azure (Cloud Backend)": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "http://localhost:5226",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "TASK_API_BASE_URL": "https://overblikplus-task-api-dev-aqcja5a8htcwb8fp.westeurope-01.azurewebsites.net",
+        "USER_API_BASE_URL": "https://overblikplus-user-api-dev-cheeh0a0fgc0ayh5.westeurope-01.azurewebsites.net"
+      }
+    },
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
@@ -17,10 +53,8 @@
       "applicationUrl": "http://localhost:5226",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "UserService__BaseUrl": "http://localhost:5001",
-        "TaskService__BaseUrl": "http://localhost:5002",
-        "CalendarEventService__BaseUrl": "http://localhost:5002",
-        "ActivityService__BaseUrl": "http://localhost:5002"
+        "TASK_API_BASE_URL": "http://localhost:5002",
+        "USER_API_BASE_URL": "http://localhost:5001"
       }
     },
     "https": {
@@ -31,10 +65,8 @@
       "applicationUrl": "https://localhost:7237;http://localhost:5226",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "UserService__BaseUrl": "http://localhost:5001",
-        "TaskService__BaseUrl": "http://localhost:5002",
-        "CalendarEventService__BaseUrl": "http://localhost:5002",
-        "ActivityService__BaseUrl": "http://localhost:5002"
+        "TASK_API_BASE_URL": "http://localhost:5002",
+        "USER_API_BASE_URL": "http://localhost:5001"
       }
     },
     "IIS Express": {
@@ -43,10 +75,8 @@
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "UserService__BaseUrl": "http://localhost:5001",
-        "TaskService__BaseUrl": "http://localhost:5002",
-        "CalendarEventService__BaseUrl": "http://localhost:5002",
-        "ActivityService__BaseUrl": "http://localhost:5002"
+        "TASK_API_BASE_URL": "http://localhost:5002",
+        "USER_API_BASE_URL": "http://localhost:5001"
       }
     }
   }

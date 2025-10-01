@@ -7,8 +7,8 @@ public class ActivityDto
     public string Description { get; set; }
     public DateTime StartDateTime { get; set; }
     public DateTime EndDateTime { get; set; }
-    public List<Guid> Participants { get; set; } = new();
-    public List<Guid> ResponsibleStaff { get; set; } = new();
+    public List<string> Participants { get; set; } = new();
+    public List<string> ResponsibleStaff { get; set; } = new();
     public ActivityType ActivityType { get; set; }
     public string Location { get; set; } = string.Empty;
     public int MaxParticipants { get; set; } = 20;

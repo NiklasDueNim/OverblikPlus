@@ -1,0 +1,153 @@
+@using OverblikPlus.Models.Dashboard
+@using OverblikPlus.Models.Dtos.Activity
+@using OverblikPlus.Services.Interfaces
+@using OverblikPlus.AuthHelpers
+@inject IActivityService ActivityService
+@inject CustomAuthStateProvider AuthStateProvider
+
+<BaseWidget WidgetInfo="@WidgetInfo" OnWidgetClicked="@OnWidgetClicked">
+    @if (isLoading)
+    {
+        <div class="widget-loading">
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="sr-only">Henter aktiviteter...</span>
+            </div>
+            <span class="ms-2">Henter aktiviteter...</span>
+        </div>
+    }
+    else if (upcomingActivities.Any())
+    {
+        <div class="activities-summary">
+            <div class="activities-header">
+                <h4>Kommende aktiviteter</h4>
+                <span class="activities-count">@upcomingActivities.Count aktivitet(er)</span>
+            </div>
+            
+            <div class="activities-list">
+                @foreach (var activity in upcomingActivities.Take(3))
+                {
+                    <div class="activity-item @GetActivityStatus(activity)">
+                        <div class="activity-time">
+                            <span class="activity-date">@activity.StartDateTime.ToString("dd/MM")</span>
+                            <span class="activity-time-range">@activity.StartDateTime.ToString("HH:mm") - @activity.EndDateTime.ToString("HH:mm")</span>
+                        </div>
+                        <div class="activity-info">
+                            <h5 class="activity-title">@activity.Title</h5>
+                            @if (!string.IsNullOrEmpty(activity.Location))
+                            {
+                                <p class="activity-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    @activity.Location
+                                </p>
+                            }
+                        </div>
+                        <div class="activity-participants">
+                            <span class="participant-count">
+                                <i class="fas fa-users"></i>
+                                @activity.Participants.Count/@activity.MaxParticipants
+                            </span>
+                            @if (activity.Participants.Contains(AuthStateProvider.User?.Id ?? ""))
+                            {
+                                <span class="participant-status enrolled">Tilmeldt</span>
+                            }
+                            else
+                            {
+                                <span class="participant-status available">Ledig</span>
+                            }
+                        </div>
+                    </div>
+                }
+                @if (upcomingActivities.Count > 3)
+                {
+                    <div class="more-activities">
+                        <a href="/activities" class="btn btn-sm btn-outline-primary">
+                            Se alle @(upcomingActivities.Count - 3) flere aktiviteter
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <div class="activities-actions">
+                <a href="/activities" class="btn btn-sm btn-primary">
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    Se alle aktiviteter
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-activities">
+            <i class="fas fa-calendar-plus text-muted"></i>
+            <p>Ingen kommende aktiviteter</p>
+            <a href="/activities" class="btn btn-sm btn-primary">Se aktiviteter</a>
+        </div>
+    }
+</BaseWidget>
+
+@code {
+    [Parameter] public WidgetInfo WidgetInfo { get; set; } = new();
+    [Parameter] public EventCallback<WidgetInfo> OnWidgetClicked { get; set; }
+
+    private List<ActivityDto> upcomingActivities = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadActivities();
+    }
+
+    private async Task LoadActivities()
+    {
+        try
+        {
+            isLoading = true;
+            // For now, use mock data - replace with actual service call when available
+            upcomingActivities = new List<ActivityDto>
+            {
+                new ActivityDto
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Morgen gymnastik",
+                    Description = "Fælles gymnastik i stuen",
+                    StartDateTime = DateTime.Today.AddHours(9),
+                    EndDateTime = DateTime.Today.AddHours(10),
+                    Location = "Stue",
+                    MaxParticipants = 10,
+                    Participants = new List<string> { AuthStateProvider.User?.Id ?? "" },
+                    ActivityType = ActivityType.FysiskAktivitet
+                },
+                new ActivityDto
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Kreativ workshop",
+                    Description = "Maling og håndværk",
+                    StartDateTime = DateTime.Today.AddHours(14),
+                    EndDateTime = DateTime.Today.AddHours(16),
+                    Location = "Kreativ rum",
+                    MaxParticipants = 8,
+                    Participants = new List<string>(),
+                    ActivityType = ActivityType.KreativAktivitet
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading activities: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetActivityStatus(ActivityDto activity)
+    {
+        var now = DateTime.Now;
+        if (now < activity.StartDateTime.AddHours(-1))
+            return "upcoming";
+        if (now >= activity.StartDateTime.AddHours(-1) && now <= activity.StartDateTime)
+            return "starting-soon";
+        return "in-progress";
+    }
+}

@@ -1,0 +1,135 @@
+@using OverblikPlus.Models.Dashboard
+@using OverblikPlus.Models.Dtos.Shift
+@using OverblikPlus.Services.Interfaces
+@using OverblikPlus.AuthHelpers
+@inject IShiftService ShiftService
+@inject CustomAuthStateProvider AuthStateProvider
+
+<BaseWidget WidgetInfo="@WidgetInfo" OnWidgetClicked="@OnWidgetClicked">
+    @if (isLoading)
+    {
+        <div class="widget-loading">
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="sr-only">Henter vagtplan...</span>
+            </div>
+            <span class="ms-2">Henter vagtplan...</span>
+        </div>
+    }
+    else if (todaysShifts.Any())
+    {
+        <div class="shifts-summary">
+            <div class="shift-header">
+                <h4>I dag (@DateTime.Today.ToString("dd/MM"))</h4>
+                <span class="shift-count">@todaysShifts.Count vagt(er)</span>
+            </div>
+            
+            <div class="shifts-list">
+                @foreach (var shift in todaysShifts.OrderBy(s => s.StartTime))
+                {
+                    <div class="shift-item @GetShiftStatus(shift)">
+                        <div class="shift-time">
+                            <span class="start-time">@shift.StartTime.ToString("HH:mm")</span>
+                            <span class="time-separator">-</span>
+                            <span class="end-time">@shift.EndTime.ToString("HH:mm")</span>
+                        </div>
+                        <div class="shift-duration">
+                            @GetShiftDuration(shift) timer
+                        </div>
+                        <div class="shift-status">
+                            @GetShiftStatusText(shift)
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="shift-actions">
+                <a href="/schedule" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-calendar me-1"></i>
+                    Se fuld vagtplan
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="no-shifts">
+            <i class="fas fa-calendar-times text-muted"></i>
+            <p>Ingen vagter i dag</p>
+            <a href="/schedule" class="btn btn-sm btn-primary">Se vagtplan</a>
+        </div>
+    }
+</BaseWidget>
+
+@code {
+    [Parameter] public WidgetInfo WidgetInfo { get; set; } = new();
+    [Parameter] public EventCallback<WidgetInfo> OnWidgetClicked { get; set; }
+
+    private List<ShiftDto> todaysShifts = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadShifts();
+    }
+
+    private async Task LoadShifts()
+    {
+        try
+        {
+            isLoading = true;
+            // For now, use mock data - replace with actual service call when available
+            todaysShifts = new List<ShiftDto>
+            {
+                new ShiftDto
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = AuthStateProvider.User?.Id ?? "",
+                    StartTime = DateTime.Today.AddHours(8),
+                    EndTime = DateTime.Today.AddHours(16)
+                },
+                new ShiftDto
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = AuthStateProvider.User?.Id ?? "",
+                    StartTime = DateTime.Today.AddHours(16),
+                    EndTime = DateTime.Today.AddHours(23)
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading shifts: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetShiftStatus(ShiftDto shift)
+    {
+        var now = DateTime.Now;
+        if (now < shift.StartTime)
+            return "upcoming";
+        if (now >= shift.StartTime && now <= shift.EndTime)
+            return "active";
+        return "completed";
+    }
+
+    private string GetShiftStatusText(ShiftDto shift)
+    {
+        var status = GetShiftStatus(shift);
+        return status switch
+        {
+            "upcoming" => "Kommende",
+            "active" => "Aktiv",
+            "completed" => "Afsluttet",
+            _ => "Ukendt"
+        };
+    }
+
+    private int GetShiftDuration(ShiftDto shift)
+    {
+        return (int)(shift.EndTime - shift.StartTime).TotalHours;
+    }
+}

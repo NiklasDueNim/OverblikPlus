@@ -1,0 +1,123 @@
+@using OverblikPlus.Models.Dashboard
+@using OverblikPlus.AuthHelpers
+@using Microsoft.AspNetCore.Components
+@inject CustomAuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<BaseWidget WidgetInfo="@WidgetInfo" OnWidgetClicked="@OnWidgetClicked">
+    <div class="quick-actions">
+        <div class="actions-grid">
+            @foreach (var action in GetAvailableActions())
+            {
+                <button class="action-button @action.CssClass" @onclick="@(() => ExecuteAction(action))">
+                    <i class="@action.Icon"></i>
+                    <span>@action.Title</span>
+                </button>
+            }
+        </div>
+    </div>
+</BaseWidget>
+
+@code {
+    [Parameter] public WidgetInfo WidgetInfo { get; set; } = new();
+    [Parameter] public EventCallback<WidgetInfo> OnWidgetClicked { get; set; }
+
+    private string userRole = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userRole = await AuthStateProvider.GetRoleAsync();
+    }
+
+    private List<QuickAction> GetAvailableActions()
+    {
+        var actions = new List<QuickAction>();
+
+        // Common actions for all users
+        actions.Add(new QuickAction
+        {
+            Title = "Opret Opgave",
+            Icon = "fas fa-plus-circle",
+            CssClass = "action-primary",
+            Url = "/TaskManager"
+        });
+
+        actions.Add(new QuickAction
+        {
+            Title = "Se Opgaver",
+            Icon = "fas fa-tasks",
+            CssClass = "action-secondary",
+            Url = "/tasks"
+        });
+
+        actions.Add(new QuickAction
+        {
+            Title = "Aktiviteter",
+            Icon = "fas fa-users",
+            CssClass = "action-info",
+            Url = "/activities"
+        });
+
+        // Role-specific actions
+        if (userRole == "Admin" || userRole == "Staff")
+        {
+            actions.Add(new QuickAction
+            {
+                Title = "Opret Aktivitet",
+                Icon = "fas fa-calendar-plus",
+                CssClass = "action-success",
+                Url = "/create-activity"
+            });
+
+            actions.Add(new QuickAction
+            {
+                Title = "Vagtplan",
+                Icon = "fas fa-clock",
+                CssClass = "action-warning",
+                Url = "/schedule"
+            });
+
+            actions.Add(new QuickAction
+            {
+                Title = "Meddelelser",
+                Icon = "fas fa-bullhorn",
+                CssClass = "action-danger",
+                Url = "/announcements"
+            });
+        }
+
+        if (userRole == "Admin")
+        {
+            actions.Add(new QuickAction
+            {
+                Title = "Opret Bruger",
+                Icon = "fas fa-user-plus",
+                CssClass = "action-dark",
+                Url = "/create-user"
+            });
+
+            actions.Add(new QuickAction
+            {
+                Title = "Brugeradministration",
+                Icon = "fas fa-users-cog",
+                CssClass = "action-dark",
+                Url = "/user-management"
+            });
+        }
+
+        return actions;
+    }
+
+    private void ExecuteAction(QuickAction action)
+    {
+        NavigationManager.NavigateTo(action.Url);
+    }
+
+    private class QuickAction
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string CssClass { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+    }
+}
