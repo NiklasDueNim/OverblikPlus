@@ -5,21 +5,58 @@
 @inject ILocalStorageService localStorage
 @inject IConfiguration Configuration
 @implements IAsyncDisposable
-<h3>Beskeder</h3>
 
-<div class="form-group">
-    <input type="text" class="form-control" @bind="messageInput" />
-    <button class="btn btn-primary" @onclick="Send">Send</button>
-    <button class="btn btn-danger" @onclick="DeleteMessages">Slet beskeder</button>
-    
+<div class="chat-container">
+    <div class="chat-header">
+        <h3>
+            <i class="fas fa-comments"></i>
+            Beskeder
+        </h3>
+        <span class="connection-status @(IsConnected ? "connected" : "disconnected")">
+            <i class="fas fa-circle"></i>
+            @(IsConnected ? "Online" : "Offline")
+        </span>
+    </div>
+
+    <div class="messages-container">
+        @if (messages.Count == 0)
+        {
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>Ingen beskeder endnu</p>
+                <small>Send en besked for at starte en samtale</small>
+            </div>
+        }
+        else
+        {
+            @foreach (var message in messages)
+            {
+                <div class="message-bubble @GetMessageClass(message)">
+                    <div class="message-content">
+                        <span class="message-sender">@GetSender(message)</span>
+                        <p class="message-text">@GetMessageText(message)</p>
+                        <span class="message-time">@DateTime.Now.ToString("HH:mm")</span>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="chat-input-container">
+        <input 
+            type="text" 
+            class="chat-input" 
+            placeholder="Skriv en besked..." 
+            @bind="messageInput"
+            @onkeypress="HandleKeyPress" />
+        <button class="btn-send" @onclick="Send" disabled="@(!IsConnected || string.IsNullOrWhiteSpace(messageInput))">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+        <button class="btn-delete" @onclick="DeleteMessages" title="Slet alle beskeder">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
 </div>
-
-<ul>
-    @foreach (var message in messages)
-    {
-        <li>@message</li>
-    }
-</ul>
 
 @code {
     private HubConnection hubConnection;
@@ -46,16 +83,31 @@
             SaveMessages();
         });
 
-        await hubConnection.StartAsync();
+        try
+        {
+            await hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Connection error: {ex.Message}");
+        }
     }
 
     private async Task Send()
     {
-        if (hubConnection is not null)
+        if (hubConnection is not null && !string.IsNullOrWhiteSpace(messageInput))
         {
             await hubConnection.SendAsync("SendMessage", "User", messageInput);
             messageInput = string.Empty;
             OnMessageSent?.Invoke();
+        }
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(messageInput))
+        {
+            await Send();
         }
     }
 
@@ -65,7 +117,7 @@
     }
 
     public bool IsConnected =>
-        hubConnection.State == HubConnectionState.Connected;
+        hubConnection?.State == HubConnectionState.Connected;
 
     public async ValueTask DisposeAsync()
     {
@@ -79,6 +131,23 @@
     {
         messages.Clear();
         await localStorage.SetItemAsync(MessagesKey, messages);
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
+    }
+
+    private string GetMessageClass(string message)
+    {
+        return message.StartsWith("User:") ? "message-sent" : "message-received";
+    }
+
+    private string GetSender(string message)
+    {
+        var parts = message.Split(':');
+        return parts.Length > 0 ? parts[0].Trim() : "Unknown";
+    }
+
+    private string GetMessageText(string message)
+    {
+        var parts = message.Split(':', 2);
+        return parts.Length > 1 ? parts[1].Trim() : message;
     }
 }

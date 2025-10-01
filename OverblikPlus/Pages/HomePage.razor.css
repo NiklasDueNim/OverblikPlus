@@ -68,6 +68,11 @@
     overflow: hidden;
 }
 
+/* Add padding-top when drag handle is present */
+.widgets-grid.edit-mode .widget-container > *:not(.drag-handle) {
+    padding-top: 2.5rem;
+}
+
 .widget-container:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -77,11 +82,58 @@
     cursor: move;
     border: 2px dashed #2196F3;
     background: rgba(33, 150, 243, 0.05);
+    position: relative;
 }
 
 .widgets-grid.edit-mode .widget-container:hover {
     border-color: #1976D2;
     background: rgba(33, 150, 243, 0.1);
+}
+
+/* Drag Handle */
+.drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    padding: 0.5rem;
+    text-align: center;
+    cursor: grab;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.drag-handle i {
+    font-size: 1rem;
+}
+
+/* Dragging state */
+.widget-container.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    border: 2px solid #1976D2;
+}
+
+.widgets-grid.edit-mode .widget-container.dragging {
+    cursor: grabbing;
+}
+
+/* Drop target highlight */
+.widget-container.drag-over {
+    border: 3px solid #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+    transform: scale(1.02);
 }
 
 /* Widget Sizes */

@@ -34,9 +34,21 @@
             <div class="widgets-grid @(isEditMode ? "edit-mode" : "")">
                 @foreach (var widget in GetVisibleWidgets())
                 {
-                    <div class="widget-container @GetWidgetSizeClass(widget.Size)" 
+                    <div class="widget-container @GetWidgetSizeClass(widget.Size) @(draggedWidget == widget ? "dragging" : "")" 
+                         draggable="@isEditMode"
+                         @ondragstart="@(() => OnDragStart(widget))"
+                         @ondragover:preventDefault
+                         @ondrop="@(() => OnDrop(widget))"
+                         @ondragenter="@(() => OnDragEnter(widget))"
+                         @ondragleave="OnDragLeave"
                          @onclick="@(() => OnWidgetClick(widget))"
                          @onclick:stopPropagation="true">
+                        @if (isEditMode)
+                        {
+                            <div class="drag-handle">
+                                <i class="fas fa-grip-vertical"></i>
+                            </div>
+                        }
                         @if (widget.Type == "Tasks")
                         {
                             <TasksWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
@@ -148,6 +160,8 @@
     private bool showWelcomeMessage = true;
     private System.Timers.Timer? welcomeTimer;
     private string userRole = string.Empty;
+    private WidgetInfo? draggedWidget;
+    private WidgetInfo? dragTargetWidget;
 
     [Inject] public CustomAuthStateProvider AuthStateProvider { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
@@ -304,6 +318,53 @@
         StateHasChanged();
         
         // TODO: Save reset layout to backend
+    }
+
+    // Drag and Drop Methods
+    private void OnDragStart(WidgetInfo widget)
+    {
+        draggedWidget = widget;
+        Console.WriteLine($"Drag started: {widget.Title}");
+    }
+
+    private void OnDragEnter(WidgetInfo widget)
+    {
+        if (draggedWidget != null && draggedWidget != widget)
+        {
+            dragTargetWidget = widget;
+        }
+    }
+
+    private void OnDragLeave()
+    {
+        dragTargetWidget = null;
+    }
+
+    private void OnDrop(WidgetInfo targetWidget)
+    {
+        if (draggedWidget != null && draggedWidget != targetWidget)
+        {
+            // Swap positions
+            var draggedIndex = widgets.IndexOf(draggedWidget);
+            var targetIndex = widgets.IndexOf(targetWidget);
+
+            if (draggedIndex != -1 && targetIndex != -1)
+            {
+                var draggedPosition = draggedWidget.Position;
+                draggedWidget.Position = targetWidget.Position;
+                targetWidget.Position = draggedPosition;
+
+                // Re-order widgets
+                widgets = widgets.OrderBy(w => w.Position).ToList();
+                
+                Console.WriteLine($"Swapped: {draggedWidget.Title} with {targetWidget.Title}");
+                StateHasChanged();
+            }
+        }
+
+        // Reset drag state
+        draggedWidget = null;
+        dragTargetWidget = null;
     }
 
     public void Dispose()
