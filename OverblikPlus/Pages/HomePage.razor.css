@@ -166,22 +166,59 @@
 
 @media (max-width: 768px) {
     .dashboard-container {
-        padding: 1rem;
+        padding: 1rem 0.5rem;
+        padding-bottom: 100px; /* Extra space for mobile menu */
+    }
+    
+    .welcome-section {
+        padding: 1.5rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .welcome-title {
+        font-size: 1.75rem;
+    }
+    
+    .welcome-subtitle {
+        font-size: 1rem;
     }
     
     .widgets-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
+        padding: 0 0.5rem;
+    }
+    
+    /* All widgets take full width on mobile */
+    .widget-small,
+    .widget-medium,
+    .widget-large {
+        grid-column: span 1;
+        min-height: auto;
     }
     
     .dashboard-controls {
         justify-content: center;
+        padding: 0 1rem;
+        margin-bottom: 1rem;
     }
     
     .dashboard-actions {
-        flex-direction: column;
+        flex-direction: row;
+        gap: 0.5rem;
         width: 100%;
-        max-width: 200px;
+        justify-content: center;
+    }
+    
+    .dashboard-actions .btn {
+        flex: 1;
+        max-width: 150px;
+    }
+    
+    /* Adjust drag handle on mobile */
+    .drag-handle {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
     }
 }
 
