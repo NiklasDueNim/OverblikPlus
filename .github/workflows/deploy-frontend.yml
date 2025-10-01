@@ -19,20 +19,19 @@ jobs:
         with:
           dotnet-version: '8.0.x'
           
-      - name: Inspect build outputs
+      - name: Build Blazor WebAssembly App
         run: |
-          echo "Repo root:"
-          pwd
-          ls -la
-          echo "Search for index.html under OverblikPlus:"
-          find OverblikPlus -type f -name index.html | sed 's|^|FOUND: |'
+          cd OverblikPlus
+          dotnet restore
+          dotnet build --configuration Release --no-restore
+          dotnet publish --configuration Release --no-build --output ./publish
           
-      - name: Assert index.html exists after SWA build
+      - name: Verify build output
         run: |
-          echo "Checking for index.html in OverblikPlus/wwwroot:"
-          ls -la OverblikPlus/wwwroot/
-          test -f OverblikPlus/wwwroot/index.html
-          echo "✅ index.html found in source!"
+          echo "Checking published files:"
+          ls -la OverblikPlus/publish/wwwroot/
+          test -f OverblikPlus/publish/wwwroot/index.html
+          echo "✅ Build successful!"
 
       - name: Deploy to Azure Static Web App
         uses: Azure/static-web-apps-deploy@v1
@@ -40,8 +39,8 @@ jobs:
           azure_static_web_apps_api_token: 884ce92874acf016a6078f348ba25f4ee51521c1a11bfad5dfd42dac947ac34502-b766f250-4a47-42af-a8e1-091c062bd33e003130604a4dfc03
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "OverblikPlus"
-          output_location: "wwwroot"
+          app_location: "OverblikPlus/publish/wwwroot"
+          skip_app_build: true
           
       - name: Set deployment status
         if: success()
