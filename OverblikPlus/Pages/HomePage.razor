@@ -241,16 +241,17 @@
                 Role = "Staff"
             });
 
-            defaultWidgets.Add(new WidgetInfo
-            {
-                Id = "notifications",
-                Title = "Notifikationer",
-                Type = "Notifications",
-                Position = 5,
-                Size = 1,
-                IsVisible = true,
-                Role = "Staff"
-            });
+            // Notifications widget disabled until backend is ready
+            // defaultWidgets.Add(new WidgetInfo
+            // {
+            //     Id = "notifications",
+            //     Title = "Notifikationer",
+            //     Type = "Notifications",
+            //     Position = 5,
+            //     Size = 1,
+            //     IsVisible = true,
+            //     Role = "Staff"
+            // });
         }
 
         return defaultWidgets.OrderBy(w => w.Position).ToList();
