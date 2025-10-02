@@ -51,7 +51,7 @@
                         }
                         @if (widget.Type == "Tasks")
                         {
-                            <TasksWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
+                            <TasksWidget @ref="tasksWidgetRef" WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
                         }
                         else if (widget.Type == "Shifts")
                         {
@@ -162,6 +162,9 @@
     private string userRole = string.Empty;
     private WidgetInfo? draggedWidget;
     private WidgetInfo? dragTargetWidget;
+    
+    // Reference to TasksWidget for refreshing
+    private TasksWidget? tasksWidgetRef;
 
     [Inject] public CustomAuthStateProvider AuthStateProvider { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
@@ -185,12 +188,22 @@
     
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        // Refresh dashboard when returning to home page
-        if (e.Location.EndsWith("/") || e.Location.Contains("localhost:5226/#"))
+        // Refresh dashboard when returning to home page or from task management
+        if (e.Location.EndsWith("/") || 
+            e.Location.Contains("localhost:5226/#") ||
+            e.Location.Contains("/TaskManager") ||
+            e.Location.Contains("/Calendar"))
         {
             InvokeAsync(async () =>
             {
                 await LoadDashboardSettings();
+                
+                // Refresh tasks widget to show new tasks
+                if (tasksWidgetRef != null)
+                {
+                    await tasksWidgetRef.RefreshTasks();
+                }
+                
                 StateHasChanged();
             });
         }
