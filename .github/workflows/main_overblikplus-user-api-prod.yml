@@ -4,10 +4,11 @@
 name: Build and deploy ASP.Net Core app to Azure Web App - overblikplus-user-api-prod
 
 on:
-  push:
-    branches:
-      - main
+  # Disabled - project path needs configuration
   workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   build:

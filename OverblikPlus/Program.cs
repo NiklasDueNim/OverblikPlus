@@ -40,9 +40,9 @@ string userApiBaseUrl;
 // Check if running on production domain
 if (host.Contains("overblikplus.dk") || host.Contains("azurestaticapps.net"))
 {
-    // Production: Use Azure API endpoints
-    taskApiBaseUrl = "https://overblikplus-task-api-dev.azurewebsites.net";
-    userApiBaseUrl = "https://overblikplus-user-api-dev.azurewebsites.net";
+    // Production: Use PRODUCTION Azure API endpoints (not dev!)
+    taskApiBaseUrl = "https://overblikplus-task-api-prod.azurewebsites.net";
+    userApiBaseUrl = "https://overblikplus-user-api-prod.azurewebsites.net";
     envConfig = "production";
 }
 else if (host == "localhost" || host == "127.0.0.1")
@@ -79,9 +79,9 @@ else if (host == "localhost" || host == "127.0.0.1")
 }
 else
 {
-    // Fallback: Read from appsettings.json
-    taskApiBaseUrl = configuration["TASK_API_BASE_URL"] ?? "http://localhost:5002";
-    userApiBaseUrl = configuration["USER_API_BASE_URL"] ?? "http://localhost:5001";
+    // Fallback: Read from appsettings.json or use production URLs
+    taskApiBaseUrl = configuration["TASK_API_BASE_URL"] ?? "https://overblikplus-task-api-prod.azurewebsites.net";
+    userApiBaseUrl = configuration["USER_API_BASE_URL"] ?? "https://overblikplus-user-api-prod.azurewebsites.net";
 }
 
 Console.WriteLine($"Host Environment: {environment}");
