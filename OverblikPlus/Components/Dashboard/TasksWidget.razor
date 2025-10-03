@@ -115,16 +115,25 @@
             var userId = await AuthStateProvider.GetUserIdAsync();
             if (!string.IsNullOrEmpty(userId))
             {
-                var allTasks = await TaskService.GetTasksByUserAsync(userId);
-                Console.WriteLine($"Loaded {allTasks?.Count ?? 0} tasks for user {userId}");
-                
-                // Show all tasks (not just today's) for better visibility
-                todaysTasks = allTasks?.ToList() ?? new List<ReadTaskDto>();
-                
-                // Sort by StartDate (most recent first)
-                todaysTasks = todaysTasks.OrderBy(t => t.StartDate).ToList();
-                
-                Console.WriteLine($"Loaded {todaysTasks.Count} total tasks");
+                var result = await TaskService.GetTasksForUserAsync(userId);
+                if (result.Success)
+                {
+                    var allTasks = result.Data ?? new List<ReadTaskDto>();
+                    Console.WriteLine($"✅ Successfully loaded {allTasks.Count} tasks for user {userId}");
+                    
+                    // Show all tasks (not just today's) for better visibility
+                    todaysTasks = allTasks.ToList();
+                    
+                    // Sort by StartDate (most recent first)
+                    todaysTasks = todaysTasks.OrderBy(t => t.StartDate).ToList();
+                    
+                    Console.WriteLine($"📋 Showing {todaysTasks.Count} total tasks");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Error loading tasks: {result.Error}");
+                    todaysTasks = new List<ReadTaskDto>();
+                }
             }
         }
         catch (Exception ex)
