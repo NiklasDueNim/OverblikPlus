@@ -84,7 +84,7 @@
     {
         <div class="no-tasks">
             <i class="fas fa-check-circle text-success"></i>
-            <p>Ingen opgaver i dag!</p>
+            <p>Ingen opgaver!</p>
             <a href="/TaskManager" class="btn btn-sm btn-primary">Opret opgave</a>
         </div>
     }
@@ -118,14 +118,13 @@
                 var allTasks = await TaskService.GetTasksByUserAsync(userId);
                 Console.WriteLine($"Loaded {allTasks?.Count ?? 0} tasks for user {userId}");
                 
-                // Filter for today's tasks
-                var today = DateTime.Today;
-                todaysTasks = allTasks?
-                    .Where(t => t.StartDate.Date == today || 
-                               (t.RecurrenceType != "None" && t.NextOccurrence?.Date == today))
-                    .ToList() ?? new List<ReadTaskDto>();
+                // Show all tasks (not just today's) for better visibility
+                todaysTasks = allTasks?.ToList() ?? new List<ReadTaskDto>();
                 
-                Console.WriteLine($"Filtered {todaysTasks.Count} tasks for date {today}");
+                // Sort by StartDate (most recent first)
+                todaysTasks = todaysTasks.OrderBy(t => t.StartDate).ToList();
+                
+                Console.WriteLine($"Loaded {todaysTasks.Count} total tasks");
             }
         }
         catch (Exception ex)
@@ -142,7 +141,9 @@
     
     public async Task RefreshTasks()
     {
+        Console.WriteLine("🔄 Refreshing tasks widget...");
         await LoadTasks();
+        Console.WriteLine($"✅ Tasks widget refreshed. Showing {todaysTasks.Count} tasks");
     }
 
     private async Task ToggleTask(ReadTaskDto task)
