@@ -286,7 +286,8 @@ public class TaskServiceTests
             IsCompleted = false,
             RecurrenceType = "Daily",
             RecurrenceInterval = 1,
-            NextOccurrence = now
+            NextOccurrence = now,
+            UserId = "test-user-id"
         };
 
         _dbContext.Tasks.Add(task);
@@ -301,8 +302,13 @@ public class TaskServiceTests
 
         var updatedTask = await _dbContext.Tasks.FindAsync(task.Id);
         Assert.NotNull(updatedTask);
-        Assert.False(updatedTask.IsCompleted);
-        Assert.Equal(now.AddDays(1).Date, updatedTask.NextOccurrence.Date);
+        Assert.True(updatedTask.IsCompleted);
+        
+        // Check that a new task was created for the next occurrence
+        var newTask = await _dbContext.Tasks
+            .FirstOrDefaultAsync(t => t.Name == "Test Task" && t.IsCompleted == false);
+        Assert.NotNull(newTask);
+        Assert.Equal(now.AddDays(1).Date, newTask.NextOccurrence.Date);
     }
 
     [Fact]
