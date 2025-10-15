@@ -20,4 +20,12 @@ public class UpdateTaskDto
     
     public string RecurrenceType { get; set; }
     public int RecurrenceInterval { get; set; }
+    
+    // Nye properties for forbedret gentagelse
+    public string MonthlyType { get; set; } = "SameDay";
+    public int MonthlyDay { get; set; } = 1;
+    public string SelectedWeekDays { get; set; } = "{}"; // JSON serialized Dictionary<string, bool>
+    public string EndType { get; set; } = "Never";
+    public int EndAfterCount { get; set; } = 1;
+    public DateTime? EndDate { get; set; }
 }
