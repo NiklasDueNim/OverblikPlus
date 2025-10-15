@@ -119,6 +119,14 @@ public class TaskService : ITaskService
             () => _httpClient.PutAsync($"/api/task/{taskId}/complete", null),
             "Mark task as completed");
     }
+    
+    public async Task<Result> MarkTaskAsUnCompleted(int taskId)
+    {
+        return await ExecuteNonQueryRequest(
+            () => _httpClient.PutAsync($"/api/task/{taskId}/notComplete", null),
+            "Mark task as uncompleted");
+    }
+
 
     public async Task<Result<List<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date)
     {

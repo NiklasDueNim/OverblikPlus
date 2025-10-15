@@ -161,6 +161,28 @@ namespace TaskMicroService.Controllers
 
             return Ok(result);
         }
+        
+        
+        [Authorize]
+        [HttpPut("{taskId}/notComplete")]
+        public async Task<IActionResult> MarkTaskAsUnCompleted(int taskId)
+        {
+            if (taskId <= 0)
+            {
+                _logger.LogWarning("Invalid task ID for marking as completed.");
+                return BadRequest(Result<object>.ErrorResult("Invalid task ID."));
+            }
+
+            _logger.LogInfo($"Marking task with ID {taskId} as completed.");
+            var result = await _taskService.MarkTaskAsUnCompleted(taskId);
+            if (!result.Success)
+            {
+                _logger.LogError($"Failed to mark task with ID {taskId} as completed.", new Exception(result.Error));
+                return BadRequest(Result.ErrorResult("Failed to mark task with ID."));
+            }
+
+            return Ok(result);
+        }
 
         [Authorize]
         [HttpGet("user/{userId}/tasks-for-day")]

@@ -141,28 +141,40 @@ namespace TaskMicroService.Services
 
             task.IsCompleted = true;
 
-            if (!string.IsNullOrEmpty(task.RecurrenceType) && task.RecurrenceType != "None")
-            {
-                // Parse SelectedWeekDays from JSON string
-                var selectedWeekDays = new Dictionary<string, bool>();
-                if (!string.IsNullOrEmpty(task.SelectedWeekDays))
-                {
-                    try
-                    {
-                        selectedWeekDays = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(task.SelectedWeekDays) ?? new Dictionary<string, bool>();
-                    }
-                    catch
-                    {
-                        selectedWeekDays = new Dictionary<string, bool>();
-                    }
-                }
-                
-                task.NextOccurrence = CalculateNextOccurrence(task.NextOccurrence, task.RecurrenceType, task.RecurrenceInterval,
-                    task.MonthlyType, task.MonthlyDay, selectedWeekDays, 
-                    task.EndType, task.EndAfterCount, task.EndDate);
-                task.IsCompleted = false;
-            }
+            // if (!string.IsNullOrEmpty(task.RecurrenceType) && task.RecurrenceType != "None")
+            // {
+            //     // Parse SelectedWeekDays from JSON string
+            //     var selectedWeekDays = new Dictionary<string, bool>();
+            //     if (!string.IsNullOrEmpty(task.SelectedWeekDays))
+            //     {
+            //         try
+            //         {
+            //             selectedWeekDays = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(task.SelectedWeekDays) ?? new Dictionary<string, bool>();
+            //         }
+            //         catch
+            //         {
+            //             selectedWeekDays = new Dictionary<string, bool>();
+            //         }
+            //     }
+            //     
+            //     task.NextOccurrence = CalculateNextOccurrence(task.NextOccurrence, task.RecurrenceType, task.RecurrenceInterval,
+            //         task.MonthlyType, task.MonthlyDay, selectedWeekDays, 
+            //         task.EndType, task.EndAfterCount, task.EndDate);
+            //     task.IsCompleted = false;
+            // }
 
+            await _dbContext.SaveChangesAsync();
+            return Result.SuccessResult();
+        }
+
+        public async Task<Result> MarkTaskAsUnCompleted(int taskId)
+        {
+            var task = await _dbContext.Tasks.FindAsync(taskId);
+            if (task == null)
+            {
+                return  Result.ErrorResult($"Task with ID {taskId} not found.");
+            }
+            task.IsCompleted = false;
             await _dbContext.SaveChangesAsync();
             return Result.SuccessResult();
         }

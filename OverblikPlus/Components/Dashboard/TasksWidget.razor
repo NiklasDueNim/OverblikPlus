@@ -159,13 +159,24 @@
     {
         try
         {
-            // For now, just toggle the task locally
-            task.IsCompleted = !task.IsCompleted;
-            StateHasChanged();
-            
-            // TODO: Implement actual API call when service is available
-        }
-        catch (Exception ex)
+            if (task.IsCompleted)
+            {
+                var result = await TaskService.MarkTaskAsUnCompleted(task.Id);
+                if (result.Success)
+                {
+                    StateHasChanged();
+                }
+            }
+            else
+            {
+               var result =  await TaskService.MarkTaskAsCompleted(task.Id);
+               if (result.Success)
+               {
+                   StateHasChanged();
+               }
+            }
+    }
+    catch (Exception ex)
         {
             Console.WriteLine($"Error toggling task: {ex.Message}");
         }
