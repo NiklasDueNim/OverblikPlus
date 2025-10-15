@@ -2,18 +2,20 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy project file and restore dependencies
-COPY UserMicroService.csproj .
-RUN dotnet restore
+# Copy project files and restore dependencies
+COPY UserMicroService/UserMicroService.csproj .
+COPY OverblikPlus.Shared/OverblikPlus.Shared.csproj .
+RUN dotnet restore UserMicroService.csproj
 
 # Copy the rest of the source code
-COPY . .
+COPY UserMicroService/ .
+COPY OverblikPlus.Shared/ .
 
 # Build the application
-RUN dotnet build -c Release -o /app/build
+RUN dotnet build UserMicroService.csproj -c Release -o /app/build
 
 # Publish the application
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish UserMicroService.csproj -c Release -o /app/publish
 
 # Use the official .NET 8 runtime image for running
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
