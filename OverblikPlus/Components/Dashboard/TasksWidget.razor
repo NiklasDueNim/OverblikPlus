@@ -42,7 +42,7 @@
 
             <div class="widget-controls">
                 <label class="toggle-images">
-                    <input type="checkbox" @bind="showImages" />
+                    <input type="checkbox" @bind="showImages" @onclick:stopPropagation="true" />
                     <span>Vis billeder</span>
                 </label>
             </div>
@@ -52,7 +52,7 @@
                 {
                     <div class="task-item @(task.IsCompleted ? "completed" : "")">
                         <div class="task-checkbox">
-                            <input type="checkbox" checked="@task.IsCompleted" @onchange="@(() => ToggleTask(task))" />
+                            <input type="checkbox" checked="@task.IsCompleted" @onchange="@(() => ToggleTask(task))" @onclick:stopPropagation="true"/>
                         </div>
                         @if (showImages && !string.IsNullOrEmpty(task.Image))
                         {
@@ -112,7 +112,7 @@
         {
             isLoading = true;
             
-            var userId = await AuthStateProvider.GetUserIdAsync();
+            var userId = AuthStateProvider.GetUserIdAsync();
             if (!string.IsNullOrEmpty(userId))
             {
                 var result = await TaskService.GetTasksForUserAsync(userId);

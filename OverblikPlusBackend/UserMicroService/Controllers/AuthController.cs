@@ -1,11 +1,9 @@
-using System;
-using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using OverblikPlus.Shared.Interfaces;
 using UserMicroService.dto;
 using UserMicroService.Services.Interfaces;
-using UserMicroService.Common;
+
 
 namespace UserMicroService.Controllers
 {
