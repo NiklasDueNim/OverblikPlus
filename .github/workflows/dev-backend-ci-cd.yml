@@ -1,12 +1,12 @@
 name: DEV - Backend CI/CD
 
 on:
-  # Disabled - Azure credentials issues
-  workflow_dispatch:
-  # push:
-  #   branches: [Development]
-  # pull_request:
-  #   branches: [Development]
+  push:
+    branches:
+      - Development
+  pull_request:
+    branches:
+      - Development
 
 jobs:
   build-and-deploy:
