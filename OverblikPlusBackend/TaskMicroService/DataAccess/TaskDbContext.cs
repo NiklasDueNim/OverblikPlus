@@ -29,13 +29,6 @@ namespace TaskMicroService.DataAccess
                 .WithOne(s => s.Task)
                 .HasForeignKey(s => s.TaskId)  
                 .OnDelete(DeleteBehavior.Cascade);
-
-            
-            modelBuilder.Entity<TaskStep>()
-                .HasOne(ts => ts.Task)
-                .WithMany(t => t.Steps)
-                .HasForeignKey(ts => ts.TaskId)
-                .OnDelete(DeleteBehavior.Restrict);
             
             modelBuilder.Entity<CalendarEvent>()
                 .HasKey(c => c.Id);

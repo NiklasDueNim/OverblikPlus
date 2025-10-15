@@ -65,7 +65,7 @@ namespace TaskMicroService.Services
         public async Task<Result<int>> CreateTask(CreateTaskDto createTaskDto)
         {
             _logger.LogInfo($"Creating new task for user = {createTaskDto.UserId}");
-            
+
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
@@ -78,8 +78,9 @@ namespace TaskMicroService.Services
                 }
 
                 _logger.LogInfo("Calculating next occurrence...");
-                taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate, createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval,
-                    createTaskDto.MonthlyType, createTaskDto.MonthlyDay, createTaskDto.SelectedWeekDays, 
+                taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate,
+                    createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval,
+                    createTaskDto.MonthlyType, createTaskDto.MonthlyDay, createTaskDto.SelectedWeekDays,
                     createTaskDto.EndType, createTaskDto.EndAfterCount, createTaskDto.EndDate);
 
                 _logger.LogInfo("Saving task...");
@@ -141,39 +142,78 @@ namespace TaskMicroService.Services
 
             task.IsCompleted = true;
 
-            // if (!string.IsNullOrEmpty(task.RecurrenceType) && task.RecurrenceType != "None")
-            // {
-            //     // Parse SelectedWeekDays from JSON string
-            //     var selectedWeekDays = new Dictionary<string, bool>();
-            //     if (!string.IsNullOrEmpty(task.SelectedWeekDays))
-            //     {
-            //         try
-            //         {
-            //             selectedWeekDays = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(task.SelectedWeekDays) ?? new Dictionary<string, bool>();
-            //         }
-            //         catch
-            //         {
-            //             selectedWeekDays = new Dictionary<string, bool>();
-            //         }
-            //     }
-            //     
-            //     task.NextOccurrence = CalculateNextOccurrence(task.NextOccurrence, task.RecurrenceType, task.RecurrenceInterval,
-            //         task.MonthlyType, task.MonthlyDay, selectedWeekDays, 
-            //         task.EndType, task.EndAfterCount, task.EndDate);
-            //     task.IsCompleted = false;
-            // }
+            if (!string.IsNullOrEmpty(task.RecurrenceType) && task.RecurrenceType != "None")
+            {
+                // Parse SelectedWeekDays from JSON string
+                var selectedWeekDays = new Dictionary<string, bool>();
+                if (!string.IsNullOrEmpty(task.SelectedWeekDays))
+                {
+                    try
+                    {
+                        selectedWeekDays =
+                            System.Text.Json.JsonSerializer
+                                .Deserialize<Dictionary<string, bool>>(task.SelectedWeekDays) ??
+                            new Dictionary<string, bool>();
+                    }
+                    catch
+                    {
+                        selectedWeekDays = new Dictionary<string, bool>();
+                    }
+                }
+
+                // Beregn næste forekomst
+                var nextOccurrence = CalculateNextOccurrence(task.NextOccurrence, task.RecurrenceType,
+                    task.RecurrenceInterval,
+                    task.MonthlyType, task.MonthlyDay, selectedWeekDays,
+                    task.EndType, task.EndAfterCount, task.EndDate);
+
+                // Tjek om der allerede eksisterer en fremtidig forekomst af samme opgave
+                var existingFutureTask = await _dbContext.Tasks
+                    .FirstOrDefaultAsync(t => 
+                        t.UserId == task.UserId && 
+                        t.Name == task.Name && 
+                        t.NextOccurrence.Date == nextOccurrence.Date &&
+                        t.IsCompleted == false);
+
+                // Opret kun ny opgave hvis der ikke allerede er en fremtidig forekomst
+                if (existingFutureTask == null)
+                {
+                    var newTask = new TaskEntity
+                    {
+                        Name = task.Name,
+                        Description = task.Description,
+                        ImageUrl = task.ImageUrl,
+                        RecurrenceType = task.RecurrenceType,
+                        RecurrenceInterval = task.RecurrenceInterval,
+                        StartDate = task.StartDate,
+                        NextOccurrence = nextOccurrence,
+                        UserId = task.UserId,
+                        RequiresQrCodeScan = task.RequiresQrCodeScan,
+                        IsCompleted = false, // Ny opgave er ikke færdig
+                        MonthlyType = task.MonthlyType,
+                        MonthlyDay = task.MonthlyDay,
+                        SelectedWeekDays = task.SelectedWeekDays,
+                        EndType = task.EndType,
+                        EndAfterCount = task.EndAfterCount,
+                        EndDate = task.EndDate
+                    };
+                    _dbContext.Tasks.Add(newTask);
+                }
+            }
 
             await _dbContext.SaveChangesAsync();
             return Result.SuccessResult();
         }
+
 
         public async Task<Result> MarkTaskAsUnCompleted(int taskId)
         {
             var task = await _dbContext.Tasks.FindAsync(taskId);
             if (task == null)
             {
-                return  Result.ErrorResult($"Task with ID {taskId} not found.");
+                return Result.ErrorResult($"Task with ID {taskId} not found.");
             }
+
             task.IsCompleted = false;
             await _dbContext.SaveChangesAsync();
             return Result.SuccessResult();
@@ -194,15 +234,15 @@ namespace TaskMicroService.Services
             return Result<IEnumerable<ReadTaskDto>>.SuccessResult(taskDtos);
         }
 
-        private DateTime CalculateNextOccurrence(DateTime startDate, string recurrenceType, int interval, 
-            string monthlyType = "SameDay", int monthlyDay = 1, Dictionary<string, bool> selectedWeekDays = null, 
+        private DateTime CalculateNextOccurrence(DateTime startDate, string recurrenceType, int interval,
+            string monthlyType = "SameDay", int monthlyDay = 1, Dictionary<string, bool> selectedWeekDays = null,
             string endType = "Never", int endAfterCount = 1, DateTime? endDate = null)
         {
             if (recurrenceType == "None") return startDate;
-            
+
             var currentDate = startDate;
             var occurrenceCount = 0;
-            
+
             while (occurrenceCount < 100) // Safety limit
             {
                 currentDate = recurrenceType switch
@@ -213,13 +253,13 @@ namespace TaskMicroService.Services
                     "Yearly" => currentDate.AddYears(interval),
                     _ => throw new ArgumentException("Invalid recurrence type")
                 };
-                
+
                 occurrenceCount++;
-                
+
                 // Check end conditions
                 if (endType == "After" && occurrenceCount >= endAfterCount) break;
                 if (endType == "Date" && endDate.HasValue && currentDate > endDate.Value) break;
-                
+
                 // For weekly, check if we have a valid day
                 if (recurrenceType == "Weekly" && IsValidWeekDay(currentDate, selectedWeekDays))
                 {
@@ -230,14 +270,15 @@ namespace TaskMicroService.Services
                     return currentDate;
                 }
             }
-            
+
             return currentDate;
         }
-        
-        private DateTime CalculateMonthlyOccurrence(DateTime startDate, int interval, string monthlyType, int monthlyDay)
+
+        private DateTime CalculateMonthlyOccurrence(DateTime startDate, int interval, string monthlyType,
+            int monthlyDay)
         {
             var nextDate = startDate.AddMonths(interval);
-            
+
             return monthlyType switch
             {
                 "SameDay" => nextDate, // Beholder samme dag (kan være problematisk)
@@ -247,20 +288,21 @@ namespace TaskMicroService.Services
                 _ => nextDate
             };
         }
-        
+
         private DateTime GetSpecificDayInMonth(DateTime month, int day)
         {
             // Sikrer at vi ikke overskrider månedens antal dage
             var daysInMonth = DateTime.DaysInMonth(month.Year, month.Month);
             var targetDay = Math.Min(day, daysInMonth);
-            
+
             return new DateTime(month.Year, month.Month, targetDay);
         }
-        
-        private DateTime GetNextWeeklyOccurrence(DateTime currentDate, int interval, Dictionary<string, bool> selectedWeekDays)
+
+        private DateTime GetNextWeeklyOccurrence(DateTime currentDate, int interval,
+            Dictionary<string, bool> selectedWeekDays)
         {
             var nextDate = currentDate.AddDays(7 * interval);
-            
+
             // Find next valid weekday
             for (int i = 0; i < 7; i++)
             {
@@ -269,20 +311,21 @@ namespace TaskMicroService.Services
                 {
                     return nextDate;
                 }
+
                 nextDate = nextDate.AddDays(1);
             }
-            
+
             return nextDate;
         }
-        
+
         private bool IsValidWeekDay(DateTime date, Dictionary<string, bool> selectedWeekDays)
         {
             if (selectedWeekDays == null || !selectedWeekDays.Any()) return true;
-            
+
             var dayName = GetDanishDayName(date.DayOfWeek);
             return selectedWeekDays.ContainsKey(dayName) && selectedWeekDays[dayName];
         }
-        
+
         private string GetDanishDayName(DayOfWeek dayOfWeek)
         {
             return dayOfWeek switch
