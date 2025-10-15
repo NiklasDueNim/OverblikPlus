@@ -82,7 +82,7 @@ namespace UserMicroService.Controllers
             var result = await _authService.RefreshTokenAsync(token);
             if (!result.Success)
             {
-                _logger.LogWarning("Failed to refresh token.");
+                _logger.LogWarning("Failed to refresh token."); 
                 return Unauthorized(result.Error);
             }
 
