@@ -48,7 +48,7 @@
             </div>
 
             <div class="tasks-list">
-                @foreach (var task in todaysTasks.Take(3))
+                @foreach (var task in todaysTasks.Take(ShowNumberOfTasks))
                 {
                     <div class="task-item @(task.IsCompleted ? "completed" : "")">
                         <div class="task-checkbox">
@@ -69,11 +69,11 @@
                         </div>
                     </div>
                 }
-                @if (todaysTasks.Count > 3)
+                @if (todaysTasks.Count > ShowNumberOfTasks)
                 {
                     <div class="more-tasks">
                         <a href="/tasks" class="btn btn-sm btn-outline-primary">
-                            Se alle @(todaysTasks.Count - 3) flere opgaver
+                            Se alle @(todaysTasks.Count - ShowNumberOfTasks) flere opgaver
                         </a>
                     </div>
                 }
@@ -100,6 +100,7 @@
     private int completedTasks => todaysTasks.Count(t => t.IsCompleted);
     private int pendingTasks => todaysTasks.Count(t => !t.IsCompleted);
     private int completionPercentage => todaysTasks.Any() ? (int)((double)completedTasks / todaysTasks.Count * 100) : 0;
+    private const int ShowNumberOfTasks = 9;
 
     protected override async Task OnInitializedAsync()
     {

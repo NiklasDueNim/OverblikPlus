@@ -59,15 +59,12 @@ namespace UserMicroService.Services
 
                 var user = await _userManager.FindByEmailAsync(loginDto.Email);
                 if (user == null) return Result<LoginResponseDto>.ErrorResult("User not found.");
-                
-               
-
+            
                 var jwtToken = GenerateJwtToken(user);
                 var refreshToken = GenerateRefreshToken(user.Id);
                 await SaveRefreshTokenAsync(refreshToken);
                 
                 var userDto = _mapper.Map<ReadUserDto>(user);
-                
                 
                 var loginResponse = new LoginResponseDto
                 {

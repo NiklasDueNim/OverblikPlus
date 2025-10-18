@@ -24,7 +24,7 @@
             </div>
             
             <div class="activities-list">
-                @foreach (var activity in upcomingActivities.Take(3))
+                @foreach (var activity in upcomingActivities.Take(ShowNumberOfActivities))
                 {
                     <div class="activity-item @GetActivityStatus(activity)">
                         <div class="activity-time">
@@ -57,11 +57,11 @@
                         </div>
                     </div>
                 }
-                @if (upcomingActivities.Count > 3)
+                @if (upcomingActivities.Count > ShowNumberOfActivities)
                 {
                     <div class="more-activities">
                         <a href="/activities" class="btn btn-sm btn-outline-primary">
-                            Se alle @(upcomingActivities.Count - 3) flere aktiviteter
+                            Se alle @(upcomingActivities.Count - ShowNumberOfActivities) flere aktiviteter
                         </a>
                     </div>
                 }
@@ -91,6 +91,7 @@
 
     private List<ActivityDto> upcomingActivities = new();
     private bool isLoading = true;
+    private const int ShowNumberOfActivities= 5;
 
     protected override async Task OnInitializedAsync()
     {

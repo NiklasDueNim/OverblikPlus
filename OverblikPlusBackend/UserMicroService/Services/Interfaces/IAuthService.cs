@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using UserMicroService.Common;
 using UserMicroService.dto;
 
@@ -11,5 +10,7 @@ namespace UserMicroService.Services.Interfaces
         Task<Result<string>> RefreshTokenAsync(string token);
         Task<Result> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
         Task<Result> LogoutAsync();
+        
+        //TODO: Fiks 
     }
 }
