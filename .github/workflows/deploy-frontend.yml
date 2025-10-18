@@ -39,7 +39,7 @@ jobs:
           azure_static_web_apps_api_token: '${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}'
           action: 'upload'
           enviroment: "Production"
-          app_location: "OverblikPlus/publish/wwwroot"
+          app_location: 'OverblikPlus/publish/wwwroot'
           
       - name: Set deployment status
         if: success()
