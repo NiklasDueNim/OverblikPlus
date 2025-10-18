@@ -1,14 +1,15 @@
-name: Frontend - Dev
+name: Frontend - CD
 
 on:
   push:
     branches:
-      - main
+      - main 
+      - Development
 
 jobs:
   build_and_deploy_frontend:
     runs-on: ubuntu-latest
-    environment: dev
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
     name: Build and Deploy Frontend
     steps:
       - uses: actions/checkout@v3
