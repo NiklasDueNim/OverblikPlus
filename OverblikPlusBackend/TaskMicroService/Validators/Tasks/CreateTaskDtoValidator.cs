@@ -1,7 +1,7 @@
 using FluentValidation;
 using TaskMicroService.dtos.Task;
 
-namespace TaskMicroService.Validators;
+namespace TaskMicroService.Validators.Tasks;
 
 public class CreateTaskDtoValidator : AbstractValidator<CreateTaskDto>
 {

@@ -19,6 +19,7 @@ using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
 using TaskMicroService.Validators;
 using TaskMicroService.Validators.Calendar;
+using TaskMicroService.Validators.Tasks;
 
 namespace TaskMicroService;
 
