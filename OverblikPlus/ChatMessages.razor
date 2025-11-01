@@ -20,7 +20,7 @@
     protected override async Task OnInitializedAsync()
     {
         messages = await localStorage.GetItemAsync<List<string>>(MessagesKey) ?? new List<string>();
-        ChatTest.OnMessageSent += UpdateMessages;
+        Chat.OnMessageSent += UpdateMessages;
     }
 
     private async void UpdateMessages()
@@ -31,6 +31,6 @@
     
     public void Dispose()
     {
-        ChatTest.OnMessageSent -= UpdateMessages;
+        Chat.OnMessageSent -= UpdateMessages;
     }
 }
