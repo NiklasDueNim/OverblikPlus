@@ -49,6 +49,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\OverblikPlus.Shared\OverblikPlus.Shared.csproj" />
+      <ProjectReference Include="..\SeedData\SeedData.csproj" />
     </ItemGroup>
 
 </Project>

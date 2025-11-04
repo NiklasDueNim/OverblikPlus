@@ -17,9 +17,9 @@ using TaskMicroService.dtos.Task;
 using TaskMicroService.Middlewares;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
-using TaskMicroService.Validators;
 using TaskMicroService.Validators.Calendar;
 using TaskMicroService.Validators.Tasks;
+using SeedData;
 
 namespace TaskMicroService;
 
@@ -70,7 +70,6 @@ public class Program
             {
                 logger.LogError($"  - {connStr.Key}: {connStr.Value}", new InvalidOperationException("Configuration issue"));
             }
-            // Don't throw exception, just log and continue
             logger.LogError("[TaskMicroService] Continuing without database connection - this will likely cause issues later.", new InvalidOperationException("DB Connection missing"));
         }
 
@@ -81,8 +80,6 @@ public class Program
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];       
         var jwtAudience = builder.Configuration["Jwt:Audience"];   
         var jwtKey = builder.Configuration["Jwt:Key"];            
-
-        
 
         IdentityModelEventSource.ShowPII = true;
 
@@ -122,7 +119,6 @@ public class Program
         }
         else
         {
-            // Fallback for local development
             builder.Services.AddSingleton(_ => new BlobServiceClient("UseDevelopmentStorage=true"));
             builder.Services.AddSingleton("http://localhost:10000/devstoreaccount1");
         }
@@ -136,12 +132,14 @@ public class Program
                             "https://nice-wave-08dd97903.1.azurestaticapps.net",  // PROD Static Web App
                             "https://overblikplus.dk",                              // PROD Custom Domain
                             "https://witty-meadow-0c52c9003.2.azurestaticapps.net", // DEV Static Web App
-                            "http://localhost:5226"                                 // Local Development
+                            "http://localhost:5226",                                 // Local Development (Rider Frontend)
+                            "http://localhost:5003"                                  // Docker Development (Docker Frontend)
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials()
-                        .WithExposedHeaders("Authorization");
+                        .WithExposedHeaders("Authorization")
+                        .SetPreflightMaxAge(TimeSpan.FromHours(1));
                 });
         });
 
@@ -210,30 +208,20 @@ public class Program
             return Task.CompletedTask;
         });
 
-        app.Use(async (context, next) =>
-        {
-            if (context.Request.Method == "OPTIONS")
-            {
-                context.Response.StatusCode = 200;
-                context.Response.Headers.Add("Access-Control-Allow-Origin", context.Request.Headers["Origin"]);
-                context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-                context.Response.Headers.Add("Access-Control-Allow-Headers", "Authorization, Content-Type");
-                context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
-                await context.Response.CompleteAsync();
-                return;
-            }
-            await next();
-        });
-
         app.UseForwardedHeaders(new ForwardedHeadersOptions
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedProto
         });
 
-        // Fjernes i produktion
-        app.UseDeveloperExceptionPage();
-
-        app.UseHttpsRedirection();
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseHttpsRedirection();
+        }
+        
         app.UseRouting();
         app.UseCors("AllowSpecificOrigins");
 
@@ -241,7 +229,7 @@ public class Program
         app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "TaskMicroService API V1");
-            c.RoutePrefix = "swagger"; // Standard Swagger path
+            c.RoutePrefix = "swagger";
         });
 
         app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -249,50 +237,11 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapControllers();
-
-        try
-        {
-            // Auto-migrate database in Development and Production mode
-            using (var scope = app.Services.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-                
-                // Log connection string for debugging
-                var connectionString = context.Database.GetConnectionString();
-                logger.LogInfo($"[TaskMicroService] Database connection string: {connectionString}");
-                
-                // Also log environment variables
-                var envConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
-                logger.LogInfo($"[TaskMicroService] Environment ConnectionStrings__DefaultConnection: {envConnectionString}");
-                
-                try
-                {
-                    await context.Database.MigrateAsync();
-                    logger.LogInfo("[TaskMicroService] Database migrations completed successfully.");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError($"Migration failed: {ex.Message}", ex);
-                    // Try to ensure database is created if migration fails
-                    try
-                    {
-                        await context.Database.EnsureCreatedAsync();
-                        logger.LogInfo("[TaskMicroService] Database ensured created.");
-                    }
-                    catch (Exception ensureEx)
-                    {
-                        logger.LogError($"EnsureCreated failed: {ensureEx.Message}", ensureEx);
-                        // Continue anyway - app should still start
-                        logger.LogInfo("[TaskMicroService] Continuing despite database setup failure.");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("Database setup failed", ex);
-        }
+        app.MapControllers()
+            .RequireCors("AllowSpecificOrigins");
+        
+        var seeder = new DatabaseSeeder<TaskDbContext>(logger, builder.Environment);
+        await seeder.SeedAsync(app.Services);
         
         logger.LogInfo($"[TaskMicroService] Starting application in {environment} mode.");
         await app.RunAsync();

@@ -19,6 +19,7 @@ using UserMicroService.Validators;
 using UserMicroService.Validators.Auth;
 using Microsoft.AspNetCore.ResponseCompression;
 using UserMicroService.Hubs;
+using SeedData;
 
 namespace UserMicroService;
 
@@ -163,6 +164,16 @@ public class Program
 
         builder.Services.AddCors(options =>
         {
+            // Local development policy
+            options.AddPolicy("AllowLocalDev",
+                policy =>
+                {
+                    policy.WithOrigins("http://localhost:5226", "http://localhost:5003")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .SetPreflightMaxAge(TimeSpan.FromHours(1));
+                });
+            
             options.AddPolicy("AllowSpecificOrigins",
                 policy =>
                 {
@@ -177,7 +188,8 @@ public class Program
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials()
-                        .WithExposedHeaders("Authorization");
+                        .WithExposedHeaders("Authorization")
+                        .SetPreflightMaxAge(TimeSpan.FromHours(1));
                 });
         });
 
@@ -252,7 +264,6 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            // app.UseHttpsRedirection();
         }
         else
         {
@@ -260,7 +271,16 @@ public class Program
         }
         
         app.UseRouting();
-        app.UseCors("AllowSpecificOrigins");
+        
+        // CORS skal være mellem UseRouting og UseAuthentication/UseAuthorization
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseCors("AllowLocalDev");
+        }
+        else
+        {
+            app.UseCors("AllowSpecificOrigins");
+        }
 
         app.UseSwagger();
         app.UseSwaggerUI(c =>
@@ -277,28 +297,17 @@ public class Program
         app.MapHub<ChatHub>("/chatHub");
 
         app.MapControllers()
-            .RequireCors("AllowSpecificOrigins");
+            .RequireCors(app.Environment.IsDevelopment() ? "AllowLocalDev" : "AllowSpecificOrigins");
 
-        // Auto-migrate database in Development and Production mode
-        try
-        {
-            using (var scope = app.Services.CreateScope())
+        var seeder = new DatabaseSeeder<UserDbContext>(
+            logger,
+            app.Environment,
+            async (serviceProvider, context) =>
             {
-                var context = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-                var conn = context.Database.GetDbConnection();
-                logger.LogInfo($"DB target: {conn.DataSource}/{conn.Database}");
-                await context.Database.MigrateAsync();
-                logger.LogInfo("[UserMicroService] Database migrations completed successfully.");
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError($"DB migration failed at startup - continuing without migration: {ex.Message}", ex);
-            // Don't throw - let the app start so we can hit /health and see logs
-        }
+                await SeedAdminUserAsync(serviceProvider, logger);
+            });
         
-        // Seed admin user
-        await SeedAdminUser(app);
+        await seeder.SeedAsync(app.Services);
         
         logger.LogInfo($"[UserMicroService] About to start application in {app.Environment.EnvironmentName} mode.");
         
@@ -315,20 +324,19 @@ public class Program
         }
     }
 
-    private static async Task SeedAdminUser(WebApplication app)
+    private static async Task SeedAdminUserAsync(IServiceProvider serviceProvider, ILoggerService logger)
     {
         try
         {
-            using var scope = app.Services.CreateScope();
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var log = serviceProvider.GetRequiredService<ILogger<Program>>();
 
             // Check if admin user already exists
             var adminUser = await userManager.FindByEmailAsync("admin@overblikplus.dk");
             if (adminUser != null)
             {
-                logger.LogInformation("Admin user already exists.");
+                log.LogInformation("Admin user already exists.");
                 return;
             }
 
@@ -336,7 +344,7 @@ public class Program
             if (!await roleManager.RoleExistsAsync("Admin"))
             {
                 await roleManager.CreateAsync(new IdentityRole("Admin"));
-                logger.LogInformation("Admin role created.");
+                log.LogInformation("Admin role created.");
             }
 
             // Create admin user
@@ -355,17 +363,19 @@ public class Program
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(admin, "Admin");
-                logger.LogInformation("Admin user created successfully with email: admin@overblikplus.dk and password: Admin123!");
+                log.LogInformation("Admin user created successfully with email: admin@overblikplus.dk and password: Admin123!");
+                logger.LogInfo("Admin user created successfully.");
             }
             else
             {
-                logger.LogError("Failed to create admin user: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                log.LogError("Failed to create admin user: {Errors}", errors);
+                logger.LogError($"Failed to create admin user: {errors}", new Exception(errors));
             }
         }
         catch (Exception ex)
         {
-            var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "Error seeding admin user");
+            logger.LogError($"Error seeding admin user: {ex.Message}", ex);
         }
     }
 }
