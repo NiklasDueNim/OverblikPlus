@@ -188,6 +188,16 @@ public class Program
         builder.Services.AddScoped<ITaskDbContext, TaskDbContext>();
         builder.Services.AddScoped<IImageService, ImageService>();
         builder.Services.AddScoped<IRelativeService, RelativeService>();
+        
+        // Configure HttpClient for UserMicroService API
+        var userApiBaseUrl = builder.Configuration["UserApiBaseUrl"] ?? "http://localhost:5004";
+        builder.Services.AddHttpClient("UserApi", client =>
+        {
+            client.BaseAddress = new Uri(userApiBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+        
+        builder.Services.AddScoped<IMoodService, MoodService>();
 
 
         builder.Services.AddScoped<IValidator<UpdateTaskDto>, UpdateTaskDtoValidator>();

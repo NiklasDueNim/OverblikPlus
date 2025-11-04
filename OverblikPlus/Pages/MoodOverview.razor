@@ -1,0 +1,175 @@
+@page "/mood-overview"
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Models.Dtos.Mood
+@using OverblikPlus.Services.Interfaces
+@inject IMoodService MoodService
+@inject CustomAuthStateProvider AuthStateProvider
+
+<PageTitle>Humør Oversigt</PageTitle>
+
+<div class="container-fluid">
+    <h3>Humør Oversigt for Bosted</h3>
+    
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert @alertClass alert-dismissible fade show" role="alert">
+            @message
+            <button type="button" class="btn-close" @onclick="() => message = string.Empty"></button>
+        </div>
+    }
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label for="fromDate" class="form-label">Fra dato:</label>
+            <input type="date" id="fromDate" class="form-control" @bind="fromDate" @bind:event="onchange" />
+        </div>
+        <div class="col-md-4">
+            <label for="toDate" class="form-label">Til dato:</label>
+            <input type="date" id="toDate" class="form-control" @bind="toDate" @bind:event="onchange" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-primary" @onclick="LoadMoods" disabled="@isLoading">Opdater</button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <p>Indlæser humør data...</p>
+    }
+    else if (moodsByUser != null && moodsByUser.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Bruger</th>
+                        @foreach (var date in dateRange)
+                        {
+                            <th class="text-center">@date.ToString("dd/MM")</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var userMoods in moodsByUser)
+                    {
+                        <tr>
+                            <td><strong>@userMoods.Key</strong></td>
+                            @foreach (var date in dateRange)
+                            {
+                                <td class="text-center">
+                                    @{
+                                        var moodForDate = userMoods.Value.FirstOrDefault(m => m.Date.Date == date.Date);
+                                    }
+                                    @if (moodForDate != null)
+                                    {
+                                        var ratingClass = moodForDate.Rating switch
+                                        {
+                                            2 => "text-success",
+                                            1 => "text-warning",
+                                            0 => "text-danger",
+                                            _ => ""
+                                        };
+                                        var ratingIcon = moodForDate.Rating switch
+                                        {
+                                            2 => "😊",
+                                            1 => "😐",
+                                            0 => "😞",
+                                            _ => "-"
+                                        };
+                                        <span class="@ratingClass" title="@moodForDate.Note">@ratingIcon</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (!isLoading)
+    {
+        <p class="text-muted">Ingen humør data fundet for den valgte periode.</p>
+    }
+</div>
+
+@code {
+    private bool isLoading = false;
+    private string message = string.Empty;
+    private string alertClass = "alert-success";
+    private List<MoodWithUserDto> allMoods = new();
+    private Dictionary<string, List<MoodWithUserDto>> moodsByUser = new();
+    private List<DateTime> dateRange = new();
+    private DateTime fromDate = DateTime.Now.AddDays(-7);
+    private DateTime toDate = DateTime.Now;
+    private int? bostedId = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bostedId = AuthStateProvider.GetBostedIdAsync();
+        await LoadMoods();
+    }
+
+    private async Task LoadMoods()
+    {
+        if (!bostedId.HasValue)
+        {
+            message = "Kunne ikke finde bosted information";
+            alertClass = "alert-danger";
+            return;
+        }
+
+        isLoading = true;
+        message = string.Empty;
+
+        try
+        {
+            var result = await MoodService.GetMoodsForBostedAsync(bostedId.Value, fromDate, toDate);
+
+            if (result.Success && result.Data != null)
+            {
+                allMoods = result.Data;
+                GroupMoodsByUser();
+                GenerateDateRange();
+            }
+            else
+            {
+                message = $"Kunne ikke hente humør data: {result.Error}";
+                alertClass = "alert-danger";
+                allMoods = new();
+                moodsByUser = new();
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Fejl: {ex.Message}";
+            alertClass = "alert-danger";
+            Console.WriteLine($"Error loading moods: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GroupMoodsByUser()
+    {
+        moodsByUser = allMoods
+            .GroupBy(m => $"{m.UserFirstName} {m.UserLastName}")
+            .ToDictionary(g => g.Key, g => g.OrderBy(m => m.Date).ToList());
+    }
+
+    private void GenerateDateRange()
+    {
+        dateRange = new List<DateTime>();
+        var currentDate = fromDate.Date;
+        while (currentDate <= toDate.Date)
+        {
+            dateRange.Add(currentDate);
+            currentDate = currentDate.AddDays(1);
+        }
+    }
+}

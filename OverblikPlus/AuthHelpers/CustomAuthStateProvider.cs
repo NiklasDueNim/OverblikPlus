@@ -168,6 +168,22 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         return claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
     }
 
+    public int? GetBostedIdAsync()
+    {
+        if (string.IsNullOrEmpty(_jwtToken))
+        {
+            return null;
+        }
+
+        var claims = ParseClaimsFromJwt(_jwtToken);
+        var bostedIdClaim = claims.FirstOrDefault(c => c.Type == "bostedId")?.Value;
+        if (!string.IsNullOrEmpty(bostedIdClaim) && int.TryParse(bostedIdClaim, out var bostedId))
+        {
+            return bostedId;
+        }
+        return null;
+    }
+
     private bool IsTokenExpired(string jwt)
     {
         var claims = ParseClaimsFromJwt(jwt);

@@ -12,6 +12,8 @@ public interface ITaskDbContext
     
     DbSet<CalendarEvent> CalendarEvents { get; }
     
+    DbSet<MoodEntity> Moods { get; }
+    
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     
     DatabaseFacade Database { get; }

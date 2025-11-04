@@ -50,6 +50,13 @@
                     <span class="icon">😎</span>
                     <span>Mit humør</span>
                 </a>
+                @if (IsAdminOrStaff())
+                {
+                    <a href="/mood-overview">
+                        <span class="icon">📊</span>
+                        <span>Humør Oversigt</span>
+                    </a>
+                }
                 <a href="/schedule">
                     <span class="icon">😎</span>
                     <span>Vagtskema</span>
@@ -105,6 +112,13 @@
                 <span class="icon">🧑‍🏫</span>
                 <span class="label">Opslag</span>
             </a>
+            @if (IsAdminOrStaff())
+            {
+                <a href="/mood-overview">
+                    <span class="icon">📊</span>
+                    <span class="label">Humør</span>
+                </a>
+            }
         </div>
     </Authorized>
     <NotAuthorized>
@@ -143,6 +157,17 @@
         }
 
         return AuthStateProvider.User.IsRelative;
+    }
+
+    private bool IsAdminOrStaff()
+    {
+        if (AuthStateProvider.User == null)
+        {
+            return false;
+        }
+
+        var role = AuthStateProvider.GetRoleAsync().Result;
+        return role == "Admin" || role == "Staff";
     }
 
     private async Task Logout()

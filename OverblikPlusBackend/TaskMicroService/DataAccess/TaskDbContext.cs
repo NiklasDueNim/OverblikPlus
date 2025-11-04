@@ -14,6 +14,7 @@ namespace TaskMicroService.DataAccess
         public DbSet<TaskStep> TaskSteps { get; set; }
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
         public DbSet<ActivityEntity> Activities { get; set; }
+        public DbSet<MoodEntity> Moods { get; set; }
         public DatabaseFacade Database => base.Database;
 
         
@@ -50,6 +51,17 @@ namespace TaskMicroService.DataAccess
                 .Property(a => a.StartDateTime).IsRequired();
             modelBuilder.Entity<ActivityEntity>()
                 .Property(a => a.EndDateTime).IsRequired();
+
+            // MoodEntity configuration
+            modelBuilder.Entity<MoodEntity>()
+                .HasKey(m => m.Id);
+            modelBuilder.Entity<MoodEntity>()
+                .Property(m => m.UserId).IsRequired();
+            modelBuilder.Entity<MoodEntity>()
+                .Property(m => m.Date).IsRequired();
+            modelBuilder.Entity<MoodEntity>()
+                .Property(m => m.Rating).IsRequired();
+            // Note: Service layer handles preventing multiple moods per day by checking Date.Date
             modelBuilder.Entity<ActivityEntity>()
                 .Property(a => a.Location).HasMaxLength(200);
             modelBuilder.Entity<ActivityEntity>()

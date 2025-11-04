@@ -6,35 +6,78 @@
 @inject IMoodService MoodService
 @inject CustomAuthStateProvider AuthStateProvider
 
-
-
 <h3>Hej @AuthStateProvider.User.FirstName</h3>
 <p>Hvordan har du det?</p>
-<button class="btn btn-success btn-lg me-2" @onclick="() => SaveMood(MoodDto.MoodRating.Good)">God</button>
-<button class="btn btn-warning btn-lg me-2" @onclick="() => SaveMood(MoodDto.MoodRating.Okay)">Okay</button>
-<button class="btn btn-danger btn-lg" @onclick="() => SaveMood(MoodDto.MoodRating.Bad)">Dårlig</button>
 
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @alertClass alert-dismissible fade show" role="alert">
+        @message
+        <button type="button" class="btn-close" @onclick="() => message = string.Empty"></button>
+    </div>
+}
+
+<div class="d-flex gap-2">
+    <button class="btn btn-success btn-lg" @onclick="() => SaveMood(MoodDto.MoodRating.Good)" disabled="@isSaving">God</button>
+    <button class="btn btn-warning btn-lg" @onclick="() => SaveMood(MoodDto.MoodRating.Okay)" disabled="@isSaving">Okay</button>
+    <button class="btn btn-danger btn-lg" @onclick="() => SaveMood(MoodDto.MoodRating.Bad)" disabled="@isSaving">Dårlig</button>
+</div>
+
+@if (isSaving)
+{
+    <p class="mt-3">Gemmer...</p>
+}
 
 @code {
+    private bool isSaving = false;
+    private string message = string.Empty;
+    private string alertClass = "alert-success";
 
     protected override async Task OnInitializedAsync()
     {
         
     }
 
-
     private async Task SaveMood(MoodDto.MoodRating mood)
     {
-        var newMood = new MoodDto()
+        if (isSaving)
+            return;
+
+        isSaving = true;
+        message = string.Empty;
+
+        try
         {
-            Id = Guid.NewGuid(),
-            UserId = AuthStateProvider.User.Id,
-            Date = DateTime.Now,
-            Note = "",
-            Rating = mood,
-        };
+            var newMood = new MoodDto()
+            {
+                Id = Guid.NewGuid(),
+                UserId = AuthStateProvider.User.Id,
+                Date = DateTime.Now,
+                Note = "",
+                Rating = mood,
+            };
 
-        await MoodService.CreateMood(newMood);
+            var result = await MoodService.CreateMood(newMood);
 
+            if (result.Success)
+            {
+                message = "Dit humør er blevet gemt!";
+                alertClass = "alert-success";
+            }
+            else
+            {
+                message = $"Kunne ikke gemme humør: {result.Error}";
+                alertClass = "alert-danger";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Fejl: {ex.Message}";
+            alertClass = "alert-danger";
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 }

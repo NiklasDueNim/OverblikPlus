@@ -1,6 +1,7 @@
 using AutoMapper;
 using TaskMicroService.dtos.Task;
 using TaskMicroService.dtos.TaskStep;
+using TaskMicroService.Dtos.Mood;
 using TaskMicroService.Entities;
 
 namespace TaskMicroService.Profiles
@@ -51,8 +52,13 @@ namespace TaskMicroService.Profiles
                 .ForMember(dest => dest.StepNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.NextStepId, opt => opt.Ignore())
                 .ForMember(dest => dest.Task, opt => opt.Ignore())
-                .ForMember(dest => dest.ImageUrl, opt => opt.Ignore()) 
-                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+                .ForMember(dest => dest.ImageUrl, opt => opt.Ignore());
+
+            // Mood mappings
+            CreateMap<CreateMoodDto, MoodEntity>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
+
+            CreateMap<MoodEntity, ReadMoodDto>();
 
         }
     }
