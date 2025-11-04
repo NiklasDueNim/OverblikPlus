@@ -1,45 +1,104 @@
 services:
-  taskmicroservice:
-    build:
-      context: ./OverblikPlusBackend
-      dockerfile: TaskMicroService/Dockerfile
+  # Azurite (Azure Storage Emulator for Blob Storage)
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: overblikplus-azurite
     ports:
-      - "5101:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DBConnectionString=Server=sqlserver,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;
-      - ConnectionStrings__BlobStorageConnectionString=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;
-    depends_on:
-      - azurite
-      - sqlserver
+      - "10000:10000"  # Blob service
+      - "10001:10001"  # Queue service
+      - "10002:10002"  # Table service
+    networks:
+      - overblikplus-network
 
-  usermicroservice:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: overblikplus-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - overblikplus-network
+
+  # User Microservice
+  user-service:
     build:
       context: ./OverblikPlusBackend
       dockerfile: UserMicroService/Dockerfile
-    ports:
-      - "5102:80"
+    container_name: overblikplus-user-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DBConnectionString=Server=sqlserver,1433;Database=Overblikplus_Dev;User Id=sa;Password=reallyStrongPwd123;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=UserDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
+      - ConnectionStrings__DBConnectionString=Server=sqlserver;Database=UserDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
       - ConnectionStrings__BlobStorageConnectionString=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;
+      - ENCRYPTION_KEY=d0aeXMamTP1Atr3q8VmsabazTVbeBzTF
+      - Jwt__Key=DevSecretKeyForJWT123456
+      - Jwt__Issuer=http://localhost:5001
+      - Jwt__Audience=http://localhost:5001
       - EF_CORE_MIGRATIONS=true
+    ports:
+      - "5001:80"
     depends_on:
-      - azurite
       - sqlserver
+      - azurite
+    networks:
+      - overblikplus-network
 
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
-    ports:
-      - "10000:10000"
-      - "10001:10001"
-      - "10002:10002"
-
-  sqlserver:
-    image: mcr.microsoft.com/azure-sql-edge:latest
-    platform: linux/arm64
+  # Task Microservice
+  task-service:
+    build:
+      context: ./OverblikPlusBackend
+      dockerfile: TaskMicroService/Dockerfile
+    container_name: overblikplus-task-service
     environment:
-      SA_PASSWORD: "reallyStrongPwd123"
-      ACCEPT_EULA: "Y"
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TaskDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
+      - ConnectionStrings__DBConnectionString=Server=sqlserver;Database=TaskDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
+      - ConnectionStrings__BlobStorageConnectionString=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;
+      - Jwt__Key=DevSecretKeyForJWT123456
+      - Jwt__Issuer=http://localhost:5001
+      - Jwt__Audience=http://localhost:5001
     ports:
-      - "1433:1433"
+      - "5002:80"
+    depends_on:
+      - sqlserver
+      - azurite
+    networks:
+      - overblikplus-network
+
+  # Frontend (Blazor WebAssembly) - Optional, kan skjules med profiles
+  frontend:
+    profiles: ["full"]
+    build:
+      context: ./OverblikPlus
+      dockerfile: Dockerfile
+    container_name: overblikplus-frontend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Docker backend URLs (fra browserens perspektiv, ikke container)
+      - TASK_API_BASE_URL=http://localhost:5002
+      - USER_API_BASE_URL=http://localhost:5001
+      - TaskService__BaseUrl=http://localhost:5002
+      - UserService__BaseUrl=http://localhost:5001
+      - CalendarEventService__BaseUrl=http://localhost:5002
+      - ActivityService__BaseUrl=http://localhost:5002
+    ports:
+      - "5003:80"
+    depends_on:
+      - task-service
+      # Fjernet user-service dependency hvis du bruger Rider's backend
+    networks:
+      - overblikplus-network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  overblikplus-network:
+    driver: bridge
