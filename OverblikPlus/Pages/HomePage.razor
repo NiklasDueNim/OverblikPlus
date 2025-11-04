@@ -69,6 +69,17 @@
                         {
                             <NotificationsWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
                         }
+                        else if (widget.Type == "Announcements")
+                        {
+                            <div class="widget-announcements">
+                                <div class="widget-header">
+                                    <h4>@widget.Title</h4>
+                                </div>
+                                <div class="widget-body">
+                                    <p>Klik for at se alle opslag</p>
+                                </div>
+                            </div>
+                        }
                     </div>
                 }
             </div>
@@ -172,6 +183,14 @@
     protected override async Task OnInitializedAsync()
     {
         userRole = await AuthStateProvider.GetRoleAsync();
+        
+        // Redirect Relative brugere til announcements siden, da de ikke skal se dashboard
+        if (userRole == "Relative")
+        {
+            NavigationManager.NavigateTo("/announcements");
+            return;
+        }
+        
         await LoadDashboardSettings();
         
         // Set up welcome message timer
@@ -222,7 +241,23 @@
     {
         var defaultWidgets = new List<WidgetInfo>();
 
-        // Common widgets for all users
+        // Relative brugere skal kun se Announcements widget
+        if (role == "Relative")
+        {
+            defaultWidgets.Add(new WidgetInfo
+            {
+                Id = "announcements",
+                Title = "Opslagstavle",
+                Type = "Announcements",
+                Position = 1,
+                Size = 3,
+                IsVisible = true,
+                Role = "Relative"
+            });
+            return defaultWidgets.OrderBy(w => w.Position).ToList();
+        }
+
+        // Common widgets for all users (ikke Relative)
         defaultWidgets.Add(new WidgetInfo
         {
             Id = "tasks",
@@ -331,6 +366,7 @@
             "Shifts" => "/schedule",
             "Activities" => "/activities",
             "Notifications" => "/notifications",
+            "Announcements" => "/announcements",
             _ => "/"
         };
         

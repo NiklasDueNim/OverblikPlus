@@ -15,44 +15,52 @@
         
         <AuthorizeView>
             <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                        <i class="fas fa-home"></i> Hjem
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="tasks">
-                        <i class="fas fa-tasks"></i> Dagens Opgaver
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="scan">
-                        <i class="fas fa-qrcode"></i> Scan QR-kode
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="TaskManager">
-                        <i class="fas fa-plus-circle"></i> Opret Opgaver
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="calendar">
-                        <i class="fas fa-calendar"></i> Kalender
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="activities">
-                        <i class="fas fa-running"></i> Aktiviteter
-                    </NavLink>
-                </div>
-                @if (IsAdminOrStaff())
+                @if (!IsRelative())
                 {
                     <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="employee-status">
-                            <i class="fas fa-users"></i> Personale
+                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                            <i class="fas fa-home"></i> Hjem
                         </NavLink>
                     </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="tasks">
+                            <i class="fas fa-tasks"></i> Dagens Opgaver
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="scan">
+                            <i class="fas fa-qrcode"></i> Scan QR-kode
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="TaskManager">
+                            <i class="fas fa-plus-circle"></i> Opret Opgaver
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="calendar">
+                            <i class="fas fa-calendar"></i> Kalender
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="activities">
+                            <i class="fas fa-running"></i> Aktiviteter
+                        </NavLink>
+                    </div>
+                    @if (IsAdminOrStaff())
+                    {
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="employee-status">
+                                <i class="fas fa-users"></i> Personale
+                            </NavLink>
+                        </div>
+                    }
                 }
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="announcements">
+                        <i class="fas fa-bullhorn"></i> Opslagstavle
+                    </NavLink>
+                </div>
             </Authorized>
         </AuthorizeView>
 
@@ -115,6 +123,15 @@
         }
 
         return AuthStateProvider.User.IsAdminOrStaff;
-        
+    }
+
+    private bool IsRelative()
+    {
+        if(AuthStateProvider.User == null)
+        {
+            return false;
+        }
+
+        return AuthStateProvider.User.IsRelative;
     }
 }

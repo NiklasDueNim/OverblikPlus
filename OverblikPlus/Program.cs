@@ -33,35 +33,96 @@ var envConfig = configuration["ENVIRONMENT"] ?? "dev";
 // Determine environment based on where the app is running
 var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
 var host = baseUri.Host;
+var port = baseUri.Port;
+
+// Debug logging
+Console.WriteLine($"BaseAddress: {builder.HostEnvironment.BaseAddress}");
+Console.WriteLine($"Host: {host}");
+Console.WriteLine($"Port: {port}");
 
 string taskApiBaseUrl;
 string userApiBaseUrl;
 
-// Check if running on production domain
-if (host.Contains("overblikplus.dk") || host.Contains("azurestaticapps.net"))
+// Check if running on production domain (overblikplus.dk)
+if (host.Contains("overblikplus.dk"))
 {
-    // Production: Use DEV Azure API endpoints (prod not deployed yet)
+    // PRODUCTION: Use PROD Azure API endpoints
+    taskApiBaseUrl = "https://overblikplus-task-api-prod.azurewebsites.net";
+    userApiBaseUrl = "https://overblikplus-user-api-prod.azurewebsites.net";
+    envConfig = "production";
+}
+// Check if running on production Azure Static Web App
+else if (host.Contains("nice-wave-08dd97903.1.azurestaticapps.net"))
+{
+    // PRODUCTION Azure Static Web App (før custom domain er sat op)
+    taskApiBaseUrl = "https://overblikplus-task-api-prod.azurewebsites.net";
+    userApiBaseUrl = "https://overblikplus-user-api-prod.azurewebsites.net";
+    envConfig = "production";
+}
+// Check if running on development Azure Static Web App
+else if (host.Contains("witty-meadow-0c52c9003.2.azurestaticapps.net"))
+{
+    // DEVELOPMENT: Use DEV Azure API endpoints
     taskApiBaseUrl = "https://overblikplus-task-api-dev.azurewebsites.net";
     userApiBaseUrl = "https://overblikplus-user-api-dev.azurewebsites.net";
-    envConfig = "production";
+    envConfig = "development-azure";
+}
+// Fallback for other azurestaticapps.net URLs (shouldn't happen, but just in case)
+else if (host.Contains("azurestaticapps.net"))
+{
+    // Unknown Azure Static Web App - default to dev for safety
+    taskApiBaseUrl = "https://overblikplus-task-api-dev.azurewebsites.net";
+    userApiBaseUrl = "https://overblikplus-user-api-dev.azurewebsites.net";
+    envConfig = "development-azure";
 }
 else if (host == "localhost" || host == "127.0.0.1")
 {
     // Local development: Check URL for backend preference
     // URL examples:
-    // - http://localhost:5226 (default: Rider ports 5001/5002)
-    // - http://localhost:5226?backend=docker (Docker ports 5101/5102)
+    // - http://localhost:5226 (default: Rider ports 5004/5002)
+    // - http://localhost:5003 (Docker frontend: Docker ports 5001/5002)
+    // - http://localhost:5226?backend=docker (Docker ports 5001/5002)
     // - http://localhost:5226?backend=azure (Azure cloud)
     
     var uri = new Uri(baseUri.ToString());
     var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
     var backendType = query["backend"]?.ToLower();
     
-    if (backendType == "docker")
+    // Blazor WASM BaseAddress kan være uden port - tjek også window.location via JS interop
+    // Men først: hvis port er -1 eller 0, prøv at få det fra BaseAddress string
+    var actualPort = port;
+    if (port == -1 || port == 0 || port == 80 || port == 443)
     {
-        taskApiBaseUrl = "http://localhost:5101";
-        userApiBaseUrl = "http://localhost:5102";
+        // Prøv at parse porten fra BaseAddress string
+        var baseAddressStr = builder.HostEnvironment.BaseAddress;
+        var portMatch = System.Text.RegularExpressions.Regex.Match(baseAddressStr, @":(\d+)");
+        if (portMatch.Success && int.TryParse(portMatch.Groups[1].Value, out var parsedPort))
+        {
+            actualPort = parsedPort;
+            Console.WriteLine($"Parsed port from BaseAddress: {actualPort}");
+        }
+    }
+    
+    Console.WriteLine($"Checking port: {port}, actualPort: {actualPort}, backendType: {backendType}");
+    
+    // Check environment variables first (fra docker-compose.yml)
+    var envTaskUrl = configuration["TASK_API_BASE_URL"] ?? Environment.GetEnvironmentVariable("TaskService__BaseUrl");
+    var envUserUrl = configuration["USER_API_BASE_URL"] ?? Environment.GetEnvironmentVariable("UserService__BaseUrl");
+    
+    if (!string.IsNullOrEmpty(envTaskUrl) && !string.IsNullOrEmpty(envUserUrl))
+    {
+        taskApiBaseUrl = envTaskUrl;
+        userApiBaseUrl = envUserUrl;
         envConfig = "development-docker";
+        Console.WriteLine($"Using environment variables: Task={taskApiBaseUrl}, User={userApiBaseUrl}");
+    }
+    // Hvis frontend kører på port 5003, så er det Docker frontend - brug Docker backend
+    else if (actualPort == 5003 || backendType == "docker")
+    {
+        taskApiBaseUrl = "http://localhost:5002";  // Docker TaskService
+        userApiBaseUrl = "http://localhost:5001";  // Docker UserService
+        envConfig = "development-docker";
+        Console.WriteLine("Using Docker backend (5001/5002) - detected from port");
     }
     else if (backendType == "azure")
     {
@@ -71,10 +132,11 @@ else if (host == "localhost" || host == "127.0.0.1")
     }
     else
     {
-        // Default: Rider ports
+        // Default: Rider ports (UserService kører på 5004, TaskService på 5002)
         taskApiBaseUrl = "http://localhost:5002";
-        userApiBaseUrl = "http://localhost:5001";
+        userApiBaseUrl = "http://localhost:5004";  // Rider UserService
         envConfig = "development";
+        Console.WriteLine("Using Rider backend (5004/5002)");
     }
 }
 else

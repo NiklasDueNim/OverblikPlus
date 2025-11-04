@@ -1,11 +1,16 @@
 @page "/announcements"
 @using OverblikPlus.Models.Dtos.Announcement
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.AuthHelpers
 @inject IAnnouncementService AnnouncementService
+@inject CustomAuthStateProvider AuthStateProvider
 
 <h3>Opslagstavle</h3>
 
-<button class="btn btn-primary mb-3" @onclick="OpenCreateModal">Opret nyt opslag</button>
+@if (!IsRelative())
+{
+    <button class="btn btn-primary mb-3" @onclick="OpenCreateModal">Opret nyt opslag</button>
+}
 
 @if (announcements == null)
 {
@@ -24,9 +29,12 @@ else
                         <h5>@ann.Title</h5>
                         <p>@ann.Body</p>
                         <small>Fra: @ann.StartDate.ToShortDateString() - Til: @ann.EndDate.ToShortDateString()</small>
-                        <br />
-                        <button class="btn btn-sm btn-secondary" @onclick="() => OpenEditModal(ann)">Rediger</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteAnnouncement(ann.Id)">Slet</button>
+                        @if (!IsRelative())
+                        {
+                            <br />
+                            <button class="btn btn-sm btn-secondary" @onclick="() => OpenEditModal(ann)">Rediger</button>
+                            <button class="btn btn-sm btn-danger" @onclick="() => DeleteAnnouncement(ann.Id)">Slet</button>
+                        }
                     </div>
                 </div>
             }
@@ -79,6 +87,16 @@ else
     private bool showModal = false;
     private bool isEditMode = false;
     private AnnouncementDto currentAnnouncement = new();
+
+    private bool IsRelative()
+    {
+        if(AuthStateProvider.User == null)
+        {
+            return false;
+        }
+
+        return AuthStateProvider.User.IsRelative;
+    }
 
     protected override async Task OnInitializedAsync()
     {

@@ -54,7 +54,17 @@ public class UserService : IUserService
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/auth/register", newUser);
+            // Map danske rolle-navne til engelske navne før de sendes til backend
+            var mappedUser = new CreateUserDto
+            {
+                FirstName = newUser.FirstName,
+                LastName = newUser.LastName,
+                Email = newUser.Email,
+                Password = newUser.Password,
+                Role = MapRoleToEnglish(newUser.Role)
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("api/auth/register", mappedUser);
             response.EnsureSuccessStatusCode();
             
             return new Result { Success = true };
@@ -64,6 +74,18 @@ public class UserService : IUserService
             Console.WriteLine($"Error creating user: {ex.Message}");
             throw;
         }
+    }
+
+    private string MapRoleToEnglish(string? role)
+    {
+        return role switch
+        {
+            "Beboer" => "User",
+            "Medarbejder" => "Staff",
+            "Admin" => "Admin",
+            "Relative" => "Relative",
+            _ => role ?? "User" // Default til User hvis rolle er null eller ukendt
+        };
     }
 
     public async Task UpdateUser(string id, UpdateUserDto updatedUser)

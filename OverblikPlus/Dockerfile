@@ -9,22 +9,32 @@ RUN dotnet restore
 # Copy the rest of the source code
 COPY . .
 
-# Build the application
-RUN dotnet build -c Release -o /app/build
-
-# Publish the application
+# Publish the Blazor WebAssembly app (this produces static files)
 RUN dotnet publish -c Release -o /app/publish
 
-# Use the official .NET 8 runtime image for running
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-WORKDIR /app
+# Use nginx to serve the static files (lightweight and perfect for static files)
+FROM nginx:alpine AS runtime
+WORKDIR /usr/share/nginx/html
 
-# Copy the published application
-COPY --from=build /app/publish .
+# Remove default nginx static assets
+RUN rm -rf ./*
 
-# Expose the port the app runs on
+# Copy the published static files from the build stage
+COPY --from=build /app/publish/wwwroot .
+
+# Copy nginx configuration for SPA routing support
+RUN echo 'server { \
+    listen 80; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
+# Expose port 80
 EXPOSE 80
-EXPOSE 443
 
-# Set the entry point
-ENTRYPOINT ["dotnet", "OverblikPlus.dll"]
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

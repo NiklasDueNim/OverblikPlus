@@ -16,49 +16,52 @@
                 <img src="/images/logo-blue.png" alt="OverblikPlus Logo" />
                 <h2>OverblikPlus</h2>
             </div>
-            <a href="/">
-                <span class="icon">🏠</span>
-                <span>Hjem</span>
-            </a>
-            <a href="/tasks">
-                <span class="icon">📋</span>
-                <span>Dagens Opgaver</span>
-            </a>
-            <a href="/scan">
-                <span class="icon">📷</span>
-                <span>Scan QR-kode</span>
-            </a>
-            <a href="/TaskManager">
-                <span class="icon">➕</span>
-                <span>Opret Opgaver</span>
-            </a>
-            <a href="/calendar">
-                <span class="icon">📅</span>
-                <span>Kalender</span>
-            </a>
-            <a href="/chatTest">
-                <span class="icon">✉️</span>
-                <span>Beskeder</span>
-            </a>
+            @if (!IsRelative())
+            {
+                <a href="/">
+                    <span class="icon">🏠</span>
+                    <span>Hjem</span>
+                </a>
+                <a href="/tasks">
+                    <span class="icon">📋</span>
+                    <span>Dagens Opgaver</span>
+                </a>
+                <a href="/scan">
+                    <span class="icon">📷</span>
+                    <span>Scan QR-kode</span>
+                </a>
+                <a href="/TaskManager">
+                    <span class="icon">➕</span>
+                    <span>Opret Opgaver</span>
+                </a>
+                <a href="/calendar">
+                    <span class="icon">📅</span>
+                    <span>Kalender</span>
+                </a>
+                <a href="/chatTest">
+                    <span class="icon">✉️</span>
+                    <span>Beskeder</span>
+                </a>
+                <a href="/budget">
+                    <span class="icon">💰</span>
+                    <span>Budget</span>
+                </a>
+                <a href="/mood">
+                    <span class="icon">😎</span>
+                    <span>Mit humør</span>
+                </a>
+                <a href="/schedule">
+                    <span class="icon">😎</span>
+                    <span>Vagtskema</span>
+                </a>
+                <a href="/activities">
+                    <span class="icon">😎</span>
+                    <span>Aktiviteter</span>
+                </a>
+            }
             <a href="/announcements">
                 <span class="icon">🧑‍🏫</span>
                 <span>Opslagstavle</span>
-            </a>
-            <a href="/budget">
-                <span class="icon">💰</span>
-                <span>Budget</span>
-            </a>
-            <a href="/mood">
-                <span class="icon">😎</span>
-                <span>Mit humør</span>
-            </a>
-            <a href="/schedule">
-                <span class="icon">😎</span>
-                <span>Vagtskema</span>
-            </a>
-            <a href="/activities">
-                <span class="icon">😎</span>
-                <span>Aktiviteter</span>
             </a>
             @* Notifications disabled until backend is ready *@
             @* <div class="notification-bell-wrapper">
@@ -75,25 +78,32 @@
 <AuthorizeView>
     <Authorized>
         <div class="mobile-menu-bar">
-            <a href="/">
-                <span class="icon">🏠</span>
-                <span class="label">Hjem</span>
-            </a>
-            <a href="/tasks">
-                <span class="icon">📋</span>
-                <span class="label">Opgaver</span>
-            </a>
-            <a href="/scan">
-                <span class="icon">📷</span>
-                <span class="label">Scan</span>
-            </a>
-            <a href="/TaskManager">
-                <span class="icon">➕</span>
-                <span class="label">Opret</span>
-            </a>
-            <a href="/calendar">
-                <span class="icon">📅</span>
-                <span class="label">Kalender</span>
+            @if (!IsRelative())
+            {
+                <a href="/">
+                    <span class="icon">🏠</span>
+                    <span class="label">Hjem</span>
+                </a>
+                <a href="/tasks">
+                    <span class="icon">📋</span>
+                    <span class="label">Opgaver</span>
+                </a>
+                <a href="/scan">
+                    <span class="icon">📷</span>
+                    <span class="label">Scan</span>
+                </a>
+                <a href="/TaskManager">
+                    <span class="icon">➕</span>
+                    <span class="label">Opret</span>
+                </a>
+                <a href="/calendar">
+                    <span class="icon">📅</span>
+                    <span class="label">Kalender</span>
+                </a>
+            }
+            <a href="/announcements">
+                <span class="icon">🧑‍🏫</span>
+                <span class="label">Opslag</span>
             </a>
         </div>
     </Authorized>
@@ -123,6 +133,16 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
+    }
+
+    private bool IsRelative()
+    {
+        if(AuthStateProvider.User == null)
+        {
+            return false;
+        }
+
+        return AuthStateProvider.User.IsRelative;
     }
 
     private async Task Logout()
