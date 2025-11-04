@@ -8,7 +8,7 @@
         <h4 class="card-title">@Title</h4>
     </div>
     <div class="card-body">
-        <form>
+        <form @onsubmit="HandleSubmit" @onsubmit:preventDefault="true">
             <div class="mb-3">
                 <label for="taskName" class="form-label">Navn:</label>
                 <input id="taskName" @bind="Task.Name" class="form-control" />
@@ -386,6 +386,11 @@
         {
             Task.SelectedWeekDays.Add(dayName, isChecked);
         }
+    }
+
+    private async Task HandleSubmit()
+    {
+        await Save();
     }
 
     private async Task Save() => await OnSave.InvokeAsync();

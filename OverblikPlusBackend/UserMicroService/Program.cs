@@ -1,10 +1,6 @@
-using System;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,9 +18,6 @@ using UserMicroService.Services.Interfaces;
 using UserMicroService.Validators;
 using UserMicroService.Validators.Auth;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using UserMicroService.Hubs;
 
 namespace UserMicroService;
@@ -49,39 +42,21 @@ public class Program
         var tempProvider = builder.Services.BuildServiceProvider();
         var logger = tempProvider.GetRequiredService<ILoggerService>();
 
-        // === COMPREHENSIVE CONFIGURATION DEBUGGING ===
-        Console.WriteLine("=== USER API CONFIGURATION DEBUG ===");
-        Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
-        Console.WriteLine($"ContentRoot: {builder.Environment.ContentRootPath}");
-        
-        // Log ALL configuration keys and values
-        Console.WriteLine("\n=== ALL CONFIGURATION VALUES ===");
-        foreach (var kvp in builder.Configuration.AsEnumerable())
+        if (builder.Environment.IsDevelopment())
         {
-            var value = kvp.Value;
-            if (kvp.Key.Contains("Key", StringComparison.OrdinalIgnoreCase) || 
-                kvp.Key.Contains("Password", StringComparison.OrdinalIgnoreCase))
-            {
-                value = string.IsNullOrEmpty(value) ? "[NULL/EMPTY]" : $"[MASKED-{value.Length}chars]";
-            }
-            Console.WriteLine($"  {kvp.Key} = {value}");
+            logger.LogInfo($"UserMicroService starting in {builder.Environment.EnvironmentName} environment");
         }
         
-        // Specific encryption key debugging
-        Console.WriteLine("\n=== ENCRYPTION KEY DEBUGGING ===");
-        var encKeyFromConfig1 = builder.Configuration["EncryptionSettings:EncryptionKey"];
-        var encKeyFromConfig2 = builder.Configuration["Encryption:Key"];
-        var encKeyFromConfig3 = Environment.GetEnvironmentVariable("ENCRYPTION_KEY");
-        
-        Console.WriteLine($"EncryptionSettings:EncryptionKey = {(string.IsNullOrEmpty(encKeyFromConfig1) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig1.Length}chars]")}");
-        Console.WriteLine($"Encryption:Key = {(string.IsNullOrEmpty(encKeyFromConfig2) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig2.Length}chars]")}");
-        Console.WriteLine($"ENV ENCRYPTION_KEY = {(string.IsNullOrEmpty(encKeyFromConfig3) ? "[NULL/EMPTY]" : $"[FOUND-{encKeyFromConfig3.Length}chars]")}");
-
         var dbConnectionString = builder.Configuration.GetConnectionString("DBConnectionString");
-        Console.WriteLine($"DB_CONNECTION_STRING: {(string.IsNullOrEmpty(dbConnectionString) ? "[NULL/EMPTY]" : "[FOUND-MASKED]")}");
         if (string.IsNullOrEmpty(dbConnectionString))
         {
-            throw new Exception("DB_CONNECTION_STRING is missing or empty.");
+            logger.LogError("DB_CONNECTION_STRING is missing or empty.", new InvalidOperationException("Missing connection string"));
+            throw new InvalidOperationException("DB_CONNECTION_STRING is missing or empty.");
+        }
+        
+        if (builder.Environment.IsDevelopment())
+        {
+            logger.LogInfo("Configuration validated successfully - Database connection string found");
         }
 
         builder.Services.AddDbContext<UserDbContext>(options =>
@@ -97,11 +72,15 @@ public class Program
             Environment.GetEnvironmentVariable("ENCRYPTION_KEY")
         );
         
-        Console.WriteLine($"Selected encryption key source: {(string.IsNullOrEmpty(encryptionKeyBase64) ? "[NONE FOUND]" : $"[FOUND-{encryptionKeyBase64.Length}chars]")}");
-        
         if (string.IsNullOrWhiteSpace(encryptionKeyBase64))
         {
+            logger.LogError("Encryption key is missing from all sources.", new InvalidOperationException("Missing encryption key"));
             throw new InvalidOperationException("Encryption key is missing from all sources.");
+        }
+        
+        if (builder.Environment.IsDevelopment())
+        {
+            logger.LogInfo("Encryption key validated successfully");
         }
         
         // Decode Base64 key to get the raw 32-byte key
@@ -137,13 +116,15 @@ public class Program
         var jwtAudience = builder.Configuration["Jwt:Audience"];
         var jwtKey = builder.Configuration["Jwt:Key"];
 
-        logger.LogInfo($"[UserMicroService] Jwt:Issuer   = {jwtIssuer ?? "NULL"}");
-        logger.LogInfo($"[UserMicroService] Jwt:Audience = {jwtAudience ?? "NULL"}");
-        logger.LogInfo($"[UserMicroService] Jwt:Key Len  = {jwtKey?.Length ?? -1}");
+        if (builder.Environment.IsDevelopment())
+        {
+            logger.LogInfo($"JWT Configuration - Issuer: {jwtIssuer ?? "NULL"}, Audience: {jwtAudience ?? "NULL"}, Key Length: {jwtKey?.Length ?? -1}");
+        }
         
         if (string.IsNullOrEmpty(jwtKey))
         {
-            logger.LogError("[UserMicroService] JWT Key is null or empty! This will cause startup failure.", new InvalidOperationException("JWT Key missing"));
+            logger.LogError("JWT Key is missing from configuration.", new InvalidOperationException("Missing JWT key"));
+            throw new InvalidOperationException("JWT Key is required but was not found in configuration.");
         }
 
         builder.Services.AddAuthentication(options =>
@@ -178,7 +159,6 @@ public class Program
                 });
             });
         });
-        
         
 
         builder.Services.AddCors(options =>
@@ -263,23 +243,7 @@ public class Program
             }
             return Task.CompletedTask;
         });
-
-        // EKSAKT kopi fra TaskMicroService - OPTIONS handler FØRST
-        app.Use(async (context, next) =>
-        {
-            if (context.Request.Method == "OPTIONS")
-            {
-                context.Response.StatusCode = 200;
-                context.Response.Headers["Access-Control-Allow-Origin"] = context.Request.Headers["Origin"];
-                context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
-                context.Response.Headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type";
-                context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
-                await context.Response.CompleteAsync();
-                return;
-            }
-            await next();
-        });
-
+        
         app.UseForwardedHeaders(new ForwardedHeadersOptions
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedProto
@@ -288,7 +252,6 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            // Deaktiver HTTPS redirection i dev - den blokerer OPTIONS requests
             // app.UseHttpsRedirection();
         }
         else
@@ -299,33 +262,22 @@ public class Program
         app.UseRouting();
         app.UseCors("AllowSpecificOrigins");
 
-        if (app.Environment.IsDevelopment())
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "UserMicroService API V1");
-                c.RoutePrefix = "swagger";
-            });
-        }
-        else
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "UserMicroService API V1");
-                c.RoutePrefix = "swagger";
-            });
-        }
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "UserMicroService API V1");
+            c.RoutePrefix = "swagger";
+        });
 
         app.UseSerilogRequestLogging();
         
         app.UseAuthentication();
         app.UseAuthorization();
         
-        app.MapHub <ChatHub> ("/chatHub");
+        app.MapHub<ChatHub>("/chatHub");
 
-        app.MapControllers();
+        app.MapControllers()
+            .RequireCors("AllowSpecificOrigins");
 
         // Auto-migrate database in Development and Production mode
         try

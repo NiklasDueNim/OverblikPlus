@@ -159,8 +159,17 @@
         isTaskFormVisible = true;
     }
 
+    private bool isSaving = false;
+
     private async Task SaveTask()
     {
+        if (isSaving)
+        {
+            Console.WriteLine("SaveTask er allerede i gang - ignorerer ekstra kald");
+            return;
+        }
+
+        isSaving = true;
         try
         {
             if (isEditMode)
@@ -194,6 +203,10 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Fejl i SaveTask: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
         }
     }
 

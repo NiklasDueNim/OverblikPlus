@@ -181,6 +181,7 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+        builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ITaskService, TaskService>();
         builder.Services.AddScoped<ITaskStepService, TaskStepService>();
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
