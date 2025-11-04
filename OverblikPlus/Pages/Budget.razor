@@ -1,8 +1,11 @@
 @page "/budget"
 @using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models.Dtos.Budget
-@inject HttpClient Http
+@using OverblikPlus.Services.Interfaces
+@inject IBudgetService BudgetService
 @inject CustomAuthStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+@using Microsoft.JSInterop
 
 <h3>Budget</h3>
 
@@ -26,6 +29,10 @@ else
         <div class="mb-3">
             <label for="voucher" class="form-label">Bilag:</label>
             <InputFile id="voucher" class="form-control" OnChange="UploadVoucher"/>
+            @if (!string.IsNullOrWhiteSpace(newBudget.Voucher))
+            {
+                <small class="text-success d-block mt-1">✓ Bilag uploaded</small>
+            }
         </div>
 
         <div class="mb-3">
@@ -44,7 +51,16 @@ else
             </div>
         </div>
 
-        <button class="btn btn-primary mt-3" type="submit">Tilføj</button>
+        <div class="mb-3">
+            <label for="note" class="form-label">Note:</label>
+            <textarea id="note" class="form-control" @bind="newBudget.Note" rows="3"></textarea>
+        </div>
+
+        <button class="btn btn-primary mt-3" type="submit">@(isEditMode ? "Opdater" : "Tilføj")</button>
+        @if (isEditMode)
+        {
+            <button class="btn btn-secondary mt-3 ms-2" type="button" @onclick="CancelEdit">Annuller</button>
+        }
     </EditForm>
 
     <hr/>
@@ -67,11 +83,33 @@ else
         {
             <tr>
                 <td>@item.Activity</td>
-                <td>@item.Voucher</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(item.Voucher))
+                    {
+                        var voucherUrl = FixVoucherUrl(item.Voucher);
+                        var isImage = IsImageUrl(voucherUrl);
+                        if (isImage)
+                        {
+                            <img src="@voucherUrl" alt="Bilag" class="voucher-thumbnail" @onclick="() => ShowVoucherModal(item.Voucher)" style="cursor: pointer;" title="Klik for at se større" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';" />
+                            <a href="@voucherUrl" target="_blank" class="btn btn-sm btn-link p-0" style="display: none;">Se bilag</a>
+                        }
+                        else
+                        {
+                            <a href="@voucherUrl" target="_blank" class="btn btn-sm btn-link p-0" title="Klik for at se bilag">
+                                📎 Se bilag
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
                 <td>@item.Date.ToShortDateString()</td>
-                <td class="text-end">@item.MoneyIn</td>
-                <td class="text-end">@item.MoneyOut</td>
-                <td class="text-end">@(item.MoneyIn - item.MoneyOut)</td>
+                <td class="text-end">@item.MoneyIn.ToString("N2")</td>
+                <td class="text-end">@item.MoneyOut.ToString("N2")</td>
+                <td class="text-end">@((item.MoneyIn - item.MoneyOut).ToString("N2"))</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-outline-secondary"
                             @onclick="() => EditBudget(item)">
@@ -92,10 +130,37 @@ else
     </p>
 }
 
+<!-- Modal for viewing voucher image -->
+@if (showVoucherModal && !string.IsNullOrEmpty(selectedVoucherUrl))
+{
+    <div class="modal-backdrop show" style="opacity: 0.5;"></div>
+    <div class="modal show d-block" tabindex="-1" role="dialog" style="z-index: 1050;">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bilag</h5>
+                    <button type="button" class="btn-close" aria-label="Luk" @onclick="CloseVoucherModal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="@FixVoucherUrl(selectedVoucherUrl)" alt="Bilag" class="img-fluid" style="max-height: 70vh;" />
+                </div>
+                <div class="modal-footer">
+                    <a href="@FixVoucherUrl(selectedVoucherUrl)" target="_blank" class="btn btn-primary">Åbn i ny fane</a>
+                    <button type="button" class="btn btn-secondary" @onclick="CloseVoucherModal">Luk</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<BudgetDto> budgets = new();
     private BudgetDto newBudget = new() { Date = DateTime.Today };
     private bool isLoading = true;
+    private bool isEditMode = false;
+    private Guid? editingId = null;
+    private bool showVoucherModal = false;
+    private string? selectedVoucherUrl = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -106,7 +171,15 @@ else
     {
         try
         {
-            budgets = await Http.GetFromJsonAsync<List<BudgetDto>>("api/budget");
+            budgets = await BudgetService.GetAllBudgetsAsync();
+            Console.WriteLine($"Loaded {budgets.Count} budget items");
+            foreach (var budget in budgets)
+            {
+                if (!string.IsNullOrWhiteSpace(budget.Voucher))
+                {
+                    Console.WriteLine($"Budget {budget.Id} has voucher: {budget.Voucher}");
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -122,39 +195,40 @@ else
     {
         try
         {
-            var user = AuthStateProvider.User?.Id;
-            if (user == null)
+            if (isEditMode && editingId.HasValue)
             {
-                Console.Error.WriteLine("Bruger-ID er null.");
-                return;
-            }
-
-            newBudget.Id = Guid.NewGuid();
-//newBudget.User = user.Value;
-
-            var response = await Http.PostAsJsonAsync("api/budget", newBudget);
-            if (response.IsSuccessStatusCode)
-            {
-                budgets.Add(new BudgetDto
+                // Update existing budget
+                var updatedBudget = await BudgetService.UpdateBudgetAsync(editingId.Value, newBudget);
+                if (updatedBudget != null)
                 {
-                    Id = newBudget.Id,
-                    User = newBudget.User,
-                    Activity = newBudget.Activity,
-                    Voucher = newBudget.Voucher,
-                    MoneyIn = newBudget.MoneyIn,
-                    MoneyOut = newBudget.MoneyOut,
-                    Date = newBudget.Date
-                });
-                newBudget = new BudgetDto { Date = DateTime.Today };
+                    await LoadBudgets();
+                    CancelEdit();
+                }
+                else
+                {
+                    Console.Error.WriteLine("Fejl ved opdatering af budgetpost.");
+                }
             }
             else
             {
-                Console.Error.WriteLine("Fejl ved oprettelse af budgetpost.");
+                // Create new budget
+                Console.WriteLine($"Creating budget with voucher: {newBudget.Voucher}");
+                var createdBudget = await BudgetService.CreateBudgetAsync(newBudget);
+                if (createdBudget != null)
+                {
+                    Console.WriteLine($"Budget created successfully. ID: {createdBudget.Id}, Voucher: {createdBudget.Voucher}");
+                    await LoadBudgets();
+                    newBudget = new BudgetDto { Date = DateTime.Today };
+                }
+                else
+                {
+                    Console.Error.WriteLine("Fejl ved oprettelse af budgetpost.");
+                }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fejl ved oprettelse af budgetpost: {ex.Message}");
+            Console.Error.WriteLine($"Fejl: {ex.Message}");
         }
     }
 
@@ -163,17 +237,25 @@ else
         var file = e.File;
         if (file != null)
         {
-            var content = new MultipartFormDataContent();
-            content.Add(new StreamContent(file.OpenReadStream()), "file", file.Name);
-
-            var response = await Http.PostAsync("api/budget/upload", content);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                newBudget.Voucher = await response.Content.ReadAsStringAsync();
+                using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB max
+                var fileUrl = await BudgetService.UploadVoucherAsync(stream, file.Name);
+                if (!string.IsNullOrWhiteSpace(fileUrl))
+                {
+                    newBudget.Voucher = fileUrl;
+                    Console.WriteLine($"Bilag uploaded: {fileUrl}");
+                    StateHasChanged(); // Force UI update to show upload confirmation
+                }
+                else
+                {
+                    Console.Error.WriteLine("Fejl ved upload af bilag - ingen URL returneret.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Console.Error.WriteLine("Fejl ved upload af bilag.");
+                Console.Error.WriteLine($"Fejl ved upload af bilag: {ex.Message}");
+                Console.Error.WriteLine($"Exception details: {ex}");
             }
         }
     }
@@ -183,17 +265,103 @@ else
 
     private void EditBudget(BudgetDto item)
     {
-        // Åbn en modal, sæt "isEditMode = true"
-        // Forfyld felter med item. Ligesom i dine andre moduler
-        // Lav en "UpdateBudget()" -> PUT api/budget + re-load
+        isEditMode = true;
+        editingId = item.Id;
+        newBudget = new BudgetDto
+        {
+            Id = item.Id,
+            UserId = item.UserId,
+            Activity = item.Activity,
+            Voucher = item.Voucher,
+            MoneyIn = item.MoneyIn,
+            MoneyOut = item.MoneyOut,
+            Date = item.Date,
+            Note = item.Note
+        };
+    }
+
+    private void CancelEdit()
+    {
+        isEditMode = false;
+        editingId = null;
+        newBudget = new BudgetDto { Date = DateTime.Today };
     }
 
     private async Task DeleteBudget(Guid id)
     {
-        var result = await Http.DeleteAsync($"api/budget/{id}");
-        if (result.IsSuccessStatusCode)
+        // Use JavaScript confirm in Blazor
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Er du sikker på, at du vil slette denne budgetpost?");
+        if (!confirmed)
         {
-            budgets.RemoveAll(x => x.Id == id);
+            return;
+        }
+
+        var success = await BudgetService.DeleteBudgetAsync(id);
+        if (success)
+        {
+            await LoadBudgets();
+        }
+        else
+        {
+            Console.Error.WriteLine("Fejl ved sletning af budgetpost.");
         }
     }
+
+    private string FixVoucherUrl(string voucherUrl)
+    {
+        if (string.IsNullOrEmpty(voucherUrl))
+            return "";
+
+        // Fix Azurite URLs if needed (similar to FixImageUrl in other components)
+        if (voucherUrl.Contains("azurite"))
+        {
+            return voucherUrl.Replace("http://azurite:10000", "http://localhost:10000");
+        }
+
+        return voucherUrl;
+    }
+
+    private bool IsImageUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return false;
+
+        var lowerUrl = url.ToLower();
+        return lowerUrl.EndsWith(".jpg") || 
+               lowerUrl.EndsWith(".jpeg") || 
+               lowerUrl.EndsWith(".png") || 
+               lowerUrl.EndsWith(".gif") || 
+               lowerUrl.EndsWith(".webp") ||
+               lowerUrl.EndsWith(".bmp") ||
+               lowerUrl.Contains("/api/Image/");
+    }
+
+    private void ShowVoucherModal(string voucherUrl)
+    {
+        selectedVoucherUrl = voucherUrl;
+        showVoucherModal = true;
+    }
+
+    private void CloseVoucherModal()
+    {
+        showVoucherModal = false;
+        selectedVoucherUrl = null;
+    }
 }
+
+<style>
+    .voucher-thumbnail {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .voucher-thumbnail:hover {
+        transform: scale(1.1);
+        border-color: #007bff;
+    }
+</style>

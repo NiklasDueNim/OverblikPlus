@@ -27,33 +27,56 @@ public class JwtAuthorizationMessageHandler : DelegatingHandler
         }
 
         var requestUri = request.RequestUri;
+        if (requestUri == null)
+        {
+            return await base.SendAsync(request, cancellationToken);
+        }
 
-        if (_authorizedUrls.Any(url => requestUri.ToString().StartsWith(url, StringComparison.OrdinalIgnoreCase)))
+        var fullUrl = requestUri.ToString();
+        Console.WriteLine($"[JwtAuthorizationMessageHandler] Processing request to: {fullUrl}");
+        Console.WriteLine($"[JwtAuthorizationMessageHandler] Authorized URLs: {string.Join(", ", _authorizedUrls)}");
+
+        // Check if the request URI matches any authorized URL
+        var isAuthorizedUrl = _authorizedUrls.Any(url => fullUrl.StartsWith(url, StringComparison.OrdinalIgnoreCase));
+        Console.WriteLine($"[JwtAuthorizationMessageHandler] Is authorized URL: {isAuthorizedUrl}");
+
+        if (isAuthorizedUrl)
         {
             var token = await _authStateProvider.GetTokenAsync();
-            Console.WriteLine("Calling URL: " + requestUri);
-            Console.WriteLine($"JWT token in handler: {token}");
+            Console.WriteLine($"[JwtAuthorizationMessageHandler] Token present: {!string.IsNullOrEmpty(token)}");
 
             if (!string.IsNullOrEmpty(token))
             {
-                Console.WriteLine($"Using JWT: {token}");
+                Console.WriteLine($"[JwtAuthorizationMessageHandler] Adding Authorization header");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
             else
             {
-                Console.WriteLine("No JWT available. Attempting to refresh token.");
+                Console.WriteLine("[JwtAuthorizationMessageHandler] No JWT available. Attempting to refresh token.");
 
                 var refreshed = await _authStateProvider.RefreshTokenAsync();
                 if (refreshed)
                 {
                     token = await _authStateProvider.GetTokenAsync();
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        Console.WriteLine("[JwtAuthorizationMessageHandler] Token refreshed, adding Authorization header");
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    }
+                    else
+                    {
+                        Console.WriteLine("[JwtAuthorizationMessageHandler] Token refresh failed - no token available.");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Token refresh failed. Proceeding without token.");
+                    Console.WriteLine("[JwtAuthorizationMessageHandler] Token refresh failed. Proceeding without token.");
                 }
             }
+        }
+        else
+        {
+            Console.WriteLine($"[JwtAuthorizationMessageHandler] URL not in authorized list, skipping JWT");
         }
 
         return await base.SendAsync(request, cancellationToken);

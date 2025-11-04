@@ -2,6 +2,7 @@ using AutoMapper;
 using TaskMicroService.dtos.Task;
 using TaskMicroService.dtos.TaskStep;
 using TaskMicroService.Dtos.Mood;
+using TaskMicroService.Dtos.Budget;
 using TaskMicroService.Entities;
 
 namespace TaskMicroService.Profiles
@@ -59,6 +60,16 @@ namespace TaskMicroService.Profiles
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
 
             CreateMap<MoodEntity, ReadMoodDto>();
+
+            // Budget mappings
+            CreateMap<CreateBudgetDto, BudgetEntity>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
+
+            CreateMap<BudgetEntity, ReadBudgetDto>();
+
+            CreateMap<UpdateBudgetDto, BudgetEntity>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore());
 
         }
     }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using Azure.Storage.Blobs;
 using FluentValidation;
@@ -105,7 +106,36 @@ public class Program
 
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? "")),
+                    
+                    // Map JWT 'sub' claim to NameIdentifier
+                    NameClaimType = ClaimTypes.NameIdentifier,
+                    RoleClaimType = ClaimTypes.Role
+                };
+                
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        logger.LogError($"[JWT] Authentication failed: {context.Exception.Message}", context.Exception);
+                        logger.LogError($"[JWT] Exception type: {context.Exception.GetType().Name}", context.Exception);
+                        if (context.Exception is SecurityTokenException stEx)
+                        {
+                            logger.LogError($"[JWT] SecurityTokenException details: {stEx.Message}", stEx);
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = context =>
+                    {
+                        logger.LogWarning($"[JWT] Challenge triggered. Error: {context.Error}, ErrorDescription: {context.ErrorDescription}");
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        var userId = context.Principal?.FindFirst("nameid")?.Value;
+                        logger.LogInfo($"[JWT] Token validated successfully for user: {userId}");
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
@@ -188,6 +218,7 @@ public class Program
         builder.Services.AddScoped<ITaskDbContext, TaskDbContext>();
         builder.Services.AddScoped<IImageService, ImageService>();
         builder.Services.AddScoped<IRelativeService, RelativeService>();
+        builder.Services.AddScoped<IBudgetService, BudgetService>();
         
         // Configure HttpClient for UserMicroService API
         var userApiBaseUrl = builder.Configuration["UserApiBaseUrl"] ?? "http://localhost:5004";

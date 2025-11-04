@@ -1,6 +1,6 @@
-namespace OverblikPlus.Models.Dtos.Budget;
+namespace TaskMicroService.Entities;
 
-public class BudgetDto
+public class BudgetEntity
 {
     public Guid Id { get; set; }
     public string UserId { get; set; }

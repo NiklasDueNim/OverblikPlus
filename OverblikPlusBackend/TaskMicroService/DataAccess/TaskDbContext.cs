@@ -15,6 +15,7 @@ namespace TaskMicroService.DataAccess
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
         public DbSet<ActivityEntity> Activities { get; set; }
         public DbSet<MoodEntity> Moods { get; set; }
+        public DbSet<BudgetEntity> Budgets { get; set; }
         public DatabaseFacade Database => base.Database;
 
         
@@ -62,6 +63,25 @@ namespace TaskMicroService.DataAccess
             modelBuilder.Entity<MoodEntity>()
                 .Property(m => m.Rating).IsRequired();
             // Note: Service layer handles preventing multiple moods per day by checking Date.Date
+            
+            // BudgetEntity configuration
+            modelBuilder.Entity<BudgetEntity>()
+                .HasKey(b => b.Id);
+            modelBuilder.Entity<BudgetEntity>()
+                .Property(b => b.UserId).IsRequired();
+            modelBuilder.Entity<BudgetEntity>()
+                .Property(b => b.Date).IsRequired();
+            modelBuilder.Entity<BudgetEntity>()
+                .Property(b => b.Activity).IsRequired().HasMaxLength(200);
+            modelBuilder.Entity<BudgetEntity>()
+                .Property(b => b.MoneyIn).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<BudgetEntity>()
+                .Property(b => b.MoneyOut).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<BudgetEntity>()
+                .Property(b => b.Voucher).HasMaxLength(500);
+            modelBuilder.Entity<BudgetEntity>()
+                .Property(b => b.Note).HasMaxLength(1000);
+            
             modelBuilder.Entity<ActivityEntity>()
                 .Property(a => a.Location).HasMaxLength(200);
             modelBuilder.Entity<ActivityEntity>()

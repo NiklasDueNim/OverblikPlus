@@ -14,6 +14,8 @@ public interface ITaskDbContext
     
     DbSet<MoodEntity> Moods { get; }
     
+    DbSet<BudgetEntity> Budgets { get; }
+    
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     
     DatabaseFacade Database { get; }

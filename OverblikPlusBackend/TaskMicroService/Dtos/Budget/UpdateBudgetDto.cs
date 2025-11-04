@@ -1,9 +1,7 @@
-namespace OverblikPlus.Models.Dtos.Budget;
+namespace TaskMicroService.Dtos.Budget;
 
-public class BudgetDto
+public class UpdateBudgetDto
 {
-    public Guid Id { get; set; }
-    public string UserId { get; set; }
     public DateTime Date { get; set; }
     public string Activity { get; set; }
     public string? Voucher { get; set; }

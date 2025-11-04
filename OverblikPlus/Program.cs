@@ -183,6 +183,7 @@ ConfigureHttpClient<IMoodService, MoodService>(builder.Services, taskApiBaseUrl)
 ConfigureHttpClient<IActivityService, ActivityService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<IShiftService, ShiftService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<INotificationService, NotificationService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<IBudgetService, BudgetService>(builder.Services, taskApiBaseUrl);
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddAuthorizationCore();
