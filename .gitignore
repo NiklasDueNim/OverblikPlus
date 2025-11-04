@@ -15,3 +15,7 @@ LogFiles/
 # Documentation files (temporary/notes)
 *.md
 !README.md
+
+# Build output
+out/
+**/out/
