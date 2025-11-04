@@ -17,7 +17,8 @@ public class ReadUserDtoValidator : AbstractValidator<ReadUserDto>
 
         RuleFor(x => x.Role)
             .NotEmpty().WithMessage("Role is required.")
-            .Must(role => role == "Admin" || role == "Staff" || role == "User")
+            .Must(role => role == "Admin" || role == "Staff" || role == "User" || role == "Relative" ||
+                         role == "Beboer" || role == "Medarbejder") // Accepter også danske navne for backward compatibility
             .WithMessage("Invalid role specified.");
     }
 }

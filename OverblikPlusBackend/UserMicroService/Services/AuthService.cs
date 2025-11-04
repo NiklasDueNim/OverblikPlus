@@ -54,11 +54,25 @@ namespace UserMicroService.Services
         {
             try
             {
-                var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
-                if (!result.Succeeded) return Result<LoginResponseDto>.ErrorResult("Invalid login attempt.");
-
+                _logger.LogInfo($"Login attempt for email: {loginDto.Email}");
+                
                 var user = await _userManager.FindByEmailAsync(loginDto.Email);
-                if (user == null) return Result<LoginResponseDto>.ErrorResult("User not found.");
+                if (user == null)
+                {
+                    _logger.LogWarning($"User not found for email: {loginDto.Email}");
+                    return Result<LoginResponseDto>.ErrorResult("Invalid login attempt.");
+                }
+                
+                _logger.LogInfo($"User found: {user.Email}, EmailConfirmed: {user.EmailConfirmed}");
+                
+                var result = await _signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, false, false);
+                if (!result.Succeeded)
+                {
+                    _logger.LogWarning($"PasswordSignInAsync failed for {loginDto.Email}. Succeeded: {result.Succeeded}, IsLockedOut: {result.IsLockedOut}, RequiresTwoFactor: {result.RequiresTwoFactor}, IsNotAllowed: {result.IsNotAllowed}");
+                    return Result<LoginResponseDto>.ErrorResult("Invalid login attempt.");
+                }
+
+                _logger.LogInfo($"PasswordSignInAsync succeeded for {loginDto.Email}");
             
                 var jwtToken = GenerateJwtToken(user);
                 var refreshToken = GenerateRefreshToken(user.Id);
