@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using OverblikPlus.Shared.Interfaces;
 using UserMicroService.dto;
@@ -9,6 +11,8 @@ namespace UserMicroService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableCors("AllowAll")]
+    [AllowAnonymous]  // Login og register skal være anonyme
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;

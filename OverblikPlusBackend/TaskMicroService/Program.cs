@@ -133,10 +133,10 @@ public class Program
                 policy =>
                 {
                     policy.WithOrigins(
-                            "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-                            "https://overblikplus.dk",
-                            "http://localhost:5226"
-                            
+                            "https://nice-wave-08dd97903.1.azurestaticapps.net",  // PROD Static Web App
+                            "https://overblikplus.dk",                              // PROD Custom Domain
+                            "https://witty-meadow-0c52c9003.2.azurestaticapps.net", // DEV Static Web App
+                            "http://localhost:5226"                                 // Local Development
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()

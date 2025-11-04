@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -161,7 +162,7 @@ public class Program
 
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? ""))
                 };
             });
         
@@ -182,15 +183,22 @@ public class Program
 
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll",
-                policy => policy.WithOrigins(
-                        "https://yellow-ocean-0f63e7903.4.azurestaticapps.net",
-                        "http://localhost:5226",
-                        "https://overblikplus.dk"
-                    )
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+            options.AddPolicy("AllowSpecificOrigins",
+                policy =>
+                {
+                    policy.WithOrigins(
+                            "https://nice-wave-08dd97903.1.azurestaticapps.net",  // PROD Static Web App
+                            "https://overblikplus.dk",                              // PROD Custom Domain
+                            "https://witty-meadow-0c52c9003.2.azurestaticapps.net", // DEV Static Web App
+                            "http://localhost:5226",                                 // Local Development (Rider Frontend)
+                            "http://localhost:5003",                                 // Docker Development (Docker Frontend)
+                            "http://localhost:5004"                                  // Rider UserService (for testing)
+                        )
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials()
+                        .WithExposedHeaders("Authorization");
+                });
         });
 
         builder.Services.AddEndpointsApiExplorer();
@@ -246,9 +254,53 @@ public class Program
 
         var app = builder.Build();
 
+        app.UseStatusCodePages(context =>
+        {
+            var response = context.HttpContext.Response;
+            if (response.StatusCode == 301 || response.StatusCode == 302)
+            {
+                response.StatusCode = 403;
+            }
+            return Task.CompletedTask;
+        });
+
+        // EKSAKT kopi fra TaskMicroService - OPTIONS handler FØRST
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Method == "OPTIONS")
+            {
+                context.Response.StatusCode = 200;
+                context.Response.Headers["Access-Control-Allow-Origin"] = context.Request.Headers["Origin"];
+                context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+                context.Response.Headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type";
+                context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+                await context.Response.CompleteAsync();
+                return;
+            }
+            await next();
+        });
+
+        app.UseForwardedHeaders(new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedProto
+        });
+
         if (app.Environment.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage(); 
+            app.UseDeveloperExceptionPage();
+            // Deaktiver HTTPS redirection i dev - den blokerer OPTIONS requests
+            // app.UseHttpsRedirection();
+        }
+        else
+        {
+            app.UseHttpsRedirection();
+        }
+        
+        app.UseRouting();
+        app.UseCors("AllowSpecificOrigins");
+
+        if (app.Environment.IsDevelopment())
+        {
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -266,24 +318,16 @@ public class Program
             });
         }
 
-        app.UseHttpsRedirection();
-
         app.UseSerilogRequestLogging();
-
-        app.UseRouting();
-        app.UseCors("AllowAll");
+        
         app.UseAuthentication();
         app.UseAuthorization();
+        
         app.MapHub <ChatHub> ("/chatHub");
 
         app.MapControllers();
 
-        // Auto-migrate database in Development and Production mode - TEMPORARILY DISABLED FOR DEBUGGING
-        logger.LogInfo("[UserMicroService] Database migrations temporarily disabled for debugging");
-        
-        // Seed admin user
-        await SeedAdminUser(app);
-        /*
+        // Auto-migrate database in Development and Production mode
         try
         {
             using (var scope = app.Services.CreateScope())
@@ -300,7 +344,9 @@ public class Program
             logger.LogError($"DB migration failed at startup - continuing without migration: {ex.Message}", ex);
             // Don't throw - let the app start so we can hit /health and see logs
         }
-        */
+        
+        // Seed admin user
+        await SeedAdminUser(app);
         
         logger.LogInfo($"[UserMicroService] About to start application in {app.Environment.EnvironmentName} mode.");
         
