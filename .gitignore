@@ -11,3 +11,7 @@ debug/
 *.txt
 LogFiles/
 *.zip
+
+# Documentation files (temporary/notes)
+*.md
+!README.md
