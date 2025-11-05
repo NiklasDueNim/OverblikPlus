@@ -304,7 +304,7 @@ public class Program
             app.Environment,
             async (serviceProvider, context) =>
             {
-                await SeedAdminUserAsync(serviceProvider, logger);
+                await Helpers.UserSeeder.SeedUsersAsync(serviceProvider, logger);
             });
         
         await seeder.SeedAsync(app.Services);
@@ -324,58 +324,4 @@ public class Program
         }
     }
 
-    private static async Task SeedAdminUserAsync(IServiceProvider serviceProvider, ILoggerService logger)
-    {
-        try
-        {
-            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var log = serviceProvider.GetRequiredService<ILogger<Program>>();
-
-            // Check if admin user already exists
-            var adminUser = await userManager.FindByEmailAsync("admin@overblikplus.dk");
-            if (adminUser != null)
-            {
-                log.LogInformation("Admin user already exists.");
-                return;
-            }
-
-            // Create admin role if it doesn't exist
-            if (!await roleManager.RoleExistsAsync("Admin"))
-            {
-                await roleManager.CreateAsync(new IdentityRole("Admin"));
-                log.LogInformation("Admin role created.");
-            }
-
-            // Create admin user
-            var admin = new ApplicationUser
-            {
-                FirstName = "Admin",
-                LastName = "User",
-                Email = "admin@overblikplus.dk",
-                UserName = "admin@overblikplus.dk",
-                Role = "Admin",
-                BostedId = 1,
-                EmailConfirmed = true
-            };
-
-            var result = await userManager.CreateAsync(admin, "Admin123!");
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(admin, "Admin");
-                log.LogInformation("Admin user created successfully with email: admin@overblikplus.dk and password: Admin123!");
-                logger.LogInfo("Admin user created successfully.");
-            }
-            else
-            {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                log.LogError("Failed to create admin user: {Errors}", errors);
-                logger.LogError($"Failed to create admin user: {errors}", new Exception(errors));
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError($"Error seeding admin user: {ex.Message}", ex);
-        }
-    }
 }
