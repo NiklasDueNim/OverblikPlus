@@ -12,7 +12,7 @@ namespace UserMicroService.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [EnableCors("AllowAll")]
-    [AllowAnonymous]  // Login og register skal være anonyme
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;

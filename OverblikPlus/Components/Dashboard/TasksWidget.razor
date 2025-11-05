@@ -121,21 +121,16 @@
                 if (result.Success)
                 {
                     var allTasks = result.Data ?? new List<ReadTaskDto>();
-                    Console.WriteLine($"✅ Successfully loaded {allTasks.Count} tasks for user {userId}");
+                    Console.WriteLine($"Successfully loaded {allTasks.Count} tasks for user {userId}");
                     
-                    // Debug: Log alle opgaver
                     foreach (var task in allTasks)
                     {
                         Console.WriteLine($"  Task: {task.Name}, NextOccurrence: {task.NextOccurrence?.ToString("yyyy-MM-dd") ?? "null"}, Completed: {task.IsCompleted}, RecurrenceType: {task.RecurrenceType}");
                     }
-                    
-                    // Filtrer opgaver: Vis opgaver med NextOccurrence i dag eller fremtiden (eller null)
-                    // For gentagende opgaver med samme navn og samme NextOccurrence dato: Vis kun én
                     var today = DateTime.Today;
                     var filteredTasks = allTasks
                         .Where(t => 
                         {
-                            // Hvis NextOccurrence er null, vis den alligevel (kan være en engangsopgave)
                             if (!t.NextOccurrence.HasValue)
                             {
                                 Console.WriteLine($"  Including task '{t.Name}' (NextOccurrence: null)");
@@ -143,28 +138,21 @@
                             }
                             
                             var nextOccurrenceDate = t.NextOccurrence.Value.Date;
-                            
-                            // Filtrer væk alle opgaver fra fortiden (uanset om de er færdige eller ej)
                             if (nextOccurrenceDate < today)
                             {
                                 Console.WriteLine($"  Filtering out task '{t.Name}' (NextOccurrence: {nextOccurrenceDate:yyyy-MM-dd} is in the past, Completed: {t.IsCompleted})");
                                 return false;
                             }
                             
-                            // Vis alle opgaver i dag eller fremtiden
                             Console.WriteLine($"  Including task '{t.Name}' (NextOccurrence: {nextOccurrenceDate:yyyy-MM-dd}, Completed: {t.IsCompleted})");
                             return true;
                         })
                         .GroupBy(t => 
                         {
-                            // Grupper på SeriesId hvis det findes, ellers brug Id som fallback (for bagudkompatibilitet)
-                            // Dette sikrer at hver opgave har et unikt key, selv hvis SeriesId mangler
                             return t.SeriesId.HasValue && t.SeriesId.Value > 0 ? $"S:{t.SeriesId}" : $"N:{t.Name}_{t.Id}";
                         })
                         .Select(group => 
                         {
-                            // For hver gruppe (samme serie eller navn), vælg den bedste opgave:
-                            // Først: dedup indenfor gruppen - vælg én pr. dato (keep lowest Id)
                             var tasks = group
                                 .GroupBy(t => t.NextOccurrence?.Date ?? DateTime.MaxValue.Date)
                                 .Select(g => g.OrderBy(x => x.Id).First())
@@ -172,7 +160,6 @@
                             
                             Console.WriteLine($"  Group '{group.Key}': {tasks.Count} tasks");
                             
-                            // 1. Først: Ikke færdig med NextOccurrence i dag
                             var activeToday = tasks.FirstOrDefault(t => !t.IsCompleted && 
                                 t.NextOccurrence.HasValue && 
                                 t.NextOccurrence.Value.Date == today);
@@ -182,7 +169,6 @@
                                 return activeToday;
                             }
                             
-                            // 2. Eller: Ikke færdig med NextOccurrence i fremtiden (nærmeste)
                             var activeFuture = tasks
                                 .Where(t => !t.IsCompleted && 
                                     t.NextOccurrence.HasValue && 
@@ -195,7 +181,6 @@
                                 return activeFuture;
                             }
                             
-                            // 3. Eller: Færdig med NextOccurrence i dag
                             var completedToday = tasks.FirstOrDefault(t => t.IsCompleted && 
                                 t.NextOccurrence.HasValue && 
                                 t.NextOccurrence.Value.Date == today);
@@ -205,7 +190,6 @@
                                 return completedToday;
                             }
                             
-                            // 4. Eller: Den nærmeste fremtidige (selvom færdig) - men kun hvis der ikke er nogen ikke-færdige
                             var nearestFuture = tasks
                                 .Where(t => t.NextOccurrence.HasValue && 
                                     t.NextOccurrence.Value.Date >= today)
@@ -217,7 +201,6 @@
                                 return nearestFuture;
                             }
                             
-                            // 5. Eller: Den første (hvis ingen matcher)
                             var first = tasks.First();
                             Console.WriteLine($"    Selected: First task (ID: {first.Id})");
                             return first;
@@ -226,7 +209,6 @@
                     
                     todaysTasks = filteredTasks;
                     
-                    // Sort by NextOccurrence (earliest first), null values last
                     todaysTasks = todaysTasks.OrderBy(t => t.NextOccurrence ?? DateTime.MaxValue).ToList();
                     
                     Console.WriteLine($"📋 Filtered tasks: {todaysTasks.Count} (from {allTasks.Count} total)");
@@ -239,7 +221,7 @@
                 }
                 else
                 {
-                    Console.WriteLine($"❌ Error loading tasks: {result.Error}");
+                    Console.WriteLine($"Error loading tasks: {result.Error}");
                     todaysTasks = new List<ReadTaskDto>();
                 }
             }
@@ -258,14 +240,13 @@
     
     public async Task RefreshTasks()
     {
-        Console.WriteLine("🔄 Refreshing tasks widget...");
+        Console.WriteLine("Refreshing tasks widget...");
         await LoadTasks();
-        Console.WriteLine($"✅ Tasks widget refreshed. Showing {todaysTasks.Count} tasks");
+        Console.WriteLine($"Tasks widget refreshed. Showing {todaysTasks.Count} tasks");
     }
 
     private async Task HandleCheckboxChange(ChangeEventArgs e, ReadTaskDto task)
     {
-        // Kald ToggleTask direkte
         await ToggleTask(task);
     }
 
@@ -273,16 +254,15 @@
     {
         try
         {
-            // Opdater lokalt først for at give øjeblikkelig feedback
             var wasCompleted = task.IsCompleted;
             var taskId = task.Id;
             var taskName = task.Name;
             var nextOccurrence = task.NextOccurrence?.ToString("yyyy-MM-dd") ?? "null";
             
-            Console.WriteLine($"🔄 Toggling task {taskId} ({taskName}, NextOccurrence: {nextOccurrence}) from {(wasCompleted ? "completed" : "uncompleted")} to {(wasCompleted ? "uncompleted" : "completed")}");
+            Console.WriteLine($"Toggling task {taskId} ({taskName}, NextOccurrence: {nextOccurrence}) from {(wasCompleted ? "completed" : "uncompleted")} to {(wasCompleted ? "uncompleted" : "completed")}");
             
             task.IsCompleted = !wasCompleted;
-            StateHasChanged(); // Opdater UI med det samme
+            StateHasChanged();
             
             Result result;
             if (wasCompleted)
@@ -300,23 +280,20 @@
             
                 if (result.Success)
                 {
-                Console.WriteLine($"✅ Task {taskId} ({taskName}) marked as {(wasCompleted ? "uncompleted" : "completed")}");
-                // Refresh tasks to get updated list (inkl. eventuelle nye opgaver)
+                Console.WriteLine($"Task {taskId} ({taskName}) marked as {(wasCompleted ? "uncompleted" : "completed")}");
                 await LoadTasks();
             }
             else
             {
-                // Revert hvis det fejler
                 task.IsCompleted = wasCompleted;
-                Console.WriteLine($"❌ Failed to {(wasCompleted ? "uncomplete" : "complete")} task: {result.Error}");
+                Console.WriteLine($"Failed to {(wasCompleted ? "uncomplete" : "complete")} task: {result.Error}");
                    StateHasChanged();
             }
     }
     catch (Exception ex)
         {
-            Console.WriteLine($"❌ Exception toggling task: {ex.Message}");
+            Console.WriteLine($"Exception toggling task: {ex.Message}");
             Console.WriteLine($"   Stack trace: {ex.StackTrace}");
-            // Revert hvis der er en exception
             task.IsCompleted = !task.IsCompleted;
             StateHasChanged();
         }

@@ -1,23 +1,14 @@
-using System;
-using System.Collections.Generic;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using UserMicroService.DataAccess;
 using UserMicroService.dto;
 using UserMicroService.Entities;
 using UserMicroService.Services.Interfaces;
 using OverblikPlus.Shared.Interfaces;
 using OverblikPlus.Shared.Common;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace UserMicroService.Services
 {
@@ -145,7 +136,6 @@ namespace UserMicroService.Services
 
                 _logger.LogInfo($"User created successfully for: {registerDto.Email}");
 
-                // Create role if it doesn't exist
                 _logger.LogInfo($"Checking if role exists: {registerDto.Role}");
                 if (!await _roleManager.RoleExistsAsync(registerDto.Role))
                 {
