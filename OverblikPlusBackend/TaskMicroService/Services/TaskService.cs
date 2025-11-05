@@ -137,14 +137,16 @@ namespace TaskMicroService.Services
             if (task == null)
                 return Result.ErrorResult($"Task with ID {id} not found.");
 
-            // Hvis det er en gentagende opgave, slet hele serien
-            if (!string.IsNullOrEmpty(task.RecurrenceType) && task.RecurrenceType != "None")
+            // Hvis det er en gentagende opgave OG har en SeriesId, slet hele serien
+            if (!string.IsNullOrEmpty(task.RecurrenceType) && 
+                task.RecurrenceType != "None" && 
+                task.SeriesId.HasValue)
             {
-                var seriesId = task.SeriesId ?? task.Id;
+                var seriesId = task.SeriesId.Value;
                 
-                // Find alle opgaver i samme serie
+                // Find alle opgaver i samme serie - kun dem med eksakt samme SeriesId
                 var tasksInSeries = await _dbContext.Tasks
-                    .Where(t => (t.SeriesId ?? t.Id) == seriesId)
+                    .Where(t => t.SeriesId.HasValue && t.SeriesId.Value == seriesId)
                     .ToListAsync();
 
                 _logger.LogInfo($"Deleting {tasksInSeries.Count} tasks in series {seriesId}");
@@ -161,7 +163,8 @@ namespace TaskMicroService.Services
             }
             else
             {
-                // Slet kun denne ene opgave
+                // Slet kun denne ene opgave (enten ikke-gentagende, eller gentagende uden SeriesId)
+                _logger.LogInfo($"Deleting single task {id} (RecurrenceType: {task.RecurrenceType}, SeriesId: {task.SeriesId})");
                 if (!string.IsNullOrEmpty(task.ImageUrl))
                 {
                     await _imageService.DeleteImageAsync(task.ImageUrl);

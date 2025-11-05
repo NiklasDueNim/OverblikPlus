@@ -156,6 +156,20 @@ public class Program
 
         builder.Services.AddCors(options =>
         {
+            // Development CORS policy (less restrictive)
+            options.AddPolicy("AllowLocalDev",
+                policy =>
+                {
+                    policy.WithOrigins(
+                            "http://localhost:5226",  // Rider Frontend
+                            "http://localhost:5003"   // Docker Frontend
+                        )
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .SetPreflightMaxAge(TimeSpan.FromHours(1));
+                });
+
+            // Production CORS policy (more restrictive)
             options.AddPolicy("AllowSpecificOrigins",
                 policy =>
                 {
@@ -275,7 +289,16 @@ public class Program
         }
         
         app.UseRouting();
-        app.UseCors("AllowSpecificOrigins");
+        
+        // CORS skal være mellem UseRouting og UseAuthentication/UseAuthorization
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseCors("AllowLocalDev");
+        }
+        else
+        {
+            app.UseCors("AllowSpecificOrigins");
+        }
 
         app.UseSwagger();
         app.UseSwaggerUI(c =>
@@ -290,7 +313,7 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers()
-            .RequireCors("AllowSpecificOrigins");
+            .RequireCors(app.Environment.IsDevelopment() ? "AllowLocalDev" : "AllowSpecificOrigins");
         
         var seeder = new DatabaseSeeder<TaskDbContext>(logger, builder.Environment);
         await seeder.SeedAsync(app.Services);
