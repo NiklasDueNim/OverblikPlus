@@ -1,23 +1,22 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using OverblikPlus.Shared.Interfaces;
 using TaskMicroService.Common;
-using TaskMicroService.DataAccess;
 using TaskMicroService.Dtos.Shift;
 using TaskMicroService.Entities;
+using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services;
 
 public class ShiftService : IShiftService
 {
-    private readonly TaskDbContext _dbContext;
+    private readonly IShiftRepository _shiftRepository;
     private readonly IMapper _mapper;
     private readonly ILoggerService _logger;
 
-    public ShiftService(TaskDbContext dbContext, IMapper mapper, ILoggerService logger)
+    public ShiftService(IShiftRepository shiftRepository, IMapper mapper, ILoggerService logger)
     {
-        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _shiftRepository = shiftRepository ?? throw new ArgumentNullException(nameof(shiftRepository));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -28,11 +27,7 @@ public class ShiftService : IShiftService
 
         try
         {
-            var shifts = await _dbContext.Shifts
-                .Where(s => s.StartTime.Date >= fromDate.Date && s.StartTime.Date <= toDate.Date)
-                .OrderBy(s => s.StartTime)
-                .ToListAsync();
-
+            var shifts = await _shiftRepository.GetShiftsForDateRangeAsync(fromDate, toDate);
             var shiftDtos = _mapper.Map<List<ReadShiftDto>>(shifts);
             return Result<List<ReadShiftDto>>.SuccessResult(shiftDtos);
         }
@@ -49,11 +44,7 @@ public class ShiftService : IShiftService
 
         try
         {
-            var shifts = await _dbContext.Shifts
-                .Where(s => s.UserId == userId && s.StartTime.Date >= fromDate.Date && s.StartTime.Date <= toDate.Date)
-                .OrderBy(s => s.StartTime)
-                .ToListAsync();
-
+            var shifts = await _shiftRepository.GetShiftsForUserAsync(userId, fromDate, toDate);
             var shiftDtos = _mapper.Map<List<ReadShiftDto>>(shifts);
             return Result<List<ReadShiftDto>>.SuccessResult(shiftDtos);
         }
@@ -78,8 +69,8 @@ public class ShiftService : IShiftService
             var shiftEntity = _mapper.Map<ShiftEntity>(createShiftDto);
             shiftEntity.Id = Guid.NewGuid();
 
-            _dbContext.Shifts.Add(shiftEntity);
-            await _dbContext.SaveChangesAsync();
+            await _shiftRepository.AddAsync(shiftEntity);
+            await _shiftRepository.SaveChangesAsync();
 
             _logger.LogInfo($"Shift created successfully with ID {shiftEntity.Id}");
             var shiftDto = _mapper.Map<ReadShiftDto>(shiftEntity);
@@ -98,15 +89,15 @@ public class ShiftService : IShiftService
 
         try
         {
-            var shift = await _dbContext.Shifts.FindAsync(shiftId);
+            var shift = await _shiftRepository.GetByIdAsync(shiftId);
             if (shift == null)
             {
                 _logger.LogWarning($"Shift with id {shiftId} not found");
                 return Result.ErrorResult("Shift not found");
             }
 
-            _dbContext.Shifts.Remove(shift);
-            await _dbContext.SaveChangesAsync();
+            await _shiftRepository.DeleteAsync(shift);
+            await _shiftRepository.SaveChangesAsync();
 
             _logger.LogInfo($"Shift deleted successfully with ID {shiftId}");
             return Result.SuccessResult();

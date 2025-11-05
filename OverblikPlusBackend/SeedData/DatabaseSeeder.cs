@@ -41,7 +41,6 @@ public class DatabaseSeeder<TContext> where TContext : DbContext
         catch (Exception ex)
         {
             _logger.LogError($"Database seeding failed: {ex.Message}", ex);
-            // Don't throw - let the app start so we can hit /health and see logs
         }
     }
 

@@ -1,25 +1,24 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using OverblikPlus.Shared.Interfaces;
 using TaskMicroService.Common;
-using TaskMicroService.DataAccess;
 using TaskMicroService.Dtos.Mood;
 using TaskMicroService.Entities;
+using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services;
 
 public class MoodService : IMoodService
 {
-    private readonly TaskDbContext _dbContext;
+    private readonly IMoodRepository _moodRepository;
     private readonly IMapper _mapper;
     private readonly ILoggerService _logger;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public MoodService(TaskDbContext dbContext, IMapper mapper, ILoggerService logger, IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+    public MoodService(IMoodRepository moodRepository, IMapper mapper, ILoggerService logger, IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
     {
-        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _moodRepository = moodRepository ?? throw new ArgumentNullException(nameof(moodRepository));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
@@ -31,15 +30,15 @@ public class MoodService : IMoodService
         _logger.LogInfo($"Creating mood for user {createMoodDto.UserId}");
 
         var today = createMoodDto.Date.Date;
-        var existingMood = await _dbContext.Moods
-            .FirstOrDefaultAsync(m => m.UserId == createMoodDto.UserId && m.Date.Date == today);
+        var existingMood = await _moodRepository.GetMoodByUserIdAndDateAsync(createMoodDto.UserId, today);
 
         if (existingMood != null)
         {
             _logger.LogInfo($"Updating existing mood for user {createMoodDto.UserId} on {today}");
             existingMood.Rating = createMoodDto.Rating;
             existingMood.Note = createMoodDto.Note;
-            await _dbContext.SaveChangesAsync();
+            await _moodRepository.UpdateAsync(existingMood);
+            await _moodRepository.SaveChangesAsync();
 
             var updatedMoodDto = _mapper.Map<ReadMoodDto>(existingMood);
             return Result<ReadMoodDto>.SuccessResult(updatedMoodDto);
@@ -48,8 +47,8 @@ public class MoodService : IMoodService
         var moodEntity = _mapper.Map<MoodEntity>(createMoodDto);
         moodEntity.Id = Guid.NewGuid();
 
-        _dbContext.Moods.Add(moodEntity);
-        await _dbContext.SaveChangesAsync();
+        await _moodRepository.AddAsync(moodEntity);
+        await _moodRepository.SaveChangesAsync();
 
         _logger.LogInfo($"Mood created successfully with ID {moodEntity.Id}");
         var moodDto = _mapper.Map<ReadMoodDto>(moodEntity);
@@ -60,11 +59,7 @@ public class MoodService : IMoodService
     {
         _logger.LogInfo($"Getting moods for user {userId} from {fromDate.Date} to {toDate.Date}");
 
-        var moods = await _dbContext.Moods
-            .Where(m => m.UserId == userId && m.Date.Date >= fromDate.Date && m.Date.Date <= toDate.Date)
-            .OrderByDescending(m => m.Date)
-            .ToListAsync();
-
+        var moods = await _moodRepository.GetMoodsForUserAsync(userId, fromDate, toDate);
         var moodDtos = _mapper.Map<List<ReadMoodDto>>(moods);
         return Result<List<ReadMoodDto>>.SuccessResult(moodDtos);
     }
@@ -105,10 +100,7 @@ public class MoodService : IMoodService
 
             var userIds = usersResult.Data.Select(u => u.Id).ToList();
 
-            var moods = await _dbContext.Moods
-                .Where(m => userIds.Contains(m.UserId) && m.Date.Date >= fromDate.Date && m.Date.Date <= toDate.Date)
-                .OrderByDescending(m => m.Date)
-                .ToListAsync();
+            var moods = await _moodRepository.GetMoodsForUsersAsync(userIds, fromDate, toDate);
 
             // Create a dictionary for quick user lookup
             var userDict = usersResult.Data.ToDictionary(u => u.Id);

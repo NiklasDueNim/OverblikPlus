@@ -80,11 +80,18 @@ namespace TaskMicroService.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
+            if (createTaskDto == null)
+            {
+                _logger.LogWarning("CreateTask called with null DTO");
+                return BadRequest(Result<object>.ErrorResult("Task data is required"));
+            }
+
             var validationResult = await _createTaskValidator.ValidateAsync(createTaskDto);
             if (!validationResult.IsValid)
             {
-                _logger.LogWarning("Validation failed for creating task.");
-                return BadRequest(Result<object>.ErrorResult("Validation failed"));
+                var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+                _logger.LogWarning($"Validation failed for creating task: {errors}");
+                return BadRequest(Result<object>.ErrorResult($"Validation failed: {errors}"));
             }
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -93,14 +100,15 @@ namespace TaskMicroService.Controllers
             if (currentUserRole == "User")
                 createTaskDto.UserId = currentUserId;
 
-            _logger.LogInfo("Creating a new task.");
+            _logger.LogInfo($"Creating a new task: Name={createTaskDto.Name}, UserId={createTaskDto.UserId}, RecurrenceType={createTaskDto.RecurrenceType}");
             var result = await _taskService.CreateTask(createTaskDto);
             if (!result.Success)
             {
-                _logger.LogError("Failed to create task.", new Exception(result.Error));
+                _logger.LogError($"Failed to create task: {result.Error}", new Exception(result.Error));
                 return BadRequest(result);
             }
 
+            _logger.LogInfo($"Task created successfully with ID: {result.Data}");
             return CreatedAtAction(nameof(GetTaskById), new { id = result.Data }, result);
         }
 

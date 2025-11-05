@@ -16,6 +16,7 @@ namespace TaskMicroService.Profiles
             CreateMap<TaskEntity, ReadTaskDto>()
                 .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.ImageUrl))
                 .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.Steps))
+                .ForMember(dest => dest.SeriesId, opt => opt.MapFrom(src => src.SeriesId))
                 .ForMember(dest => dest.SelectedWeekDays, opt => opt.MapFrom(src => 
                     string.IsNullOrEmpty(src.SelectedWeekDays) ? new Dictionary<string, bool>() : 
                     System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(src.SelectedWeekDays, (System.Text.Json.JsonSerializerOptions)null) ?? new Dictionary<string, bool>()));

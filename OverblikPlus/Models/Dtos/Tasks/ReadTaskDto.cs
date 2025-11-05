@@ -32,6 +32,7 @@ public class ReadTaskDto
     public string EndType { get; set; } = "Never";
     public int EndAfterCount { get; set; } = 1;
     public DateTime? EndDate { get; set; }
+    public int? SeriesId { get; set; }
 
     public DateTime StartTime { get; set; }
 

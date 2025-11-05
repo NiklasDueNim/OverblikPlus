@@ -36,7 +36,7 @@ public class ShiftService : IShiftService
     {
         try
         {
-            var createShiftDto = new
+            var createShiftDto = new CreateShiftDto
             {
                 UserId = shift.UserId,
                 StartTime = shift.StartTime,

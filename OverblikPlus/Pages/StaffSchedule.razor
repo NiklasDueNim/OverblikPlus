@@ -40,7 +40,7 @@
                             <label for="selectedStaff" class="form-label">Personale:</label>
                             <select id="selectedStaff" class="form-select" @bind="selectedStaffId">
                                 <option value="">Vælg personale</option>
-                                @foreach (var staff in staffMembers.OrderBy(s => s.FirstName).ThenBy(s => s.LastName))
+                                @foreach (var staff in staffMembers)
                                 {
                                     <option value="@staff.Id">@staff.FirstName @staff.LastName (@staff.Role)</option>
                                 }
@@ -88,10 +88,10 @@
             </tr>
             </thead>
             <tbody>
-            @foreach (var staff in staffMembers.OrderBy(s => s.FirstName).ThenBy(s => s.LastName))
+            @foreach (var staff in staffMembers)
             {
-                var staffShifts = shifts?.Where(s => s.UserId == staff.Id && s.StartTime.Date == today.Date).OrderBy(s => s.StartTime).ToList();
-                @if (staffShifts != null && staffShifts.Any())
+                var staffShifts = shiftsByStaffId.GetValueOrDefault(staff.Id) ?? new List<ShiftDto>();
+                @if (staffShifts.Any())
                 {
                     @foreach (var shift in staffShifts)
                     {
@@ -127,6 +127,7 @@
     private DateTime today = DateTime.Today;
     private List<ShiftDto> shifts = new();
     private List<ReadUserDto> staffMembers = new();
+    private Dictionary<string, List<ShiftDto>> shiftsByStaffId = new();
     private bool isLoading = true;
     private bool showCreateForm = false;
     private bool isSaving = false;
@@ -141,14 +142,23 @@
     {
         await LoadStaffMembers();
         await LoadShifts();
+        await IsAdminAsync(); // Cache admin status
         isLoading = false;
     }
 
-    private bool IsAdmin()
+    private bool? _isAdmin;
+    
+    private async Task<bool> IsAdminAsync()
     {
-        var role = AuthStateProvider.GetRoleAsync().Result;
-        return role == "Admin";
+        if (!_isAdmin.HasValue)
+        {
+            var role = await AuthStateProvider.GetRoleAsync();
+            _isAdmin = role == "Admin";
+        }
+        return _isAdmin.Value;
     }
+    
+    private bool IsAdmin() => _isAdmin ?? false;
 
     private async Task LoadStaffMembers()
     {
@@ -162,9 +172,12 @@
             }
 
             var allUsers = await UserService.GetUsersByBostedId(bostedId.Value);
-            // Filtrer til kun Staff og Admin
+            // Filtrer til kun Staff og Admin og sorter én gang
+            var staffRoles = new[] { "Staff", "Admin", "Medarbejder" };
             staffMembers = allUsers
-                .Where(u => u.Role == "Staff" || u.Role == "Admin" || u.Role == "Medarbejder")
+                .Where(u => staffRoles.Contains(u.Role))
+                .OrderBy(s => s.FirstName)
+                .ThenBy(s => s.LastName)
                 .ToList();
             
             Console.WriteLine($"Hentet {staffMembers.Count} personale medlemmer");
@@ -183,18 +196,23 @@
             if (result.Success && result.Data != null)
             {
                 shifts = result.Data;
-                Console.WriteLine($"Hentet {shifts.Count} vagter");
+                // Cache shifts by staff ID for faster lookup
+                shiftsByStaffId = shifts
+                    .Where(s => s.StartTime.Date == today.Date)
+                    .GroupBy(s => s.UserId)
+                    .ToDictionary(g => g.Key, g => g.OrderBy(s => s.StartTime).ToList());
             }
             else
             {
-                Console.WriteLine($"Fejl ved hentning af vagter: {result.Error}");
                 shifts = new List<ShiftDto>();
+                shiftsByStaffId.Clear();
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Fejl ved hentning af vagter: {ex.Message}");
             shifts = new List<ShiftDto>();
+            shiftsByStaffId.Clear();
         }
     }
 

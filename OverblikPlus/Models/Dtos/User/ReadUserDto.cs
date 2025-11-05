@@ -7,6 +7,7 @@ public class ReadUserDto
     public string LastName { get; set; }
     public string Username { get; set; }
     public string Role { get; set; }
+    public int? BostedId { get; set; }
 
     public string CPRNumber { get; set; }
 

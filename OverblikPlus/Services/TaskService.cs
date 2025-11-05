@@ -115,16 +115,22 @@ public class TaskService : ITaskService
 
     public async Task<Result> MarkTaskAsCompleted(int taskId)
     {
-        return await ExecuteNonQueryRequest(
-            () => _httpClient.PutAsync($"/api/task/{taskId}/complete", null),
+        Console.WriteLine($"📤 Calling MarkTaskAsCompleted API for task {taskId}");
+        var result = await ExecuteNonQueryRequest(
+            () => _httpClient.PutAsync($"/api/Task/{taskId}/complete", null),
             "Mark task as completed");
+        Console.WriteLine($"📥 MarkTaskAsCompleted API result: Success={result.Success}, Error={result.Error}");
+        return result;
     }
     
     public async Task<Result> MarkTaskAsUnCompleted(int taskId)
     {
-        return await ExecuteNonQueryRequest(
-            () => _httpClient.PutAsync($"/api/task/{taskId}/notComplete", null),
+        Console.WriteLine($"📤 Calling MarkTaskAsUnCompleted API for task {taskId}");
+        var result = await ExecuteNonQueryRequest(
+            () => _httpClient.PutAsync($"/api/Task/{taskId}/notComplete", null),
             "Mark task as uncompleted");
+        Console.WriteLine($"📥 MarkTaskAsUnCompleted API result: Success={result.Success}, Error={result.Error}");
+        return result;
     }
 
 

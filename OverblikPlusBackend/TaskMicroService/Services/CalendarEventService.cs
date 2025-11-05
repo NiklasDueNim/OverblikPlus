@@ -1,23 +1,22 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using OverblikPlus.Shared.Interfaces;
 using TaskMicroService.Common;
-using TaskMicroService.DataAccess;
 using TaskMicroService.Dtos.Calendar;
 using TaskMicroService.Entities;
+using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services;
 
 public class CalendarEventService : ICalendarEventService
 {
-    private readonly TaskDbContext _dbContext;
+    private readonly ICalendarEventRepository _calendarEventRepository;
     private readonly IMapper _mapper;
     private readonly ILoggerService _logger;
 
-    public CalendarEventService(TaskDbContext dbContext, IMapper mapper, ILoggerService logger)
+    public CalendarEventService(ICalendarEventRepository calendarEventRepository, IMapper mapper, ILoggerService logger)
     {
-        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _calendarEventRepository = calendarEventRepository ?? throw new ArgumentNullException(nameof(calendarEventRepository));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -29,10 +28,7 @@ public class CalendarEventService : ICalendarEventService
             if (string.IsNullOrWhiteSpace(userId))
                 return Result<IEnumerable<ReadCalendarEventDto>>.ErrorResult("UserId cannot be empty.");
 
-            var events = await _dbContext.CalendarEvents
-                .Where(e => e.UserId == userId)
-                .ToListAsync();
-
+            var events = await _calendarEventRepository.GetEventsByUserIdAsync(userId);
             var eventDtos = _mapper.Map<IEnumerable<ReadCalendarEventDto>>(events);
             return Result<IEnumerable<ReadCalendarEventDto>>.SuccessResult(eventDtos);
         }
@@ -47,7 +43,7 @@ public class CalendarEventService : ICalendarEventService
     {
         try
         {
-            var calendarEvent = await _dbContext.CalendarEvents.FindAsync(id);
+            var calendarEvent = await _calendarEventRepository.GetByIdAsync(id);
             if (calendarEvent == null)
                 return Result<ReadCalendarEventDto?>.ErrorResult("Event not found.");
 
@@ -66,8 +62,8 @@ public class CalendarEventService : ICalendarEventService
         try
         {
             var calendarEvent = _mapper.Map<CalendarEvent>(dto);
-            await _dbContext.CalendarEvents.AddAsync(calendarEvent);
-            await _dbContext.SaveChangesAsync();
+            await _calendarEventRepository.AddAsync(calendarEvent);
+            await _calendarEventRepository.SaveChangesAsync();
 
             var resultDto = _mapper.Map<ReadCalendarEventDto>(calendarEvent);
             return Result<ReadCalendarEventDto>.SuccessResult(resultDto);
@@ -83,13 +79,13 @@ public class CalendarEventService : ICalendarEventService
     {
         try
         {
-            var existingEvent = await _dbContext.CalendarEvents.FindAsync(id);
+            var existingEvent = await _calendarEventRepository.GetByIdAsync(id);
             if (existingEvent == null)
                 return Result<bool>.ErrorResult("Event not found.");
 
             _mapper.Map(dto, existingEvent);
-            _dbContext.CalendarEvents.Update(existingEvent);
-            await _dbContext.SaveChangesAsync();
+            await _calendarEventRepository.UpdateAsync(existingEvent);
+            await _calendarEventRepository.SaveChangesAsync();
 
             return Result<bool>.SuccessResult(true);
         }
@@ -104,7 +100,7 @@ public class CalendarEventService : ICalendarEventService
     {
         try
         {
-            var eventToDelete = await _dbContext.Set<CalendarEvent>().FindAsync(id);
+            var eventToDelete = await _calendarEventRepository.GetByIdAsync(id);
             
             if (eventToDelete == null)
             {
@@ -112,22 +108,15 @@ public class CalendarEventService : ICalendarEventService
                 return Result<bool>.ErrorResult("Event not found.");
             }
 
-            _dbContext.CalendarEvents.Remove(eventToDelete);
-            var changes = await _dbContext.SaveChangesAsync();
+            await _calendarEventRepository.DeleteAsync(eventToDelete);
+            await _calendarEventRepository.SaveChangesAsync();
 
-            if (changes > 0)
-            {
-                return Result<bool>.SuccessResult(true);
-            }
-            else
-            {
-                return Result<bool>.ErrorResult("Failed to delete the event.");
-            }
+            return Result<bool>.SuccessResult(true);
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error deleting event with ID {id}.", ex);
-            return Result<bool>.ErrorResult("Event not found.");
+            return Result<bool>.ErrorResult("Error deleting event.");
         }
     }
 }

@@ -1,23 +1,22 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using OverblikPlus.Shared.Interfaces;
 using TaskMicroService.Common;
-using TaskMicroService.DataAccess;
 using TaskMicroService.Dtos.Budget;
 using TaskMicroService.Entities;
+using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services;
 
 public class BudgetService : IBudgetService
 {
-    private readonly TaskDbContext _dbContext;
+    private readonly IBudgetRepository _budgetRepository;
     private readonly IMapper _mapper;
     private readonly ILoggerService _logger;
 
-    public BudgetService(TaskDbContext dbContext, IMapper mapper, ILoggerService logger)
+    public BudgetService(IBudgetRepository budgetRepository, IMapper mapper, ILoggerService logger)
     {
-        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _budgetRepository = budgetRepository ?? throw new ArgumentNullException(nameof(budgetRepository));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -28,11 +27,7 @@ public class BudgetService : IBudgetService
         
         try
         {
-            var budgets = await _dbContext.Budgets
-                .Where(b => b.UserId == userId)
-                .OrderByDescending(b => b.Date)
-                .ToListAsync();
-
+            var budgets = await _budgetRepository.GetBudgetsByUserIdAsync(userId);
             var budgetDtos = _mapper.Map<List<ReadBudgetDto>>(budgets);
             return Result<List<ReadBudgetDto>>.SuccessResult(budgetDtos);
         }
@@ -49,7 +44,7 @@ public class BudgetService : IBudgetService
         
         try
         {
-            var budget = await _dbContext.Budgets.FindAsync(id);
+            var budget = await _budgetRepository.GetByIdAsync(id);
             if (budget == null)
             {
                 _logger.LogWarning($"Budget with id {id} not found");
@@ -75,8 +70,8 @@ public class BudgetService : IBudgetService
             var budgetEntity = _mapper.Map<BudgetEntity>(createBudgetDto);
             budgetEntity.Id = Guid.NewGuid();
 
-            _dbContext.Budgets.Add(budgetEntity);
-            await _dbContext.SaveChangesAsync();
+            await _budgetRepository.AddAsync(budgetEntity);
+            await _budgetRepository.SaveChangesAsync();
 
             _logger.LogInfo($"Budget created successfully with ID {budgetEntity.Id}");
             var budgetDto = _mapper.Map<ReadBudgetDto>(budgetEntity);
@@ -95,7 +90,7 @@ public class BudgetService : IBudgetService
         
         try
         {
-            var budget = await _dbContext.Budgets.FindAsync(id);
+            var budget = await _budgetRepository.GetByIdAsync(id);
             if (budget == null)
             {
                 _logger.LogWarning($"Budget with id {id} not found");
@@ -103,7 +98,8 @@ public class BudgetService : IBudgetService
             }
 
             _mapper.Map(updateBudgetDto, budget);
-            await _dbContext.SaveChangesAsync();
+            await _budgetRepository.UpdateAsync(budget);
+            await _budgetRepository.SaveChangesAsync();
 
             _logger.LogInfo($"Budget updated successfully with ID {id}");
             var budgetDto = _mapper.Map<ReadBudgetDto>(budget);
@@ -122,15 +118,15 @@ public class BudgetService : IBudgetService
         
         try
         {
-            var budget = await _dbContext.Budgets.FindAsync(id);
+            var budget = await _budgetRepository.GetByIdAsync(id);
             if (budget == null)
             {
                 _logger.LogWarning($"Budget with id {id} not found");
                 return Result.ErrorResult("Budget not found");
             }
 
-            _dbContext.Budgets.Remove(budget);
-            await _dbContext.SaveChangesAsync();
+            await _budgetRepository.DeleteAsync(budget);
+            await _budgetRepository.SaveChangesAsync();
 
             _logger.LogInfo($"Budget deleted successfully with ID {id}");
             return Result.SuccessResult();

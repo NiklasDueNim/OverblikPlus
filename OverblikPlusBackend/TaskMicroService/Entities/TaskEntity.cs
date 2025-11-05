@@ -14,9 +14,13 @@ public class TaskEntity
     public int RecurrenceInterval { get; set; }
     
     public DateTime StartDate { get; set; }
-    public DateTime NextOccurrence { get; set; } 
+    public DateTime? NextOccurrence { get; set; } 
     public string? UserId { get; set; }
     public bool RequiresQrCodeScan { get; set; }
+    
+    // SeriesId: Alle occurrences af samme gentagende opgave deler samme SeriesId
+    // For den første opgave i serien, er SeriesId = Id (eller null hvis ikke sat endnu)
+    public int? SeriesId { get; set; }
     
     // Nye properties for forbedret gentagelse
     public string MonthlyType { get; set; } = "SameDay";

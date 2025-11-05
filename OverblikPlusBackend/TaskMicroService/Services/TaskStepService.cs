@@ -1,26 +1,25 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using TaskMicroService.DataAccess;
 using TaskMicroService.dtos.TaskStep;
 using TaskMicroService.Entities;
+using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services
 {
     public class TaskStepService : ITaskStepService
     {
-        private readonly TaskDbContext _dbContext;
+        private readonly ITaskStepRepository _taskStepRepository;
         private readonly IMapper _mapper;
         private readonly IBlobStorageService _blobStorageService;
         private readonly ILogger<TaskStepService> _logger;
 
         public TaskStepService(
-            TaskDbContext dbContext, 
+            ITaskStepRepository taskStepRepository, 
             IMapper mapper, 
             IBlobStorageService blobStorageService,
             ILogger<TaskStepService> logger)
         {
-            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _taskStepRepository = taskStepRepository ?? throw new ArgumentNullException(nameof(taskStepRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _blobStorageService = blobStorageService ?? throw new ArgumentNullException(nameof(blobStorageService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger)); 
@@ -30,10 +29,7 @@ namespace TaskMicroService.Services
         {
             _logger.LogInformation($"Fetching steps for task ID {taskId}");
 
-            var steps = await _dbContext.TaskSteps
-                .Where(s => s.TaskId == taskId)
-                .OrderBy(s => s.StepNumber)
-                .ToListAsync();
+            var steps = await _taskStepRepository.GetStepsForTaskAsync(taskId);
             
             if (!steps.Any())
             {
@@ -58,8 +54,7 @@ namespace TaskMicroService.Services
         {
             _logger.LogInformation($"Fetching step ID {stepId} for task ID {taskId}");
 
-            var taskStep = await _dbContext.TaskSteps
-                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.Id == stepId);
+            var taskStep = await _taskStepRepository.GetTaskStepAsync(taskId, stepId);
 
             if (taskStep == null)
             {
@@ -88,8 +83,8 @@ namespace TaskMicroService.Services
                 _logger.LogInformation($"Uploaded image for step ID {taskStep.Id}");
             }
             
-            _dbContext.TaskSteps.Add(taskStep);
-            await _dbContext.SaveChangesAsync();
+            await _taskStepRepository.AddAsync(taskStep);
+            await _taskStepRepository.SaveChangesAsync();
 
             return taskStep.Id;
         }
@@ -99,8 +94,7 @@ namespace TaskMicroService.Services
         {
             _logger.LogInformation($"Updating step ID {stepId} for task ID {taskId}");
 
-            var taskStep = await _dbContext.TaskSteps
-                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.Id == stepId);
+            var taskStep = await _taskStepRepository.GetTaskStepAsync(taskId, stepId);
 
             if (taskStep == null)
             {
@@ -126,7 +120,8 @@ namespace TaskMicroService.Services
                 _logger.LogInformation($"Uploaded new image for step ID {stepId}");
             }
 
-            await _dbContext.SaveChangesAsync();
+            await _taskStepRepository.UpdateAsync(taskStep);
+            await _taskStepRepository.SaveChangesAsync();
         }
 
    
@@ -134,8 +129,7 @@ namespace TaskMicroService.Services
         {
             _logger.LogInformation($"Deleting step ID {stepId} for task ID {taskId}");
 
-            var taskStep = await _dbContext.TaskSteps
-                .FirstOrDefaultAsync(s => s.TaskId == taskId && s.Id == stepId);
+            var taskStep = await _taskStepRepository.GetTaskStepAsync(taskId, stepId);
 
             if (taskStep == null)
             {
@@ -150,8 +144,8 @@ namespace TaskMicroService.Services
                 _logger.LogInformation($"Deleted image for step ID {stepId}");
             }
 
-            _dbContext.TaskSteps.Remove(taskStep);
-            await _dbContext.SaveChangesAsync();
+            await _taskStepRepository.DeleteAsync(taskStep);
+            await _taskStepRepository.SaveChangesAsync();
         }
     }
 }

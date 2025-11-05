@@ -20,6 +20,7 @@ using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
 using TaskMicroService.Validators.Calendar;
 using TaskMicroService.Validators.Tasks;
+using TaskMicroService.Repositories.Interfaces;
 using SeedData;
 
 namespace TaskMicroService;
@@ -210,6 +211,15 @@ public class Program
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         builder.Services.AddHttpContextAccessor();
+        // Repositories
+        builder.Services.AddScoped<IShiftRepository, Repositories.ShiftRepository>();
+        builder.Services.AddScoped<Repositories.Interfaces.ICalendarEventRepository, Repositories.CalendarEventRepository>();
+        builder.Services.AddScoped<Repositories.Interfaces.IBudgetRepository, Repositories.BudgetRepository>();
+        builder.Services.AddScoped<Repositories.Interfaces.IMoodRepository, Repositories.MoodRepository>();
+        builder.Services.AddScoped<Repositories.Interfaces.ITaskStepRepository, Repositories.TaskStepRepository>();
+        builder.Services.AddScoped<Repositories.Interfaces.IActivityRepository, Repositories.ActivityRepository>();
+        
+        // Services
         builder.Services.AddScoped<ITaskService, TaskService>();
         builder.Services.AddScoped<ITaskStepService, TaskStepService>();
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();

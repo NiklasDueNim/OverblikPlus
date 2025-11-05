@@ -1,20 +1,19 @@
-using Microsoft.EntityFrameworkCore;
 using TaskMicroService.Common;
-using TaskMicroService.DataAccess;
 using TaskMicroService.dtos.Activity;
 using TaskMicroService.Entities;
+using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services;
 
 public class ActivityService : IActivityService
 {
-    private readonly TaskDbContext _dbContext;
+    private readonly IActivityRepository _activityRepository;
     private readonly ILogger<ActivityService> _logger;
 
-    public ActivityService(TaskDbContext dbContext, ILogger<ActivityService> logger)
+    public ActivityService(IActivityRepository activityRepository, ILogger<ActivityService> logger)
     {
-        _dbContext = dbContext;
+        _activityRepository = activityRepository ?? throw new ArgumentNullException(nameof(activityRepository));
         _logger = logger;
     }
 
@@ -22,9 +21,7 @@ public class ActivityService : IActivityService
     {
         try
         {
-            var activities = await _dbContext.Activities
-                .OrderBy(a => a.StartDateTime)
-                .ToListAsync();
+            var activities = await _activityRepository.GetAllActivitiesAsync();
 
             var activityDtos = activities.Select(MapToReadDto).ToList();
             return Result<IEnumerable<ReadActivityDto>>.SuccessResult(activityDtos);
@@ -40,10 +37,7 @@ public class ActivityService : IActivityService
     {
         try
         {
-            var activities = await _dbContext.Activities
-                .Where(a => a.StartDateTime.Date == date.Date)
-                .OrderBy(a => a.StartDateTime)
-                .ToListAsync();
+            var activities = await _activityRepository.GetActivitiesForDateAsync(date);
 
             var activityDtos = activities.Select(MapToReadDto).ToList();
             return Result<IEnumerable<ReadActivityDto>>.SuccessResult(activityDtos);
@@ -59,10 +53,7 @@ public class ActivityService : IActivityService
     {
         try
         {
-            var activities = await _dbContext.Activities
-                .Where(a => a.StartDateTime.Date >= startDate.Date && a.StartDateTime.Date <= endDate.Date)
-                .OrderBy(a => a.StartDateTime)
-                .ToListAsync();
+            var activities = await _activityRepository.GetActivitiesForDateRangeAsync(startDate, endDate);
 
             var activityDtos = activities.Select(MapToReadDto).ToList();
             return Result<IEnumerable<ReadActivityDto>>.SuccessResult(activityDtos);
@@ -78,7 +69,7 @@ public class ActivityService : IActivityService
     {
         try
         {
-            var activity = await _dbContext.Activities.FirstOrDefaultAsync(a => a.Id == id);
+            var activity = await _activityRepository.GetByIdAsync(id);
             if (activity == null)
             {
                 return Result<ReadActivityDto>.ErrorResult($"Activity with ID {id} not found.");
@@ -117,8 +108,8 @@ public class ActivityService : IActivityService
                 Participants = "[]" // Empty JSON array
             };
 
-            _dbContext.Activities.Add(activityEntity);
-            await _dbContext.SaveChangesAsync();
+            await _activityRepository.AddAsync(activityEntity);
+            await _activityRepository.SaveChangesAsync();
 
             _logger.LogInformation("Activity created successfully with ID {Id}", activityEntity.Id);
             return Result<Guid>.SuccessResult(activityEntity.Id);
@@ -134,7 +125,7 @@ public class ActivityService : IActivityService
     {
         try
         {
-            var activity = await _dbContext.Activities.FirstOrDefaultAsync(a => a.Id == id);
+            var activity = await _activityRepository.GetByIdAsync(id);
             if (activity == null)
             {
                 return Result.ErrorResult($"Activity with ID {id} not found.");
@@ -152,7 +143,8 @@ public class ActivityService : IActivityService
             activity.IsWheelchairAccessible = updateActivityDto.IsWheelchairAccessible;
             activity.SpecialRequirements = updateActivityDto.SpecialRequirements;
 
-            await _dbContext.SaveChangesAsync();
+            await _activityRepository.UpdateAsync(activity);
+            await _activityRepository.SaveChangesAsync();
 
             _logger.LogInformation("Activity updated successfully with ID {Id}", id);
             return Result.SuccessResult();
@@ -168,14 +160,14 @@ public class ActivityService : IActivityService
     {
         try
         {
-            var activity = await _dbContext.Activities.FirstOrDefaultAsync(a => a.Id == id);
+            var activity = await _activityRepository.GetByIdAsync(id);
             if (activity == null)
             {
                 return Result.ErrorResult($"Activity with ID {id} not found.");
             }
 
-            _dbContext.Activities.Remove(activity);
-            await _dbContext.SaveChangesAsync();
+            await _activityRepository.DeleteAsync(activity);
+            await _activityRepository.SaveChangesAsync();
 
             _logger.LogInformation("Activity deleted successfully with ID {Id}", id);
             return Result.SuccessResult();
@@ -191,7 +183,7 @@ public class ActivityService : IActivityService
     {
         try
         {
-            var activity = await _dbContext.Activities.FirstOrDefaultAsync(a => a.Id == activityId);
+            var activity = await _activityRepository.GetByIdAsync(activityId);
             if (activity == null)
             {
                 return Result.ErrorResult($"Activity with ID {activityId} not found.");
@@ -212,7 +204,8 @@ public class ActivityService : IActivityService
             participants.Add(userId);
             activity.Participants = System.Text.Json.JsonSerializer.Serialize(participants);
             
-            await _dbContext.SaveChangesAsync();
+            await _activityRepository.UpdateAsync(activity);
+            await _activityRepository.SaveChangesAsync();
 
             _logger.LogInformation("User {UserId} joined activity {ActivityId}", userId, activityId);
             return Result.SuccessResult();
@@ -228,7 +221,7 @@ public class ActivityService : IActivityService
     {
         try
         {
-            var activity = await _dbContext.Activities.FirstOrDefaultAsync(a => a.Id == activityId);
+            var activity = await _activityRepository.GetByIdAsync(activityId);
             if (activity == null)
             {
                 return Result.ErrorResult($"Activity with ID {activityId} not found.");
@@ -244,7 +237,8 @@ public class ActivityService : IActivityService
             participants.Remove(userId);
             activity.Participants = System.Text.Json.JsonSerializer.Serialize(participants);
             
-            await _dbContext.SaveChangesAsync();
+            await _activityRepository.UpdateAsync(activity);
+            await _activityRepository.SaveChangesAsync();
 
             _logger.LogInformation("User {UserId} left activity {ActivityId}", userId, activityId);
             return Result.SuccessResult();
@@ -260,7 +254,7 @@ public class ActivityService : IActivityService
     {
         try
         {
-            var activity = await _dbContext.Activities.FirstOrDefaultAsync(a => a.Id == activityId);
+            var activity = await _activityRepository.GetByIdAsync(activityId);
             if (activity == null)
             {
                 return Result<bool>.ErrorResult($"Activity with ID {activityId} not found.");
