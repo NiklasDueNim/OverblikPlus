@@ -2,31 +2,121 @@
 @using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models
 @using OverblikPlus.Models.Dtos.Shift
+@using OverblikPlus.Models.Dtos.User
 @using OverblikPlus.Services.Interfaces
 @inject CustomAuthStateProvider AuthStateProvider
+@inject IUserService UserService
+@inject IShiftService ShiftService
+@inject IJSRuntime JSRuntime
+@using Microsoft.JSInterop
 
 <div>
-    <h3>Vagtplan i dag (@today.ToShortDateString())</h3>
+    <h3>Vagtplan (@today.ToShortDateString())</h3>
 
-    @if (shifts == null)
+    @if (isLoading)
     {
         <p>Henter vagtplan...</p>
     }
+    else if (staffMembers == null || !staffMembers.Any())
+    {
+        <p>Ingen personale fundet.</p>
+    }
     else
     {
-        <!-- Simpel tabel-liste -->
+        @if (IsAdmin())
+        {
+            <div class="mb-3">
+                <button class="btn btn-primary" @onclick="ShowCreateForm">Opret vagt</button>
+            </div>
+
+            @if (showCreateForm)
+            {
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Opret ny vagt</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="selectedStaff" class="form-label">Personale:</label>
+                            <select id="selectedStaff" class="form-select" @bind="selectedStaffId">
+                                <option value="">Vælg personale</option>
+                                @foreach (var staff in staffMembers.OrderBy(s => s.FirstName).ThenBy(s => s.LastName))
+                                {
+                                    <option value="@staff.Id">@staff.FirstName @staff.LastName (@staff.Role)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="shiftDate" class="form-label">Dato:</label>
+                            <input id="shiftDate" type="date" class="form-control" @bind="newShiftDate" />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="startTime" class="form-label">Starttid:</label>
+                                <input id="startTime" type="time" class="form-control" @bind="newStartTime" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="endTime" class="form-label">Sluttid:</label>
+                                <input id="endTime" type="time" class="form-control" @bind="newEndTime" />
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(message))
+                        {
+                            <div class="alert @alertClass mt-2">@message</div>
+                        }
+                        <div class="mt-3">
+                            <button class="btn btn-success" @onclick="CreateShift" disabled="@isSaving">Gem vagt</button>
+                            <button class="btn btn-secondary ms-2" @onclick="CancelCreateForm">Annuller</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        <!-- Tabel med alle personale -->
         <table class="table">
             <thead>
-            <tr><th>Navn</th><th>Fra</th><th>Til</th></tr>
+            <tr>
+                <th>Navn</th>
+                <th>Rolle</th>
+                <th>Fra</th>
+                <th>Til</th>
+                @if (IsAdmin())
+                {
+                    <th>Handlinger</th>
+                }
+            </tr>
             </thead>
             <tbody>
-            @foreach (var s in shifts.OrderBy(s => s.StartTime))
+            @foreach (var staff in staffMembers.OrderBy(s => s.FirstName).ThenBy(s => s.LastName))
             {
-                <tr>
-                    <td>@(AuthStateProvider.User.Id)</td>
-                    <td>@s.StartTime.ToShortTimeString()</td>
-                    <td>@s.EndTime.ToShortTimeString()</td>
-                </tr>
+                var staffShifts = shifts?.Where(s => s.UserId == staff.Id && s.StartTime.Date == today.Date).OrderBy(s => s.StartTime).ToList();
+                @if (staffShifts != null && staffShifts.Any())
+                {
+                    @foreach (var shift in staffShifts)
+                    {
+                        <tr>
+                            <td>@staff.FirstName @staff.LastName</td>
+                            <td>@staff.Role</td>
+                            <td>@shift.StartTime.ToShortTimeString()</td>
+                            <td>@shift.EndTime.ToShortTimeString()</td>
+                            @if (IsAdmin())
+                            {
+                                <td>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteShift(shift.Id)">Slet</button>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td>@staff.FirstName @staff.LastName</td>
+                        <td>@staff.Role</td>
+                        <td colspan="@(IsAdmin() ? "3" : "2")" class="text-muted">Ingen vagt</td>
+                    </tr>
+                }
             }
             </tbody>
         </table>
@@ -35,26 +125,189 @@
 
 @code {
     private DateTime today = DateTime.Today;
-    private List<ShiftDto> shifts;
+    private List<ShiftDto> shifts = new();
+    private List<ReadUserDto> staffMembers = new();
+    private bool isLoading = true;
+    private bool showCreateForm = false;
+    private bool isSaving = false;
+    private string message = string.Empty;
+    private string alertClass = "alert-success";
+    private string selectedStaffId = string.Empty;
+    private DateTime newShiftDate = DateTime.Today;
+    private TimeOnly? newStartTime = new TimeOnly(8, 0);
+    private TimeOnly? newEndTime = new TimeOnly(16, 0);
 
     protected override async Task OnInitializedAsync()
     {
-        shifts = new List<ShiftDto>
+        await LoadStaffMembers();
+        await LoadShifts();
+        isLoading = false;
+    }
+
+    private bool IsAdmin()
+    {
+        var role = AuthStateProvider.GetRoleAsync().Result;
+        return role == "Admin";
+    }
+
+    private async Task LoadStaffMembers()
+    {
+        try
         {
-            new ShiftDto
+            var bostedId = AuthStateProvider.GetBostedIdAsync();
+            if (!bostedId.HasValue)
             {
-                Id = Guid.NewGuid(),
-                UserId = AuthStateProvider.User.Id,
-                StartTime = new DateTime(today.Year, today.Month, today.Day, 8, 0, 0),
-                EndTime = new DateTime(today.Year, today.Month, today.Day, 16, 0, 0)
-            },
-            new ShiftDto
-            {
-                Id = Guid.NewGuid(),
-                UserId = AuthStateProvider.User.Id,
-                StartTime = new DateTime(today.Year, today.Month, today.Day, 16, 0, 0),
-                EndTime = new DateTime(today.Year, today.Month, today.Day, 23, 59, 59)
+                Console.WriteLine("Kunne ikke hente bostedId");
+                return;
             }
-        };
+
+            var allUsers = await UserService.GetUsersByBostedId(bostedId.Value);
+            // Filtrer til kun Staff og Admin
+            staffMembers = allUsers
+                .Where(u => u.Role == "Staff" || u.Role == "Admin" || u.Role == "Medarbejder")
+                .ToList();
+            
+            Console.WriteLine($"Hentet {staffMembers.Count} personale medlemmer");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl ved hentning af personale: {ex.Message}");
+        }
+    }
+
+    private async Task LoadShifts()
+    {
+        try
+        {
+            var result = await ShiftService.GetShifts(today, today);
+            if (result.Success && result.Data != null)
+            {
+                shifts = result.Data;
+                Console.WriteLine($"Hentet {shifts.Count} vagter");
+            }
+            else
+            {
+                Console.WriteLine($"Fejl ved hentning af vagter: {result.Error}");
+                shifts = new List<ShiftDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl ved hentning af vagter: {ex.Message}");
+            shifts = new List<ShiftDto>();
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        showCreateForm = true;
+        message = string.Empty;
+        selectedStaffId = string.Empty;
+        newShiftDate = today;
+        newStartTime = new TimeOnly(8, 0);
+        newEndTime = new TimeOnly(16, 0);
+    }
+
+    private void CancelCreateForm()
+    {
+        showCreateForm = false;
+        message = string.Empty;
+    }
+
+    private async Task CreateShift()
+    {
+        if (string.IsNullOrEmpty(selectedStaffId))
+        {
+            message = "Vælg venligst personale";
+            alertClass = "alert-danger";
+            return;
+        }
+
+        isSaving = true;
+        message = string.Empty;
+
+        try
+        {
+            if (!newStartTime.HasValue || !newEndTime.HasValue)
+            {
+                message = "Vælg venligst både starttid og sluttid";
+                alertClass = "alert-danger";
+                isSaving = false;
+                return;
+            }
+
+            var startDateTime = newShiftDate.Date.Add(newStartTime.Value.ToTimeSpan());
+            var endDateTime = newShiftDate.Date.Add(newEndTime.Value.ToTimeSpan());
+
+            if (endDateTime <= startDateTime)
+            {
+                message = "Sluttid skal være efter starttid";
+                alertClass = "alert-danger";
+                isSaving = false;
+                return;
+            }
+
+            var newShift = new ShiftDto
+            {
+                Id = Guid.NewGuid(),
+                UserId = selectedStaffId,
+                StartTime = startDateTime,
+                EndTime = endDateTime
+            };
+
+            var result = await ShiftService.CreateShiftAsync(newShift);
+
+            if (result.Success)
+            {
+                message = "Vagt oprettet succesfuldt";
+                alertClass = "alert-success";
+                await LoadShifts();
+                CancelCreateForm();
+            }
+            else
+            {
+                message = $"Fejl ved oprettelse af vagt: {result.Error}";
+                alertClass = "alert-danger";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Fejl: {ex.Message}";
+            alertClass = "alert-danger";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task DeleteShift(Guid shiftId)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Er du sikker på, at du vil slette denne vagt?");
+        if (!confirmed)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await ShiftService.DeleteShiftAsync(shiftId);
+            if (result.Success)
+            {
+                await LoadShifts();
+                message = "Vagt slettet succesfuldt";
+                alertClass = "alert-success";
+            }
+            else
+            {
+                message = $"Fejl ved sletning af vagt: {result.Error}";
+                alertClass = "alert-danger";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Fejl: {ex.Message}";
+            alertClass = "alert-danger";
+        }
     }
 }

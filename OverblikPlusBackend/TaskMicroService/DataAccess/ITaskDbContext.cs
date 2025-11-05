@@ -16,6 +16,8 @@ public interface ITaskDbContext
     
     DbSet<BudgetEntity> Budgets { get; }
     
+    DbSet<ShiftEntity> Shifts { get; }
+    
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     
     DatabaseFacade Database { get; }

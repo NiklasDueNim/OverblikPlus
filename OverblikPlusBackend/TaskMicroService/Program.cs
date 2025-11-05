@@ -215,6 +215,7 @@ public class Program
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
         builder.Services.AddScoped<IActivityService, ActivityService>();
+        builder.Services.AddScoped<IShiftService, ShiftService>();
         builder.Services.AddScoped<ITaskDbContext, TaskDbContext>();
         builder.Services.AddScoped<IImageService, ImageService>();
         builder.Services.AddScoped<IRelativeService, RelativeService>();

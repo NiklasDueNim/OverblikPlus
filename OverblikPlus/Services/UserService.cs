@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Linq;
 using OverblikPlus.Common;
 using OverblikPlus.Models.Dtos.User;
 using OverblikPlus.Services.Interfaces;
@@ -47,6 +48,32 @@ public class UserService : IUserService
         {
             Console.WriteLine($"Error retrieving user with ID {id}: {ex.Message}");
             return null;
+        }
+    }
+
+    public async Task<IEnumerable<ReadUserDto>> GetUsersByBostedId(int bostedId)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<Result<List<ApplicationUserDto>>>($"api/User/bosted/{bostedId}");
+            if (response != null && response.Success && response.Data != null)
+            {
+                // Map ApplicationUserDto to ReadUserDto
+                return response.Data.Select(u => new ReadUserDto
+                {
+                    Id = u.Id,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Username = u.UserName ?? u.Email,
+                    Role = u.Role
+                });
+            }
+            return new List<ReadUserDto>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving users for bosted {bostedId}: {ex.Message}");
+            return new List<ReadUserDto>();
         }
     }
 

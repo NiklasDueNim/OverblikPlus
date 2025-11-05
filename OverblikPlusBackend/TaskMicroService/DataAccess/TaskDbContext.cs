@@ -16,6 +16,7 @@ namespace TaskMicroService.DataAccess
         public DbSet<ActivityEntity> Activities { get; set; }
         public DbSet<MoodEntity> Moods { get; set; }
         public DbSet<BudgetEntity> Budgets { get; set; }
+        public DbSet<ShiftEntity> Shifts { get; set; }
         public DatabaseFacade Database => base.Database;
 
         
@@ -81,6 +82,16 @@ namespace TaskMicroService.DataAccess
                 .Property(b => b.Voucher).HasMaxLength(500);
             modelBuilder.Entity<BudgetEntity>()
                 .Property(b => b.Note).HasMaxLength(1000);
+            
+            // ShiftEntity configuration
+            modelBuilder.Entity<ShiftEntity>()
+                .HasKey(s => s.Id);
+            modelBuilder.Entity<ShiftEntity>()
+                .Property(s => s.UserId).IsRequired();
+            modelBuilder.Entity<ShiftEntity>()
+                .Property(s => s.StartTime).IsRequired();
+            modelBuilder.Entity<ShiftEntity>()
+                .Property(s => s.EndTime).IsRequired();
             
             modelBuilder.Entity<ActivityEntity>()
                 .Property(a => a.Location).HasMaxLength(200);

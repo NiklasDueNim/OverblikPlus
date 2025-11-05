@@ -3,6 +3,7 @@ using TaskMicroService.dtos.Task;
 using TaskMicroService.dtos.TaskStep;
 using TaskMicroService.Dtos.Mood;
 using TaskMicroService.Dtos.Budget;
+using TaskMicroService.Dtos.Shift;
 using TaskMicroService.Entities;
 
 namespace TaskMicroService.Profiles
@@ -70,6 +71,12 @@ namespace TaskMicroService.Profiles
             CreateMap<UpdateBudgetDto, BudgetEntity>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore());
+
+            // Shift mappings
+            CreateMap<CreateShiftDto, ShiftEntity>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
+
+            CreateMap<ShiftEntity, ReadShiftDto>();
 
         }
     }
