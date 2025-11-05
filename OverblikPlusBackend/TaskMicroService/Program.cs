@@ -15,13 +15,13 @@ using Serilog;
 using TaskMicroService.DataAccess;
 using TaskMicroService.Dtos.Calendar;
 using TaskMicroService.dtos.Task;
-using TaskMicroService.Middlewares;
 using TaskMicroService.Services;
 using TaskMicroService.Services.Interfaces;
 using TaskMicroService.Validators.Calendar;
 using TaskMicroService.Validators.Tasks;
 using TaskMicroService.Repositories.Interfaces;
 using SeedData;
+using TaskMicroService.Middlewares;
 
 namespace TaskMicroService;
 
@@ -108,8 +108,7 @@ public class Program
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey ?? "")),
-                    
-                    // Map JWT 'sub' claim to NameIdentifier
+
                     NameClaimType = ClaimTypes.NameIdentifier,
                     RoleClaimType = ClaimTypes.Role
                 };
@@ -169,7 +168,7 @@ public class Program
                         .SetPreflightMaxAge(TimeSpan.FromHours(1));
                 });
 
-            // Production CORS policy (more restrictive)
+            // Production CORS policy
             options.AddPolicy("AllowSpecificOrigins",
                 policy =>
                 {
@@ -232,8 +231,10 @@ public class Program
         builder.Services.AddScoped<Repositories.Interfaces.IMoodRepository, Repositories.MoodRepository>();
         builder.Services.AddScoped<Repositories.Interfaces.ITaskStepRepository, Repositories.TaskStepRepository>();
         builder.Services.AddScoped<Repositories.Interfaces.IActivityRepository, Repositories.ActivityRepository>();
+        builder.Services.AddScoped<Repositories.Interfaces.ITaskRepository, Repositories.TaskRepository>();
         
         // Services
+        builder.Services.AddScoped<Services.Recurrence.IRecurrenceCalculator, Services.Recurrence.RecurrenceCalculator>();
         builder.Services.AddScoped<ITaskService, TaskService>();
         builder.Services.AddScoped<ITaskStepService, TaskStepService>();
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
@@ -290,7 +291,6 @@ public class Program
         
         app.UseRouting();
         
-        // CORS skal være mellem UseRouting og UseAuthentication/UseAuthorization
         if (app.Environment.IsDevelopment())
         {
             app.UseCors("AllowLocalDev");
@@ -307,10 +307,10 @@ public class Program
             c.RoutePrefix = "swagger";
         });
 
-        app.UseMiddleware<ExceptionHandlingMiddleware>();
-
         app.UseAuthentication();
         app.UseAuthorization();
+        
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         app.MapControllers()
             .RequireCors(app.Environment.IsDevelopment() ? "AllowLocalDev" : "AllowSpecificOrigins");

@@ -1,54 +1,13 @@
 @page "/employee-status"
-@inject HttpClient Http
-
-
+@using OverblikPlus.Components.Shared
+@using OverblikPlus.Components
+@inherits BasePage
 
 <h3>Medarbejder Status</h3>
 
-<input @bind="searchTerm" placeholder="Søg efter medarbejder..." class="form-control mb-3" />
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>
+    Denne side er under udvikling og er ikke færdig implementeret.
+</div>
 
-<table class="table">
-    <thead>
-    <tr>
-        <th>Navn</th>
-        <th>Status</th>
-        <th>Gruppe</th>
-    </tr>
-    </thead>
-    <tbody>
-    @if (searchTerm != null)
-    {
-        @foreach (var employee in employees.Where(e => e.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
-        {
-            <tr>
-                <td>@employee.Name</td>
-                <td>@employee.Status</td>
-                <td>@employee.Group</td>
-            </tr>
-        }
-    }
-    </tbody>
-</table>
-
-@code {
-    private List<Employee> employees = new List<Employee>();
-    private string? searchTerm;
-    
-
-
-
-protected override async Task OnInitializedAsync()
-    {
-        employees = await Http.GetFromJsonAsync<List<Employee>>("sample-data/employees.json");
-        Console.WriteLine("Im not here");
-        Console.WriteLine(employees.Count);
-        StateHasChanged();
-    }
-
-    public class Employee
-    {
-        public string Name { get; set; }
-        public string Status { get; set; }
-        public string Group { get; set; }
-    }
-}
+@* TODO: Implementer employee status funktionalitet når backend er klar *@

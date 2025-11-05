@@ -2,16 +2,22 @@
 @using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models.Dtos.Budget
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Components.Shared
+@using OverblikPlus.Components
 @inject IBudgetService BudgetService
 @inject CustomAuthStateProvider AuthStateProvider
 @inject IJSRuntime JSRuntime
 @using Microsoft.JSInterop
+@inherits BasePage
 
 <h3>Budget</h3>
 
-@if (isLoading)
+<AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+<AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
+
+@if (IsLoading)
 {
-    <p>Henter budgetposter...</p>
+    <LoadingSpinner Text="Henter budgetposter..." />
 }
 else
 {
@@ -156,7 +162,6 @@ else
 @code {
     private List<BudgetDto> budgets = new();
     private BudgetDto newBudget = new() { Date = DateTime.Today };
-    private bool isLoading = true;
     private bool isEditMode = false;
     private Guid? editingId = null;
     private bool showVoucherModal = false;
@@ -169,30 +174,30 @@ else
 
     private async Task LoadBudgets()
     {
+        SetLoading(true);
+        ClearMessages();
+        
         try
         {
             budgets = await BudgetService.GetAllBudgetsAsync();
-            Console.WriteLine($"Loaded {budgets.Count} budget items");
-            foreach (var budget in budgets)
-            {
-                if (!string.IsNullOrWhiteSpace(budget.Voucher))
-                {
-                    Console.WriteLine($"Budget {budget.Id} has voucher: {budget.Voucher}");
-                }
-            }
+            LogInfo($"Loaded {budgets.Count} budget items");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fejl ved hentning af budget: {ex.Message}");
+            LogError("Error loading budgets", ex);
+            SetError($"Fejl ved hentning af budget: {ex.Message}");
         }
         finally
         {
-            isLoading = false;
+            SetLoading(false);
         }
     }
 
     private async Task AddBudget()
     {
+        SetLoading(true);
+        ClearMessages();
+        
         try
         {
             if (isEditMode && editingId.HasValue)
@@ -201,34 +206,41 @@ else
                 var updatedBudget = await BudgetService.UpdateBudgetAsync(editingId.Value, newBudget);
                 if (updatedBudget != null)
                 {
+                    SetSuccess("Budgetpost er opdateret.");
                     await LoadBudgets();
                     CancelEdit();
                 }
                 else
                 {
-                    Console.Error.WriteLine("Fejl ved opdatering af budgetpost.");
+                    SetError("Fejl ved opdatering af budgetpost.");
                 }
             }
             else
             {
                 // Create new budget
-                Console.WriteLine($"Creating budget with voucher: {newBudget.Voucher}");
+                LogInfo($"Creating budget with voucher: {newBudget.Voucher}");
                 var createdBudget = await BudgetService.CreateBudgetAsync(newBudget);
                 if (createdBudget != null)
                 {
-                    Console.WriteLine($"Budget created successfully. ID: {createdBudget.Id}, Voucher: {createdBudget.Voucher}");
+                    SetSuccess("Budgetpost er oprettet.");
+                    LogInfo($"Budget created successfully. ID: {createdBudget.Id}");
                     await LoadBudgets();
                     newBudget = new BudgetDto { Date = DateTime.Today };
                 }
                 else
                 {
-                    Console.Error.WriteLine("Fejl ved oprettelse af budgetpost.");
+                    SetError("Fejl ved oprettelse af budgetpost.");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Fejl: {ex.Message}");
+            LogError("Error in AddBudget", ex);
+            SetError($"Fejl: {ex.Message}");
+        }
+        finally
+        {
+            SetLoading(false);
         }
     }
 
@@ -244,18 +256,19 @@ else
                 if (!string.IsNullOrWhiteSpace(fileUrl))
                 {
                     newBudget.Voucher = fileUrl;
-                    Console.WriteLine($"Bilag uploaded: {fileUrl}");
-                    StateHasChanged(); // Force UI update to show upload confirmation
+                    SetSuccess("Bilag er uploaded.");
+                    LogInfo($"Voucher uploaded: {fileUrl}");
+                    StateHasChanged();
                 }
                 else
                 {
-                    Console.Error.WriteLine("Fejl ved upload af bilag - ingen URL returneret.");
+                    SetError("Fejl ved upload af bilag - ingen URL returneret.");
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Fejl ved upload af bilag: {ex.Message}");
-                Console.Error.WriteLine($"Exception details: {ex}");
+                LogError("Error uploading voucher", ex);
+                SetError($"Fejl ved upload af bilag: {ex.Message}");
             }
         }
     }
@@ -296,14 +309,30 @@ else
             return;
         }
 
-        var success = await BudgetService.DeleteBudgetAsync(id);
-        if (success)
+        SetLoading(true);
+        ClearMessages();
+        
+        try
         {
-            await LoadBudgets();
+            var success = await BudgetService.DeleteBudgetAsync(id);
+            if (success)
+            {
+                SetSuccess("Budgetpost er slettet.");
+                await LoadBudgets();
+            }
+            else
+            {
+                SetError("Fejl ved sletning af budgetpost.");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.Error.WriteLine("Fejl ved sletning af budgetpost.");
+            LogError("Error deleting budget", ex);
+            SetError($"Fejl ved sletning: {ex.Message}");
+        }
+        finally
+        {
+            SetLoading(false);
         }
     }
 

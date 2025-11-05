@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
+using OverblikPlus.Common;
 using OverblikPlus.Models.Dtos.TaskSteps;
 using OverblikPlus.Services.Interfaces;
 
@@ -7,32 +9,33 @@ namespace OverblikPlus.Services
     public class TaskStepService : ITaskStepService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<TaskStepService> _logger;
 
-        public TaskStepService(HttpClient httpClient)
+        public TaskStepService(HttpClient httpClient, ILogger<TaskStepService> logger)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            Console.WriteLine($"TaskStepService BaseAddress: {_httpClient.BaseAddress}");
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        private async Task<T?> ExecuteGetRequest<T>(string url)
+        private async Task<Result<T>> ExecuteGetRequest<T>(string url)
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<T>(url);
-                if (response == null)
+                var response = await _httpClient.GetFromJsonAsync<Result<T>>(url);
+                if (response != null && response.Success)
                 {
-                    throw new Exception("No data received.");
+                    return response;
                 }
-                return response;
+                return Result<T>.ErrorResult(response?.Error ?? "No data received.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during GET request to {url}: {ex.Message}");
-                return default;
+                _logger.LogError(ex, "Error during GET request to {Url}", url);
+                return Result<T>.ErrorResult($"Exception occurred: {ex.Message}");
             }
         }
 
-        private async Task<bool> ExecuteNonQueryRequest(Func<Task<HttpResponseMessage>> httpRequest, string errorMessage)
+        private async Task<Result> ExecuteNonQueryRequest(Func<Task<HttpResponseMessage>> httpRequest, string actionDescription)
         {
             try
             {
@@ -40,24 +43,35 @@ namespace OverblikPlus.Services
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"{errorMessage}. Status Code: {response.StatusCode}, Details: {errorContent}");
+                    _logger.LogWarning("Error during {Action}. Status: {StatusCode}, Details: {ErrorContent}", 
+                        actionDescription, response.StatusCode, errorContent);
+                    return Result.ErrorResult($"{actionDescription} failed: {errorContent}");
                 }
-                return response.IsSuccessStatusCode;
+                return Result.SuccessResult();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"{errorMessage}: {ex.Message}");
-                return false;
+                _logger.LogError(ex, "Exception during {Action}", actionDescription);
+                return Result.ErrorResult($"Exception occurred: {ex.Message}");
             }
         }
 
-        public async Task<List<ReadTaskStepDto>> GetStepsForTask(int taskId) =>
-            await ExecuteGetRequest<List<ReadTaskStepDto>>($"/api/tasks/{taskId}/steps") ?? new List<ReadTaskStepDto>();
+        public async Task<Result<List<ReadTaskStepDto>>> GetStepsForTask(int taskId)
+        {
+            var result = await ExecuteGetRequest<List<ReadTaskStepDto>>($"/api/tasks/{taskId}/steps");
+            if (result.Success && result.Data != null)
+            {
+                return result;
+            }
+            return Result<List<ReadTaskStepDto>>.SuccessResult(new List<ReadTaskStepDto>());
+        }
 
-        public async Task<ReadTaskStepDto?> GetTaskStep(int taskId, int stepId) =>
-            await ExecuteGetRequest<ReadTaskStepDto>($"/api/tasks/{taskId}/steps/{stepId}");
+        public async Task<Result<ReadTaskStepDto>> GetTaskStep(int taskId, int stepId)
+        {
+            return await ExecuteGetRequest<ReadTaskStepDto>($"/api/tasks/{taskId}/steps/{stepId}");
+        }
 
-        public async Task<bool> CreateTaskStep(CreateTaskStepDto newStep)
+        public async Task<Result> CreateTaskStep(CreateTaskStepDto newStep)
         {
             return await ExecuteNonQueryRequest(
                 () => _httpClient.PostAsJsonAsync($"/api/tasks/{newStep.TaskId}/steps", newStep),
@@ -65,7 +79,7 @@ namespace OverblikPlus.Services
             );
         }
 
-        public async Task<bool> UpdateTaskStep(int taskId, int stepId, UpdateTaskStepDto updatedStep)
+        public async Task<Result> UpdateTaskStep(int taskId, int stepId, UpdateTaskStepDto updatedStep)
         {
             return await ExecuteNonQueryRequest(
                 () => _httpClient.PutAsJsonAsync($"/api/tasks/{taskId}/steps/{stepId}", updatedStep),
@@ -73,7 +87,7 @@ namespace OverblikPlus.Services
             );
         }
 
-        public async Task<bool> DeleteTaskStep(int taskId, int stepId)
+        public async Task<Result> DeleteTaskStep(int taskId, int stepId)
         {
             return await ExecuteNonQueryRequest(
                 () => _httpClient.DeleteAsync($"/api/tasks/{taskId}/steps/{stepId}"),

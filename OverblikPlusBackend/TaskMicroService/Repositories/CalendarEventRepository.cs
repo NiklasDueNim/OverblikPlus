@@ -21,6 +21,20 @@ public class CalendarEventRepository : ICalendarEventRepository
             .ToListAsync();
     }
 
+    public async Task<List<CalendarEvent>> GetEventsByUserIdAndDateAsync(string userId, DateTime date)
+    {
+        return await _dbContext.CalendarEvents
+            .Where(e => e.UserId == userId && e.StartDateTime.Date == date.Date)
+            .ToListAsync();
+    }
+
+    public async Task<List<CalendarEvent>> GetEventsByUserIdAndDateRangeAsync(string userId, DateTime from, DateTime to)
+    {
+        return await _dbContext.CalendarEvents
+            .Where(e => e.UserId == userId && e.StartDateTime >= from && e.StartDateTime <= to)
+            .ToListAsync();
+    }
+
     public async Task<CalendarEvent?> GetByIdAsync(Guid id)
     {
         return await _dbContext.CalendarEvents.FindAsync(id);

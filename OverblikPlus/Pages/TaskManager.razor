@@ -5,6 +5,8 @@
 @using OverblikPlus.Common
 @using OverblikPlus.Services.Interfaces
 @using OverblikPlus.Components
+@using OverblikPlus.Components.Shared
+@using OverblikPlus.Constants
 @using OverblikPlus.Models.Dtos.Tasks
 @using OverblikPlus.Models.Dtos.TaskSteps
 @using OverblikPlus.Models.Dtos.User
@@ -14,9 +16,13 @@
 @inject ITaskStepService TaskStepService
 @inject IMapper Mapper
 @inject CustomAuthStateProvider AuthStateProvider
+@inherits BasePage
 
 <div class="container mt-4">
     <h3 class="mb-4">Administrer Opgaver</h3>
+
+    <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+    <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
 
     <button class="btn btn-success mb-3" @onclick="CreateTask">Opret Ny Opgave</button>
 
@@ -94,16 +100,19 @@
 
     private async Task LoadTasks()
     {
+        SetLoading(true);
+        ClearMessages();
+        
         try
         {
             var role = await AuthStateProvider.GetRoleAsync();
             Result<List<ReadTaskDto>> result;
 
-            if (role == "Admin" || role == "Staff")
+            if (Roles.IsAdminOrStaff(role))
             {
                 result = await TaskService.GetAllTasks();
             }
-            else if (role == "User")
+            else if (role == Roles.User)
             {
                 var currentUserId = AuthStateProvider.GetUserIdAsync();
                 result = await TaskService.GetTasksForUserAsync(currentUserId);
@@ -111,37 +120,55 @@
             else
             {
                 Tasks = new List<ReadTaskDto>();
+                SetLoading(false);
                 return;
             }
 
-            if (result.Success)
+            if (result.Success && result.Data != null)
             {
-                Tasks = result.Data ?? new List<ReadTaskDto>();
-                Console.WriteLine($"API Response: {JsonConvert.SerializeObject(result.Data)}");
-
-
-                foreach (var task in Tasks)
-                {
-                    Console.WriteLine($"task Image: {task.Image}");
-                }
+                Tasks = result.Data;
+                LogInfo($"Loaded {Tasks.Count} tasks");
             }
             else
             {
-                Console.WriteLine($"Fejl ved indlæsning af opgaver: {result.Error}");
+                SetError(result.Error ?? "Kunne ikke hente opgaver.");
                 Tasks = new List<ReadTaskDto>();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Uventet fejl: {ex.Message}");
+            LogError("Error loading tasks", ex);
+            SetError($"Fejl ved indlæsning af opgaver: {ex.Message}");
             Tasks = new List<ReadTaskDto>();
+        }
+        finally
+        {
+            SetLoading(false);
         }
     }
 
 
     private async Task LoadUsers()
     {
-        users = (await UserService.GetAllUsers()).ToList();
+        try
+        {
+            var result = await UserService.GetAllUsers();
+            if (result.Success && result.Data != null)
+            {
+                users = result.Data.ToList();
+                LogInfo($"Loaded {users.Count} users");
+            }
+            else
+            {
+                LogWarning($"Failed to load users: {result.Error}");
+                users = new List<ReadUserDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogError("Error loading users", ex);
+            users = new List<ReadUserDto>();
+        }
     }
 
     private void CreateTask()
@@ -170,43 +197,57 @@
         }
 
         isSaving = true;
+        SetLoading(true);
+        ClearMessages();
+        
         try
         {
             if (isEditMode)
             {
-                Console.WriteLine($"Opdaterer opgave med ID {taskFormModel.Id}");
+                LogInfo($"Updating task with ID {taskFormModel.Id}");
                 var updateTaskDto = Mapper.Map<UpdateTaskDto>(taskFormModel);
                 var result = await TaskService.UpdateTask(updateTaskDto.Id, updateTaskDto);
 
-                if (!result.Success)
+                if (result.Success)
                 {
-                    Console.WriteLine($"Fejl ved opdatering: {result.Error}");
-                    Console.WriteLine($"Detaljeret fejl: {JsonConvert.SerializeObject(result)}");
+                    SetSuccess("Opgaven er opdateret.");
+                    await LoadTasks();
+                    isTaskFormVisible = false;
+                    ResetForm();
+                }
+                else
+                {
+                    SetError(result.Error ?? "Kunne ikke opdatere opgave.");
                 }
             }
             else
             {
-                Console.WriteLine("Opretter ny opgave");
+                LogInfo("Creating new task");
                 var createTaskDto = Mapper.Map<CreateTaskDto>(taskFormModel);
                 var result = await TaskService.CreateTask(createTaskDto);
 
-                if (!result.Success)
+                if (result.Success)
                 {
-                    Console.WriteLine($"Fejl ved oprettelse: {result.Error}");
+                    SetSuccess("Opgaven er oprettet.");
+                    await LoadTasks();
+                    isTaskFormVisible = false;
+                    ResetForm();
+                }
+                else
+                {
+                    SetError(result.Error ?? "Kunne ikke oprette opgave.");
                 }
             }
-
-            await LoadTasks();
-            isTaskFormVisible = false;
-            ResetForm();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fejl i SaveTask: {ex.Message}");
+            LogError("Error in SaveTask", ex);
+            SetError($"Fejl: {ex.Message}");
         }
         finally
         {
             isSaving = false;
+            SetLoading(false);
         }
     }
 
@@ -225,22 +266,30 @@
 
     private async Task DeleteTask(int taskId)
     {
+        SetLoading(true);
+        ClearMessages();
+        
         try
         {
             var result = await TaskService.DeleteTask(taskId);
             if (result.Success)
             {
-                Console.WriteLine("Opgaven er slettet");
+                SetSuccess("Opgaven er slettet.");
                 await LoadTasks();
             }
             else
             {
-                Console.WriteLine($"Fejl: {result.Error}");
+                SetError(result.Error ?? "Kunne ikke slette opgave.");
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine($"Exception: {e.Message}");
+            LogError("Error deleting task", ex);
+            SetError($"Fejl ved sletning: {ex.Message}");
+        }
+        finally
+        {
+            SetLoading(false);
         }
     }
 
@@ -260,28 +309,51 @@
 
     private async Task SaveStep()
     {
+        SetLoading(true);
+        ClearMessages();
+        
         try
         {
             if (isEditStepMode)
             {
-                Console.WriteLine($"Opdaterer trin ID {currentStep.Id} for opgave ID {currentStep.TaskId}");
+                LogInfo($"Updating step ID {currentStep.Id} for task ID {currentStep.TaskId}");
                 var updateStepDto = Mapper.Map<UpdateTaskStepDto>(currentStep);
-                await TaskStepService.UpdateTaskStep(updateStepDto.TaskId, updateStepDto.Id, updateStepDto);
+                var result = await TaskStepService.UpdateTaskStep(updateStepDto.TaskId, updateStepDto.Id, updateStepDto);
+                
+                if (!result.Success)
+                {
+                    SetError(result.Error ?? "Kunne ikke opdatere trin.");
+                    SetLoading(false);
+                    return;
+                }
             }
             else
             {
-                Console.WriteLine($"Opretter nyt trin for opgave ID {currentStep.TaskId}");
+                LogInfo($"Creating new step for task ID {currentStep.TaskId}");
                 var createStepDto = Mapper.Map<CreateTaskStepDto>(currentStep);
-                await TaskStepService.CreateTaskStep(createStepDto);
+                var result = await TaskStepService.CreateTaskStep(createStepDto);
+                
+                if (!result.Success)
+                {
+                    SetError(result.Error ?? "Kunne ikke oprette trin.");
+                    SetLoading(false);
+                    return;
+                }
             }
 
             await UpdateTaskSteps(currentStep.TaskId);
             isStepFormVisible = false;
             ResetStepForm();
+            SetSuccess("Trin er gemt.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fejl i SaveStep: {ex.Message}");
+            LogError("Error in SaveStep", ex);
+            SetError($"Fejl: {ex.Message}");
+        }
+        finally
+        {
+            SetLoading(false);
         }
     }
 
@@ -299,28 +371,47 @@
 
     private async Task UpdateTaskSteps(int taskId)
     {
-        var updatedSteps = await TaskStepService.GetStepsForTask(taskId);
-        var index = Tasks.FindIndex(t => t.Id == taskId);
-        if (index >= 0)
+        var result = await TaskStepService.GetStepsForTask(taskId);
+        if (result.Success && result.Data != null)
         {
-            var task = Tasks[index];
-            Tasks[index] = new ReadTaskDto
+            var index = Tasks.FindIndex(t => t.Id == taskId);
+            if (index >= 0)
             {
-                Id = task.Id,
-                Name = task.Name,
-                Description = task.Description,
-                Image = task.Image,
-                UserId = task.UserId,
-                Steps = updatedSteps
-            };
-            StateHasChanged();
+                var task = Tasks[index];
+                Tasks[index] = new ReadTaskDto
+                {
+                    Id = task.Id,
+                    Name = task.Name,
+                    Description = task.Description,
+                    Image = task.Image,
+                    UserId = task.UserId,
+                    Steps = result.Data
+                };
+                StateHasChanged();
+            }
         }
     }
 
     private async Task DeleteStep(int taskId, int stepId)
     {
-        await TaskStepService.DeleteTaskStep(taskId, stepId);
-        await UpdateTaskSteps(taskId);
+        try
+        {
+            var result = await TaskStepService.DeleteTaskStep(taskId, stepId);
+            if (result.Success)
+            {
+                await UpdateTaskSteps(taskId);
+                SetSuccess("Trin er slettet.");
+            }
+            else
+            {
+                SetError(result.Error ?? "Kunne ikke slette trin.");
+            }
+        }
+        catch (Exception ex)
+        {
+            LogError("Error deleting step", ex);
+            SetError($"Fejl ved sletning: {ex.Message}");
+        }
     }
 
     private Task OnDeleteStepHandler(int stepId)
@@ -333,7 +424,8 @@
         }
         else
         {
-            Console.WriteLine("Kunne ikke finde opgaven for det givne trin");
+            LogWarning($"Could not find task for step ID {stepId}");
+            SetError("Kunne ikke finde opgaven for det givne trin");
             return Task.CompletedTask;
         }
     }
@@ -348,12 +440,11 @@
             await stream.ReadAsync(buffer);
             currentStep.ImageBase64 = Convert.ToBase64String(buffer);
 
-            Console.WriteLine("Billedet er blevet konverteret til base64 og gemt i ImageBase64.");
+            LogInfo("Image converted to base64");
         }
         else
         {
-            Console.WriteLine("Ingen fil valgt");
+            LogWarning("No file selected");
         }
     }
-
 }

@@ -10,7 +10,7 @@ using UserMicroService.dto;
 using UserMicroService.Entities;
 using UserMicroService.Helpers;
 using UserMicroService.Services.Interfaces;
-using UserMicroService.Common;
+using OverblikPlus.Shared.Common;
 
 namespace UserMicroService.Services
 {

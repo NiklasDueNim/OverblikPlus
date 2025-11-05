@@ -1,0 +1,44 @@
+@* Widget renderer component - renders appropriate widget based on type *@
+@using OverblikPlus.Models.Dashboard
+
+@if (Widget.Type == "Tasks")
+{
+    <TasksWidget @ref="tasksWidgetRef" WidgetInfo="Widget" OnWidgetClicked="OnWidgetClicked" />
+}
+else if (Widget.Type == "Shifts")
+{
+    <ShiftsWidget WidgetInfo="Widget" OnWidgetClicked="OnWidgetClicked" />
+}
+else if (Widget.Type == "Activities")
+{
+    <ActivitiesWidget WidgetInfo="Widget" OnWidgetClicked="OnWidgetClicked" />
+}
+else if (Widget.Type == "QuickActions")
+{
+    <QuickActionsWidget WidgetInfo="Widget" OnWidgetClicked="OnWidgetClicked" />
+}
+else if (Widget.Type == "Notifications")
+{
+    <NotificationsWidget WidgetInfo="Widget" OnWidgetClicked="OnWidgetClicked" />
+}
+else if (Widget.Type == "Announcements")
+{
+    <div class="widget-announcements">
+        <div class="widget-header">
+            <h4>@Widget.Title</h4>
+        </div>
+        <div class="widget-body">
+            <p>Klik for at se alle opslag</p>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public WidgetInfo Widget { get; set; } = default!;
+    [Parameter] public EventCallback<WidgetInfo> OnWidgetClicked { get; set; }
+    
+    private TasksWidget? tasksWidgetRef;
+    
+    public TasksWidget? GetTasksWidgetRef() => tasksWidgetRef;
+}
+

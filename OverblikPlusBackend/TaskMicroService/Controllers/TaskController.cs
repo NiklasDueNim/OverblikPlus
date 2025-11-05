@@ -3,7 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OverblikPlus.Shared.Interfaces;
-using TaskMicroService.Common;
+using OverblikPlus.Shared.Common;
 using TaskMicroService.dtos.Task;
 using TaskMicroService.Services.Interfaces;
 

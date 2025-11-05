@@ -1,0 +1,20 @@
+@* Dashboard controls component *@
+<div class="dashboard-controls">
+    <div class="dashboard-actions">
+        <button class="btn btn-outline-primary btn-sm" @onclick="OnToggleEditMode">
+            <i class="fas fa-cog me-1"></i>
+            @(IsEditMode ? "Færdig" : "Tilpas")
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="OnResetLayout">
+            <i class="fas fa-undo me-1"></i>
+            Nulstil
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsEditMode { get; set; }
+    [Parameter] public EventCallback OnToggleEditMode { get; set; }
+    [Parameter] public EventCallback OnResetLayout { get; set; }
+}
+

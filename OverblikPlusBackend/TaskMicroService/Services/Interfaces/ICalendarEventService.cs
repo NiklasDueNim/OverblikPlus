@@ -1,4 +1,4 @@
-using TaskMicroService.Common;
+using OverblikPlus.Shared.Common;
 using TaskMicroService.Dtos.Calendar;
 
 namespace TaskMicroService.Services.Interfaces;

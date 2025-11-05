@@ -2,19 +2,34 @@
 @using OverblikPlus.Models.Dtos.Announcement
 @using OverblikPlus.Services.Interfaces
 @using OverblikPlus.AuthHelpers
+@using OverblikPlus.Components.Shared
+@using OverblikPlus.Components
+@using OverblikPlus.Components.Dashboard
+@using OverblikPlus.Constants
 @inject IAnnouncementService AnnouncementService
 @inject CustomAuthStateProvider AuthStateProvider
+@inherits BasePage
 
 <h3>Opslagstavle</h3>
+
+<AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+<AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
 
 @if (!IsRelative())
 {
     <button class="btn btn-primary mb-3" @onclick="OpenCreateModal">Opret nyt opslag</button>
 }
 
-@if (announcements == null)
+@if (IsLoading)
 {
-    <p>Henter data...</p>
+    <LoadingSpinner Text="Henter opslag..." />
+}
+else if (announcements == null || !announcements.Any())
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Ingen opslag fundet.
+    </div>
 }
 else
 {
@@ -24,16 +39,23 @@ else
             <!-- Vis kun hvis indenfor StartDate/EndDate -->
             @if (DateTime.Today >= ann.StartDate && DateTime.Today <= ann.EndDate)
             {
-                <div class="card mb-3">
+                <div class="card mb-3 @(ann.IsImportant ? "border-warning" : "")">
                     <div class="card-body">
+                        @if (ann.IsImportant)
+                        {
+                            <span class="badge bg-warning text-dark mb-2">Vigtigt</span>
+                        }
                         <h5>@ann.Title</h5>
                         <p>@ann.Body</p>
-                        <small>Fra: @ann.StartDate.ToShortDateString() - Til: @ann.EndDate.ToShortDateString()</small>
+                        <small class="text-muted">
+                            Fra: @ann.StartDate.ToShortDateString() - Til: @ann.EndDate.ToShortDateString()
+                        </small>
                         @if (!IsRelative())
                         {
-                            <br />
-                            <button class="btn btn-sm btn-secondary" @onclick="() => OpenEditModal(ann)">Rediger</button>
-                            <button class="btn btn-sm btn-danger" @onclick="() => DeleteAnnouncement(ann.Id)">Slet</button>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-secondary" @onclick="() => OpenEditModal(ann)">Rediger</button>
+                                <button class="btn btn-sm btn-danger ms-2" @onclick="() => DeleteAnnouncement(ann.Id)">Slet</button>
+                            </div>
                         }
                     </div>
                 </div>
@@ -43,64 +65,65 @@ else
 }
 
 @* Modal *@
-@if (showModal)
-{
-    <div class="modal-backdrop">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5>@(isEditMode ? "Rediger opslag" : "Opret nyt opslag")</h5>
-                    <button @onclick="CloseModal" class="btn-close"></button>
-                </div>
-                <div class="modal-body">
-                    <label>Titel:</label>
-                    <input type="text" class="form-control" @bind="currentAnnouncement.Title" />
-                    <label>Tekst:</label>
-                    <textarea class="form-control" @bind="currentAnnouncement.Body"></textarea>
-                    <label>Start dato:</label>
-                    <input type="date" class="form-control" @bind="currentAnnouncement.StartDate" />
-                    <label>Slut dato:</label>
-                    <input type="date" class="form-control" @bind="currentAnnouncement.EndDate" />
-                    <div class="form-check mt-2">
-                        <input type="checkbox" class="form-check-input" id="chkImportant" @bind="currentAnnouncement.IsImportant" />
-                        <label class="form-check-label" for="chkImportant">Vigtigt opslag?</label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button @onclick="CloseModal" class="btn btn-secondary">Luk</button>
-                    @if (isEditMode)
-                    {
-                        <button @onclick="UpdateAnnouncement" class="btn btn-primary">Gem</button>
-                    }
-                    else
-                    {
-                        <button @onclick="CreateAnnouncement" class="btn btn-primary">Opret</button>
-                    }
-                </div>
-            </div>
+<Modal Show="@showModal" 
+       ShowChanged="@((bool show) => showModal = show)"
+       Title="@(isEditMode ? "Rediger opslag" : "Opret nyt opslag")"
+       PrimaryButtonText="@(isEditMode ? "Gem" : "Opret")"
+       OnPrimaryAction="HandleSaveAnnouncement"
+       OnClose="CloseModal">
+    <BodyContent>
+        <label>Titel:</label>
+        <input type="text" class="form-control" @bind="currentAnnouncement.Title" />
+        <label>Tekst:</label>
+        <textarea class="form-control" @bind="currentAnnouncement.Body"></textarea>
+        <label>Start dato:</label>
+        <input type="date" class="form-control" @bind="currentAnnouncement.StartDate" />
+        <label>Slut dato:</label>
+        <input type="date" class="form-control" @bind="currentAnnouncement.EndDate" />
+        <div class="form-check mt-2">
+            <input type="checkbox" class="form-check-input" id="chkImportant" @bind="currentAnnouncement.IsImportant" />
+            <label class="form-check-label" for="chkImportant">Vigtigt opslag?</label>
         </div>
-    </div>
-}
+    </BodyContent>
+</Modal>
 
 @code {
-    private List<AnnouncementDto> announcements;
+    private List<AnnouncementDto> announcements = new();
     private bool showModal = false;
     private bool isEditMode = false;
     private AnnouncementDto currentAnnouncement = new();
+    private bool showDeleteConfirm = false;
+    private Guid? announcementToDeleteId;
 
     private bool IsRelative()
     {
-        if(AuthStateProvider.User == null)
-        {
-            return false;
-        }
-
-        return AuthStateProvider.User.IsRelative;
+        return AuthStateProvider.User?.IsRelative ?? false;
     }
 
     protected override async Task OnInitializedAsync()
     {
-        announcements = await AnnouncementService.GetAllAsync();
+        await LoadAnnouncements();
+    }
+
+    private async Task LoadAnnouncements()
+    {
+        SetLoading(true);
+        ClearMessages();
+        
+        try
+        {
+            announcements = await AnnouncementService.GetAllAsync();
+            LogInfo($"Loaded {announcements.Count} announcements");
+        }
+        catch (Exception ex)
+        {
+            LogError("Error loading announcements", ex);
+            SetError("Kunne ikke hente opslag. Prøv igen senere.");
+        }
+        finally
+        {
+            SetLoading(false);
+        }
     }
 
     private void OpenCreateModal()
@@ -131,31 +154,116 @@ else
 
     private async Task CreateAnnouncement()
     {
-        await AnnouncementService.CreateAsync(currentAnnouncement);
-        await ReloadAnnouncements();
+        SetLoading(true);
+        ClearMessages();
+        
+        try
+        {
+            await AnnouncementService.CreateAsync(currentAnnouncement);
+            SetSuccess("Opslaget er oprettet.");
+            await LoadAnnouncements();
+            showModal = false;
+        }
+        catch (Exception ex)
+        {
+            LogError("Error creating announcement", ex);
+            SetError("Kunne ikke oprette opslag. Prøv igen senere.");
+        }
+        finally
+        {
+            SetLoading(false);
+        }
     }
 
     private async Task UpdateAnnouncement()
     {
-        await AnnouncementService.UpdateAsync(currentAnnouncement);
-        await ReloadAnnouncements();
+        SetLoading(true);
+        ClearMessages();
+        
+        try
+        {
+            await AnnouncementService.UpdateAsync(currentAnnouncement);
+            SetSuccess("Opslaget er opdateret.");
+            await LoadAnnouncements();
+            showModal = false;
+        }
+        catch (Exception ex)
+        {
+            LogError("Error updating announcement", ex);
+            SetError("Kunne ikke opdatere opslag. Prøv igen senere.");
+        }
+        finally
+        {
+            SetLoading(false);
+        }
     }
 
-    private async Task DeleteAnnouncement(Guid id)
+    private void DeleteAnnouncement(Guid id)
     {
-        await AnnouncementService.DeleteAsync(id);
-        await ReloadAnnouncements();
+        announcementToDeleteId = id;
+        showDeleteConfirm = true;
+    }
+
+    private async Task ConfirmDeleteAnnouncement()
+    {
+        if (!announcementToDeleteId.HasValue)
+            return;
+
+        SetLoading(true);
+        
+        try
+        {
+            await AnnouncementService.DeleteAsync(announcementToDeleteId.Value);
+            SetSuccess("Opslaget er slettet.");
+            await LoadAnnouncements();
+        }
+        catch (Exception ex)
+        {
+            LogError("Error deleting announcement", ex);
+            SetError("Kunne ikke slette opslag. Prøv igen senere.");
+        }
+        finally
+        {
+            SetLoading(false);
+            showDeleteConfirm = false;
+            announcementToDeleteId = null;
+        }
+    }
+
+    private void CancelDeleteAnnouncement()
+    {
+        showDeleteConfirm = false;
+        announcementToDeleteId = null;
     }
 
     private async Task ReloadAnnouncements()
     {
-        showModal = false;
-        announcements = await AnnouncementService.GetAllAsync();
-        StateHasChanged();
+        await LoadAnnouncements();
     }
 
     private void CloseModal()
     {
         showModal = false;
+        currentAnnouncement = new AnnouncementDto();
+        isEditMode = false;
+    }
+
+    private async Task HandleSaveAnnouncement()
+    {
+        if (isEditMode)
+        {
+            await UpdateAnnouncement();
+        }
+        else
+        {
+            await CreateAnnouncement();
+        }
     }
 }
+
+<ConfirmDialog Show="@showDeleteConfirm" 
+               Title="Slet opslag" 
+               Message="Er du sikker på, at du vil slette dette opslag?" 
+               ConfirmText="Slet" 
+               OnConfirmed="ConfirmDeleteAnnouncement" 
+               OnCancelled="CancelDeleteAnnouncement" />

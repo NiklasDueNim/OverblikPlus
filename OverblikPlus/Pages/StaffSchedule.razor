@@ -4,18 +4,25 @@
 @using OverblikPlus.Models.Dtos.Shift
 @using OverblikPlus.Models.Dtos.User
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Components.Shared
+@using OverblikPlus.Components
+@using OverblikPlus.Constants
 @inject CustomAuthStateProvider AuthStateProvider
 @inject IUserService UserService
 @inject IShiftService ShiftService
 @inject IJSRuntime JSRuntime
 @using Microsoft.JSInterop
+@inherits BasePage
 
 <div>
     <h3>Vagtplan (@today.ToShortDateString())</h3>
 
-    @if (isLoading)
+    <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+    <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
+
+    @if (IsLoading)
     {
-        <p>Henter vagtplan...</p>
+        <LoadingSpinner Text="Henter vagtplan..." />
     }
     else if (staffMembers == null || !staffMembers.Any())
     {
@@ -60,12 +67,8 @@
                                 <input id="endTime" type="time" class="form-control" @bind="newEndTime" />
                             </div>
                         </div>
-                        @if (!string.IsNullOrEmpty(message))
-                        {
-                            <div class="alert @alertClass mt-2">@message</div>
-                        }
                         <div class="mt-3">
-                            <button class="btn btn-success" @onclick="CreateShift" disabled="@isSaving">Gem vagt</button>
+                            <button class="btn btn-success" @onclick="CreateShift" disabled="@IsLoading">Gem vagt</button>
                             <button class="btn btn-secondary ms-2" @onclick="CancelCreateForm">Annuller</button>
                         </div>
                     </div>
@@ -128,11 +131,7 @@
     private List<ShiftDto> shifts = new();
     private List<ReadUserDto> staffMembers = new();
     private Dictionary<string, List<ShiftDto>> shiftsByStaffId = new();
-    private bool isLoading = true;
     private bool showCreateForm = false;
-    private bool isSaving = false;
-    private string message = string.Empty;
-    private string alertClass = "alert-success";
     private string selectedStaffId = string.Empty;
     private DateTime newShiftDate = DateTime.Today;
     private TimeOnly? newStartTime = new TimeOnly(8, 0);
@@ -140,10 +139,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        SetLoading(true);
         await LoadStaffMembers();
         await LoadShifts();
         await IsAdminAsync(); // Cache admin status
-        isLoading = false;
+        SetLoading(false);
     }
 
     private bool? _isAdmin;
@@ -167,24 +167,34 @@
             var bostedId = AuthStateProvider.GetBostedIdAsync();
             if (!bostedId.HasValue)
             {
-                Console.WriteLine("Kunne ikke hente bostedId");
+                LogWarning("Could not retrieve bostedId");
+                SetError("Kunne ikke hente bostedId");
                 return;
             }
 
-            var allUsers = await UserService.GetUsersByBostedId(bostedId.Value);
+            var result = await UserService.GetUsersByBostedId(bostedId.Value);
             // Filtrer til kun Staff og Admin og sorter én gang
-            var staffRoles = new[] { "Staff", "Admin", "Medarbejder" };
-            staffMembers = allUsers
-                .Where(u => staffRoles.Contains(u.Role))
-                .OrderBy(s => s.FirstName)
-                .ThenBy(s => s.LastName)
-                .ToList();
-            
-            Console.WriteLine($"Hentet {staffMembers.Count} personale medlemmer");
+            var staffRoles = new[] { Roles.Staff, Roles.Admin, "Medarbejder" };
+            if (result.Success && result.Data != null)
+            {
+                staffMembers = result.Data
+                    .Where(u => staffRoles.Contains(u.Role))
+                    .OrderBy(s => s.FirstName)
+                    .ThenBy(s => s.LastName)
+                    .ToList();
+                LogInfo($"Loaded {staffMembers.Count} staff members");
+            }
+            else
+            {
+                LogWarning($"Failed to load staff members: {result.Error}");
+                staffMembers = new List<ReadUserDto>();
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fejl ved hentning af personale: {ex.Message}");
+            LogError("Error loading staff members", ex);
+            SetError($"Fejl ved hentning af personale: {ex.Message}");
+            staffMembers = new List<ReadUserDto>();
         }
     }
 
@@ -201,16 +211,19 @@
                     .Where(s => s.StartTime.Date == today.Date)
                     .GroupBy(s => s.UserId)
                     .ToDictionary(g => g.Key, g => g.OrderBy(s => s.StartTime).ToList());
+                LogInfo($"Loaded {shifts.Count} shifts");
             }
             else
             {
+                LogWarning($"Failed to load shifts: {result.Error}");
                 shifts = new List<ShiftDto>();
                 shiftsByStaffId.Clear();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Fejl ved hentning af vagter: {ex.Message}");
+            LogError("Error loading shifts", ex);
+            SetError($"Fejl ved hentning af vagter: {ex.Message}");
             shifts = new List<ShiftDto>();
             shiftsByStaffId.Clear();
         }
@@ -219,7 +232,7 @@
     private void ShowCreateForm()
     {
         showCreateForm = true;
-        message = string.Empty;
+        ClearMessages();
         selectedStaffId = string.Empty;
         newShiftDate = today;
         newStartTime = new TimeOnly(8, 0);
@@ -229,28 +242,26 @@
     private void CancelCreateForm()
     {
         showCreateForm = false;
-        message = string.Empty;
+        ClearMessages();
     }
 
     private async Task CreateShift()
     {
         if (string.IsNullOrEmpty(selectedStaffId))
         {
-            message = "Vælg venligst personale";
-            alertClass = "alert-danger";
+            SetError("Vælg venligst personale");
             return;
         }
 
-        isSaving = true;
-        message = string.Empty;
+        SetLoading(true);
+        ClearMessages();
 
         try
         {
             if (!newStartTime.HasValue || !newEndTime.HasValue)
             {
-                message = "Vælg venligst både starttid og sluttid";
-                alertClass = "alert-danger";
-                isSaving = false;
+                SetError("Vælg venligst både starttid og sluttid");
+                SetLoading(false);
                 return;
             }
 
@@ -259,9 +270,8 @@
 
             if (endDateTime <= startDateTime)
             {
-                message = "Sluttid skal være efter starttid";
-                alertClass = "alert-danger";
-                isSaving = false;
+                SetError("Sluttid skal være efter starttid");
+                SetLoading(false);
                 return;
             }
 
@@ -277,25 +287,24 @@
 
             if (result.Success)
             {
-                message = "Vagt oprettet succesfuldt";
-                alertClass = "alert-success";
+                SetSuccess("Vagt oprettet succesfuldt");
+                LogInfo("Shift created successfully");
                 await LoadShifts();
                 CancelCreateForm();
             }
             else
             {
-                message = $"Fejl ved oprettelse af vagt: {result.Error}";
-                alertClass = "alert-danger";
+                SetError(result.Error ?? "Fejl ved oprettelse af vagt");
             }
         }
         catch (Exception ex)
         {
-            message = $"Fejl: {ex.Message}";
-            alertClass = "alert-danger";
+            LogError("Error creating shift", ex);
+            SetError($"Fejl ved oprettelse af vagt: {ex.Message}");
         }
         finally
         {
-            isSaving = false;
+            SetLoading(false);
         }
     }
 
@@ -307,25 +316,31 @@
             return;
         }
 
+        SetLoading(true);
+        ClearMessages();
+        
         try
         {
             var result = await ShiftService.DeleteShiftAsync(shiftId);
             if (result.Success)
             {
+                SetSuccess("Vagt slettet succesfuldt");
+                LogInfo("Shift deleted successfully");
                 await LoadShifts();
-                message = "Vagt slettet succesfuldt";
-                alertClass = "alert-success";
             }
             else
             {
-                message = $"Fejl ved sletning af vagt: {result.Error}";
-                alertClass = "alert-danger";
+                SetError(result.Error ?? "Fejl ved sletning af vagt");
             }
         }
         catch (Exception ex)
         {
-            message = $"Fejl: {ex.Message}";
-            alertClass = "alert-danger";
+            LogError("Error deleting shift", ex);
+            SetError($"Fejl ved sletning af vagt: {ex.Message}");
+        }
+        finally
+        {
+            SetLoading(false);
         }
     }
 }

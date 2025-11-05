@@ -1,6 +1,6 @@
 using AutoMapper;
+using OverblikPlus.Shared.Common;
 using OverblikPlus.Shared.Interfaces;
-using TaskMicroService.Common;
 using TaskMicroService.Dtos.Budget;
 using TaskMicroService.Entities;
 using TaskMicroService.Repositories.Interfaces;

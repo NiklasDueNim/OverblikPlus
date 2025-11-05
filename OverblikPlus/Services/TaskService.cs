@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OverblikPlus.AuthHelpers;
 using OverblikPlus.Services.Interfaces;
@@ -13,11 +14,13 @@ public class TaskService : ITaskService
 {
     private readonly HttpClient _httpClient;
     private readonly CustomAuthStateProvider _authStateProvider;
+    private readonly ILogger<TaskService> _logger;
 
-    public TaskService(HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider)
+    public TaskService(HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider, ILogger<TaskService> logger)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _authStateProvider = (CustomAuthStateProvider)authenticationStateProvider;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     private async Task<Result<T>> ExecuteGetRequest<T>(string uri)
@@ -29,7 +32,7 @@ public class TaskService : ITaskService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching data from {uri}: {ex.Message}");
+            _logger.LogError(ex, "Error fetching data from {Uri}", uri);
             return Result<T>.ErrorResult($"Exception occurred: {ex.Message}");
         }
     }
@@ -42,14 +45,15 @@ public class TaskService : ITaskService
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error during {actionDescription}. Status: {response.StatusCode}, Details: {errorContent}");
+                _logger.LogWarning("Error during {Action}. Status: {StatusCode}, Details: {ErrorContent}", 
+                    actionDescription, response.StatusCode, errorContent);
                 return Result.ErrorResult($"{actionDescription} failed: {errorContent}");
             }
             return Result.SuccessResult();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception during {actionDescription}: {ex.Message}");
+            _logger.LogError(ex, "Exception during {Action}", actionDescription);
             return Result.ErrorResult($"Exception occurred: {ex.Message}");
         }
     }
@@ -70,31 +74,31 @@ public class TaskService : ITaskService
             var userId = _authStateProvider.GetUserIdAsync();
             if (string.IsNullOrEmpty(userId))
             {
-                Console.WriteLine("UserId could not be retrieved from the token.");
+                _logger.LogWarning("UserId could not be retrieved from the token.");
                 return Result<int>.ErrorResult("UserId is required for the task.");
             }
             
             newTask.UserId = userId;
 
-            Console.WriteLine($"Sending request to API: {JsonConvert.SerializeObject(newTask)}");
+            _logger.LogDebug("Sending request to API: {TaskData}", JsonConvert.SerializeObject(newTask));
 
             var response = await _httpClient.PostAsJsonAsync("/api/Task", newTask);
-            Console.WriteLine($"API Response Content: {response}");
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"JSON Response: {jsonResponse}");
+            _logger.LogDebug("API Response: {Response}", jsonResponse);
 
             var apiResponse = JsonConvert.DeserializeObject<Result<int>>(jsonResponse);
 
-            if (apiResponse.Success)
+            if (apiResponse?.Success == true)
             {
+                _logger.LogInformation("Task created successfully with ID: {TaskId}", apiResponse.Data);
                 return Result<int>.SuccessResult(apiResponse.Data);
             }
-            return Result<int>.ErrorResult($"Failed to create task. Details: {apiResponse.Error}");
+            return Result<int>.ErrorResult($"Failed to create task. Details: {apiResponse?.Error}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error in CreateTask: {ex.Message}");
+            _logger.LogError(ex, "Error in CreateTask");
             return Result<int>.ErrorResult($"Exception: {ex.Message}");
         }
     }
@@ -115,21 +119,35 @@ public class TaskService : ITaskService
 
     public async Task<Result> MarkTaskAsCompleted(int taskId)
     {
-        Console.WriteLine($"📤 Calling MarkTaskAsCompleted API for task {taskId}");
+        _logger.LogDebug("Calling MarkTaskAsCompleted API for task {TaskId}", taskId);
         var result = await ExecuteNonQueryRequest(
             () => _httpClient.PutAsync($"/api/Task/{taskId}/complete", null),
             "Mark task as completed");
-        Console.WriteLine($"📥 MarkTaskAsCompleted API result: Success={result.Success}, Error={result.Error}");
+        if (result.Success)
+        {
+            _logger.LogInformation("Task {TaskId} marked as completed", taskId);
+        }
+        else
+        {
+            _logger.LogWarning("Failed to mark task {TaskId} as completed: {Error}", taskId, result.Error);
+        }
         return result;
     }
     
     public async Task<Result> MarkTaskAsUnCompleted(int taskId)
     {
-        Console.WriteLine($"📤 Calling MarkTaskAsUnCompleted API for task {taskId}");
+        _logger.LogDebug("Calling MarkTaskAsUnCompleted API for task {TaskId}", taskId);
         var result = await ExecuteNonQueryRequest(
             () => _httpClient.PutAsync($"/api/Task/{taskId}/notComplete", null),
             "Mark task as uncompleted");
-        Console.WriteLine($"📥 MarkTaskAsUnCompleted API result: Success={result.Success}, Error={result.Error}");
+        if (result.Success)
+        {
+            _logger.LogInformation("Task {TaskId} marked as uncompleted", taskId);
+        }
+        else
+        {
+            _logger.LogWarning("Failed to mark task {TaskId} as uncompleted: {Error}", taskId, result.Error);
+        }
         return result;
     }
 

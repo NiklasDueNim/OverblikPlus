@@ -5,10 +5,10 @@ namespace OverblikPlus.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<IEnumerable<ReadUserDto>> GetAllUsers();
-    Task<ReadUserDto?> GetUserById(string id);
-    Task<IEnumerable<ReadUserDto>> GetUsersByBostedId(int bostedId);
+    Task<Result<IEnumerable<ReadUserDto>>> GetAllUsers();
+    Task<Result<ReadUserDto>> GetUserById(string id);
+    Task<Result<IEnumerable<ReadUserDto>>> GetUsersByBostedId(int bostedId);
     Task<Result> CreateUser(CreateUserDto newUser);
-    Task UpdateUser(string id, UpdateUserDto updateUserDto);
-    Task DeleteUser(string id);
+    Task<Result> UpdateUser(string id, UpdateUserDto updateUserDto);
+    Task<Result> DeleteUser(string id);
 }

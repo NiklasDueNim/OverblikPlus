@@ -1,6 +1,8 @@
-using TaskMicroService.Common;
+using OverblikPlus.Shared.Common;
+using OverblikPlus.Shared.Interfaces;
 using TaskMicroService.dtos.Activity;
 using TaskMicroService.Entities;
+using TaskMicroService.Helpers;
 using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 
@@ -9,12 +11,12 @@ namespace TaskMicroService.Services;
 public class ActivityService : IActivityService
 {
     private readonly IActivityRepository _activityRepository;
-    private readonly ILogger<ActivityService> _logger;
+    private readonly ILoggerService _logger;
 
-    public ActivityService(IActivityRepository activityRepository, ILogger<ActivityService> logger)
+    public ActivityService(IActivityRepository activityRepository, ILoggerService logger)
     {
         _activityRepository = activityRepository ?? throw new ArgumentNullException(nameof(activityRepository));
-        _logger = logger;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<Result<IEnumerable<ReadActivityDto>>> GetAllActivitiesAsync()
@@ -28,7 +30,7 @@ public class ActivityService : IActivityService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting all activities");
+            _logger.LogError("Error getting all activities", ex);
             return Result<IEnumerable<ReadActivityDto>>.ErrorResult("An error occurred while retrieving activities.");
         }
     }
@@ -44,7 +46,7 @@ public class ActivityService : IActivityService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting activities for date {Date}", date);
+            _logger.LogError($"Error getting activities for date {date}", ex);
             return Result<IEnumerable<ReadActivityDto>>.ErrorResult("An error occurred while retrieving activities for the specified date.");
         }
     }
@@ -60,7 +62,7 @@ public class ActivityService : IActivityService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting activities for date range {StartDate} to {EndDate}", startDate, endDate);
+            _logger.LogError($"Error getting activities for date range {startDate} to {endDate}", ex);
             return Result<IEnumerable<ReadActivityDto>>.ErrorResult("An error occurred while retrieving activities for the specified date range.");
         }
     }
@@ -80,7 +82,7 @@ public class ActivityService : IActivityService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting activity by ID {Id}", id);
+            _logger.LogError($"Error getting activity by ID {id}", ex);
             return Result<ReadActivityDto>.ErrorResult("An error occurred while retrieving the activity.");
         }
     }
@@ -96,7 +98,7 @@ public class ActivityService : IActivityService
                 Description = createActivityDto.Description,
                 StartDateTime = createActivityDto.StartDateTime,
                 EndDateTime = createActivityDto.EndDateTime,
-                ResponsibleStaff = System.Text.Json.JsonSerializer.Serialize(createActivityDto.ResponsibleStaff),
+                ResponsibleStaff = JsonHelper.Serialize(createActivityDto.ResponsibleStaff),
                 ActivityType = createActivityDto.ActivityType,
                 Location = createActivityDto.Location,
                 MaxParticipants = createActivityDto.MaxParticipants,
@@ -111,12 +113,12 @@ public class ActivityService : IActivityService
             await _activityRepository.AddAsync(activityEntity);
             await _activityRepository.SaveChangesAsync();
 
-            _logger.LogInformation("Activity created successfully with ID {Id}", activityEntity.Id);
+            _logger.LogInfo($"Activity created successfully with ID {activityEntity.Id}");
             return Result<Guid>.SuccessResult(activityEntity.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating activity");
+            _logger.LogError("Error creating activity", ex);
             return Result<Guid>.ErrorResult("An error occurred while creating the activity.");
         }
     }
@@ -135,7 +137,7 @@ public class ActivityService : IActivityService
             activity.Description = updateActivityDto.Description;
             activity.StartDateTime = updateActivityDto.StartDateTime;
             activity.EndDateTime = updateActivityDto.EndDateTime;
-            activity.ResponsibleStaff = System.Text.Json.JsonSerializer.Serialize(updateActivityDto.ResponsibleStaff);
+            activity.ResponsibleStaff = JsonHelper.Serialize(updateActivityDto.ResponsibleStaff);
             activity.ActivityType = updateActivityDto.ActivityType;
             activity.Location = updateActivityDto.Location;
             activity.MaxParticipants = updateActivityDto.MaxParticipants;
@@ -146,12 +148,12 @@ public class ActivityService : IActivityService
             await _activityRepository.UpdateAsync(activity);
             await _activityRepository.SaveChangesAsync();
 
-            _logger.LogInformation("Activity updated successfully with ID {Id}", id);
+            _logger.LogInfo($"Activity updated successfully with ID {id}");
             return Result.SuccessResult();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating activity {Id}", id);
+            _logger.LogError($"Error updating activity {id}", ex);
             return Result.ErrorResult("An error occurred while updating the activity.");
         }
     }
@@ -169,12 +171,12 @@ public class ActivityService : IActivityService
             await _activityRepository.DeleteAsync(activity);
             await _activityRepository.SaveChangesAsync();
 
-            _logger.LogInformation("Activity deleted successfully with ID {Id}", id);
+            _logger.LogInfo($"Activity deleted successfully with ID {id}");
             return Result.SuccessResult();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting activity {Id}", id);
+            _logger.LogError($"Error deleting activity {id}", ex);
             return Result.ErrorResult("An error occurred while deleting the activity.");
         }
     }
@@ -202,17 +204,17 @@ public class ActivityService : IActivityService
             }
 
             participants.Add(userId);
-            activity.Participants = System.Text.Json.JsonSerializer.Serialize(participants);
+            activity.Participants = JsonHelper.Serialize(participants);
             
             await _activityRepository.UpdateAsync(activity);
             await _activityRepository.SaveChangesAsync();
 
-            _logger.LogInformation("User {UserId} joined activity {ActivityId}", userId, activityId);
+            _logger.LogInfo($"User {userId} joined activity {activityId}");
             return Result.SuccessResult();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error joining activity {ActivityId} for user {UserId}", activityId, userId);
+            _logger.LogError($"Error joining activity {activityId} for user {userId}", ex);
             return Result.ErrorResult("An error occurred while joining the activity.");
         }
     }
@@ -235,17 +237,17 @@ public class ActivityService : IActivityService
             }
 
             participants.Remove(userId);
-            activity.Participants = System.Text.Json.JsonSerializer.Serialize(participants);
+            activity.Participants = JsonHelper.Serialize(participants);
             
             await _activityRepository.UpdateAsync(activity);
             await _activityRepository.SaveChangesAsync();
 
-            _logger.LogInformation("User {UserId} left activity {ActivityId}", userId, activityId);
+            _logger.LogInfo($"User {userId} left activity {activityId}");
             return Result.SuccessResult();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error leaving activity {ActivityId} for user {UserId}", activityId, userId);
+            _logger.LogError($"Error leaving activity {activityId} for user {userId}", ex);
             return Result.ErrorResult("An error occurred while leaving the activity.");
         }
     }
@@ -284,7 +286,7 @@ public class ActivityService : IActivityService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking if user {UserId} can join activity {ActivityId}", userId, activityId);
+            _logger.LogError($"Error checking if user {userId} can join activity {activityId}", ex);
             return Result<bool>.ErrorResult("An error occurred while checking activity eligibility.");
         }
     }
@@ -313,16 +315,6 @@ public class ActivityService : IActivityService
 
     private List<Guid> ParseParticipants(string jsonString)
     {
-        if (string.IsNullOrEmpty(jsonString))
-            return new List<Guid>();
-
-        try
-        {
-            return System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(jsonString) ?? new List<Guid>();
-        }
-        catch
-        {
-            return new List<Guid>();
-        }
+        return JsonHelper.Deserialize<List<Guid>>(jsonString) ?? new List<Guid>();
     }
 }

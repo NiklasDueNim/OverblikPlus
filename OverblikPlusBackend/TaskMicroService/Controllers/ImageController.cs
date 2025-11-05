@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Azure.Storage.Blobs;
-using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Controllers
 {

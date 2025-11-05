@@ -1,16 +1,5 @@
-/* Desktop Sidebar */
-.desktop-menu-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 250px;
-    background-color: #f8f9fa;
-    box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
-    padding: 1rem;
-    z-index: 1000;
-    display: block;
-}
+/* Desktop Sidebar - Legacy styles, overridden by MainLayout.razor.css */
+/* This file is kept for compatibility but MainLayout.razor.css takes precedence */
 
 .desktop-menu-bar h2 {
     color: #0071c1;

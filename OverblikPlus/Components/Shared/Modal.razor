@@ -1,0 +1,78 @@
+@* Genbrugelig modal-komponent *@
+@if (Show)
+{
+    <div class="modal-backdrop" @onclick="OnBackdropClick" style="@BackdropStyle">
+        <div class="modal-dialog @DialogClass" @onclick:stopPropagation="true" style="@DialogStyle">
+            <div class="modal-content">
+                @if (ShowHeader)
+                {
+                    <div class="modal-header">
+                        @if (!string.IsNullOrEmpty(Title))
+                        {
+                            <h5 class="modal-title">@Title</h5>
+                        }
+                        @if (ShowCloseButton)
+                        {
+                            <button type="button" class="btn-close" aria-label="Close" @onclick="OnClose"></button>
+                        }
+                    </div>
+                }
+                <div class="modal-body">
+                    @BodyContent
+                </div>
+                @if (ShowFooter)
+                {
+                    <div class="modal-footer">
+                        @FooterContent
+                        @if (ShowDefaultFooter)
+                        {
+                            <button type="button" class="btn btn-secondary" @onclick="OnClose">Luk</button>
+                            @if (!string.IsNullOrEmpty(PrimaryButtonText))
+                            {
+                                <button type="button" class="btn btn-primary" @onclick="OnPrimaryAction">@PrimaryButtonText</button>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public EventCallback<bool> ShowChanged { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? BodyContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+    [Parameter] public bool ShowHeader { get; set; } = true;
+    [Parameter] public bool ShowFooter { get; set; } = true;
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+    [Parameter] public bool ShowDefaultFooter { get; set; } = true;
+    [Parameter] public string? PrimaryButtonText { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnPrimaryAction { get; set; }
+    [Parameter] public bool CloseOnBackdropClick { get; set; } = true;
+    [Parameter] public string DialogClass { get; set; } = "modal-dialog-centered";
+    [Parameter] public string? DialogStyle { get; set; }
+    [Parameter] public string? BackdropStyle { get; set; } = "position: fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5); z-index:999;";
+
+    private async Task OnBackdropClick()
+    {
+        if (CloseOnBackdropClick)
+        {
+            await Close();
+        }
+    }
+
+    private async Task Close()
+    {
+        Show = false;
+        await ShowChanged.InvokeAsync(Show);
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}
+

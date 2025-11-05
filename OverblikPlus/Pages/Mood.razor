@@ -1,83 +1,87 @@
 @page "/mood"
 @using OverblikPlus.AuthHelpers
-@using OverblikPlus.Models
 @using OverblikPlus.Models.Dtos.Mood
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Components.Shared
+@using OverblikPlus.Components
 @inject IMoodService MoodService
 @inject CustomAuthStateProvider AuthStateProvider
+@inherits BasePage
 
-<h3>Hej @AuthStateProvider.User.FirstName</h3>
+<h3>Hej @(AuthStateProvider.User?.FirstName ?? "Bruger")</h3>
 <p>Hvordan har du det?</p>
 
-@if (!string.IsNullOrEmpty(message))
+<AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+<AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
+
+@if (IsLoading)
 {
-    <div class="alert @alertClass alert-dismissible fade show" role="alert">
-        @message
-        <button type="button" class="btn-close" @onclick="() => message = string.Empty"></button>
-    </div>
+    <LoadingSpinner Text="Gemmer..." />
 }
 
 <div class="d-flex gap-2">
-    <button class="btn btn-success btn-lg" @onclick="() => SaveMood(MoodDto.MoodRating.Good)" disabled="@isSaving">God</button>
-    <button class="btn btn-warning btn-lg" @onclick="() => SaveMood(MoodDto.MoodRating.Okay)" disabled="@isSaving">Okay</button>
-    <button class="btn btn-danger btn-lg" @onclick="() => SaveMood(MoodDto.MoodRating.Bad)" disabled="@isSaving">Dårlig</button>
+    <button class="btn btn-success btn-lg" 
+            @onclick="() => SaveMood(MoodDto.MoodRating.Good)" 
+            disabled="@IsLoading">
+        <i class="fas fa-smile me-2"></i>God
+    </button>
+    <button class="btn btn-warning btn-lg" 
+            @onclick="() => SaveMood(MoodDto.MoodRating.Okay)" 
+            disabled="@IsLoading">
+        <i class="fas fa-meh me-2"></i>Okay
+    </button>
+    <button class="btn btn-danger btn-lg" 
+            @onclick="() => SaveMood(MoodDto.MoodRating.Bad)" 
+            disabled="@IsLoading">
+        <i class="fas fa-frown me-2"></i>Dårlig
+    </button>
 </div>
 
-@if (isSaving)
-{
-    <p class="mt-3">Gemmer...</p>
-}
-
 @code {
-    private bool isSaving = false;
-    private string message = string.Empty;
-    private string alertClass = "alert-success";
-
     protected override async Task OnInitializedAsync()
     {
-        
+        // Side er klar til brug
     }
 
     private async Task SaveMood(MoodDto.MoodRating mood)
     {
-        if (isSaving)
+        if (IsLoading || AuthStateProvider.User == null)
             return;
 
-        isSaving = true;
-        message = string.Empty;
+        SetLoading(true);
+        ClearMessages();
 
         try
         {
-            var newMood = new MoodDto()
+            var newMood = new MoodDto
             {
                 Id = Guid.NewGuid(),
                 UserId = AuthStateProvider.User.Id,
                 Date = DateTime.Now,
                 Note = "",
-                Rating = mood,
+                Rating = mood
             };
 
             var result = await MoodService.CreateMood(newMood);
 
             if (result.Success)
             {
-                message = "Dit humør er blevet gemt!";
-                alertClass = "alert-success";
+                SetSuccess("Dit humør er blevet gemt!");
+                LogInfo($"Mood saved for user {AuthStateProvider.User.Id}");
             }
             else
             {
-                message = $"Kunne ikke gemme humør: {result.Error}";
-                alertClass = "alert-danger";
+                SetError(result.Error ?? "Kunne ikke gemme humør.");
             }
         }
         catch (Exception ex)
         {
-            message = $"Fejl: {ex.Message}";
-            alertClass = "alert-danger";
+            LogError("Error saving mood", ex);
+            SetError($"Fejl ved lagring: {ex.Message}");
         }
         finally
         {
-            isSaving = false;
+            SetLoading(false);
         }
     }
 }

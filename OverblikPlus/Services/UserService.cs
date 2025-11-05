@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using OverblikPlus.Common;
 using OverblikPlus.Models.Dtos.User;
 using OverblikPlus.Services.Interfaces;
@@ -9,49 +10,63 @@ namespace OverblikPlus.Services;
 public class UserService : IUserService
 {
     private readonly HttpClient _httpClient;
+    private readonly ILogger<UserService> _logger;
 
-    public UserService(HttpClient httpClient)
+    public UserService(HttpClient httpClient, ILogger<UserService> logger)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<IEnumerable<ReadUserDto>> GetAllUsers()
+    public async Task<Result<IEnumerable<ReadUserDto>>> GetAllUsers()
     {
         try
         {
-            var users = await _httpClient.GetFromJsonAsync<IEnumerable<ReadUserDto>>("api/User/users");
-            if (users == null)
+            var response = await _httpClient.GetAsync("api/User/users");
+            
+            if (response.IsSuccessStatusCode)
             {
-                throw new Exception("No users received.");
+                var users = await response.Content.ReadFromJsonAsync<IEnumerable<ReadUserDto>>();
+                if (users != null)
+                {
+                    return Result<IEnumerable<ReadUserDto>>.SuccessResult(users);
+                }
             }
-            return users;
+            
+            return Result<IEnumerable<ReadUserDto>>.ErrorResult("Kunne ikke hente brugere");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error retrieving users: {ex.Message}");
-            return new List<ReadUserDto>();
+            _logger.LogError(ex, "Error retrieving users");
+            return Result<IEnumerable<ReadUserDto>>.ErrorResult($"Fejl ved hentning af brugere: {ex.Message}");
         }
     }
 
-    public async Task<ReadUserDto?> GetUserById(string id)
+    public async Task<Result<ReadUserDto>> GetUserById(string id)
     {
         try
         {
-            var user = await _httpClient.GetFromJsonAsync<ReadUserDto>($"api/User/{id}");
-            if (user == null)
+            var response = await _httpClient.GetAsync($"api/User/{id}");
+            
+            if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"User with ID {id} not found.");
+                var user = await response.Content.ReadFromJsonAsync<ReadUserDto>();
+                if (user != null)
+                {
+                    return Result<ReadUserDto>.SuccessResult(user);
+                }
             }
-            return user;
+            
+            return Result<ReadUserDto>.ErrorResult($"Bruger med ID {id} blev ikke fundet");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error retrieving user with ID {id}: {ex.Message}");
-            return null;
+            _logger.LogError(ex, "Error retrieving user with ID {UserId}", id);
+            return Result<ReadUserDto>.ErrorResult($"Fejl ved hentning af bruger: {ex.Message}");
         }
     }
 
-    public async Task<IEnumerable<ReadUserDto>> GetUsersByBostedId(int bostedId)
+    public async Task<Result<IEnumerable<ReadUserDto>>> GetUsersByBostedId(int bostedId)
     {
         try
         {
@@ -59,7 +74,7 @@ public class UserService : IUserService
             if (response != null && response.Success && response.Data != null)
             {
                 // Map ApplicationUserDto to ReadUserDto
-                return response.Data.Select(u => new ReadUserDto
+                var users = response.Data.Select(u => new ReadUserDto
                 {
                     Id = u.Id,
                     FirstName = u.FirstName,
@@ -67,13 +82,16 @@ public class UserService : IUserService
                     Username = u.UserName ?? u.Email,
                     Role = u.Role
                 });
+                return Result<IEnumerable<ReadUserDto>>.SuccessResult(users);
             }
-            return new List<ReadUserDto>();
+            
+            return Result<IEnumerable<ReadUserDto>>.ErrorResult(
+                response?.Error ?? $"Kunne ikke hente brugere for bosted {bostedId}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error retrieving users for bosted {bostedId}: {ex.Message}");
-            return new List<ReadUserDto>();
+            _logger.LogError(ex, "Error retrieving users for bosted {BostedId}", bostedId);
+            return Result<IEnumerable<ReadUserDto>>.ErrorResult($"Fejl ved hentning af brugere: {ex.Message}");
         }
     }
 
@@ -92,14 +110,22 @@ public class UserService : IUserService
             };
 
             var response = await _httpClient.PostAsJsonAsync("api/auth/register", mappedUser);
-            response.EnsureSuccessStatusCode();
             
-            return new Result { Success = true };
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("User created successfully");
+                return Result.SuccessResult();
+            }
+            
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to create user. Status: {StatusCode}, Error: {Error}", 
+                response.StatusCode, errorContent);
+            return Result.ErrorResult($"Kunne ikke oprette bruger: {errorContent}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error creating user: {ex.Message}");
-            throw;
+            _logger.LogError(ex, "Error creating user");
+            return Result.ErrorResult($"Fejl ved oprettelse af bruger: {ex.Message}");
         }
     }
 
@@ -115,31 +141,51 @@ public class UserService : IUserService
         };
     }
 
-    public async Task UpdateUser(string id, UpdateUserDto updatedUser)
+    public async Task<Result> UpdateUser(string id, UpdateUserDto updatedUser)
     {
         try
         {
             var response = await _httpClient.PutAsJsonAsync($"api/User/{id}", updatedUser);
-            response.EnsureSuccessStatusCode();
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("User {UserId} updated successfully", id);
+                return Result.SuccessResult();
+            }
+            
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to update user {UserId}. Status: {StatusCode}, Error: {Error}", 
+                id, response.StatusCode, errorContent);
+            return Result.ErrorResult($"Kunne ikke opdatere bruger: {errorContent}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error updating user with ID {id}: {ex.Message}");
-            throw;
+            _logger.LogError(ex, "Error updating user with ID {UserId}", id);
+            return Result.ErrorResult($"Fejl ved opdatering af bruger: {ex.Message}");
         }
     }
 
-    public async Task DeleteUser(string id)
+    public async Task<Result> DeleteUser(string id)
     {
         try
         {
             var response = await _httpClient.DeleteAsync($"api/User/{id}");
-            response.EnsureSuccessStatusCode();
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("User {UserId} deleted successfully", id);
+                return Result.SuccessResult();
+            }
+            
+            var errorContent = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to delete user {UserId}. Status: {StatusCode}, Error: {Error}", 
+                id, response.StatusCode, errorContent);
+            return Result.ErrorResult($"Kunne ikke slette bruger: {errorContent}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error deleting user with ID {id}: {ex.Message}");
-            throw;
+            _logger.LogError(ex, "Error deleting user with ID {UserId}", id);
+            return Result.ErrorResult($"Fejl ved sletning af bruger: {ex.Message}");
         }
     }
 }

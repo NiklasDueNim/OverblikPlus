@@ -1,4 +1,4 @@
-using TaskMicroService.Common;
+using OverblikPlus.Shared.Common;
 using TaskMicroService.dtos.Activity;
 
 namespace TaskMicroService.Services.Interfaces;

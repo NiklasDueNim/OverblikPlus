@@ -23,47 +23,38 @@ public class RelativeController : ControllerBase
     [HttpGet("{userId}/tasks-for-day")]
     public async Task<ActionResult<IEnumerable<ReadTaskDto>>> GetTasksForDayForSpecificUser(string userId, [FromQuery, BindRequired] DateTime date)
     {
-        try
-        {
-            _logger.LogInfo($"Fetching tasks for user with id: {userId} for date: {date}");
-            var tasks = await _relativeService.GetTasksForDayForSpecificUser(userId, date);
-            _logger.LogInfo($"Found {tasks.Count()} tasks for user with id: {userId} for date: {date}");
-            return Ok(tasks);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { Message = ex.Message });
-        }
+        _logger.LogInfo($"Fetching tasks for user with id: {userId} for date: {date}");
+        var result = await _relativeService.GetTasksForDayForSpecificUser(userId, date);
+        
+        if (!result.Success)
+            return BadRequest(result);
+
+        _logger.LogInfo($"Found {result.Data?.Count() ?? 0} tasks for user with id: {userId} for date: {date}");
+        return Ok(result);
     }
     
     [HttpGet("{userId}/events-for-day")]
     public async Task<ActionResult<IEnumerable<ReadCalendarEventDto>>> GetEventsForDayForSpecificUser(string userId, [FromQuery, BindRequired] DateTime date)
     {
-        try
-        {
-            _logger.LogInfo($"Fetching events for user with id: {userId} for date: {date}");
-            var events = await _relativeService.GetEventsForDayForSpecificUser(userId, date);
-            _logger.LogInfo($"Found {events.Count()} events for user with id: {userId} for date: {date}");
-            return Ok(events);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { Message = ex.Message });
-        }
+        _logger.LogInfo($"Fetching events for user with id: {userId} for date: {date}");
+        var result = await _relativeService.GetEventsForDayForSpecificUser(userId, date);
+        
+        if (!result.Success)
+            return BadRequest(result);
+
+        _logger.LogInfo($"Found {result.Data?.Count() ?? 0} events for user with id: {userId} for date: {date}");
+        return Ok(result);
     }
     
     [HttpGet("{userId}/events")]
     public async Task<ActionResult<IEnumerable<ReadCalendarEventDto>>> GetEventsForIntervalForUser(
         string userId, [FromQuery] DateTime from, [FromQuery] DateTime to)
     {
-        try
-        {
-            var events = await _relativeService.GetEventsForIntervalForUser(userId, from, to);
-            return Ok(events);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var result = await _relativeService.GetEventsForIntervalForUser(userId, from, to);
+        
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
     }
 }

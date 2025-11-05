@@ -1,0 +1,31 @@
+@* Widget container component with drag and drop support *@
+<div class="widget-container @SizeClass @(IsDragging ? "dragging" : "")" 
+     draggable="@IsEditMode"
+     @ondragstart="@OnDragStart"
+     @ondragover:preventDefault
+     @ondrop="@OnDrop"
+     @ondragenter="@OnDragEnter"
+     @ondragleave="@OnDragLeave"
+     @onclick="@OnClick"
+     @onclick:stopPropagation="true">
+    @if (IsEditMode)
+    {
+        <div class="drag-handle">
+            <i class="fas fa-grip-vertical"></i>
+        </div>
+    }
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string SizeClass { get; set; } = string.Empty;
+    [Parameter] public bool IsEditMode { get; set; }
+    [Parameter] public bool IsDragging { get; set; }
+    [Parameter] public EventCallback OnDragStart { get; set; }
+    [Parameter] public EventCallback OnDrop { get; set; }
+    [Parameter] public EventCallback OnDragEnter { get; set; }
+    [Parameter] public EventCallback OnDragLeave { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+}
+

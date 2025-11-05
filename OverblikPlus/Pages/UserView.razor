@@ -2,25 +2,46 @@
 @using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models.Dtos.User
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Components.Shared
+@using OverblikPlus.Components
 @inject IUserService UserService
 @inject CustomAuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inherits BasePage
 
 <h3>Brugerprofil</h3>
 
-@if (user == null)
+<AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+
+@if (IsLoading)
 {
-    <p>Loading...</p>
+    <LoadingSpinner Text="Indlæser brugerprofil..." />
+}
+else if (user == null)
+{
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Brugeren blev ikke fundet.
+    </div>
+    <button class="btn btn-secondary" @onclick="GoBack">Tilbage</button>
 }
 else
 {
-    <p>Username: @user.Username</p>
-    <p>Navn: @user.FirstName @user.LastName</p>
-    <p>Rolle: @user.Role</p>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">@user.FirstName @user.LastName</h5>
+            <p class="card-text">
+                <strong>Brugernavn:</strong> @user.Username<br/>
+                <strong>Rolle:</strong> @user.Role
+            </p>
+            <button class="btn btn-secondary" @onclick="GoBack">Tilbage</button>
+        </div>
+    </div>
 }
 
 @code {
-    [Parameter] public string userId { get; set; }
-    private ReadUserDto user;
+    [Parameter] public string? userId { get; set; }
+    private ReadUserDto? user;
 
     protected override async Task OnInitializedAsync()
     {
@@ -31,7 +52,45 @@ else
 
         if (!string.IsNullOrEmpty(userId))
         {
-            user = await UserService.GetUserById(userId);
+            await LoadUser(userId);
         }
+        else
+        {
+            SetError("Bruger ID mangler.");
+        }
+    }
+
+    private async Task LoadUser(string id)
+    {
+        SetLoading(true);
+        ClearMessages();
+        
+        try
+        {
+            var result = await UserService.GetUserById(id);
+            if (result.Success && result.Data != null)
+            {
+                user = result.Data;
+                LogInfo($"Loaded user {id}");
+            }
+            else
+            {
+                SetError(result.Error ?? "Brugeren blev ikke fundet.");
+            }
+        }
+        catch (Exception ex)
+        {
+            LogError("Error loading user", ex);
+            SetError("Kunne ikke hente brugerprofil. Prøv igen senere.");
+        }
+        finally
+        {
+            SetLoading(false);
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/user-list");
     }
 }

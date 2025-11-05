@@ -352,8 +352,12 @@ else
     {
         try
         {
-            var user = await UserService.GetUserById(userId.ToString());
-            return user?.FirstName + " " + user?.LastName ?? "Ukendt medarbejder";
+            var result = await UserService.GetUserById(userId.ToString());
+            if (result.Success && result.Data != null)
+            {
+                return $"{result.Data.FirstName} {result.Data.LastName}";
+            }
+            return "Ukendt medarbejder";
         }
         catch
         {
@@ -365,8 +369,12 @@ else
     {
         try
         {
-            var user = await UserService.GetUserById(userId.ToString());
-            return user?.FirstName + " " + user?.LastName ?? "Ukendt beboer";
+            var result = await UserService.GetUserById(userId.ToString());
+            if (result.Success && result.Data != null)
+            {
+                return $"{result.Data.FirstName} {result.Data.LastName}";
+            }
+            return "Ukendt beboer";
         }
         catch
         {

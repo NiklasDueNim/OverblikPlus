@@ -1,83 +1,101 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using TaskMicroService.DataAccess;
+using OverblikPlus.Shared.Common;
+using OverblikPlus.Shared.Interfaces;
 using TaskMicroService.Dtos.Calendar;
 using TaskMicroService.dtos.Task;
+using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 
 namespace TaskMicroService.Services;
 
 public class RelativeService : IRelativeService
 {
-    private readonly TaskDbContext _dbContext;
+    private readonly ITaskRepository _taskRepository;
+    private readonly ICalendarEventRepository _calendarEventRepository;
     private readonly IMapper _mapper;
+    private readonly ILoggerService _logger;
 
-    public RelativeService(TaskDbContext dbContext, IMapper mapper)
+    public RelativeService(
+        ITaskRepository taskRepository,
+        ICalendarEventRepository calendarEventRepository,
+        IMapper mapper,
+        ILoggerService logger)
     {
-        _dbContext = dbContext;
-        _mapper = mapper;
+        _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
+        _calendarEventRepository = calendarEventRepository ?? throw new ArgumentNullException(nameof(calendarEventRepository));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<IEnumerable<ReadTaskDto>> GetTasksForDayForSpecificUser(string userId, DateTime date)
+    public async Task<Result<IEnumerable<ReadTaskDto>>> GetTasksForDayForSpecificUser(string userId, DateTime date)
     {
-        var tasks = await _dbContext.Tasks
-            .Where(t => t.UserId == userId && t.StartDate.Date == date.Date)
-            .ToListAsync();
-
-        if (tasks == null || !tasks.Any())
+        try
         {
-            return Enumerable.Empty<ReadTaskDto>();
+            _logger.LogInfo($"Getting tasks for user {userId} on date {date.Date}");
+
+            var tasks = await _taskRepository.GetByUserIdAndDateAsync(userId, date);
+
+            if (!tasks.Any())
+            {
+                _logger.LogInfo($"No tasks found for user {userId} on date {date.Date}");
+                return Result<IEnumerable<ReadTaskDto>>.SuccessResult(Enumerable.Empty<ReadTaskDto>());
+            }
+
+            var mappedTasks = _mapper.Map<List<ReadTaskDto>>(tasks);
+            return Result<IEnumerable<ReadTaskDto>>.SuccessResult(mappedTasks);
         }
-
-        var mappedTasks = _mapper.Map<IEnumerable<ReadTaskDto>>(tasks);
-
-        if (mappedTasks == null || !mappedTasks.Any())
+        catch (Exception ex)
         {
-            throw new InvalidOperationException("Mapping from TaskEntity to ReadTaskDto failed or resulted in an empty list.");
+            _logger.LogError($"Error getting tasks for user {userId} on date {date.Date}: {ex.Message}", ex);
+            return Result<IEnumerable<ReadTaskDto>>.ErrorResult($"Error getting tasks: {ex.Message}");
         }
-
-        return mappedTasks;
     }
 
-    public async Task<IEnumerable<ReadCalendarEventDto>> GetEventsForDayForSpecificUser(string userId, DateTime date)
+    public async Task<Result<IEnumerable<ReadCalendarEventDto>>> GetEventsForDayForSpecificUser(string userId, DateTime date)
     {
-        var events = await _dbContext.CalendarEvents
-            .Where(e => e.UserId == userId && e.StartDateTime.Date == date.Date)
-            .ToListAsync();
-
-        if (events == null || !events.Any())
+        try
         {
-            return Enumerable.Empty<ReadCalendarEventDto>();
+            _logger.LogInfo($"Getting calendar events for user {userId} on date {date.Date}");
+
+            var events = await _calendarEventRepository.GetEventsByUserIdAndDateAsync(userId, date);
+
+            if (!events.Any())
+            {
+                _logger.LogInfo($"No calendar events found for user {userId} on date {date.Date}");
+                return Result<IEnumerable<ReadCalendarEventDto>>.SuccessResult(Enumerable.Empty<ReadCalendarEventDto>());
+            }
+
+            var mappedEvents = _mapper.Map<List<ReadCalendarEventDto>>(events);
+            return Result<IEnumerable<ReadCalendarEventDto>>.SuccessResult(mappedEvents);
         }
-
-        var mappedEvents = _mapper.Map<IEnumerable<ReadCalendarEventDto>>(events);
-
-        if (mappedEvents == null || !mappedEvents.Any())
+        catch (Exception ex)
         {
-            throw new InvalidOperationException("Mapping from CalendarEvent to ReadCalendarEventDto failed or resulted in an empty list.");
+            _logger.LogError($"Error getting calendar events for user {userId} on date {date.Date}: {ex.Message}", ex);
+            return Result<IEnumerable<ReadCalendarEventDto>>.ErrorResult($"Error getting calendar events: {ex.Message}");
         }
-
-        return mappedEvents;
     }
 
-    public async Task<IEnumerable<ReadCalendarEventDto>> GetEventsForIntervalForUser(string userId, DateTime from, DateTime to)
+    public async Task<Result<IEnumerable<ReadCalendarEventDto>>> GetEventsForIntervalForUser(string userId, DateTime from, DateTime to)
     {
-        var events = await _dbContext.CalendarEvents
-            .Where(e => e.UserId == userId && e.StartDateTime >= from && e.StartDateTime <= to)
-            .ToListAsync();
-
-        if (events == null || !events.Any())
+        try
         {
-            return Enumerable.Empty<ReadCalendarEventDto>();
+            _logger.LogInfo($"Getting calendar events for user {userId} from {from.Date} to {to.Date}");
+
+            var events = await _calendarEventRepository.GetEventsByUserIdAndDateRangeAsync(userId, from, to);
+
+            if (!events.Any())
+            {
+                _logger.LogInfo($"No calendar events found for user {userId} from {from.Date} to {to.Date}");
+                return Result<IEnumerable<ReadCalendarEventDto>>.SuccessResult(Enumerable.Empty<ReadCalendarEventDto>());
+            }
+
+            var mappedEvents = _mapper.Map<List<ReadCalendarEventDto>>(events);
+            return Result<IEnumerable<ReadCalendarEventDto>>.SuccessResult(mappedEvents);
         }
-
-        var mappedEvents = _mapper.Map<IEnumerable<ReadCalendarEventDto>>(events);
-
-        if (mappedEvents == null || !mappedEvents.Any())
+        catch (Exception ex)
         {
-            throw new InvalidOperationException("Mapping from CalendarEvent to ReadCalendarEventDto failed or resulted in an empty list.");
+            _logger.LogError($"Error getting calendar events for user {userId} from {from.Date} to {to.Date}: {ex.Message}", ex);
+            return Result<IEnumerable<ReadCalendarEventDto>>.ErrorResult($"Error getting calendar events: {ex.Message}");
         }
-
-        return mappedEvents;
     }
 }

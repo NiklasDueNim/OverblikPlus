@@ -1,13 +1,29 @@
 @page "/user-list"
 @using OverblikPlus.Models.Dtos.User
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Components.Shared
+@using OverblikPlus.Components
+@using Microsoft.AspNetCore.Components
 @inject IUserService UserService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inherits BasePage
 
 <h3>Liste over brugere</h3>
 
-@if (users == null)
+<AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+<AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
+
+@if (IsLoading)
 {
-    <p>Indlæser brugere...</p>
+    <LoadingSpinner Text="Indlæser brugere..." />
+}
+else if (users == null || !users.Any())
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Ingen brugere fundet.
+    </div>
 }
 else
 {
@@ -30,8 +46,8 @@ else
                 <td>@user.Username</td>
                 <td>@user.Role</td>
                 <td>
-                    <button class="btn btn-primary" @onclick="() => EditUser(user.Id)">Rediger</button>
-                    <button class="btn btn-danger" @onclick="() => DeleteUser(user.Id)">Slet</button>
+                    <button class="btn btn-primary btn-sm" @onclick="() => EditUser(user.Id)">Rediger</button>
+                    <button class="btn btn-danger btn-sm ms-2" @onclick="() => DeleteUser(user.Id)">Slet</button>
                 </td>
             </tr>
         }
@@ -39,8 +55,17 @@ else
     </table>
 }
 
+<ConfirmDialog Show="@showDeleteConfirm" 
+               Title="Slet bruger" 
+               Message="Er du sikker på, at du vil slette denne bruger?" 
+               ConfirmText="Slet" 
+               OnConfirmed="ConfirmDeleteUser" 
+               OnCancelled="CancelDeleteUser" />
+
 @code {
-    private IEnumerable<ReadUserDto> users;
+    private IEnumerable<ReadUserDto>? users;
+    private bool showDeleteConfirm = false;
+    private string? userToDeleteId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,27 +74,82 @@ else
 
     private async Task LoadUsers()
     {
+        SetLoading(true);
+        ClearMessages();
+        
         try
         {
-            users = await UserService.GetAllUsers();
-            Console.WriteLine($"Loaded {users.Count()} users.");
+            var result = await UserService.GetAllUsers();
+            if (result.Success && result.Data != null)
+            {
+                users = result.Data;
+                LogInfo($"Loaded {users.Count()} users.");
+            }
+            else
+            {
+                SetError(result.Error ?? "Kunne ikke hente brugere.");
+                users = Enumerable.Empty<ReadUserDto>();
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading users: {ex.Message}");
+            LogError("Error loading users", ex);
+            SetError("Kunne ikke hente brugere. Prøv igen senere.");
+            users = Enumerable.Empty<ReadUserDto>();
+        }
+        finally
+        {
+            SetLoading(false);
         }
     }
 
-
-    private async Task EditUser(string userId)
+    private void EditUser(string userId)
     {
-        await UserService.UpdateUser(userId, new UpdateUserDto());
-        
+        NavigationManager.NavigateTo($"/user/{userId}");
     }
 
     private async Task DeleteUser(string userId)
     {
-        await UserService.DeleteUser(userId);
-        await LoadUsers();
+        userToDeleteId = userId;
+        showDeleteConfirm = true;
+    }
+
+    private async Task ConfirmDeleteUser()
+    {
+        if (string.IsNullOrEmpty(userToDeleteId))
+            return;
+
+        SetLoading(true);
+        
+        try
+        {
+            var result = await UserService.DeleteUser(userToDeleteId);
+            if (result.Success)
+            {
+                SetSuccess("Brugeren er slettet.");
+                await LoadUsers();
+            }
+            else
+            {
+                SetError(result.Error ?? "Kunne ikke slette brugeren.");
+            }
+        }
+        catch (Exception ex)
+        {
+            LogError("Error deleting user", ex);
+            SetError("Kunne ikke slette brugeren. Prøv igen senere.");
+        }
+        finally
+        {
+            SetLoading(false);
+            showDeleteConfirm = false;
+            userToDeleteId = null;
+        }
+    }
+
+    private void CancelDeleteUser()
+    {
+        showDeleteConfirm = false;
+        userToDeleteId = null;
     }
 }

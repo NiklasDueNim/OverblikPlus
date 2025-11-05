@@ -159,8 +159,14 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSingleton<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
-    new JwtAuthorizationMessageHandler(provider.GetRequiredService<CustomAuthStateProvider>())
-        .ConfigureHandler(new[] { taskApiBaseUrl, userApiBaseUrl }));
+{
+    var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger<JwtAuthorizationMessageHandler>();
+    return new JwtAuthorizationMessageHandler(
+        provider.GetRequiredService<CustomAuthStateProvider>(),
+        logger,
+        new[] { taskApiBaseUrl, userApiBaseUrl });
+});
 
 void ConfigureHttpClient<TClient, TImplementation>(IServiceCollection services, string baseUrl)
     where TClient : class

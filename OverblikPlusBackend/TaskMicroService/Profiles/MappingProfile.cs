@@ -30,8 +30,6 @@ namespace TaskMicroService.Profiles
                 .ForMember(dest => dest.NextOccurrence, opt => opt.Ignore())
                 .ForMember(dest => dest.SelectedWeekDays, opt => opt.MapFrom(src => 
                     System.Text.Json.JsonSerializer.Serialize(src.SelectedWeekDays ?? new Dictionary<string, bool>(), (System.Text.Json.JsonSerializerOptions)null)));
-                
-            
             
             
             CreateMap<UpdateTaskDto, TaskEntity>()

@@ -1,4 +1,4 @@
-using UserMicroService.Common;
+using OverblikPlus.Shared.Common;
 using UserMicroService.dto;
 
 namespace UserMicroService.Services.Interfaces

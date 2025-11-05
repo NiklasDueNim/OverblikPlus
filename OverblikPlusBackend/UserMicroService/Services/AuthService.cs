@@ -15,7 +15,7 @@ using UserMicroService.dto;
 using UserMicroService.Entities;
 using UserMicroService.Services.Interfaces;
 using OverblikPlus.Shared.Interfaces;
-using UserMicroService.Common;
+using OverblikPlus.Shared.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,6 +31,7 @@ namespace UserMicroService.Services
         private readonly ILoggerService _logger;
         private readonly IValidator<RegisterDto> _registerDtoValidator;
         private readonly IMapper _mapper;
+        private readonly IJwtTokenService _jwtTokenService;
 
         public AuthService(UserManager<ApplicationUser> userManager,
                            SignInManager<ApplicationUser> signInManager,
@@ -38,7 +39,9 @@ namespace UserMicroService.Services
                            IConfiguration configuration,
                            UserDbContext dbContext,
                            ILoggerService logger,
-                           IValidator<RegisterDto> registerDtoValidator, IMapper  mapper)
+                           IValidator<RegisterDto> registerDtoValidator, 
+                           IMapper mapper,
+                           IJwtTokenService jwtTokenService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -48,6 +51,7 @@ namespace UserMicroService.Services
             _logger = logger;
             _registerDtoValidator = registerDtoValidator;
             _mapper = mapper;
+            _jwtTokenService = jwtTokenService ?? throw new ArgumentNullException(nameof(jwtTokenService));
         }
 
         public async Task<Result<LoginResponseDto>> LoginAsync(LoginDto loginDto)
@@ -248,35 +252,7 @@ namespace UserMicroService.Services
 
         private string GenerateJwtToken(ApplicationUser user)
         {
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim("nameid", user.Id),
-                new Claim(ClaimTypes.Role, user.Role),
-                new Claim("bostedId", user.BostedId.ToString())
-            };
-
-            var keyString = _configuration["Jwt:Key"];
-            if (string.IsNullOrEmpty(keyString))
-            {
-                _logger.LogError("Jwt:Key is null or empty!", new ArgumentNullException("Jwt:Key"));
-            }
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(keyString));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var issuer = _configuration["Jwt:Issuer"];
-            var audience = _configuration["Jwt:Audience"];
-
-            var token = new JwtSecurityToken(
-                issuer,
-                audience,
-                claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return _jwtTokenService.GenerateToken(user);
         }
     }
 }

@@ -1,0 +1,27 @@
+@* Loading spinner komponent *@
+@if (Show)
+{
+    <div class="text-center py-4">
+        <div class="spinner-border @SizeClass" role="status">
+            <span class="visually-hidden">@Text</span>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Text))
+        {
+            <p class="mt-2">@Text</p>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; } = true;
+    [Parameter] public string Text { get; set; } = "Indlæser...";
+    [Parameter] public string Size { get; set; } = "normal"; // normal, small, large
+
+    private string SizeClass => Size switch
+    {
+        "small" => "spinner-border-sm",
+        "large" => "spinner-border-lg",
+        _ => ""
+    };
+}
+

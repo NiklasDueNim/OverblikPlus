@@ -6,8 +6,9 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components
 @using System.Timers
-    <AuthorizeView>
-        <Authorized>
+
+<AuthorizeView>
+    <Authorized>
         <!-- Widget-based Dashboard for logged in users -->
         <div class="dashboard-container">
             @if (showWelcomeMessage)
@@ -18,152 +19,38 @@
                 </div>
             }
             
-            <div class="dashboard-controls">
-                <div class="dashboard-actions">
-                    <button class="btn btn-outline-primary btn-sm" @onclick="ToggleEditMode">
-                        <i class="fas fa-cog me-1"></i>
-                        @(isEditMode ? "Færdig" : "Tilpas")
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm" @onclick="ResetLayout">
-                        <i class="fas fa-undo me-1"></i>
-                        Nulstil
-                    </button>
-                </div>
-            </div>
+            <DashboardControls IsEditMode="isEditMode" 
+                              OnToggleEditMode="ToggleEditMode" 
+                              OnResetLayout="ResetLayout" />
 
             <div class="widgets-grid @(isEditMode ? "edit-mode" : "")">
                 @foreach (var widget in GetVisibleWidgets())
                 {
-                    <div class="widget-container @GetWidgetSizeClass(widget.Size) @(draggedWidget == widget ? "dragging" : "")" 
-                         draggable="@isEditMode"
-                         @ondragstart="@(() => OnDragStart(widget))"
-                         @ondragover:preventDefault
-                         @ondrop="@(() => OnDrop(widget))"
-                         @ondragenter="@(() => OnDragEnter(widget))"
-                         @ondragleave="OnDragLeave"
-                         @onclick="@(() => OnWidgetClick(widget))"
-                         @onclick:stopPropagation="true">
-                        @if (isEditMode)
-                        {
-                            <div class="drag-handle">
-                                <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        }
+                    <WidgetContainer SizeClass="@GetWidgetSizeClass(widget.Size)"
+                                     IsEditMode="isEditMode"
+                                     IsDragging="@(draggedWidget == widget)"
+                                     OnDragStart="@(() => OnDragStart(widget))"
+                                     OnDrop="@(() => OnDrop(widget))"
+                                     OnDragEnter="@(() => OnDragEnter(widget))"
+                                     OnDragLeave="OnDragLeave"
+                                     OnClick="@(() => OnWidgetClick(widget))">
                         @if (widget.Type == "Tasks")
                         {
-                            <TasksWidget @ref="tasksWidgetRef" WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
+                            <WidgetRenderer Widget="widget" OnWidgetClicked="OnWidgetClick" @ref="tasksWidgetRendererRef" />
                         }
-                        else if (widget.Type == "Shifts")
+                        else
                         {
-                            <ShiftsWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
+                            <WidgetRenderer Widget="widget" OnWidgetClicked="OnWidgetClick" />
                         }
-                        else if (widget.Type == "Activities")
-                        {
-                            <ActivitiesWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
-                        }
-                        else if (widget.Type == "QuickActions")
-                        {
-                            <QuickActionsWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
-                        }
-                        else if (widget.Type == "Notifications")
-                        {
-                            <NotificationsWidget WidgetInfo="widget" OnWidgetClicked="OnWidgetClick" />
-                        }
-                        else if (widget.Type == "Announcements")
-                        {
-                            <div class="widget-announcements">
-                                <div class="widget-header">
-                                    <h4>@widget.Title</h4>
-                                </div>
-                                <div class="widget-body">
-                                    <p>Klik for at se alle opslag</p>
-                                </div>
-                            </div>
-                        }
-                    </div>
+                    </WidgetContainer>
                 }
             </div>
         </div>
     </Authorized>
     <NotAuthorized>
-        <!-- Landing page for non-authenticated users -->
-        <div class="landing-page">
-            <div class="hero-section">
-                <div class="hero-content">
-                    <div class="logo-section">
-                        <div class="logo-icon">
-                            <img src="/images/logo-blue.png" alt="OverblikPlus Logo" />
-                        </div>
-                        <h1 class="hero-title">OverblikPlus</h1>
-                    </div>
-                    <p class="hero-subtitle">Dit personlige overblik for et organiseret bosted</p>
-                    <p class="hero-description">
-                        Effektiv administration, kommunikation og opgavestyring samlet ét sted. 
-                        Skab overblik og struktur for både beboere og personale.
-                    </p>
-                    <div class="hero-actions">
-                        <a href="/login" class="btn-primary-large">
-                            <i class="fas fa-sign-in-alt me-2"></i>
-                            Log ind
-                        </a>
-                        <a href="/create-user" class="btn-secondary-large">
-                            <i class="fas fa-user-plus me-2"></i>
-                            Opret konto
-                        </a>
-                    </div>
-                </div>
-                <div class="hero-visual">
-                    <div class="feature-cards">
-                        <div class="feature-card">
-                            <i class="fas fa-tasks"></i>
-                            <h4>Opgavestyring</h4>
-                            <p>Organiser daglige opgaver og rutiner</p>
-                        </div>
-                        <div class="feature-card">
-                            <i class="fas fa-users"></i>
-                            <h4>Aktiviteter</h4>
-                            <p>Planlæg og deltag i fælles aktiviteter</p>
-                            </div>
-                        <div class="feature-card">
-                            <i class="fas fa-comments"></i>
-                            <h4>Kommunikation</h4>
-                            <p>Effektiv kommunikation mellem alle</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="features-section">
-                <div class="container">
-                    <h2 class="features-title">Hvorfor vælge OverblikPlus?</h2>
-                    <div class="features-grid">
-                        <div class="feature-item">
-                            <div class="feature-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <h3>Dagligt overblik</h3>
-                            <p>Få et klart overblik over dagens opgaver og aktiviteter</p>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon">
-                                <i class="fas fa-mobile-alt"></i>
-                            </div>
-                            <h3>Altid tilgængelig</h3>
-                            <p>Adgang til dit overblik på alle enheder, når som helst</p>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <h3>Sikker og privat</h3>
-                            <p>Dine data er beskyttet med moderne sikkerhedsteknologi</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        </NotAuthorized>
-    </AuthorizeView>
+        <LandingPage />
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private List<WidgetInfo> widgets = new();
@@ -174,8 +61,8 @@
     private WidgetInfo? draggedWidget;
     private WidgetInfo? dragTargetWidget;
     
-    // Reference to TasksWidget for refreshing
-    private TasksWidget? tasksWidgetRef;
+    // Reference to TasksWidget renderer for refreshing
+    private WidgetRenderer? tasksWidgetRendererRef;
 
     [Inject] public CustomAuthStateProvider AuthStateProvider { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
@@ -218,9 +105,13 @@
                 await LoadDashboardSettings();
                 
                 // Refresh tasks widget to show new tasks
-                if (tasksWidgetRef != null)
+                if (tasksWidgetRendererRef != null)
                 {
-                    await tasksWidgetRef.RefreshTasks();
+                    var tasksWidget = tasksWidgetRendererRef.GetTasksWidgetRef();
+                    if (tasksWidget != null)
+                    {
+                        await tasksWidget.RefreshTasks();
+                    }
                 }
                 
                 StateHasChanged();
@@ -355,7 +246,7 @@
     {
         // TODO: Implement widget editing logic
         // This could include resizing, moving, or configuring widgets
-        Console.WriteLine($"Editing widget: {widget.Title}");
+        // Widget editing functionality to be implemented
     }
 
     private async Task HandleWidgetNavigation(WidgetInfo widget)
@@ -390,7 +281,6 @@
     private void OnDragStart(WidgetInfo widget)
     {
         draggedWidget = widget;
-        Console.WriteLine($"Drag started: {widget.Title}");
     }
 
     private void OnDragEnter(WidgetInfo widget)
@@ -422,8 +312,6 @@
 
                 // Re-order widgets
                 widgets = widgets.OrderBy(w => w.Position).ToList();
-                
-                Console.WriteLine($"Swapped: {draggedWidget.Title} with {targetWidget.Title}");
                 StateHasChanged();
             }
         }

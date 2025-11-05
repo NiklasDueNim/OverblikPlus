@@ -184,14 +184,10 @@
 
     private async Task GoToTaskSteps(int taskId)
     {
-        var steps = await TaskStepService.GetStepsForTask(taskId);
-        if (steps != null && steps.Count > 0)
+        var result = await TaskStepService.GetStepsForTask(taskId);
+        if (result.Success && result.Data != null && result.Data.Count > 0)
         {
-            NavigationManager.NavigateTo($"/task-step-view/{taskId}/step/{steps.First().Id}");
-        }
-        else
-        {
-            Console.WriteLine($"No steps found for task {taskId}");
+            NavigationManager.NavigateTo($"/task-step-view/{taskId}/step/{result.Data.First().Id}");
         }
     }
 }

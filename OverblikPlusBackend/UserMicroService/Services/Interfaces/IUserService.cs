@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UserMicroService.Common;
+using OverblikPlus.Shared.Common;
 using UserMicroService.dto;
 using UserMicroService.Entities;
 

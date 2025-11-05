@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OverblikPlus.Shared.Interfaces;
@@ -64,7 +63,6 @@ public class MoodController : ControllerBase
     [Authorize(Roles = "Admin, Staff")]
     public async Task<IActionResult> GetMoodsForBosted(int bostedId, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
     {
-        // Verify that the user's bostedId matches the requested bostedId
         var userBostedIdClaim = User.FindFirst("bostedId")?.Value;
         if (string.IsNullOrEmpty(userBostedIdClaim) || !int.TryParse(userBostedIdClaim, out var userBostedId) || userBostedId != bostedId)
         {

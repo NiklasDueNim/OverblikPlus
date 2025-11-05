@@ -84,14 +84,12 @@ public class Program
             logger.LogInfo("Encryption key validated successfully");
         }
         
-        // Decode Base64 key to get the raw 32-byte key
         string encryptionKey;
         try
         {
             var keyBytes = Convert.FromBase64String(encryptionKeyBase64);
             encryptionKey = Encoding.UTF8.GetString(keyBytes);
             
-            // Ensure key is exactly 32 characters for AES-256
             if (encryptionKey.Length > 32)
             {
                 encryptionKey = encryptionKey.Substring(0, 32);
@@ -103,7 +101,6 @@ public class Program
         }
         catch (FormatException)
         {
-            // If not Base64, use as-is and ensure 32 characters
             encryptionKey = encryptionKeyBase64.Length > 32 ? encryptionKeyBase64.Substring(0, 32) : encryptionKeyBase64.PadRight(32, '0');
         }
         
@@ -198,7 +195,6 @@ public class Program
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "UserMicroService API", Version = "v1" });
             
-            // Add JWT Bearer Authentication
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
@@ -229,6 +225,7 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAutoMapper(typeof(Program));
 
+        builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -272,7 +269,6 @@ public class Program
         
         app.UseRouting();
         
-        // CORS skal være mellem UseRouting og UseAuthentication/UseAuthorization
         if (app.Environment.IsDevelopment())
         {
             app.UseCors("AllowLocalDev");
@@ -323,5 +319,4 @@ public class Program
             throw;
         }
     }
-
 }

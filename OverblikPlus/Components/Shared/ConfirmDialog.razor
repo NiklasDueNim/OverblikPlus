@@ -1,0 +1,46 @@
+@* Confirm dialog komponent *@
+@if (Show)
+{
+    <div class="modal-backdrop show" style="opacity: 0.5;" @onclick="OnCancel"></div>
+    <div class="modal show d-block" tabindex="-1" role="dialog" style="z-index: 1050;">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Title</h5>
+                    <button type="button" class="btn-close" aria-label="Luk" @onclick="OnCancel"></button>
+                </div>
+                <div class="modal-body">
+                    <p>@Message</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="OnCancel">@CancelText</button>
+                    <button type="button" class="btn @ConfirmButtonClass" @onclick="OnConfirm">@ConfirmText</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public string Title { get; set; } = "Bekræft";
+    [Parameter] public string Message { get; set; } = "Er du sikker?";
+    [Parameter] public string ConfirmText { get; set; } = "Ja";
+    [Parameter] public string CancelText { get; set; } = "Annuller";
+    [Parameter] public string ConfirmButtonClass { get; set; } = "btn-danger";
+    [Parameter] public EventCallback OnConfirmed { get; set; }
+    [Parameter] public EventCallback OnCancelled { get; set; }
+
+    private async Task OnConfirm()
+    {
+        Show = false;
+        await OnConfirmed.InvokeAsync();
+    }
+
+    private async Task OnCancel()
+    {
+        Show = false;
+        await OnCancelled.InvokeAsync();
+    }
+}
+

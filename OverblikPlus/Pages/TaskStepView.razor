@@ -50,7 +50,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        TaskSteps = await TaskStepService.GetStepsForTask(TaskId);
+        await LoadSteps();
         await LoadCurrentStep();
     }
 
@@ -59,22 +59,34 @@ else
         await LoadCurrentStep();
     }
 
-    private async Task LoadCurrentStep()
+    private async Task LoadSteps()
     {
-        TaskSteps = await TaskStepService.GetStepsForTask(TaskId);
-        for (int i = 0; i < TaskSteps.Count; i++)
+        var result = await TaskStepService.GetStepsForTask(TaskId);
+        if (result.Success && result.Data != null)
         {
-            TaskSteps[i].StepNumber = i + 1;
-        }
-        currentStep = TaskSteps.FirstOrDefault(step => step.Id == StepId);
-        if (currentStep == null)
-        {
-            Console.WriteLine($"Step with ID {StepId} not found for Task {TaskId}.");
-            Navigation.NavigateTo("/tasks");
+            TaskSteps = result.Data;
         }
         else
         {
-            Console.WriteLine($"Loaded Step: ID = {currentStep.Id}, StepNumber = {currentStep.StepNumber}");
+            TaskSteps = new List<ReadTaskStepDto>();
+        }
+    }
+
+    private async Task LoadCurrentStep()
+    {
+        var result = await TaskStepService.GetStepsForTask(TaskId);
+        if (result.Success && result.Data != null)
+        {
+            TaskSteps = result.Data;
+            for (int i = 0; i < TaskSteps.Count; i++)
+            {
+                TaskSteps[i].StepNumber = i + 1;
+            }
+            currentStep = TaskSteps.FirstOrDefault(step => step.Id == StepId);
+            if (currentStep == null)
+            {
+                Navigation.NavigateTo("/tasks");
+            }
         }
     }
 

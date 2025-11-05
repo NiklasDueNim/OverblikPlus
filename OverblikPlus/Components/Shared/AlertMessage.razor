@@ -1,0 +1,50 @@
+@* Alert message komponent til at vise success/error beskeder *@
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div class="alert @AlertClass alert-dismissible fade show" role="alert">
+        @if (ShowIcon)
+        {
+            <i class="@IconClass me-2"></i>
+        }
+        @Message
+        @if (ShowDismiss)
+        {
+            <button type="button" class="btn-close" @onclick="Dismiss" aria-label="Luk"></button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public EventCallback<string?> MessageChanged { get; set; }
+    [Parameter] public AlertType Type { get; set; } = AlertType.Info;
+    [Parameter] public bool ShowDismiss { get; set; } = true;
+    [Parameter] public bool ShowIcon { get; set; } = true;
+    [Parameter] public EventCallback OnDismissed { get; set; }
+
+    private string AlertClass => Type switch
+    {
+        AlertType.Success => "alert-success",
+        AlertType.Error => "alert-danger",
+        AlertType.Warning => "alert-warning",
+        AlertType.Info => "alert-info",
+        _ => "alert-info"
+    };
+
+    private string IconClass => Type switch
+    {
+        AlertType.Success => "fas fa-check-circle",
+        AlertType.Error => "fas fa-exclamation-circle",
+        AlertType.Warning => "fas fa-exclamation-triangle",
+        AlertType.Info => "fas fa-info-circle",
+        _ => "fas fa-info-circle"
+    };
+
+    private async Task Dismiss()
+    {
+        Message = null;
+        await MessageChanged.InvokeAsync(Message);
+        await OnDismissed.InvokeAsync();
+    }
+}
+

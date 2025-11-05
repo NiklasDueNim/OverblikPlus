@@ -1,33 +1,46 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OverblikPlus.Shared.Common;
 using OverblikPlus.Shared.Interfaces;
-using TaskMicroService.Common;
 using TaskMicroService.DataAccess;
 using TaskMicroService.dtos.Task;
 using TaskMicroService.Entities;
+using TaskMicroService.Helpers;
+using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
+using TaskMicroService.Services.Recurrence;
 
 namespace TaskMicroService.Services
 {
     public class TaskService : ITaskService
     {
+        private readonly ITaskRepository _taskRepository;
         private readonly ITaskDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly IImageService _imageService;
         private readonly ILoggerService _logger;
+        private readonly IRecurrenceCalculator _recurrenceCalculator;
 
-        public TaskService(ITaskDbContext dbContext, IMapper mapper, IImageService imageService, ILoggerService logger)
+        public TaskService(
+            ITaskRepository taskRepository,
+            ITaskDbContext dbContext,
+            IMapper mapper,
+            IImageService imageService,
+            ILoggerService logger,
+            IRecurrenceCalculator recurrenceCalculator)
         {
+            _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _imageService = imageService ?? throw new ArgumentNullException(nameof(imageService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _recurrenceCalculator = recurrenceCalculator ?? throw new ArgumentNullException(nameof(recurrenceCalculator));
         }
 
         public async Task<Result<IEnumerable<ReadTaskDto>>> GetAllTasks()
         {
             _logger.LogInfo("Getting all tasks.");
-            var tasks = await _dbContext.Tasks.Include(t => t.Steps).ToListAsync();
+            var tasks = await _taskRepository.GetAllAsync();
 
             var taskDtos = _mapper.Map<List<ReadTaskDto>>(tasks);
             return Result<IEnumerable<ReadTaskDto>>.SuccessResult(taskDtos);
@@ -37,7 +50,7 @@ namespace TaskMicroService.Services
         {
             _logger.LogInfo($"Getting task with id = {id}");
 
-            var task = await _dbContext.Tasks.Include(t => t.Steps).FirstOrDefaultAsync(t => t.Id == id);
+            var task = await _taskRepository.GetByIdAsync(id);
 
             if (task == null)
                 return Result<ReadTaskDto>.ErrorResult($"Task with ID {id} not found.");
@@ -50,10 +63,7 @@ namespace TaskMicroService.Services
         {
             _logger.LogInfo($"Getting all tasks from user {userId}");
 
-            var tasks = await _dbContext.Tasks
-                .Include(t => t.Steps)
-                .Where(t => t.UserId == userId)
-                .ToListAsync();
+            var tasks = await _taskRepository.GetByUserIdAsync(userId);
 
             // Fix missing SeriesId for existing recurring tasks
             var tasksToUpdate = tasks
@@ -69,7 +79,7 @@ namespace TaskMicroService.Services
                 {
                     task.SeriesId = task.Id;
                 }
-                await _dbContext.SaveChangesAsync();
+                await _taskRepository.SaveChangesAsync();
             }
 
             var taskDtos = _mapper.Map<List<ReadTaskDto>>(tasks);
@@ -80,6 +90,7 @@ namespace TaskMicroService.Services
         {
             _logger.LogInfo($"Creating new task for user = {createTaskDto.UserId}");
 
+            // Note: TaskRepository uses the same DbContext, so we can still use transaction from DbContext
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
@@ -92,16 +103,26 @@ namespace TaskMicroService.Services
                 }
 
                 _logger.LogInfo("Calculating next occurrence...");
-                taskEntity.NextOccurrence = CalculateNextOccurrence(createTaskDto.StartDate,
-                    createTaskDto.RecurrenceType, createTaskDto.RecurrenceInterval,
-                    createTaskDto.MonthlyType, createTaskDto.MonthlyDay, createTaskDto.SelectedWeekDays,
-                    createTaskDto.EndType, createTaskDto.EndAfterCount, createTaskDto.EndDate);
+                var recurrenceOptions = new RecurrenceOptions
+                {
+                    StartDate = createTaskDto.StartDate,
+                    RecurrenceType = createTaskDto.RecurrenceType,
+                    RecurrenceInterval = createTaskDto.RecurrenceInterval,
+                    MonthlyType = createTaskDto.MonthlyType,
+                    MonthlyDay = createTaskDto.MonthlyDay,
+                    SelectedWeekDays = createTaskDto.SelectedWeekDays,
+                    EndType = createTaskDto.EndType,
+                    EndAfterCount = createTaskDto.EndAfterCount,
+                    EndDate = createTaskDto.EndDate
+                };
+                taskEntity.NextOccurrence = _recurrenceCalculator.CalculateNext(createTaskDto.StartDate, recurrenceOptions);
 
                 _logger.LogInfo("Saving task...");
-                await SaveTaskAsync(taskEntity);
+                await _taskRepository.AddAsync(taskEntity);
+                await _taskRepository.SaveChangesAsync();
                 
                 // Sæt SeriesId til Id for den første opgave i serien (hvis det er en gentagende opgave)
-                // Dette skal gøres efter SaveTaskAsync fordi vi skal have taskEntity.Id først
+                // Dette skal gøres efter SaveChangesAsync fordi vi skal have taskEntity.Id først
                 if (!string.IsNullOrEmpty(taskEntity.RecurrenceType) && taskEntity.RecurrenceType != "None")
                 {
                     // After SaveChangesAsync, EF Core should have set the Id automatically
@@ -109,7 +130,7 @@ namespace TaskMicroService.Services
                     if (taskEntity.Id > 0)
                     {
                         taskEntity.SeriesId = taskEntity.Id;
-                        await _dbContext.SaveChangesAsync();
+                        await _taskRepository.SaveChangesAsync();
                         _logger.LogInfo($"Set SeriesId={taskEntity.SeriesId} for task {taskEntity.Id}");
                     }
                     else
@@ -133,7 +154,7 @@ namespace TaskMicroService.Services
 
         public async Task<Result> DeleteTask(int id)
         {
-            var task = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+            var task = await _taskRepository.GetByIdAsync(id);
             if (task == null)
                 return Result.ErrorResult($"Task with ID {id} not found.");
 
@@ -145,9 +166,7 @@ namespace TaskMicroService.Services
                 var seriesId = task.SeriesId.Value;
                 
                 // Find alle opgaver i samme serie - kun dem med eksakt samme SeriesId
-                var tasksInSeries = await _dbContext.Tasks
-                    .Where(t => t.SeriesId.HasValue && t.SeriesId.Value == seriesId)
-                    .ToListAsync();
+                var tasksInSeries = await _taskRepository.GetBySeriesIdAsync(seriesId);
 
                 _logger.LogInfo($"Deleting {tasksInSeries.Count} tasks in series {seriesId}");
 
@@ -158,8 +177,8 @@ namespace TaskMicroService.Services
                     {
                         await _imageService.DeleteImageAsync(taskInSeries.ImageUrl);
                     }
-                    _dbContext.Tasks.Remove(taskInSeries);
                 }
+                await _taskRepository.DeleteRangeAsync(tasksInSeries);
             }
             else
             {
@@ -169,10 +188,10 @@ namespace TaskMicroService.Services
                 {
                     await _imageService.DeleteImageAsync(task.ImageUrl);
                 }
-                _dbContext.Tasks.Remove(task);
+                await _taskRepository.DeleteAsync(task);
             }
 
-            await _dbContext.SaveChangesAsync();
+            await _taskRepository.SaveChangesAsync();
 
             return Result.SuccessResult();
         }
@@ -180,7 +199,7 @@ namespace TaskMicroService.Services
         public async Task<Result> UpdateTask(int id, UpdateTaskDto updateTaskDto)
         {
             _logger.LogInfo($"Updating task with id = {id}");
-            var taskEntity = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+            var taskEntity = await _taskRepository.GetByIdAsync(id);
             if (taskEntity == null)
                 return Result.ErrorResult($"Task with ID {id} not found.");
 
@@ -191,13 +210,14 @@ namespace TaskMicroService.Services
                 taskEntity.ImageUrl = await UploadImageAsync(updateTaskDto.ImageBase64);
             }
 
-            await _dbContext.SaveChangesAsync();
+            await _taskRepository.UpdateAsync(taskEntity);
+            await _taskRepository.SaveChangesAsync();
             return Result.SuccessResult();
         }
 
         public async Task<Result> MarkTaskAsCompleted(int taskId)
         {
-            var task = await _dbContext.Tasks.FindAsync(taskId);
+            var task = await _taskRepository.GetByIdAsync(taskId);
             if (task == null)
                 return Result.ErrorResult($"Task with ID {taskId} not found.");
 
@@ -212,7 +232,8 @@ namespace TaskMicroService.Services
             {
                 try
                 {
-                    await _dbContext.SaveChangesAsync();
+                    await _taskRepository.UpdateAsync(task);
+                    await _taskRepository.SaveChangesAsync();
                     _logger.LogInfo($"[MarkTaskAsCompleted] Task {taskId} is not recurring, marked as completed");
                     return Result.SuccessResult();
                 }
@@ -225,21 +246,8 @@ namespace TaskMicroService.Services
             }
 
             // Parse SelectedWeekDays from JSON string
-            var selectedWeekDays = new Dictionary<string, bool>();
-            if (!string.IsNullOrWhiteSpace(task.SelectedWeekDays))
-            {
-                try
-                {
-                    selectedWeekDays = System.Text.Json.JsonSerializer
-                        .Deserialize<Dictionary<string, bool>>(task.SelectedWeekDays)
-                        ?? new Dictionary<string, bool>();
-                }
-                catch
-                {
-                    // Ignorer parsing error -> tomt
-                    selectedWeekDays = new Dictionary<string, bool>();
-                }
-            }
+            var selectedWeekDays = JsonHelper.Deserialize<Dictionary<string, bool>>(task.SelectedWeekDays ?? string.Empty)
+                ?? new Dictionary<string, bool>();
 
             // Bestem SeriesId for denne opgave (brug eksisterende eller sæt til Id)
             var seriesId = task.SeriesId ?? task.Id;
@@ -254,7 +262,8 @@ namespace TaskMicroService.Services
                 _logger.LogInfo($"[MarkTaskAsCompleted] Task {taskId} has future occurrence date {occurrenceDate:yyyy-MM-dd}, not creating next occurrence");
                 try
                 {
-                    await _dbContext.SaveChangesAsync();
+                    await _taskRepository.UpdateAsync(task);
+                    await _taskRepository.SaveChangesAsync();
                     return Result.SuccessResult();
                 }
                 catch (DbUpdateException ex)
@@ -266,85 +275,51 @@ namespace TaskMicroService.Services
             }
 
             // Slet same-day duplicates (midlertidig cleanup - indexet forhindrer nye, men der kan være gammel støj)
-            var sameDayDups = await _dbContext.Tasks
-                .Where(t => 
-                    t.Id != taskId && // Ikke den samme opgave
-                    (t.SeriesId ?? t.Id) == seriesId && // Samme serie
-                    t.NextOccurrence.HasValue &&
-                    t.NextOccurrence.Value.Date == occurrenceDate) // Samme dato
-                .ToListAsync();
+            var sameDayDups = await _taskRepository.GetSameDayDuplicatesAsync(seriesId, occurrenceDate, taskId);
 
             if (sameDayDups.Any())
             {
                 _logger.LogInfo($"[MarkTaskAsCompleted] Removing {sameDayDups.Count} same-day duplicates for series {seriesId} on {occurrenceDate:yyyy-MM-dd}");
-                _dbContext.Tasks.RemoveRange(sameDayDups);
+                await _taskRepository.DeleteRangeAsync(sameDayDups);
             }
             
             // Slet alle gamle opgaver fra fortiden i samme serie
-            var oldTasks = await _dbContext.Tasks
-                .Where(t => 
-                    t.Id != taskId && // Ikke den samme opgave
-                    (t.SeriesId ?? t.Id) == seriesId && // Samme serie
-                    t.NextOccurrence.HasValue &&
-                    t.NextOccurrence.Value.Date < today) // Opgaver fra fortiden
-                .ToListAsync();
+            var oldTasks = await _taskRepository.GetOldTasksInSeriesAsync(seriesId, today, taskId);
 
             if (oldTasks.Any())
             {
                 _logger.LogInfo($"[MarkTaskAsCompleted] Found {oldTasks.Count} old tasks from the past in series {seriesId}, deleting them.");
-                foreach (var oldTask in oldTasks)
-                {
-                    _dbContext.Tasks.Remove(oldTask);
-                }
+                await _taskRepository.DeleteRangeAsync(oldTasks);
             }
 
             // Beregn næste forekomst fra den aktuelle forekomst (ikke fra "i dag")
-            var nextOccurrence = CalculateNextOccurrence(
-                occurrenceDate,
-                task.RecurrenceType,
-                task.RecurrenceInterval,
-                task.MonthlyType,
-                task.MonthlyDay,
-                selectedWeekDays,
-                task.EndType,
-                task.EndAfterCount,
-                task.EndDate
-            );
+            var recurrenceOptions = new RecurrenceOptions
+            {
+                StartDate = occurrenceDate,
+                RecurrenceType = task.RecurrenceType,
+                RecurrenceInterval = task.RecurrenceInterval,
+                MonthlyType = task.MonthlyType,
+                MonthlyDay = task.MonthlyDay,
+                SelectedWeekDays = selectedWeekDays,
+                EndType = task.EndType,
+                EndAfterCount = task.EndAfterCount,
+                EndDate = task.EndDate
+            };
+            var nextOccurrence = _recurrenceCalculator.CalculateNext(occurrenceDate, recurrenceOptions);
 
             // Sørg for STRIKT senere end occurrenceDate
             while (nextOccurrence.Date <= occurrenceDate)
             {
-                nextOccurrence = CalculateNextOccurrence(
-                    nextOccurrence.Date,
-                    task.RecurrenceType,
-                    task.RecurrenceInterval,
-                    task.MonthlyType,
-                    task.MonthlyDay,
-                    selectedWeekDays,
-                    task.EndType,
-                    task.EndAfterCount,
-                    task.EndDate
-                );
+                recurrenceOptions.StartDate = nextOccurrence.Date;
+                nextOccurrence = _recurrenceCalculator.CalculateNext(nextOccurrence.Date, recurrenceOptions);
             }
 
             // Undgå kollisioner i serien: hop frem til en unik dato
-            while (await _dbContext.Tasks.AnyAsync(t =>
-                (t.SeriesId ?? t.Id) == seriesId &&
-                t.NextOccurrence.HasValue &&
-                t.NextOccurrence.Value.Date == nextOccurrence.Date))
+            while (await _taskRepository.ExistsWithDateAsync(seriesId, nextOccurrence.Date))
             {
                 _logger.LogInfo($"[MarkTaskAsCompleted] Date {nextOccurrence.Date:yyyy-MM-dd} already exists in series {seriesId}, skipping forward");
-                nextOccurrence = CalculateNextOccurrence(
-                    nextOccurrence.Date,
-                    task.RecurrenceType,
-                    task.RecurrenceInterval,
-                    task.MonthlyType,
-                    task.MonthlyDay,
-                    selectedWeekDays,
-                    task.EndType,
-                    task.EndAfterCount,
-                    task.EndDate
-                );
+                recurrenceOptions.StartDate = nextOccurrence.Date;
+                nextOccurrence = _recurrenceCalculator.CalculateNext(nextOccurrence.Date, recurrenceOptions);
             }
 
             _logger.LogInfo($"[MarkTaskAsCompleted] Calculated next occurrence for task {taskId}: {nextOccurrence.Date:yyyy-MM-dd} (occurrenceDate: {occurrenceDate:yyyy-MM-dd}, today: {today:yyyy-MM-dd})");
@@ -372,11 +347,11 @@ namespace TaskMicroService.Services
                 SeriesId = seriesId
             };
 
-            _dbContext.Tasks.Add(newTask);
+            await _taskRepository.AddAsync(newTask);
 
             try
             {
-                await _dbContext.SaveChangesAsync();
+                await _taskRepository.SaveChangesAsync();
                 _logger.LogInfo($"[MarkTaskAsCompleted] Task {taskId} marked as completed successfully");
                 return Result.SuccessResult();
             }
@@ -396,7 +371,7 @@ namespace TaskMicroService.Services
 
         public async Task<Result> MarkTaskAsUnCompleted(int taskId)
         {
-            var task = await _dbContext.Tasks.FindAsync(taskId);
+            var task = await _taskRepository.GetByIdAsync(taskId);
             if (task == null)
             {
                 return Result.ErrorResult($"Task with ID {taskId} not found.");
@@ -413,39 +388,37 @@ namespace TaskMicroService.Services
                 
                 // Find alle opgaver i samme serie der er fremtidige ELLER i dag
                 // Disse kan være opgaver der blev oprettet ved fejl
-                var duplicateTasks = await _dbContext.Tasks
+                var tasksInSeries = await _taskRepository.GetBySeriesIdAsync(seriesId);
+                var duplicateTasks = tasksInSeries
                     .Where(t => 
                         t.Id != taskId && // Ikke den samme opgave
-                        (t.SeriesId ?? t.Id) == seriesId && // Samme serie
                         t.NextOccurrence.HasValue &&
                         t.NextOccurrence.Value.Date >= today && // Fremtidige eller i dag
                         t.IsCompleted == false)
                     .OrderBy(t => t.NextOccurrence) // Sorter efter NextOccurrence
-                    .ToListAsync();
+                    .ToList();
 
                 if (duplicateTasks.Any())
                 {
                     // Slet alle duplikater (der skulle kun være én, men for sikkerheds skyld sletter vi alle)
                     foreach (var duplicateTask in duplicateTasks)
                     {
-                        _dbContext.Tasks.Remove(duplicateTask);
                         var dupNextOccurrence = duplicateTask.NextOccurrence?.Date.ToString("yyyy-MM-dd") ?? "null";
                         var taskNextOccurrence = task.NextOccurrence?.Date.ToString("yyyy-MM-dd") ?? "null";
                         _logger.LogInfo($"Deleted duplicate task {duplicateTask.Id} (NextOccurrence: {dupNextOccurrence}) when uncompleting task {taskId} (NextOccurrence: {taskNextOccurrence})");
                     }
+                    await _taskRepository.DeleteRangeAsync(duplicateTasks);
                 }
             }
 
-            await _dbContext.SaveChangesAsync();
+            await _taskRepository.UpdateAsync(task);
+            await _taskRepository.SaveChangesAsync();
             return Result.SuccessResult();
         }
 
         public async Task<Result<IEnumerable<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date)
         {
-            var tasks = await _dbContext.Tasks
-                .Include(t => t.Steps)
-                .Where(t => t.UserId == userId && t.NextOccurrence.HasValue && t.NextOccurrence.Value.Date == date.Date)
-                .ToListAsync();
+            var tasks = await _taskRepository.GetByUserIdAndDateAsync(userId, date);
 
             if (!tasks.Any())
                 return Result<IEnumerable<ReadTaskDto>>.ErrorResult(
@@ -455,124 +428,11 @@ namespace TaskMicroService.Services
             return Result<IEnumerable<ReadTaskDto>>.SuccessResult(taskDtos);
         }
 
-        private DateTime CalculateNextOccurrence(DateTime startDate, string recurrenceType, int interval,
-            string monthlyType = "SameDay", int monthlyDay = 1, Dictionary<string, bool> selectedWeekDays = null,
-            string endType = "Never", int endAfterCount = 1, DateTime? endDate = null)
-        {
-            if (recurrenceType == "None") return startDate;
-
-            var currentDate = startDate;
-            var occurrenceCount = 0;
-
-            while (occurrenceCount < 100) // Safety limit
-            {
-                currentDate = recurrenceType switch
-                {
-                    "Daily" => currentDate.AddDays(interval),
-                    "Weekly" => GetNextWeeklyOccurrence(currentDate, interval, selectedWeekDays),
-                    "Monthly" => CalculateMonthlyOccurrence(currentDate, interval, monthlyType, monthlyDay),
-                    "Yearly" => currentDate.AddYears(interval),
-                    _ => throw new ArgumentException("Invalid recurrence type")
-                };
-
-                occurrenceCount++;
-
-                // Check end conditions
-                if (endType == "After" && occurrenceCount >= endAfterCount) break;
-                if (endType == "Date" && endDate.HasValue && currentDate > endDate.Value) break;
-
-                // For weekly, check if we have a valid day
-                if (recurrenceType == "Weekly" && IsValidWeekDay(currentDate, selectedWeekDays))
-                {
-                    return currentDate;
-                }
-                else if (recurrenceType != "Weekly")
-                {
-                    return currentDate;
-                }
-            }
-
-            return currentDate;
-        }
-
-        private DateTime CalculateMonthlyOccurrence(DateTime startDate, int interval, string monthlyType,
-            int monthlyDay)
-        {
-            var nextDate = startDate.AddMonths(interval);
-
-            return monthlyType switch
-            {
-                "SameDay" => nextDate, // Beholder samme dag (kan være problematisk)
-                "FirstDay" => new DateTime(nextDate.Year, nextDate.Month, 1),
-                "LastDay" => new DateTime(nextDate.Year, nextDate.Month, 1).AddMonths(1).AddDays(-1),
-                "SpecificDay" => GetSpecificDayInMonth(nextDate, monthlyDay),
-                _ => nextDate
-            };
-        }
-
-        private DateTime GetSpecificDayInMonth(DateTime month, int day)
-        {
-            // Sikrer at vi ikke overskrider månedens antal dage 
-            var daysInMonth = DateTime.DaysInMonth(month.Year, month.Month);
-            var targetDay = Math.Min(day, daysInMonth);
-
-            return new DateTime(month.Year, month.Month, targetDay);
-        }
-
-        private DateTime GetNextWeeklyOccurrence(DateTime currentDate, int interval,
-            Dictionary<string, bool> selectedWeekDays)
-        {
-            var nextDate = currentDate.AddDays(7 * interval);
-
-            // Find next valid weekday
-            for (int i = 0; i < 7; i++)
-            {
-                var dayName = GetDanishDayName(nextDate.DayOfWeek);
-                if (selectedWeekDays?.ContainsKey(dayName) == true && selectedWeekDays[dayName])
-                {
-                    return nextDate;
-                }
-
-                nextDate = nextDate.AddDays(1);
-            }
-
-            return nextDate;
-        }
-
-        private bool IsValidWeekDay(DateTime date, Dictionary<string, bool> selectedWeekDays)
-        {
-            if (selectedWeekDays == null || !selectedWeekDays.Any()) return true;
-
-            var dayName = GetDanishDayName(date.DayOfWeek);
-            return selectedWeekDays.ContainsKey(dayName) && selectedWeekDays[dayName];
-        }
-
-        private string GetDanishDayName(DayOfWeek dayOfWeek)
-        {
-            return dayOfWeek switch
-            {
-                DayOfWeek.Monday => "Mandag",
-                DayOfWeek.Tuesday => "Tirsdag",
-                DayOfWeek.Wednesday => "Onsdag",
-                DayOfWeek.Thursday => "Torsdag",
-                DayOfWeek.Friday => "Fredag",
-                DayOfWeek.Saturday => "Lørdag",
-                DayOfWeek.Sunday => "Søndag",
-                _ => ""
-            };
-        }
-
         private async Task<string> UploadImageAsync(string imageBase64)
         {
             var imageUrl = await _imageService.UploadImageAsync(imageBase64);
             _logger.LogInfo($"Image URL: {imageUrl}");
             return imageUrl;
-        }
-
-        private async Task SaveTaskAsync(TaskEntity taskEntity)
-        {
-            _dbContext.Tasks.Add(taskEntity);
-            await _dbContext.SaveChangesAsync();
         }
     }
 }

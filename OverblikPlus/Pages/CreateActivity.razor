@@ -222,12 +222,18 @@
     {
         try
         {
-            var allUsers = await UserService.GetAllUsers();
-            staffUsers = allUsers.Where(u => u.Role == "Staff" || u.Role == "Admin").ToList();
+            var result = await UserService.GetAllUsers();
+            if (result.Success && result.Data != null)
+            {
+                staffUsers = result.Data.Where(u => u.Role == "Staff" || u.Role == "Admin").ToList();
+            }
+            else
+            {
+                staffUsers = new List<ReadUserDto>();
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading staff users: {ex.Message}");
             staffUsers = new List<ReadUserDto>();
         }
     }
