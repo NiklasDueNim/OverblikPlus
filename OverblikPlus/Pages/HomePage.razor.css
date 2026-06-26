@@ -101,7 +101,7 @@
 }
 
 .widget-toggle.on {
-    background: #1d4e89;
+    background: #16b8a6;
     color: white;
 }
 
@@ -128,8 +128,8 @@
 }
 
 .widget-size-select button.active {
-    background: #1d4e89;
-    border-color: #1d4e89;
+    background: #16b8a6;
+    border-color: #16b8a6;
     color: white;
 }
 
