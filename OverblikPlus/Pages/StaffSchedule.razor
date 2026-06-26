@@ -14,8 +14,11 @@
 @using Microsoft.JSInterop
 @inherits BasePage
 
-<div>
-    <h3>Vagtplan (@today.ToShortDateString())</h3>
+<div class="schedule-page">
+    <div class="schedule-header">
+        <h1 class="schedule-title">Vagtplan</h1>
+        <span class="schedule-date">@today.ToString("dddd d. MMMM yyyy")</span>
+    </div>
 
     <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
     <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />

@@ -1,0 +1,60 @@
+.schedule-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.schedule-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.schedule-title {
+    color: #1976D2;
+    font-weight: 700;
+    margin: 0;
+}
+
+.schedule-date {
+    color: #607d8b;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+/* Create form card */
+.schedule-page ::deep .card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.schedule-page ::deep .card-header {
+    background: #f5f9ff;
+    border-bottom: 1px solid #e3f2fd;
+    border-radius: 14px 14px 0 0;
+}
+
+/* Shift table */
+.schedule-page ::deep table.table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.schedule-page ::deep table.table thead th {
+    background: #f5f7f9;
+    color: #455a64;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.schedule-page ::deep table.table td {
+    vertical-align: middle;
+}
