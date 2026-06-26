@@ -10,8 +10,8 @@
 @inject IJSRuntime JS
 @inject CustomAuthStateProvider AuthStateProvider
 
-<div class="container mt-4">
-    <h3 class="mb-4">Kalender</h3>
+<div class="container mt-4 calendar-page">
+    <h1 class="calendar-title">Kalender</h1>
 
     <!-- Vælg visning (måned/uge/dag) -->
     <div class="btn-group mb-4" role="group">
@@ -236,37 +236,30 @@
     private DateTime selectedMonth = DateTime.Today;
     private List<DateTime> daysInView = new();
 
-// Opgaver & events for perioden
     private Dictionary<DateTime, List<ReadTaskDto>> allTasksForView = new();
     private Dictionary<DateTime, List<ReadCalendarEventDto>> allEventsForView = new();
 
-// Filtrerede (søgefunktion)
     private Dictionary<DateTime, List<ReadTaskDto>> filteredTasksForView = new();
     private Dictionary<DateTime, List<ReadCalendarEventDto>> filteredEventsForView = new();
 
     private string[] dayNames = { "Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn" };
 
-// Modal
     private bool showModal = false;
     private DateTime selectedDate;
 
-// Rediger/tilføj
     private bool isEditMode = false;
     private Guid editingEventId;
 
-// Felter til opgave/event
     private string newTaskTitle;
     private string newTaskDescription;
     private DateTime newStartDateTime;
     private DateTime newEndDateTime;
     private bool? newIsRecurring;
 
-// Søgning
     private string searchTerm = "";
 
     protected override async Task OnInitializedAsync()
     {
-// Start med at vise måned
         await LoadTasksAndEventsForMonth();
     }
 
@@ -275,7 +268,6 @@
         var daysReal = Enumerable.Range(1, DateTime.DaysInMonth(selectedMonth.Year, selectedMonth.Month))
             .Select(day => new DateTime(selectedMonth.Year, selectedMonth.Month, day))
             .ToList();
-// Leading days (for at starte på mandag)
         var firstDayOfMonth = new DateTime(selectedMonth.Year, selectedMonth.Month, 1);
         var leadingDays = ((int)firstDayOfMonth.DayOfWeek + 6) % 7;
         daysInView = Enumerable.Repeat(DateTime.MinValue, leadingDays).Concat(daysReal).ToList();
@@ -313,12 +305,10 @@
             var userId = AuthStateProvider.User?.Id;
             if (userId == null) return;
 
-// Eksempel: Hent tasks for "selectedMonth".
-// Ideelt: Lav et endpoint til at hente tasks i interval [start, end].
+
             var tasks = await RelativeService.GetTasksForDayForSpecificUser(userId, selectedMonth);
             var events = await CalendarEventService.GetAllEventsAsync(userId);
-
-// Tasks
+            
             if (tasks != null)
             {
                 foreach (var t in tasks)
@@ -333,7 +323,6 @@
                 }
             }
 
-// Events
             if (events != null)
             {
                 foreach (var e in events)
@@ -358,7 +347,6 @@
     {
         selectedDate = day;
         showModal = true;
-// Default = opret-tilstand
         StartCreateNewEvent();
     }
 
@@ -563,7 +551,6 @@
         }
     }
 
-// Filtrering (Søgning)
     private void FilterEventsAndTasks()
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
@@ -609,7 +596,6 @@
         builder.AppendLine("VERSION:2.0");
         builder.AppendLine("PRODID:-//OverblikPlus//Calendar//EN");
 
-// Tasks
         foreach (var kvp in allTasksForView)
         {
             foreach (var task in kvp.Value)
@@ -624,7 +610,6 @@
             }
         }
 
-// Events
         foreach (var kvp in allEventsForView)
         {
             foreach (var evt in kvp.Value)
