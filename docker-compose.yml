@@ -38,7 +38,7 @@ services:
       - ConnectionStrings__DBConnectionString=Server=sqlserver;Database=UserDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
       - ConnectionStrings__BlobStorageConnectionString=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;
       - ENCRYPTION_KEY=d0aeXMamTP1Atr3q8VmsabazTVbeBzTF
-      - Jwt__Key=DevSecretKeyForJWT123456
+      - Jwt__Key=MyLocalJwtKeyForDevelopment123456789012345678901234567890
       - Jwt__Issuer=http://localhost:5001
       - Jwt__Audience=http://localhost:5001
       - EF_CORE_MIGRATIONS=true
@@ -61,7 +61,7 @@ services:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TaskDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
       - ConnectionStrings__DBConnectionString=Server=sqlserver;Database=TaskDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;
       - ConnectionStrings__BlobStorageConnectionString=UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite;
-      - Jwt__Key=DevSecretKeyForJWT123456
+      - Jwt__Key=MyLocalJwtKeyForDevelopment123456789012345678901234567890
       - Jwt__Issuer=http://localhost:5001
       - Jwt__Audience=http://localhost:5001
     ports:
@@ -69,30 +69,6 @@ services:
     depends_on:
       - sqlserver
       - azurite
-    networks:
-      - overblikplus-network
-
-  # Frontend (Blazor WebAssembly) - Optional, kan skjules med profiles
-  frontend:
-    profiles: ["full"]
-    build:
-      context: ./OverblikPlus
-      dockerfile: Dockerfile
-    container_name: overblikplus-frontend
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      # Docker backend URLs (fra browserens perspektiv, ikke container)
-      - TASK_API_BASE_URL=http://localhost:5002
-      - USER_API_BASE_URL=http://localhost:5001
-      - TaskService__BaseUrl=http://localhost:5002
-      - UserService__BaseUrl=http://localhost:5001
-      - CalendarEventService__BaseUrl=http://localhost:5002
-      - ActivityService__BaseUrl=http://localhost:5002
-    ports:
-      - "5003:80"
-    depends_on:
-      - task-service
-      # Fjernet user-service dependency hvis du bruger Rider's backend
     networks:
       - overblikplus-network
 
