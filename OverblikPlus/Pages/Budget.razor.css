@@ -1,0 +1,89 @@
+.budget-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.budget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.budget-title {
+    color: #1976D2;
+    font-weight: 700;
+    margin: 0;
+}
+
+.budget-balance {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border-radius: 14px;
+    padding: 0.75rem 1.5rem;
+    min-width: 180px;
+}
+
+.budget-balance.negative {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+}
+
+.budget-balance-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4e6e54;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.budget-balance.negative .budget-balance-label {
+    color: #8e3b3b;
+}
+
+.budget-balance-amount {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #2e7d32;
+}
+
+.budget-balance.negative .budget-balance-amount {
+    color: #c62828;
+}
+
+/* Form card */
+.budget-page ::deep .mb-3,
+.budget-page ::deep .row {
+    max-width: 100%;
+}
+
+.budget-page ::deep h4 {
+    color: #37474f;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Table */
+.budget-page ::deep table.table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.budget-page ::deep table.table thead th {
+    background: #f5f7f9;
+    color: #455a64;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.budget-page ::deep table.table td {
+    vertical-align: middle;
+}

@@ -10,61 +10,65 @@
 @inject CustomAuthStateProvider AuthStateProvider
 @inherits BasePage
 
-<h3>Opslagstavle</h3>
-
-<AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
-<AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
-
-@if (!IsRelative())
-{
-    <button class="btn btn-primary mb-3" @onclick="OpenCreateModal">Opret nyt opslag</button>
-}
-
-@if (IsLoading)
-{
-    <LoadingSpinner Text="Henter opslag..." />
-}
-else if (announcements == null || !announcements.Any())
-{
-    <div class="alert alert-info">
-        <i class="fas fa-info-circle me-2"></i>
-        Ingen opslag fundet.
-    </div>
-}
-else
-{
-    <div>
-        @foreach (var ann in announcements)
+<div class="announcements-page">
+    <div class="ann-header">
+        <h1 class="ann-title">Opslagstavle</h1>
+        @if (!IsRelative())
         {
-            <!-- Vis kun hvis indenfor StartDate/EndDate -->
-            @if (DateTime.Today >= ann.StartDate && DateTime.Today <= ann.EndDate)
+            <button class="btn-new-ann" @onclick="OpenCreateModal">
+                <i class="fas fa-plus me-1"></i> Nyt opslag
+            </button>
+        }
+    </div>
+
+    <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+    <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
+
+    @if (IsLoading)
+    {
+        <LoadingSpinner Text="Henter opslag..." />
+    }
+    else if (VisibleAnnouncements.Count == 0)
+    {
+        <div class="ann-empty">
+            <i class="fas fa-clipboard"></i>
+            <h3>Ingen opslag</h3>
+            <p>Der er ingen aktive opslag lige nu.</p>
+        </div>
+    }
+    else
+    {
+        <div class="ann-list">
+            @foreach (var ann in VisibleAnnouncements)
             {
-                <div class="card mb-3 @(ann.IsImportant ? "border-warning" : "")">
-                    <div class="card-body">
+                <div class="ann-card @(ann.IsImportant ? "important" : "")">
+                    <div class="ann-card-head">
+                        <h2 class="ann-card-title">@ann.Title</h2>
                         @if (ann.IsImportant)
                         {
-                            <span class="badge bg-warning text-dark mb-2">Vigtigt</span>
+                            <span class="ann-badge"><i class="fas fa-exclamation-circle me-1"></i>Vigtigt</span>
                         }
-                        <h5>@ann.Title</h5>
-                        <p>@ann.Body</p>
-                        <small class="text-muted">
-                            Fra: @ann.StartDate.ToShortDateString() - Til: @ann.EndDate.ToShortDateString()
-                        </small>
+                    </div>
+                    <p class="ann-card-body">@ann.Body</p>
+                    <div class="ann-card-foot">
+                        <span class="ann-dates">
+                            <i class="fas fa-calendar-day me-1"></i>
+                            @ann.StartDate.ToString("dd. MMM") – @ann.EndDate.ToString("dd. MMM yyyy")
+                        </span>
                         @if (!IsRelative())
                         {
-                            <div class="mt-2">
-                                <button class="btn btn-sm btn-secondary" @onclick="() => OpenEditModal(ann)">Rediger</button>
-                                <button class="btn btn-sm btn-danger ms-2" @onclick="() => DeleteAnnouncement(ann.Id)">Slet</button>
-                            </div>
+                            <span class="ann-actions">
+                                <button class="ann-btn-edit" @onclick="() => OpenEditModal(ann)">Rediger</button>
+                                <button class="ann-btn-del" @onclick="() => DeleteAnnouncement(ann.Id)">Slet</button>
+                            </span>
                         }
                     </div>
                 </div>
             }
-        }
-    </div>
-}
+        </div>
+    }
+</div>
 
-@* Modal *@
 <Modal Show="@showModal" 
        ShowChanged="@((bool show) => showModal = show)"
        Title="@(isEditMode ? "Rediger opslag" : "Opret nyt opslag")"
@@ -94,6 +98,13 @@ else
     private AnnouncementDto currentAnnouncement = new();
     private bool showDeleteConfirm = false;
     private Guid? announcementToDeleteId;
+
+    private List<AnnouncementDto> VisibleAnnouncements =>
+        (announcements ?? new())
+            .Where(a => DateTime.Today >= a.StartDate && DateTime.Today <= a.EndDate)
+            .OrderByDescending(a => a.IsImportant)
+            .ThenByDescending(a => a.StartDate)
+            .ToList();
 
     private bool IsRelative()
     {

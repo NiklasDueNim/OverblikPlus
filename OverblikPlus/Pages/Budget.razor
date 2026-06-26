@@ -10,7 +10,14 @@
 @using Microsoft.JSInterop
 @inherits BasePage
 
-<h3>Budget</h3>
+<div class="budget-page">
+    <div class="budget-header">
+        <h1 class="budget-title">Budget</h1>
+        <div class="budget-balance @(TotalBalance < 0 ? "negative" : "")">
+            <span class="budget-balance-label">Saldo</span>
+            <span class="budget-balance-amount">@TotalBalance.ToString("N2") kr.</span>
+        </div>
+    </div>
 
 <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
 <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
@@ -131,10 +138,8 @@ else
         </tbody>
     </table>
 
-    <p class="fw-bold">
-        Total balance: @TotalBalance
-    </p>
 }
+</div>
 
 <!-- Modal for viewing voucher image -->
 @if (showVoucherModal && !string.IsNullOrEmpty(selectedVoucherUrl))

@@ -1,0 +1,160 @@
+.announcements-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.ann-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.ann-title {
+    color: #1976D2;
+    font-weight: 700;
+    margin: 0;
+}
+
+.btn-new-ann {
+    border: none;
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    border-radius: 10px;
+    padding: 0.6rem 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-new-ann:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.35);
+}
+
+.ann-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.ann-card {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem 1.5rem;
+    border-left: 5px solid #90caf9;
+}
+
+.ann-card.important {
+    border-left-color: #fb8c00;
+    background: #fffdf7;
+}
+
+.ann-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.ann-card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #263238;
+    margin: 0;
+}
+
+.ann-badge {
+    flex-shrink: 0;
+    background: #fff3e0;
+    color: #e65100;
+    border-radius: 16px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ann-card-body {
+    color: #455a64;
+    line-height: 1.5;
+    margin: 0 0 1rem 0;
+    white-space: pre-wrap;
+}
+
+.ann-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ann-dates {
+    color: #90a4ae;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.ann-actions {
+    display: inline-flex;
+    gap: 0.5rem;
+}
+
+.ann-btn-edit,
+.ann-btn-del {
+    border: 1px solid #cfd8dc;
+    background: white;
+    border-radius: 8px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ann-btn-edit {
+    color: #1976D2;
+}
+
+.ann-btn-edit:hover {
+    border-color: #2196F3;
+    background: #e3f2fd;
+}
+
+.ann-btn-del {
+    color: #c62828;
+}
+
+.ann-btn-del:hover {
+    border-color: #e53935;
+    background: #ffebee;
+}
+
+.ann-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #90a4ae;
+}
+
+.ann-empty i {
+    font-size: 3rem;
+    color: #cfd8dc;
+    margin-bottom: 0.75rem;
+}
+
+.ann-empty h3 {
+    color: #607d8b;
+    margin-bottom: 0.25rem;
+}
+
+@media (max-width: 600px) {
+    .ann-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
