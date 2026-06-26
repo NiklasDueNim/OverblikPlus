@@ -1,9 +1,24 @@
 @page "/scan"
 
-<h3>Scan QR-kode</h3>
+<div class="scan-page">
+    <h1 class="scan-title">Scan QR-kode</h1>
+    <p class="scan-help">Tryk på "Start scanning" og hold kameraet hen mod QR-koden.</p>
 
-<video id="video" width="300" height="200" autoplay style="display: none;"></video>
-<p id="qrResult">QR-kode indhold: <span id="result"></span></p>
+    <div class="scan-card">
+        <video id="video" autoplay playsinline style="display: none;"></video>
 
-<button id="startScanButton" onclick="startScanning()">Start Scan</button>
-<button id="stopScanButton" onclick="stopScanning()">Stop Scan</button>
+        <div class="scan-result" id="qrResult">
+            <span class="scan-result-label">Resultat:</span>
+            <span id="result">—</span>
+        </div>
+
+        <div class="scan-actions">
+            <button id="startScanButton" class="btn-scan-start" onclick="startScanning()">
+                <i class="fas fa-camera me-1"></i> Start scanning
+            </button>
+            <button id="stopScanButton" class="btn-scan-stop" onclick="stopScanning()">
+                Stop
+            </button>
+        </div>
+    </div>
+</div>
