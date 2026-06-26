@@ -19,13 +19,16 @@
 @inject IJSRuntime JSRuntime
 @inherits BasePage
 
-<div class="container mt-4">
-    <h3 class="mb-4">Administrer Opgaver</h3>
+<div class="container mt-4 taskmgr-page">
+    <div class="taskmgr-header">
+        <h1 class="taskmgr-title">Opgaver</h1>
+        <button class="btn-new-task" @onclick="CreateTask">
+            <i class="fas fa-plus me-1"></i> Opret ny opgave
+        </button>
+    </div>
 
     <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
     <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
-
-    <button class="btn btn-success mb-3" @onclick="CreateTask">Opret Ny Opgave</button>
 
     @if (isTaskFormVisible)
     {
