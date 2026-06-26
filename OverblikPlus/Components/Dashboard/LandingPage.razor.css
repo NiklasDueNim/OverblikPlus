@@ -10,6 +10,116 @@
     padding: 0 1.5rem;
 }
 
+/* ---------- TOP NAV ---------- */
+.landing-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #eef2f7;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.nav-brand img {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+}
+
+.nav-brand span {
+    font-weight: 700;
+    color: #1976D2;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.75rem;
+}
+
+.nav-links a {
+    color: #455a64;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.15s ease;
+}
+
+.nav-links a:hover {
+    color: #1976D2;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.nav-login {
+    color: #1976D2;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.nav-cta {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1.1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.nav-cta:hover {
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(33, 150, 243, 0.4);
+}
+
+/* Offset so sticky nav doesn't cover anchored sections */
+section {
+    scroll-margin-top: 84px;
+}
+
+/* ---------- HIGHLIGHTS BAND ---------- */
+.stats-band {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    max-width: 1000px;
+    margin: 1.5rem auto 0;
+    padding: 1.5rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-num {
+    display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1976D2;
+    line-height: 1.1;
+}
+
+.stat-label {
+    color: #607d8b;
+    font-size: 0.9rem;
+}
+
 /* ---------- HERO ---------- */
 .hero-section {
     display: flex;
@@ -420,6 +530,8 @@ section {
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 860px) {
+    .nav-links { display: none; }
+
     .hero-section {
         flex-direction: column;
         text-align: center;

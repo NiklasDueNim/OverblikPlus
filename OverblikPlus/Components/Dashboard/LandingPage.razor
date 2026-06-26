@@ -1,8 +1,26 @@
 @* Landing page for non-authenticated visitors *@
 <div class="landing-page">
 
+    <!-- TOP NAV -->
+    <nav class="landing-nav">
+        <a href="#top" class="nav-brand">
+            <img src="/images/logo-blue.png" alt="OverblikPlus logo" />
+            <span>OverblikPlus</span>
+        </a>
+        <div class="nav-links">
+            <a href="#funktioner">Funktioner</a>
+            <a href="#roller">Roller</a>
+            <a href="#saadan">Sådan virker det</a>
+            <a href="#tryghed">Tryghed</a>
+        </div>
+        <div class="nav-actions">
+            <a href="/login" class="nav-login">Log ind</a>
+            <a href="mailto:kontakt@overblikplus.dk?subject=Demo%20af%20OverblikPlus" class="nav-cta">Book demo</a>
+        </div>
+    </nav>
+
     <!-- HERO -->
-    <section class="hero-section">
+    <section class="hero-section" id="top">
         <div class="hero-content">
             <div class="logo-section">
                 <div class="logo-icon">
@@ -57,8 +75,16 @@
         Bygget til bosteder, botilbud og socialpædagogiske tilbud
     </div>
 
+    <!-- HIGHLIGHTS -->
+    <div class="stats-band">
+        <div class="stat"><span class="stat-num">9</span><span class="stat-label">moduler i ét samlet system</span></div>
+        <div class="stat"><span class="stat-num">4</span><span class="stat-label">roller: beboer, personale, pårørende, admin</span></div>
+        <div class="stat"><span class="stat-num">100%</span><span class="stat-label">computer, tablet &amp; telefon</span></div>
+        <div class="stat"><span class="stat-num">EU</span><span class="stat-label">data hostet i EU (GDPR)</span></div>
+    </div>
+
     <!-- FUNKTIONER -->
-    <section class="features-section">
+    <section class="features-section" id="funktioner">
         <div class="container">
             <h2 class="section-title">Alt det, en hverdag på bostedet kræver</h2>
             <p class="section-subtitle">Ét samlet system – i stedet for sedler, tavler og spredte apps.</p>
@@ -109,7 +135,7 @@
     </section>
 
     <!-- ROLLER -->
-    <section class="roles-section">
+    <section class="roles-section" id="roller">
         <div class="container">
             <h2 class="section-title">Lavet til alle omkring beboeren</h2>
             <div class="roles-grid">
@@ -133,7 +159,7 @@
     </section>
 
     <!-- SÅDAN VIRKER DET -->
-    <section class="how-section">
+    <section class="how-section" id="saadan">
         <div class="container">
             <h2 class="section-title">Sådan kommer I i gang</h2>
             <div class="steps-grid">
@@ -157,7 +183,7 @@
     </section>
 
     <!-- TRYGHED -->
-    <section class="trust-section">
+    <section class="trust-section" id="tryghed">
         <div class="container">
             <h2 class="section-title">Tryghed og sikkerhed i centrum</h2>
             <div class="trust-grid">
