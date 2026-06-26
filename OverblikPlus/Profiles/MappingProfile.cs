@@ -21,7 +21,8 @@ namespace OverblikPlus.Profiles
             
             CreateMap<TaskFormModel, CreateTaskDto>();
             CreateMap<TaskFormModel, UpdateTaskDto>();
-            CreateMap<ReadTaskDto, TaskFormModel>();
+            CreateMap<ReadTaskDto, TaskFormModel>()
+                .ForMember(dest => dest.ImageBase64, opt => opt.Ignore()); // ImageBase64 skal ikke mappes fra ReadTaskDto (kun ved upload)
 
             CreateMap<TaskStepFormModel, CreateTaskStepDto>();
             CreateMap<TaskStepFormModel, UpdateTaskStepDto>();

@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Headers;
-using Microsoft.Extensions.Logging;
 
 namespace OverblikPlus.AuthHelpers;
 
@@ -31,7 +30,6 @@ public sealed class JwtAuthorizationMessageHandler : DelegatingHandler
         if (authorizedUrls is null) 
             throw new ArgumentNullException(nameof(authorizedUrls));
 
-        // Parse autoriserede URLs til (Scheme, Host, Port) tuples for sikker matching
         _authorizedOrigins = new HashSet<(string, string, int?)>(
             authorizedUrls
                 .Select(url =>
@@ -57,7 +55,6 @@ public sealed class JwtAuthorizationMessageHandler : DelegatingHandler
         HttpRequestMessage request, 
         CancellationToken cancellationToken)
     {
-        // Valider request
         if (request?.RequestUri is null)
         {
             _logger.LogWarning("Request or RequestUri is null, passing through without modification");
@@ -66,13 +63,10 @@ public sealed class JwtAuthorizationMessageHandler : DelegatingHandler
 
         var requestUri = request.RequestUri;
 
-        // Tjek om request går til en autoriseret origin
         var isAuthorized = IsAuthorizedOrigin(requestUri);
 
-        // Hvis request går til en autoriseret origin, tilføj JWT token
         if (isAuthorized)
         {
-            // Respekter eksisterende Authorization header (fx hvis sat manuelt for service-to-service calls)
             if (request.Headers.Authorization is null)
             {
                 var token = await _authStateProvider.GetTokenAsync();
@@ -86,7 +80,6 @@ public sealed class JwtAuthorizationMessageHandler : DelegatingHandler
                 {
                     _logger.LogDebug("No token available for request to {Uri}, attempting refresh", requestUri);
                     
-                    // Prøv at refresh token før første request
                     var refreshed = await _authStateProvider.RefreshTokenAsync();
                     if (refreshed)
                     {
@@ -105,30 +98,25 @@ public sealed class JwtAuthorizationMessageHandler : DelegatingHandler
             }
         }
 
-        // Send første request
         var response = await base.SendAsync(request, cancellationToken);
 
-        // Hvis vi får 401 Unauthorized og request går til autoriseret origin, prøv token refresh + retry
         if (response.StatusCode == HttpStatusCode.Unauthorized && isAuthorized)
         {
             _logger.LogInformation(
                 "Received 401 Unauthorized for request to {Uri}. Attempting token refresh and retry.",
                 requestUri);
 
-            // Dispose response for at undgå socket leaks
             response.Dispose();
 
-            // Prøv at refresh token
             var refreshed = await _authStateProvider.RefreshTokenAsync();
             if (refreshed)
             {
                 var newToken = await _authStateProvider.GetTokenAsync();
                 if (!string.IsNullOrWhiteSpace(newToken))
                 {
-                    // Klon request hvis nødvendigt (for at undgå "content already consumed" fejl)
+                    // For at undgå "content already consumed" fejl
                     var clonedRequest = await CloneRequestIfNeededAsync(request, cancellationToken);
 
-                    // Sæt nyt token (kun hvis det ikke allerede er sat eller hvis det er en Bearer token)
                     if (clonedRequest.Headers.Authorization is null ||
                         clonedRequest.Headers.Authorization.Scheme.Equals("Bearer", StringComparison.OrdinalIgnoreCase))
                     {
@@ -144,7 +132,6 @@ public sealed class JwtAuthorizationMessageHandler : DelegatingHandler
                 "Token refresh failed or no new token available for request to {Uri}. Returning 401.",
                 requestUri);
             
-            // Hvis refresh fejler, returner en ny 401 response
             return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         }
 
@@ -183,39 +170,33 @@ public sealed class JwtAuthorizationMessageHandler : DelegatingHandler
         HttpRequestMessage original, 
         CancellationToken cancellationToken)
     {
-        // Hvis der ikke er content, kan vi bruge originalen direkte
         if (original.Content == null)
         {
             return original;
         }
 
-        // Opret en klon af request
         var clone = new HttpRequestMessage(original.Method, original.RequestUri)
         {
             Version = original.Version,
             VersionPolicy = original.VersionPolicy
         };
 
-        // Kopiér alle request headers
         foreach (var header in original.Headers)
         {
             clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
 
-        // Kopiér alle request properties/options (fx custom headers)
         foreach (var option in original.Options)
         {
             clone.Options.Set(new HttpRequestOptionsKey<object>(option.Key), option.Value);
         }
 
-        // Buffer content så vi kan læse det igen
         var memoryStream = new MemoryStream();
         await original.Content.CopyToAsync(memoryStream, cancellationToken);
         memoryStream.Position = 0;
         
         var clonedContent = new StreamContent(memoryStream);
 
-        // Kopiér alle content headers
         foreach (var header in original.Content.Headers)
         {
             clonedContent.Headers.TryAddWithoutValidation(header.Key, header.Value);

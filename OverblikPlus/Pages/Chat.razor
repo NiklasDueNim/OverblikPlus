@@ -88,13 +88,12 @@
             });
 
             await hubConnection.StartAsync();
-            Console.WriteLine("✅ Connected to chat hub");
+            Console.WriteLine("Connected to chat hub");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠️ SignalR not available: {ex.Message}");
+            Console.WriteLine($"SignalR not available: {ex.Message}");
             Console.WriteLine("Messages will be saved locally only.");
-            // Continue without SignalR - local storage still works
         }
     }
 
@@ -110,7 +109,6 @@
                 }
                 else
                 {
-                    // Fallback: Save locally if SignalR not connected
                     var formattedMessage = $"User: {messageInput}";
                     messages.Add(formattedMessage);
                     await SaveMessages();

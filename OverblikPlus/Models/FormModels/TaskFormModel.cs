@@ -3,13 +3,13 @@ namespace OverblikPlus.Models.FormModels;
 public class TaskFormModel
 {
     public int Id { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public string? ImageBase64 { get; set; }
     public string? UserId { get; set; }
-    public string RecurrenceType { get; set; }
-    public int RecurrenceInterval { get; set; }
-    public DateTime StartDate { get; set; }
+    public string RecurrenceType { get; set; } = "None";
+    public int RecurrenceInterval { get; set; } = 1;
+    public DateTime StartDate { get; set; } = DateTime.Now;
     
     // Nye properties for forbedret gentagelse
     public string MonthlyType { get; set; } = "SameDay"; // SameDay, FirstDay, LastDay, SpecificDay

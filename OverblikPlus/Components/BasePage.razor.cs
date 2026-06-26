@@ -1,11 +1,7 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
 
 namespace OverblikPlus.Components;
 
-/// <summary>
-/// Base page component med fælles funktionalitet som loading states, error handling og logging
-/// </summary>
 public abstract class BasePage : ComponentBase
 {
     [Inject] protected ILogger<BasePage> Logger { get; set; } = default!;
