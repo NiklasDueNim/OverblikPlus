@@ -2,54 +2,110 @@
 @using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models.Dtos.Tasks
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Components
+@using OverblikPlus.Components.Shared
+@inherits BasePage
 @inject ITaskService TaskService
 @inject ITaskStepService TaskStepService
 @inject CustomAuthStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
-<div class="container mt-4">
-    <h1 class="mb-4">Oversigt over opgaver</h1>
+<div class="tasks-page">
+    <h1 class="tasks-title">Dagens Opgaver</h1>
 
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <button class="btn btn-secondary" @onclick="ShowPreviousDay">
-            Forrige Dag
+    <div class="date-nav">
+        <button class="btn-day" @onclick="ShowPreviousDay" aria-label="Forrige dag">
+            <i class="fas fa-chevron-left"></i>
         </button>
-        <h4>@SelectedDate.ToString("dddd, dd MMMM yyyy")</h4>
-        <button class="btn btn-secondary" @onclick="ShowNextDay">
-            Næste Dag
+        <div class="date-nav-center">
+            <span class="date-label">@SelectedDate.ToString("dddd d. MMMM yyyy")</span>
+            @if (SelectedDate.Date != DateTime.Today)
+            {
+                <button class="btn-today" @onclick="GoToToday">I dag</button>
+            }
+        </div>
+        <button class="btn-day" @onclick="ShowNextDay" aria-label="Næste dag">
+            <i class="fas fa-chevron-right"></i>
         </button>
     </div>
 
+    <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+    <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
+
     @if (FilteredTasks.Any())
     {
-    <ul class="list-group">
-        @foreach (var task in FilteredTasks)
-        {
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-                <h5>@task.Name</h5>
-                <p class="mb-1">@task.Description</p>
-                @if (!string.IsNullOrEmpty(task.Image))
-                {
-                <img src="@task.Image" alt="Task Image" class="img-thumbnail" style="max-width: 120px; max-height: 120px; object-fit: cover;" />
-                }
+        <div class="progress-summary">
+            <div class="progress-text">@CompletedCount af @TotalCount opgaver klaret</div>
+            <div class="progress-track">
+                <div class="progress-bar-fill" style="width:@ProgressPercent%"></div>
             </div>
-            @if (task.IsCompleted)
-            {
-            <span class="text-success">&#x2714;</span>
-            }
-            else if (task.HasSteps)
-            {
-            <button class="btn btn-primary" @onclick="() => GoToTaskSteps(task.Id)">Se trin</button>
-            }
-        </li>
-        }
-    </ul>
+        </div>
+    }
+
+    @if (IsLoading)
+    {
+        <LoadingSpinner Text="Henter opgaver..." />
+    }
+    else if (!FilteredTasks.Any())
+    {
+        <div class="empty-state">
+            <i class="fas fa-mug-hot"></i>
+            <h3>Ingen opgaver i dag</h3>
+            <p>Der er ingen planlagte opgaver for denne dag.</p>
+        </div>
     }
     else
     {
-    <p>Ingen opgaver for denne dag.</p>
+        <div class="task-cards">
+            @foreach (var task in FilteredTasks)
+            {
+                <div class="task-card @(task.IsCompleted ? "is-done" : "")">
+                    <div class="task-card-media">
+                        @if (!string.IsNullOrEmpty(task.Image))
+                        {
+                            <img src="@task.Image" alt="@task.Name" />
+                        }
+                        else
+                        {
+                            <i class="fas fa-list-check"></i>
+                        }
+                    </div>
+                    <div class="task-card-body">
+                        @if (HasTime(task))
+                        {
+                            <span class="task-time">
+                                <i class="fas fa-clock"></i>
+                                @task.StartTime.ToString("HH:mm")@(task.EndTime > task.StartTime ? $" – {task.EndTime:HH:mm}" : "")
+                            </span>
+                        }
+                        <h2 class="task-name">@task.Name</h2>
+                        @if (!string.IsNullOrEmpty(task.Description))
+                        {
+                            <p class="task-desc">@task.Description</p>
+                        }
+                    </div>
+                    <div class="task-card-action">
+                        @if (task.IsCompleted)
+                        {
+                            <span class="done-badge"><i class="fas fa-check"></i> Klaret</span>
+                            <button class="btn-undo" disabled="@IsLoading" @onclick="() => UncompleteTask(task.Id)">Fortryd</button>
+                        }
+                        else if (task.HasSteps)
+                        {
+                            <button class="btn-start" @onclick="() => GoToTaskSteps(task.Id)">
+                                <i class="fas fa-play me-1"></i> Start
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn-complete" disabled="@IsLoading" @onclick="() => CompleteTask(task.Id)">
+                                <i class="fas fa-check me-1"></i> Markér som færdig
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
     }
 </div>
 
@@ -57,6 +113,10 @@
     private List<ReadTaskDto> AllTasks { get; set; } = new();
     private List<ReadTaskDto> FilteredTasks { get; set; } = new();
     private DateTime SelectedDate { get; set; } = DateTime.Today;
+
+    private int CompletedCount => FilteredTasks.Count(t => t.IsCompleted);
+    private int TotalCount => FilteredTasks.Count;
+    private int ProgressPercent => TotalCount == 0 ? 0 : (int)Math.Round(100.0 * CompletedCount / TotalCount);
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,55 +126,123 @@
 
     private async Task LoadTasks()
     {
+        SetLoading(true);
+        ClearMessages();
+
         try
         {
-            var userId = AuthStateProvider.GetUserIdAsync();
-            if (!string.IsNullOrEmpty(userId))
+            var userId = AuthStateProvider.GetUserId();
+            if (string.IsNullOrEmpty(userId))
             {
-                var result = await TaskService.GetTasksForUserAsync(userId);
+                LogWarning("User ID is null or empty when loading tasks.");
+                AllTasks = new List<ReadTaskDto>();
+                return;
+            }
 
-                if (result.Success)
-                {
-                    AllTasks = result.Data ?? new List<ReadTaskDto>();
-                    Console.WriteLine($"Loaded {AllTasks.Count} tasks for user {userId}");
-                }
-                else
-                {
-                    Console.WriteLine($"Error loading tasks: {result.Error}");
-                    AllTasks = new List<ReadTaskDto>();
-                }
+            var result = await TaskService.GetTasksForUserAsync(userId);
+            if (result.Success)
+            {
+                AllTasks = result.Data ?? new List<ReadTaskDto>();
+                LogInfo($"Loaded {AllTasks.Count} tasks for user {userId}");
             }
             else
             {
-                Console.WriteLine("User ID is null or empty.");
                 AllTasks = new List<ReadTaskDto>();
+                SetError("Kunne ikke hente opgaver. Prøv igen senere.");
+                LogError($"Error loading tasks: {result.Error}");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Unexpected error: {ex.Message}");
             AllTasks = new List<ReadTaskDto>();
+            SetError("Der opstod en fejl ved hentning af opgaver.");
+            LogError("Unexpected error loading tasks", ex);
+        }
+        finally
+        {
+            SetLoading(false);
         }
     }
+
+    private async Task CompleteTask(int taskId)
+    {
+        SetLoading(true);
+        ClearMessages();
+        try
+        {
+            var result = await TaskService.MarkTaskAsCompleted(taskId);
+            if (result.Success)
+            {
+                SetSuccess("Opgaven er markeret som færdig.");
+                await LoadTasks();
+                FilterTasksByDate();
+            }
+            else
+            {
+                SetError(result.Error ?? "Kunne ikke markere opgaven som færdig.");
+            }
+        }
+        catch (Exception ex)
+        {
+            SetError("Der opstod en fejl. Prøv igen.");
+            LogError("Error completing task", ex);
+        }
+        finally
+        {
+            SetLoading(false);
+        }
+    }
+
+    private async Task UncompleteTask(int taskId)
+    {
+        SetLoading(true);
+        ClearMessages();
+        try
+        {
+            var result = await TaskService.MarkTaskAsUnCompleted(taskId);
+            if (result.Success)
+            {
+                SetSuccess("Opgaven er sat tilbage som ikke-færdig.");
+                await LoadTasks();
+                FilterTasksByDate();
+            }
+            else
+            {
+                SetError(result.Error ?? "Kunne ikke fortryde.");
+            }
+        }
+        catch (Exception ex)
+        {
+            SetError("Der opstod en fejl. Prøv igen.");
+            LogError("Error uncompleting task", ex);
+        }
+        finally
+        {
+            SetLoading(false);
+        }
+    }
+
+    private static bool HasTime(ReadTaskDto task) =>
+        task.StartTime.TimeOfDay != TimeSpan.Zero || task.EndTime.TimeOfDay != TimeSpan.Zero;
 
     private void FilterTasksByDate()
     {
         FilteredTasks = AllTasks
             .Where(task => IsTaskOccurringOnDate(task, SelectedDate))
+            .OrderBy(task => task.IsCompleted)
+            .ThenBy(task => task.StartTime.TimeOfDay)
             .ToList();
-
-        Console.WriteLine($"Filtered {FilteredTasks.Count} tasks for date {SelectedDate.Date}");
     }
-    
+
     private bool IsTaskOccurringOnDate(ReadTaskDto task, DateTime selectedDate)
     {
         if (task.RecurrenceType == "None")
         {
             return task.StartDate.Date == selectedDate.Date;
         }
-        
+
         if (!task.NextOccurrence.HasValue) return false;
-        
+
         return task.RecurrenceType switch
         {
             "Daily" => IsDailyMatch(task, selectedDate),
@@ -124,30 +252,29 @@
             _ => false
         };
     }
-    
+
     private bool IsDailyMatch(ReadTaskDto task, DateTime selectedDate)
     {
         var daysDiff = (selectedDate.Date - task.StartDate.Date).Days;
         return daysDiff >= 0 && daysDiff % task.RecurrenceInterval == 0;
     }
-    
+
     private bool IsWeeklyMatch(ReadTaskDto task, DateTime selectedDate)
     {
         var daysDiff = (selectedDate.Date - task.StartDate.Date).Days;
         return daysDiff >= 0 && daysDiff % (task.RecurrenceInterval * 7) == 0;
     }
-    
+
     private bool IsMonthlyMatch(ReadTaskDto task, DateTime selectedDate)
     {
         if (selectedDate.Date < task.StartDate.Date) return false;
-        
-        var monthsDiff = ((selectedDate.Year - task.StartDate.Year) * 12) + 
+
+        var monthsDiff = ((selectedDate.Year - task.StartDate.Year) * 12) +
                          (selectedDate.Month - task.StartDate.Month);
-        
-        if (monthsDiff < 0 || monthsDiff % task.RecurrenceInterval != 0) 
+
+        if (monthsDiff < 0 || monthsDiff % task.RecurrenceInterval != 0)
             return false;
-        
-        // Tjek om dagen matcher baseret på monthly type
+
         return task.MonthlyType switch
         {
             "SameDay" => selectedDate.Day == task.StartDate.Day,
@@ -157,18 +284,17 @@
             _ => false
         };
     }
-    
+
     private bool IsYearlyMatch(ReadTaskDto task, DateTime selectedDate)
     {
         if (selectedDate.Date < task.StartDate.Date) return false;
-        
+
         var yearsDiff = selectedDate.Year - task.StartDate.Year;
-        
-        return yearsDiff >= 0 && yearsDiff % task.RecurrenceInterval == 0 && 
-               selectedDate.Month == task.StartDate.Month && 
+
+        return yearsDiff >= 0 && yearsDiff % task.RecurrenceInterval == 0 &&
+               selectedDate.Month == task.StartDate.Month &&
                selectedDate.Day == task.StartDate.Day;
     }
-
 
     private void ShowPreviousDay()
     {
@@ -182,12 +308,22 @@
         FilterTasksByDate();
     }
 
+    private void GoToToday()
+    {
+        SelectedDate = DateTime.Today;
+        FilterTasksByDate();
+    }
+
     private async Task GoToTaskSteps(int taskId)
     {
         var result = await TaskStepService.GetStepsForTask(taskId);
         if (result.Success && result.Data != null && result.Data.Count > 0)
         {
             NavigationManager.NavigateTo($"/task-step-view/{taskId}/step/{result.Data.First().Id}");
+        }
+        else
+        {
+            SetError("Denne opgave har ingen trin.");
         }
     }
 }

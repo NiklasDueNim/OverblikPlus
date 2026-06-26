@@ -1,0 +1,188 @@
+.step-view {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.step-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.btn-exit {
+    border: none;
+    background: transparent;
+    color: #607d8b;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.btn-exit:hover {
+    color: #37474f;
+}
+
+.step-progress-text {
+    font-weight: 700;
+    color: #1976D2;
+    font-size: 1.05rem;
+}
+
+.step-progress-track {
+    height: 10px;
+    background: #e3f2fd;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.step-progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.step-loading {
+    text-align: center;
+    color: #666;
+    padding: 2rem;
+}
+
+.step-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    text-align: center;
+}
+
+.step-image {
+    width: 100%;
+    max-width: 420px;
+    max-height: 360px;
+    object-fit: contain;
+    border-radius: 16px;
+    margin: 0 auto 1.5rem;
+    display: block;
+}
+
+.step-text-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.step-text {
+    font-size: 1.6rem;
+    line-height: 1.4;
+    color: #263238;
+    margin: 0;
+    font-weight: 500;
+}
+
+.btn-speak {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: #e3f2fd;
+    color: #1976D2;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-speak:hover {
+    background: #bbdefb;
+}
+
+/* QR scanner */
+.step-scanner {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.step-scanner video {
+    max-width: 100%;
+    max-height: 360px;
+    border-radius: 12px;
+}
+
+.btn-cancel-scan {
+    border: 1px solid #cfd8dc;
+    background: white;
+    color: #607d8b;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+/* Actions */
+.step-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.btn-prev,
+.btn-next {
+    border: none;
+    border-radius: 14px;
+    padding: 1rem 1.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-prev {
+    background: #eceff1;
+    color: #455a64;
+    flex: 0 0 auto;
+}
+
+.btn-prev:hover:not(:disabled) {
+    background: #cfd8dc;
+}
+
+.btn-prev:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-next {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    flex: 1;
+}
+
+.btn-next:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(33, 150, 243, 0.35);
+}
+
+@media (max-width: 600px) {
+    .step-text {
+        font-size: 1.35rem;
+    }
+
+    .step-card {
+        padding: 1.25rem;
+    }
+}

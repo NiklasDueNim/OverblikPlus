@@ -5,104 +5,183 @@
 @inject ITaskService TaskService
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
+@implements IDisposable
 
-<h3>Opgave Trin - Trin @currentStep?.StepNumber</h3>
-
-@if (currentStep == null)
-{
-    <p>Indlæser trin...</p>
-}
-else
-{
-    <div class="text-center">
-        @if (!string.IsNullOrEmpty(currentStep.Image))
+<div class="step-view">
+    <div class="step-topbar">
+        <button class="btn-exit" @onclick="ExitToTasks">
+            <i class="fas fa-xmark"></i> Afslut
+        </button>
+        @if (currentStep != null && TaskSteps.Count > 0)
         {
-            <img src="@currentStep.Image" alt="Trin billede" width="300" class="mb-3" />
-        }
-        <p>@currentStep.Text</p>
-
-        @if (currentStep.RequiresQrCodeScan)
-        {
-            <button class="btn btn-secondary mb-3" @onclick="StartScanning">Scan QR-kode for at fortsætte</button>
-            <div id="qr-scanner" class="mt-3" style="display: @(isScanning ? "block" : "none");">
-                <div class="d-flex justify-content-center">
-                    <video id="video" style="max-width: 100%; max-height: 400px; width: auto; height: auto; border-radius: 8px;"></video>
-                </div>
-                <div class="mt-3">
-                    <button class="btn btn-secondary" @onclick="StopScanning">Annuller</button>
-                </div>
-            </div>
-        }
-        else
-        {
-            <button class="btn btn-primary" @onclick="ShowNextStep">Næste trin</button>
+            <span class="step-progress-text">Trin @(CurrentIndex + 1) af @TaskSteps.Count</span>
         }
     </div>
-}
+
+    @if (currentStep != null && TaskSteps.Count > 0)
+    {
+        <div class="step-progress-track">
+            <div class="step-progress-fill" style="width:@ProgressPercent%"></div>
+        </div>
+    }
+
+    @if (currentStep == null)
+    {
+        <p class="step-loading">Indlæser trin...</p>
+    }
+    else
+    {
+        <div class="step-card">
+            @if (!string.IsNullOrEmpty(currentStep.Image))
+            {
+                <img src="@currentStep.Image" alt="Billede for trinnet" class="step-image" />
+            }
+
+            <div class="step-text-row">
+                <p class="step-text">@currentStep.Text</p>
+                <button class="btn-speak" @onclick="Speak" aria-label="Læs trinnet højt" title="Læs højt">
+                    <i class="fas fa-volume-high"></i>
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(scanMessage))
+            {
+                <div class="alert alert-warning">@scanMessage</div>
+            }
+
+            @if (currentStep.RequiresQrCodeScan && isScanning)
+            {
+                <div id="qr-scanner" class="step-scanner">
+                    <video id="video"></video>
+                    <button class="btn-cancel-scan" @onclick="StopScanning">Annuller scanning</button>
+                </div>
+            }
+
+            <div class="step-actions">
+                <button class="btn-prev" disabled="@(CurrentIndex <= 0)" @onclick="PreviousStep">
+                    <i class="fas fa-arrow-left"></i> Tilbage
+                </button>
+
+                @if (currentStep.RequiresQrCodeScan)
+                {
+                    @if (!isScanning)
+                    {
+                        <button class="btn-next" @onclick="StartScanning">
+                            <i class="fas fa-qrcode"></i> Scan QR-kode
+                        </button>
+                    }
+                }
+                else
+                {
+                    <button class="btn-next" @onclick="ShowNextStep">
+                        @if (IsLastStep)
+                        {
+                            <span><i class="fas fa-check"></i> Færdig</span>
+                        }
+                        else
+                        {
+                            <span>Næste <i class="fas fa-arrow-right"></i></span>
+                        }
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
 
 @code {
     [Parameter] public int TaskId { get; set; }
     [Parameter] public int StepId { get; set; }
 
-    private List<ReadTaskStepDto> TaskSteps { get; set; } = new List<ReadTaskStepDto>();
+    private List<ReadTaskStepDto> TaskSteps { get; set; } = new();
     private ReadTaskStepDto? currentStep;
     private bool isScanning = false;
+    private string? scanMessage;
+    private DotNetObjectReference<TaskStepView>? _objRef;
 
-    protected override async Task OnInitializedAsync()
+    private int CurrentIndex => TaskSteps.FindIndex(s => s.Id == StepId);
+    private bool IsLastStep => CurrentIndex >= 0 && CurrentIndex == TaskSteps.Count - 1;
+    private int ProgressPercent => TaskSteps.Count == 0
+        ? 0
+        : (int)Math.Round(100.0 * (CurrentIndex + 1) / TaskSteps.Count);
+
+    protected override void OnInitialized()
     {
-        await LoadSteps();
-        await LoadCurrentStep();
+        _objRef = DotNetObjectReference.Create(this);
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        await LoadCurrentStep();
+        // Steps are loaded once and reused as the user moves between them.
+        if (TaskSteps.Count == 0)
+        {
+            await LoadSteps();
+        }
+        SetCurrentStep();
     }
 
     private async Task LoadSteps()
     {
         var result = await TaskStepService.GetStepsForTask(TaskId);
-        if (result.Success && result.Data != null)
+        TaskSteps = (result.Success && result.Data != null)
+            ? result.Data
+            : new List<ReadTaskStepDto>();
+
+        for (int i = 0; i < TaskSteps.Count; i++)
         {
-            TaskSteps = result.Data;
-        }
-        else
-        {
-            TaskSteps = new List<ReadTaskStepDto>();
+            TaskSteps[i].StepNumber = i + 1;
         }
     }
 
-    private async Task LoadCurrentStep()
+    private void SetCurrentStep()
     {
-        var result = await TaskStepService.GetStepsForTask(TaskId);
-        if (result.Success && result.Data != null)
+        scanMessage = null;
+        currentStep = TaskSteps.FirstOrDefault(step => step.Id == StepId);
+
+        if (currentStep == null && TaskSteps.Count > 0)
         {
-            TaskSteps = result.Data;
-            for (int i = 0; i < TaskSteps.Count; i++)
-            {
-                TaskSteps[i].StepNumber = i + 1;
-            }
-            currentStep = TaskSteps.FirstOrDefault(step => step.Id == StepId);
-            if (currentStep == null)
-            {
-                Navigation.NavigateTo("/tasks");
-            }
+            Navigation.NavigateTo("/tasks");
         }
     }
 
-    private async void ShowNextStep()
+    private async Task ShowNextStep()
     {
-        var currentIndex = TaskSteps.FindIndex(step => step.Id == StepId);
-        if (currentIndex != -1 && currentIndex < TaskSteps.Count - 1)
+        await Js.InvokeVoidAsync("stopSpeaking");
+
+        if (CurrentIndex != -1 && CurrentIndex < TaskSteps.Count - 1)
         {
-            var nextStepId = TaskSteps[currentIndex + 1].Id;
+            var nextStepId = TaskSteps[CurrentIndex + 1].Id;
             Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{nextStepId}");
         }
         else
         {
-            Console.WriteLine("No more steps. Returning to task list.");
             await TaskService.MarkTaskAsCompleted(TaskId);
             Navigation.NavigateTo("/tasks");
+        }
+    }
+
+    private async Task PreviousStep()
+    {
+        await Js.InvokeVoidAsync("stopSpeaking");
+
+        if (CurrentIndex > 0)
+        {
+            var prevStepId = TaskSteps[CurrentIndex - 1].Id;
+            Navigation.NavigateTo($"/task-step-view/{TaskId}/step/{prevStepId}");
+        }
+    }
+
+    private async Task ExitToTasks()
+    {
+        await Js.InvokeVoidAsync("stopSpeaking");
+        Navigation.NavigateTo("/tasks");
+    }
+
+    private async Task Speak()
+    {
+        if (currentStep != null && !string.IsNullOrWhiteSpace(currentStep.Text))
+        {
+            await Js.InvokeVoidAsync("speakText", currentStep.Text);
         }
     }
 
@@ -110,8 +189,9 @@ else
     {
         if (!isScanning)
         {
+            scanMessage = null;
             isScanning = true;
-            await Js.InvokeVoidAsync("startScanning");
+            await Js.InvokeVoidAsync("startScanning", _objRef);
         }
     }
 
@@ -125,6 +205,20 @@ else
     public async Task OnQrCodeScanned(string result)
     {
         await StopScanning();
-        ShowNextStep();
+
+        if (string.IsNullOrWhiteSpace(result))
+        {
+            scanMessage = "Der blev ikke læst nogen kode. Prøv at scanne igen.";
+            StateHasChanged();
+            return;
+        }
+
+        await ShowNextStep();
+    }
+
+    public void Dispose()
+    {
+        _ = Js.InvokeVoidAsync("stopSpeaking");
+        _objRef?.Dispose();
     }
 }
