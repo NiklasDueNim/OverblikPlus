@@ -1,9 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OverblikPlus</title>
+    <title>OverblikPlus – Overblik og struktur for bosteder</title>
+    <meta name="description" content="OverblikPlus samler opgaver, aktiviteter, kommunikation og vagtplan ét sted – og giver beboere og personale tryghed, struktur og overblik i hverdagen." />
+    <meta name="theme-color" content="#2196F3" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="OverblikPlus – Overblik og struktur for bosteder" />
+    <meta property="og:description" content="Saml opgaver, aktiviteter, kommunikation og vagtplan ét sted. Tryghed og struktur for beboere og personale." />
+    <meta property="og:locale" content="da_DK" />
     <base href="/" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
@@ -38,6 +44,28 @@
             document.body.classList.remove("dark-theme");
         }
     }
+    
+    window.scrollToElement = function(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    // Reads a piece of text aloud in Danish (used by the step-by-step task view).
+    window.speakText = function(text) {
+        if (!('speechSynthesis' in window) || !text) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'da-DK';
+        window.speechSynthesis.speak(utterance);
+    };
+
+    window.stopSpeaking = function() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+    };
 </script>
 
 </body>

@@ -37,8 +37,10 @@ public class BlobStorageService : IBlobStorageService
         var blobClient = containerClient.GetBlobClient(fileName);
         await blobClient.UploadAsync(imageStream, overwrite: true);
 
-        // In development, use API proxy URL instead of direct Azurite URL to avoid CORS issues
-        if (_environment.IsDevelopment() && _blobBaseUrl.Contains("localhost:10000"))
+        // In development the blob lives in Azurite, which is not reachable from the
+        // browser (e.g. the docker-internal "azurite" host). Return an API proxy URL
+        // so the client always hits a reachable endpoint and avoids CORS issues.
+        if (_environment.IsDevelopment() && IsLocalDevStorage(_blobBaseUrl))
         {
             var request = _httpContextAccessor.HttpContext?.Request;
             if (request != null)
@@ -58,6 +60,19 @@ public class BlobStorageService : IBlobStorageService
             blobUrl = $"{blobUrl}/images";
         }
         return $"{blobUrl}/{fileName}";
+    }
+
+    // Detects local/dev blob storage (Azurite) regardless of how the host is addressed:
+    // "localhost:10000" (host run), "azurite" (docker-compose), 127.0.0.1 or the dev account.
+    private static bool IsLocalDevStorage(string blobBaseUrl)
+    {
+        if (string.IsNullOrEmpty(blobBaseUrl))
+            return false;
+
+        return blobBaseUrl.Contains("localhost:10000")
+            || blobBaseUrl.Contains("127.0.0.1:10000")
+            || blobBaseUrl.Contains("azurite")
+            || blobBaseUrl.Contains("devstoreaccount1");
     }
 
     public async Task DeleteImageAsync(string fileName)

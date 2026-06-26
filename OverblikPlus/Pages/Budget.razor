@@ -202,7 +202,6 @@ else
         {
             if (isEditMode && editingId.HasValue)
             {
-                // Update existing budget
                 var updatedBudget = await BudgetService.UpdateBudgetAsync(editingId.Value, newBudget);
                 if (updatedBudget != null)
                 {
@@ -302,7 +301,6 @@ else
 
     private async Task DeleteBudget(Guid id)
     {
-        // Use JavaScript confirm in Blazor
         var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Er du sikker på, at du vil slette denne budgetpost?");
         if (!confirmed)
         {
@@ -338,16 +336,9 @@ else
 
     private string FixVoucherUrl(string voucherUrl)
     {
-        if (string.IsNullOrEmpty(voucherUrl))
-            return "";
-
-        // Fix Azurite URLs if needed (similar to FixImageUrl in other components)
-        if (voucherUrl.Contains("azurite"))
-        {
-            return voucherUrl.Replace("http://azurite:10000", "http://localhost:10000");
-        }
-
-        return voucherUrl;
+        // The backend now returns browser-reachable URLs (an API proxy in development),
+        // so no client-side rewriting is needed.
+        return voucherUrl ?? "";
     }
 
     private bool IsImageUrl(string url)
