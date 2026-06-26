@@ -73,8 +73,20 @@ main {
 }
 
 .desktop-menu-bar > a:hover {
-    background-color: rgba(33, 150, 243, 0.1);
+    background-color: rgba(33, 150, 243, 0.08);
     border-left-color: #2196F3;
+}
+
+.desktop-menu-bar > a:hover .icon,
+.desktop-menu-bar > a.active .icon {
+    color: #1976D2;
+}
+
+.desktop-menu-bar > a.active {
+    background-color: rgba(33, 150, 243, 0.12);
+    border-left-color: #2196F3;
+    color: #1976D2;
+    font-weight: 600;
 }
 
 .notification-bell-wrapper {
@@ -89,10 +101,12 @@ main {
 }
 
 .desktop-menu-bar .icon {
-    font-size: 1.2rem;
-    margin-right: 0.75rem;
-    width: 24px;
+    font-size: 1.1rem;
+    margin-right: 0.85rem;
+    width: 22px;
     text-align: center;
+    color: #78909c;
+    transition: color 0.2s ease;
 }
 
 /* Content wrapper for better centering */
@@ -151,7 +165,8 @@ main {
     min-width: 60px;
 }
 
-.mobile-menu-bar a:hover {
+.mobile-menu-bar a:hover,
+.mobile-menu-bar a.active {
     color: #2196F3;
 }
 

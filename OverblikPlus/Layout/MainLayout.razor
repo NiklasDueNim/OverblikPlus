@@ -3,6 +3,7 @@
 @using OverblikPlus.Components.Dashboard
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
 @inherits LayoutComponentBase
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
@@ -18,58 +19,58 @@
             </div>
             @if (!IsRelative())
             {
-                <a href="/">
-                    <span class="icon">🏠</span>
+                <NavLink href="/" Match="NavLinkMatch.All">
+                    <span class="icon"><i class="fas fa-house"></i></span>
                     <span>Hjem</span>
-                </a>
-                <a href="/tasks">
-                    <span class="icon">📋</span>
+                </NavLink>
+                <NavLink href="/tasks">
+                    <span class="icon"><i class="fas fa-list-check"></i></span>
                     <span>Dagens Opgaver</span>
-                </a>
-                <a href="/scan">
-                    <span class="icon">📷</span>
+                </NavLink>
+                <NavLink href="/scan">
+                    <span class="icon"><i class="fas fa-qrcode"></i></span>
                     <span>Scan QR-kode</span>
-                </a>
-                <a href="/TaskManager">
-                    <span class="icon">➕</span>
+                </NavLink>
+                <NavLink href="/TaskManager">
+                    <span class="icon"><i class="fas fa-square-plus"></i></span>
                     <span>Opret Opgaver</span>
-                </a>
-                <a href="/calendar">
-                    <span class="icon">📅</span>
+                </NavLink>
+                <NavLink href="/calendar">
+                    <span class="icon"><i class="fas fa-calendar-days"></i></span>
                     <span>Kalender</span>
-                </a>
-                <a href="/chatTest">
-                    <span class="icon">✉️</span>
+                </NavLink>
+                <NavLink href="/chatTest">
+                    <span class="icon"><i class="fas fa-comments"></i></span>
                     <span>Beskeder</span>
-                </a>
-                <a href="/budget">
-                    <span class="icon">💰</span>
+                </NavLink>
+                <NavLink href="/budget">
+                    <span class="icon"><i class="fas fa-wallet"></i></span>
                     <span>Budget</span>
-                </a>
-                <a href="/mood">
-                    <span class="icon">😎</span>
+                </NavLink>
+                <NavLink href="/mood">
+                    <span class="icon"><i class="fas fa-face-smile"></i></span>
                     <span>Mit humør</span>
-                </a>
+                </NavLink>
                 @if (IsAdminOrStaff())
                 {
-                    <a href="/mood-overview">
-                        <span class="icon">📊</span>
+                    <NavLink href="/mood-overview">
+                        <span class="icon"><i class="fas fa-chart-line"></i></span>
                         <span>Humør Oversigt</span>
-                    </a>
+                    </NavLink>
                 }
-                <a href="/schedule">
-                    <span class="icon">😎</span>
+                <NavLink href="/schedule">
+                    <span class="icon"><i class="fas fa-user-clock"></i></span>
                     <span>Vagtskema</span>
-                </a>
-                <a href="/activities">
-                    <span class="icon">😎</span>
+                </NavLink>
+                <NavLink href="/activities">
+                    <span class="icon"><i class="fas fa-people-group"></i></span>
                     <span>Aktiviteter</span>
-                </a>
+                </NavLink>
             }
-            <a href="/announcements">
-                <span class="icon">🧑‍🏫</span>
+            <NavLink href="/announcements">
+                <span class="icon"><i class="fas fa-bullhorn"></i></span>
                 <span>Opslagstavle</span>
-            </a>
+            </NavLink>
             @* Notifications disabled until backend is ready *@
             @* <div class="notification-bell-wrapper">
                 <NotificationBell />
@@ -87,37 +88,37 @@
         <div class="mobile-menu-bar">
             @if (!IsRelative())
             {
-                <a href="/">
-                    <span class="icon">🏠</span>
+                <NavLink href="/" Match="NavLinkMatch.All">
+                    <span class="icon"><i class="fas fa-house"></i></span>
                     <span class="label">Hjem</span>
-                </a>
-                <a href="/tasks">
-                    <span class="icon">📋</span>
+                </NavLink>
+                <NavLink href="/tasks">
+                    <span class="icon"><i class="fas fa-list-check"></i></span>
                     <span class="label">Opgaver</span>
-                </a>
-                <a href="/scan">
-                    <span class="icon">📷</span>
+                </NavLink>
+                <NavLink href="/scan">
+                    <span class="icon"><i class="fas fa-qrcode"></i></span>
                     <span class="label">Scan</span>
-                </a>
-                <a href="/TaskManager">
-                    <span class="icon">➕</span>
+                </NavLink>
+                <NavLink href="/TaskManager">
+                    <span class="icon"><i class="fas fa-square-plus"></i></span>
                     <span class="label">Opret</span>
-                </a>
-                <a href="/calendar">
-                    <span class="icon">📅</span>
+                </NavLink>
+                <NavLink href="/calendar">
+                    <span class="icon"><i class="fas fa-calendar-days"></i></span>
                     <span class="label">Kalender</span>
-                </a>
+                </NavLink>
             }
-            <a href="/announcements">
-                <span class="icon">🧑‍🏫</span>
+            <NavLink href="/announcements">
+                <span class="icon"><i class="fas fa-bullhorn"></i></span>
                 <span class="label">Opslag</span>
-            </a>
+            </NavLink>
             @if (IsAdminOrStaff())
             {
-                <a href="/mood-overview">
-                    <span class="icon">📊</span>
+                <NavLink href="/mood-overview">
+                    <span class="icon"><i class="fas fa-chart-line"></i></span>
                     <span class="label">Humør</span>
-                </a>
+                </NavLink>
             }
         </div>
     </Authorized>
