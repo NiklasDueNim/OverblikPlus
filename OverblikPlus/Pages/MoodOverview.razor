@@ -7,9 +7,14 @@
 
 <PageTitle>Humør Oversigt</PageTitle>
 
-<div class="container-fluid">
-    <h3>Humør Oversigt for Bosted</h3>
-    
+<div class="container-fluid moodoverview-page">
+    <h1 class="mo-title">Humør Oversigt</h1>
+    <div class="mo-legend">
+        <span><span class="mo-emoji">😊</span> God</span>
+        <span><span class="mo-emoji">😐</span> Okay</span>
+        <span><span class="mo-emoji">😞</span> Dårlig</span>
+    </div>
+
     @if (!string.IsNullOrEmpty(message))
     {
         <div class="alert @alertClass alert-dismissible fade show" role="alert">

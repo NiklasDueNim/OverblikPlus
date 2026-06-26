@@ -9,39 +9,48 @@
 @inject NavigationManager NavigationManager
 @inherits BasePage
 
-<h3>Brugerprofil</h3>
+<div class="userview-page">
+    <button class="btn-back" @onclick="GoBack"><i class="fas fa-arrow-left me-1"></i> Tilbage</button>
+    <h1 class="userview-title">Brugerprofil</h1>
 
-<AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+    <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
 
-@if (IsLoading)
-{
-    <LoadingSpinner Text="Indlæser brugerprofil..." />
-}
-else if (user == null)
-{
-    <div class="alert alert-warning">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        Brugeren blev ikke fundet.
-    </div>
-    <button class="btn btn-secondary" @onclick="GoBack">Tilbage</button>
-}
-else
-{
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">@user.FirstName @user.LastName</h5>
-            <p class="card-text">
-                <strong>Brugernavn:</strong> @user.Username<br/>
-                <strong>Rolle:</strong> @user.Role
-            </p>
-            <button class="btn btn-secondary" @onclick="GoBack">Tilbage</button>
+    @if (IsLoading)
+    {
+        <LoadingSpinner Text="Indlæser brugerprofil..." />
+    }
+    else if (user == null)
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Brugeren blev ikke fundet.
         </div>
-    </div>
-}
+    }
+    else
+    {
+        <div class="profile-card">
+            <div class="profile-avatar">@Initials</div>
+            <h2 class="profile-name">@user.FirstName @user.LastName</h2>
+            <span class="role-badge role-@(user.Role?.ToLower())">@user.Role</span>
+
+            <div class="profile-field">
+                <span class="profile-label">Brugernavn</span>
+                <span class="profile-value">@user.Username</span>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
     [Parameter] public string? userId { get; set; }
     private ReadUserDto? user;
+
+    private string Initials =>
+        user == null
+            ? "?"
+            : $"{First(user.FirstName)}{First(user.LastName)}".ToUpper();
+
+    private static string First(string? s) => string.IsNullOrEmpty(s) ? "" : s.Substring(0, 1);
 
     protected override async Task OnInitializedAsync()
     {
@@ -64,7 +73,7 @@ else
     {
         SetLoading(true);
         ClearMessages();
-        
+
         try
         {
             var result = await UserService.GetUserById(id);

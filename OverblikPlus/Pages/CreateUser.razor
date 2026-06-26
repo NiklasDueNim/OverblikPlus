@@ -81,10 +81,10 @@
                             Rolle
                         </label>
                         <InputSelect id="role" @bind-Value="newUser.Role" class="form-select">
-                            <option value="Beboer">Beboer</option>
-                            <option value="Medarbejder">Medarbejder</option>
+                            <option value="User">Beboer</option>
+                            <option value="Staff">Medarbejder</option>
                             <option value="Admin">Admin</option>
-                            <option value="Relative">Relative</option>
+                            <option value="Relative">Pårørende</option>
                         </InputSelect>
                     </div>
                 }
@@ -138,7 +138,7 @@
         {
             if (string.IsNullOrEmpty(newUser.Role))
             {
-                newUser.Role = "Beboer";
+                newUser.Role = "User";
             }
 
             var result = await UserService.CreateUser(newUser);
