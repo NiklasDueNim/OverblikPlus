@@ -1,0 +1,73 @@
+.userlist-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.userlist-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.userlist-title {
+    color: #1976D2;
+    font-weight: 700;
+    margin: 0;
+}
+
+.btn-new-user {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    border-radius: 10px;
+    padding: 0.6rem 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-new-user:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.35);
+    color: white;
+}
+
+.userlist-page ::deep table.table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.userlist-page ::deep table.table thead th {
+    background: #f5f7f9;
+    color: #455a64;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.userlist-page ::deep table.table td {
+    vertical-align: middle;
+}
+
+/* Role badges */
+.role-badge {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: #eceff1;
+    color: #546e7a;
+}
+
+.role-badge.role-admin { background: #e3f2fd; color: #1565c0; }
+.role-badge.role-staff { background: #e8f5e9; color: #2e7d32; }
+.role-badge.role-user { background: #fff3e0; color: #e65100; }
+.role-badge.role-relative { background: #f3e5f5; color: #6a1b9a; }

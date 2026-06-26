@@ -9,10 +9,14 @@
 @inject IJSRuntime JSRuntime
 @inherits BasePage
 
-<h3>Liste over brugere</h3>
+<div class="userlist-page">
+    <div class="userlist-header">
+        <h1 class="userlist-title">Brugere</h1>
+        <a href="/create-user" class="btn-new-user"><i class="fas fa-user-plus me-1"></i> Opret bruger</a>
+    </div>
 
-<AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
-<AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
+    <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+    <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
 
 @if (IsLoading)
 {
@@ -44,7 +48,7 @@ else
                 <td>@user.FirstName</td>
                 <td>@user.LastName</td>
                 <td>@user.Username</td>
-                <td>@user.Role</td>
+                <td><span class="role-badge role-@(user.Role?.ToLower())">@user.Role</span></td>
                 <td>
                     <button class="btn btn-primary btn-sm" @onclick="() => EditUser(user.Id)">Rediger</button>
                     <button class="btn btn-danger btn-sm ms-2" @onclick="() => DeleteUser(user.Id)">Slet</button>
@@ -54,8 +58,9 @@ else
         </tbody>
     </table>
 }
+</div>
 
-<ConfirmDialog Show="@showDeleteConfirm" 
+<ConfirmDialog Show="@showDeleteConfirm"
                Title="Slet bruger" 
                Message="Er du sikker på, at du vil slette denne bruger?" 
                ConfirmText="Slet" 
