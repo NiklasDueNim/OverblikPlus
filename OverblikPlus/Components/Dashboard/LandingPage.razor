@@ -1,77 +1,204 @@
-@* Landing page component for non-authenticated users *@
+@* Landing page for non-authenticated visitors *@
 <div class="landing-page">
-    <div class="hero-section">
+
+    <!-- HERO -->
+    <section class="hero-section">
         <div class="hero-content">
             <div class="logo-section">
                 <div class="logo-icon">
-                    <img src="/images/logo-blue.png" alt="OverblikPlus Logo" />
+                    <img src="/images/logo-blue.png" alt="OverblikPlus logo" />
                 </div>
-                <h1 class="hero-title">OverblikPlus</h1>
+                <span class="logo-word">OverblikPlus</span>
             </div>
-            <p class="hero-subtitle">Dit personlige overblik for et organiseret bosted</p>
+            <h1 class="hero-title">Overblik og struktur for hele bostedet</h1>
             <p class="hero-description">
-                Effektiv administration, kommunikation og opgavestyring samlet ét sted. 
-                Skab overblik og struktur for både beboere og personale.
+                Saml opgaver, aktiviteter, kommunikation, vagtplan og trivsel ét sted.
+                OverblikPlus giver beboerne tryghed og forudsigelighed i hverdagen –
+                og personalet det fulde overblik.
             </p>
             <div class="hero-actions">
                 <a href="/login" class="btn-primary-large">
-                    <i class="fas fa-sign-in-alt me-2"></i>
+                    <i class="fas fa-right-to-bracket me-2"></i>
                     Log ind
                 </a>
-                <a href="/create-user" class="btn-secondary-large">
-                    <i class="fas fa-user-plus me-2"></i>
-                    Opret konto
+                <a href="mailto:kontakt@overblikplus.dk?subject=Demo%20af%20OverblikPlus" class="btn-secondary-large">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Book en demo
                 </a>
             </div>
+            <p class="hero-trust">
+                <i class="fas fa-shield-halved me-1"></i>
+                Sikker login · Data i EU · GDPR-venlig
+            </p>
         </div>
         <div class="hero-visual">
             <div class="feature-cards">
                 <div class="feature-card">
-                    <i class="fas fa-tasks"></i>
-                    <h4>Opgavestyring</h4>
-                    <p>Organiser daglige opgaver og rutiner</p>
+                    <i class="fas fa-list-check"></i>
+                    <h4>Dagens opgaver</h4>
+                    <p>Trinvise rutiner med billeder og oplæsning</p>
                 </div>
                 <div class="feature-card">
-                    <i class="fas fa-users"></i>
+                    <i class="fas fa-people-group"></i>
                     <h4>Aktiviteter</h4>
-                    <p>Planlæg og deltag i fælles aktiviteter</p>
+                    <p>Planlæg og tilmeld jer fælles aktiviteter</p>
                 </div>
                 <div class="feature-card">
-                    <i class="fas fa-comments"></i>
-                    <h4>Kommunikation</h4>
-                    <p>Effektiv kommunikation mellem alle</p>
+                    <i class="fas fa-face-smile"></i>
+                    <h4>Trivsel</h4>
+                    <p>Daglig humør-registrering og overblik</p>
                 </div>
             </div>
         </div>
+    </section>
+
+    <!-- MÅLGRUPPE-BÅND -->
+    <div class="audience-band">
+        Bygget til bosteder, botilbud og socialpædagogiske tilbud
     </div>
-    
-    <div class="features-section">
+
+    <!-- FUNKTIONER -->
+    <section class="features-section">
         <div class="container">
-            <h2 class="features-title">Hvorfor vælge OverblikPlus?</h2>
+            <h2 class="section-title">Alt det, en hverdag på bostedet kræver</h2>
+            <p class="section-subtitle">Ét samlet system – i stedet for sedler, tavler og spredte apps.</p>
+
             <div class="features-grid">
                 <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h3>Dagligt overblik</h3>
-                    <p>Få et klart overblik over dagens opgaver og aktiviteter</p>
+                    <div class="feature-icon"><i class="fas fa-list-check"></i></div>
+                    <h3>Opgaver &amp; rutiner</h3>
+                    <p>Trinvise opgaver med billeder, oplæsning og QR-bekræftelse, der guider beboeren skridt for skridt.</p>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <h3>Altid tilgængelig</h3>
-                    <p>Adgang til dit overblik på alle enheder, når som helst</p>
+                    <div class="feature-icon"><i class="fas fa-people-group"></i></div>
+                    <h3>Aktiviteter</h3>
+                    <p>Opret aktiviteter med tid, sted og pladser – beboere kan selv tilmelde sig.</p>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Sikker og privat</h3>
-                    <p>Dine data er beskyttet med moderne sikkerhedsteknologi</p>
+                    <div class="feature-icon"><i class="fas fa-face-smile"></i></div>
+                    <h3>Trivsel &amp; humør</h3>
+                    <p>Beboeren registrerer sit humør, og personalet får overblik over trivsel over tid.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-calendar-days"></i></div>
+                    <h3>Kalender</h3>
+                    <p>Måned, uge og dag – opgaver og begivenheder samlet i ét overblik.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-user-clock"></i></div>
+                    <h3>Vagtplan</h3>
+                    <p>Planlæg personalets vagter, så alle ved hvem der er på arbejde.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-bullhorn"></i></div>
+                    <h3>Opslagstavle</h3>
+                    <p>Del beskeder og vigtige opslag med beboere, personale og pårørende.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-wallet"></i></div>
+                    <h3>Budget</h3>
+                    <p>Hold styr på regnskab og bilag – med kvitteringer vedhæftet.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-gauge-high"></i></div>
+                    <h3>Personligt dashboard</h3>
+                    <p>Vælg selv hvilke widgets der vises – dit overblik, din måde.</p>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
+    <!-- ROLLER -->
+    <section class="roles-section">
+        <div class="container">
+            <h2 class="section-title">Lavet til alle omkring beboeren</h2>
+            <div class="roles-grid">
+                <div class="role-card">
+                    <div class="role-icon role-beboer"><i class="fas fa-user"></i></div>
+                    <h3>Beboer</h3>
+                    <p>En rolig, visuel hverdag: dagens opgaver, aktiviteter og humør – med store knapper og oplæsning.</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon role-staff"><i class="fas fa-user-nurse"></i></div>
+                    <h3>Personale</h3>
+                    <p>Overblik over opgaver, vagtplan, aktiviteter og trivsel – så I kan bruge tiden på beboerne.</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon role-relative"><i class="fas fa-house-user"></i></div>
+                    <h3>Pårørende</h3>
+                    <p>Følg med via opslagstavlen og hold kontakten – tryghed for familien.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SÅDAN VIRKER DET -->
+    <section class="how-section">
+        <div class="container">
+            <h2 class="section-title">Sådan kommer I i gang</h2>
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <h3>Opret beboere &amp; personale</h3>
+                    <p>Få jeres brugere ind med de rette roller på få minutter.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <h3>Planlæg opgaver &amp; aktiviteter</h3>
+                    <p>Byg trinvise rutiner og fælles aktiviteter, der passer til hverdagen.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <h3>Følg dagen på dashboardet</h3>
+                    <p>Beboere og personale ser, hvad der sker nu – og hvad der kommer.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRYGHED -->
+    <section class="trust-section">
+        <div class="container">
+            <h2 class="section-title">Tryghed og sikkerhed i centrum</h2>
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <i class="fas fa-shield-halved"></i>
+                    <h3>Sikker adgang</h3>
+                    <p>Rollebaseret adgang, så hver bruger kun ser det, de skal.</p>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-location-dot"></i>
+                    <h3>Data i EU</h3>
+                    <p>Jeres data hostes i EU og behandles efter GDPR.</p>
+                </div>
+                <div class="trust-item">
+                    <i class="fas fa-mobile-screen"></i>
+                    <h3>Altid tilgængelig</h3>
+                    <p>Virker på computer, tablet og telefon – også på farten.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AFSLUTTENDE CTA -->
+    <section class="cta-section">
+        <h2>Klar til mere overblik?</h2>
+        <p>Se OverblikPlus i en uforpligtende demo – tilpasset jeres bosted.</p>
+        <div class="hero-actions">
+            <a href="mailto:kontakt@overblikplus.dk?subject=Demo%20af%20OverblikPlus" class="btn-primary-large">
+                <i class="fas fa-calendar-check me-2"></i>
+                Book en demo
+            </a>
+            <a href="/login" class="btn-ghost-large">
+                Log ind
+            </a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="landing-footer">
+        <span>© @DateTime.Now.Year OverblikPlus</span>
+        <span>·</span>
+        <a href="mailto:kontakt@overblikplus.dk">kontakt@overblikplus.dk</a>
+    </footer>
+</div>
