@@ -1,8 +1,32 @@
+/* ==========================================================================
+   Design tokens — single source of truth for brand colours and surfaces.
+   Prefer these variables over hardcoded hex values in component CSS.
+   ========================================================================== */
+:root {
+    --brand-50: #e3f2fd;
+    --brand-500: #2196F3;
+    --brand-700: #1976D2;
+    --brand-900: #0d47a1;
+
+    --surface: #ffffff;
+    --bg-muted: #f8f9fa;
+
+    --text: #263238;
+    --text-muted: #666666;
+    --border: #e0e0e0;
+
+    --success: #43a047;
+    --danger: #dc3545;
+    --warning: #ffc107;
+
+    --brand-gradient: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+}
+
 /* Desktop Sidebar - Legacy styles, overridden by MainLayout.razor.css */
 /* This file is kept for compatibility but MainLayout.razor.css takes precedence */
 
 .desktop-menu-bar h2 {
-    color: #0071c1;
+    color: var(--brand-700);
     font-size: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -10,14 +34,14 @@
 .desktop-menu-bar a {
     display: flex;
     align-items: center;
-    color: #0071c1;
+    color: var(--brand-700);
     text-decoration: none;
     margin-bottom: 1rem;
     font-size: 1rem;
 }
 
 .desktop-menu-bar a:hover {
-    color: #0056a1;
+    color: var(--brand-900);
 }
 
 .desktop-menu-bar .icon {
@@ -30,7 +54,7 @@
     position: fixed;
     bottom: 0;
     width: 100%;
-    background-color: #f8f9fa;
+    background-color: var(--bg-muted);
     box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
     display: none; /* Skjul som standard */
     justify-content: space-around;
@@ -41,12 +65,12 @@
 .mobile-menu-bar a {
     text-align: center;
     flex-grow: 1;
-    color: #0071c1;
+    color: var(--brand-700);
     text-decoration: none;
 }
 
 .mobile-menu-bar a:hover {
-    color: #0056a1;
+    color: var(--brand-900);
 }
 
 .mobile-menu-bar a .icon {
@@ -62,9 +86,9 @@
 .content-wrapper {
     margin-left: 250px;
     padding: 2rem;
-    background-color: #ffffff;
+    background-color: var(--surface);
     min-height: 100vh;
-    color: #343a40;
+    color: var(--text);
     transition: margin-left 0.3s ease;
 }
 
