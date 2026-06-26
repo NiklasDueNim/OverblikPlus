@@ -261,9 +261,38 @@
 
     private bool IsWeeklyMatch(ReadTaskDto task, DateTime selectedDate)
     {
-        var daysDiff = (selectedDate.Date - task.StartDate.Date).Days;
-        return daysDiff >= 0 && daysDiff % (task.RecurrenceInterval * 7) == 0;
+        if (selectedDate.Date < task.StartDate.Date) return false;
+
+        var interval = Math.Max(1, task.RecurrenceInterval);
+        var weeks = (StartOfWeek(selectedDate) - StartOfWeek(task.StartDate)).Days / 7;
+        if (weeks < 0 || weeks % interval != 0) return false;
+
+        var activeDays = task.SelectedWeekDays?.Where(kv => kv.Value).Select(kv => kv.Key).ToList()
+                         ?? new List<string>();
+        if (activeDays.Count == 0)
+        {
+            // No weekday chosen: fall back to the start date's weekday.
+            activeDays.Add(DanishDay(task.StartDate.DayOfWeek));
+        }
+        return activeDays.Contains(DanishDay(selectedDate.DayOfWeek));
     }
+
+    private static DateTime StartOfWeek(DateTime d)
+    {
+        int diff = ((int)d.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        return d.Date.AddDays(-diff);
+    }
+
+    private static string DanishDay(DayOfWeek d) => d switch
+    {
+        DayOfWeek.Monday => "Mandag",
+        DayOfWeek.Tuesday => "Tirsdag",
+        DayOfWeek.Wednesday => "Onsdag",
+        DayOfWeek.Thursday => "Torsdag",
+        DayOfWeek.Friday => "Fredag",
+        DayOfWeek.Saturday => "Lørdag",
+        _ => "Søndag"
+    };
 
     private bool IsMonthlyMatch(ReadTaskDto task, DateTime selectedDate)
     {

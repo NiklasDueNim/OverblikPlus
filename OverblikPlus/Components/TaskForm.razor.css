@@ -1,0 +1,104 @@
+/* "Hver X dage/uger/..." rows */
+.rec-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #455a64;
+}
+
+.rec-num {
+    width: 90px;
+    display: inline-block;
+}
+
+.rec-date {
+    width: 170px;
+    display: inline-block;
+    margin-left: 0.5rem;
+}
+
+/* Weekday pills */
+.weekday-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.weekday-pill {
+    border: 1px solid #cfd8dc;
+    background: white;
+    color: #546e7a;
+    border-radius: 20px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.weekday-pill:hover {
+    border-color: #16b8a6;
+}
+
+.weekday-pill.active {
+    background: #16b8a6;
+    border-color: #16b8a6;
+    color: white;
+}
+
+.rec-hint {
+    display: block;
+    margin-top: 0.5rem;
+    color: #90a4ae;
+}
+
+/* End-condition rows */
+.end-options .form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.end-options .form-check-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Human-readable summary */
+.rec-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #e8f7f5;
+    border: 1px solid #b8ece5;
+    color: #0e7a72;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    font-weight: 500;
+}
+
+.rec-summary i {
+    color: #0e958b;
+    font-size: 1.1rem;
+}
+
+/* Preview badges */
+.rec-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.rec-badge {
+    background: #eef2f7;
+    color: #37474f;
+    border-radius: 8px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
