@@ -262,10 +262,10 @@
                 <!-- Preview af gentagelser -->
                 <div class="mb-3">
                     <label class="form-label">Preview af næste gentagelser:</label>
-                    <div class="recurrence-preview">
+                    <div class="recurrence-preview d-flex flex-wrap gap-2">
                         @foreach (var occurrence in GetNextOccurrences(5))
                         {
-                            <span class="badge bg-secondary me-1">@occurrence.ToString("dd/MM/yyyy")</span>
+                            <span class="badge bg-secondary">@occurrence.ToString("dd/MM/yyyy")</span>
                         }
                     </div>
                 </div>
@@ -297,8 +297,24 @@
     
     protected override async Task OnInitializedAsync()
     {
-        var role = await AuthStateProvider.GetRoleAsync();
+        await InitializeForm();
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await InitializeForm();
+        await base.OnParametersSetAsync();
+    }
+    
+    private async Task InitializeForm()
+    {
+        var role = AuthStateProvider.GetRole();
         isAdminOrStaff = role == "Admin" || role == "Staff";
+        
+        if (Task == null)
+        {
+            Task = new TaskFormModel();
+        }
         
         if (string.IsNullOrEmpty(Task.RecurrenceType))
         {
@@ -333,11 +349,24 @@
     private List<DateTime> GetNextOccurrences(int count)
     {
         var occurrences = new List<DateTime>();
+        
+        // Hvis ingen gentagelse, vis kun startdatoen
+        if (Task.RecurrenceType == "None" || string.IsNullOrEmpty(Task.RecurrenceType))
+        {
+            if (Task.StartDate != default)
+            {
+                occurrences.Add(Task.StartDate);
+            }
+            return occurrences;
+        }
+        
         var currentDate = Task.StartDate;
+        var maxDate = DateTime.Now.AddYears(1);
         
         for (int i = 0; i < count; i++)
         {
-            currentDate = Task.RecurrenceType switch
+            // Beregn næste dato baseret på gentagelsestype
+            var nextDate = Task.RecurrenceType switch
             {
                 "Daily" => currentDate.AddDays(Task.RecurrenceInterval),
                 "Weekly" => currentDate.AddDays(7 * Task.RecurrenceInterval),
@@ -346,8 +375,14 @@
                 _ => currentDate
             };
             
-            if (currentDate > DateTime.Now.AddYears(1)) break; // Don't show too far ahead
-            occurrences.Add(currentDate);
+            // Stop hvis vi går for langt frem i tiden
+            if (nextDate > maxDate) break;
+            
+            // Stop hvis vi får samme dato (kan ske ved fejl i beregning)
+            if (nextDate <= currentDate && i > 0) break;
+            
+            occurrences.Add(nextDate);
+            currentDate = nextDate; // Opdater currentDate til næste iteration
         }
         
         return occurrences;

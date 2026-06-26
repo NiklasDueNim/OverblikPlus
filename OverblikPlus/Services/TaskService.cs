@@ -71,7 +71,7 @@ public class TaskService : ITaskService
     {
         try
         {
-            var userId = _authStateProvider.GetUserIdAsync();
+            var userId = _authStateProvider.GetUserId();
             if (string.IsNullOrEmpty(userId))
             {
                 _logger.LogWarning("UserId could not be retrieved from the token.");

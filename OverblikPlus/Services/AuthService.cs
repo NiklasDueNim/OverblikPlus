@@ -38,10 +38,8 @@ namespace OverblikPlus.Services
                     var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
                     if (result != null && !string.IsNullOrEmpty(result.Token))
                     {
-                        Console.WriteLine($"Login successful. Token: {result.Token}");
-                        
                         var user = _mapper.Map<User>(result.User);
-                        _authStateProvider.SetLogin(result.Token, result.RefreshToken, user);
+                        await _authStateProvider.SetLoginAsync(result.Token, result.RefreshToken, user);
                         return Result<LoginResponse>.SuccessResult(result);
                     }
                     else

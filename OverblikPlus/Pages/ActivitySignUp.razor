@@ -195,7 +195,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         currentUserId = AuthStateProvider.User?.Id ?? string.Empty;
-        userRole = await AuthStateProvider.GetRoleAsync();
+        userRole = AuthStateProvider.GetRole();
         await LoadActivities();
     }
 
@@ -207,7 +207,6 @@ else
         }
         catch (Exception ex)
         {
-            // Log error and show empty list
             Console.WriteLine($"Error loading activities: {ex.Message}");
             activities = new List<ActivityDto>();
         }
@@ -229,7 +228,6 @@ else
             }
             else
             {
-                // Show error message to user
                 Console.WriteLine($"Error joining activity: {result.ErrorMessage}");
             }
         }
@@ -259,7 +257,6 @@ else
             }
             else
             {
-                // Show error message to user
                 Console.WriteLine($"Error leaving activity: {result.ErrorMessage}");
             }
         }

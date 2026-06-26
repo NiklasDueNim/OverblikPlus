@@ -155,8 +155,9 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
-builder.Services.AddSingleton<CustomAuthStateProvider>();
+builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthStateProvider>());
 builder.Services.AddScoped<JwtAuthorizationMessageHandler>(provider =>
 {
@@ -196,9 +197,3 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 
 await builder.Build().RunAsync();
-
-// Trigger deployment
-// Updated for deployment
-// Final deployment trigger
-// Option B deployment trigger
-// Solution A deployment trigger

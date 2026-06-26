@@ -47,7 +47,7 @@ else
     {
         if (string.IsNullOrEmpty(userId))
         {
-            userId = AuthStateProvider.GetUserIdAsync();
+            userId = AuthStateProvider.GetUserId();
         }
 
         if (!string.IsNullOrEmpty(userId))

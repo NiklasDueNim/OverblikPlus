@@ -16,6 +16,7 @@
 @inject ITaskStepService TaskStepService
 @inject IMapper Mapper
 @inject CustomAuthStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
 @inherits BasePage
 
 <div class="container mt-4">
@@ -28,11 +29,13 @@
 
     @if (isTaskFormVisible)
     {
-        <TaskForm Title="@(isEditMode ? "Rediger Opgave" : "Opret Ny Opgave")"
-                  Task="taskFormModel"
-                  Users="users"
-                  OnSave="SaveTask"
-                  OnCancel="CancelTaskForm"/>
+        <div id="task-form-container">
+            <TaskForm Title="@(isEditMode ? "Rediger Opgave" : "Opret Ny Opgave")"
+                      Task="taskFormModel"
+                      Users="users"
+                      OnSave="SaveTask"
+                      OnCancel="CancelTaskForm"/>
+        </div>
     }
 
     <hr/>
@@ -105,7 +108,7 @@
         
         try
         {
-            var role = await AuthStateProvider.GetRoleAsync();
+            var role = AuthStateProvider.GetRole();
             Result<List<ReadTaskDto>> result;
 
             if (Roles.IsAdminOrStaff(role))
@@ -114,7 +117,7 @@
             }
             else if (role == Roles.User)
             {
-                var currentUserId = AuthStateProvider.GetUserIdAsync();
+                var currentUserId = AuthStateProvider.GetUserId();
                 result = await TaskService.GetTasksForUserAsync(currentUserId);
             }
             else
@@ -174,16 +177,56 @@
     private void CreateTask()
     {
         taskFormModel = new TaskFormModel();
-        taskFormModel.UserId = AuthStateProvider.GetUserIdAsync();
+        taskFormModel.UserId = AuthStateProvider.GetUserId();
         isEditMode = false;
         isTaskFormVisible = true;
+        StateHasChanged();
     }
 
-    private void EditTask(ReadTaskDto task)
+    private async Task EditTask(ReadTaskDto task)
     {
-        taskFormModel = Mapper.Map<TaskFormModel>(task);
-        isEditMode = true;
-        isTaskFormVisible = true;
+        try
+        {
+            LogInfo($"EditTask called for task ID: {task.Id}, Name: {task.Name}");
+            
+            taskFormModel = Mapper.Map<TaskFormModel>(task);
+            
+            // Sikrer at alle properties er sat korrekt
+            if (string.IsNullOrEmpty(taskFormModel.RecurrenceType))
+            {
+                taskFormModel.RecurrenceType = task.RecurrenceType ?? "None";
+            }
+            if (taskFormModel.StartDate == default)
+            {
+                taskFormModel.StartDate = task.StartDate;
+            }
+            
+            LogInfo($"TaskFormModel mapped - Id: {taskFormModel.Id}, Name: {taskFormModel.Name}, EditMode: {isEditMode}");
+            
+            isEditMode = true;
+            isTaskFormVisible = true;
+            
+            LogInfo($"Form visibility set to: {isTaskFormVisible}, EditMode: {isEditMode}");
+            
+            StateHasChanged();
+            
+            // Scroll til formularen efter kort ventetid
+            try
+            {
+                await Task.Delay(100);
+                await JSRuntime.InvokeVoidAsync("scrollToElement", "task-form-container");
+            }
+            catch (Exception jsEx)
+            {
+                // Ignorer JS fejl - scroll er ikke kritisk
+                LogWarning($"Could not scroll to form: {jsEx.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            LogError("Error in EditTask", ex);
+            SetError($"Fejl ved redigering: {ex.Message}");
+        }
     }
 
     private bool isSaving = false;

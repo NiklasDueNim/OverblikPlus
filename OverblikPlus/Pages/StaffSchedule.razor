@@ -152,7 +152,7 @@
     {
         if (!_isAdmin.HasValue)
         {
-            var role = await AuthStateProvider.GetRoleAsync();
+            var role = AuthStateProvider.GetRole();
             _isAdmin = role == "Admin";
         }
         return _isAdmin.Value;
@@ -164,7 +164,7 @@
     {
         try
         {
-            var bostedId = AuthStateProvider.GetBostedIdAsync();
+            var bostedId = AuthStateProvider.GetBostedId();
             if (!bostedId.HasValue)
             {
                 LogWarning("Could not retrieve bostedId");
@@ -173,7 +173,6 @@
             }
 
             var result = await UserService.GetUsersByBostedId(bostedId.Value);
-            // Filtrer til kun Staff og Admin og sorter én gang
             var staffRoles = new[] { Roles.Staff, Roles.Admin, "Medarbejder" };
             if (result.Success && result.Data != null)
             {
@@ -206,7 +205,6 @@
             if (result.Success && result.Data != null)
             {
                 shifts = result.Data;
-                // Cache shifts by staff ID for faster lookup
                 shiftsByStaffId = shifts
                     .Where(s => s.StartTime.Date == today.Date)
                     .GroupBy(s => s.UserId)

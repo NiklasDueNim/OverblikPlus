@@ -207,11 +207,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Hent brugerens rolle og ID
-        userRole = await AuthStateProvider.GetRoleAsync();
-        currentUserId = AuthStateProvider.GetUserIdAsync();
+        userRole = AuthStateProvider.GetRole();
+        currentUserId = AuthStateProvider.GetUserId();
         
-        // Hvis brugeren er staff eller admin, load staff users
         if (userRole == "Staff" || userRole == "Admin")
         {
             await LoadStaffUsers();
@@ -260,7 +258,6 @@
 
         try
         {
-            // Valider at sluttidspunkt er efter starttidspunkt
             if (activityForm.EndDateTime <= activityForm.StartDateTime)
             {
                 errorMessage = "Sluttidspunkt skal være efter starttidspunkt.";
@@ -273,7 +270,7 @@
             if (result)
             {
                 successMessage = "Aktivitet oprettet succesfuldt!";
-                activityForm = new CreateActivityFormModel(); // Reset form
+                activityForm = new CreateActivityFormModel(); 
             }
             else
             {

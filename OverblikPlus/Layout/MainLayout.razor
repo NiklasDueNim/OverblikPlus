@@ -168,7 +168,7 @@
             return false;
         }
 
-        var role = AuthStateProvider.GetRoleAsync().Result;
+        var role = AuthStateProvider.GetRole();
         return role == "Admin" || role == "Staff";
     }
 

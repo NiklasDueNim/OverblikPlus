@@ -123,7 +123,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var role = await AuthStateProvider.GetRoleAsync();
+        var role = AuthStateProvider.GetRole();
         isAdmin = role is "Admin";
     }
 
@@ -148,7 +148,6 @@
                 successMessage = "Bruger oprettet succesfuldt!";
                 newUser = new CreateUserDto();
                 
-                // Redirect to login after 2 seconds
                 await Task.Delay(2000);
                 NavigationManager.NavigateTo("/login");
             }

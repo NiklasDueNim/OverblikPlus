@@ -114,7 +114,7 @@
         {
             isLoading = true;
             
-            var userId = AuthStateProvider.GetUserIdAsync();
+            var userId = AuthStateProvider.GetUserId();
             if (!string.IsNullOrEmpty(userId))
             {
                 var result = await TaskService.GetTasksForUserAsync(userId);
@@ -267,16 +267,16 @@
             Result result;
             if (wasCompleted)
             {
-                Console.WriteLine($"  Calling MarkTaskAsUnCompleted for task {taskId}");
+                Console.WriteLine($"Calling MarkTaskAsUnCompleted for task {taskId}");
                 result = await TaskService.MarkTaskAsUnCompleted(taskId);
             }
             else
             {
-                Console.WriteLine($"  Calling MarkTaskAsCompleted for task {taskId}");
+                Console.WriteLine($"Calling MarkTaskAsCompleted for task {taskId}");
                 result = await TaskService.MarkTaskAsCompleted(taskId);
             }
             
-            Console.WriteLine($"  API result: Success={result.Success}, Error={result.Error}");
+            Console.WriteLine($"API result: Success={result.Success}, Error={result.Error}");
             
                 if (result.Success)
                 {

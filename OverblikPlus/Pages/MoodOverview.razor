@@ -109,7 +109,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        bostedId = AuthStateProvider.GetBostedIdAsync();
+        bostedId = AuthStateProvider.GetBostedId();
         await LoadMoods();
     }
 
