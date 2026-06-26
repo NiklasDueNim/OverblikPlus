@@ -5,10 +5,17 @@
 @inject IActivityService ActivityService
 @inject IUserService UserService
 @inject CustomAuthStateProvider AuthStateProvider
+@using OverblikPlus.Constants
+@using OverblikPlus.Components
+@using OverblikPlus.Components.Shared
+@inherits BasePage
 
-<div class="container-fluid">
+<div class="container-fluid activities-page">
     <div class="row">
         <div class="col-12">
+
+            <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0">Aktiviteter for @DateTime.Today.ToString("dddd, dd. MMMM yyyy")</h2>
                 @if (userRole == "Staff" || userRole == "Admin")
@@ -191,23 +198,44 @@ else
     private bool isJoining = false;
     private bool isLeaving = false;
     private string userRole = string.Empty;
+    private Dictionary<string, string> userNames = new();
 
     protected override async Task OnInitializedAsync()
     {
         currentUserId = AuthStateProvider.User?.Id ?? string.Empty;
         userRole = AuthStateProvider.GetRole();
+        await LoadUserNames();
         await LoadActivities();
+    }
+
+    private async Task LoadUserNames()
+    {
+        try
+        {
+            var result = await UserService.GetAllUsers();
+            if (result.Success && result.Data != null)
+            {
+                userNames = result.Data.ToDictionary(
+                    u => u.Id,
+                    u => $"{u.FirstName} {u.LastName}".Trim());
+            }
+        }
+        catch (Exception ex)
+        {
+            LogError("Error loading user names", ex);
+        }
     }
 
     private async Task LoadActivities()
     {
         try
-    {
-        activities = await ActivityService.GetAllActivitiesAsync();
+        {
+            activities = await ActivityService.GetAllActivitiesAsync();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading activities: {ex.Message}");
+            LogError("Error loading activities", ex);
+            SetError("Kunne ikke hente aktiviteter. Prøv igen senere.");
             activities = new List<ActivityDto>();
         }
     }
@@ -228,12 +256,13 @@ else
             }
             else
             {
-                Console.WriteLine($"Error joining activity: {result.ErrorMessage}");
+                SetError(result.ErrorMessage ?? "Kunne ikke tilmelde dig aktiviteten.");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception joining activity: {ex.Message}");
+            LogError("Exception joining activity", ex);
+            SetError("Der opstod en fejl ved tilmelding.");
         }
         finally
         {
@@ -257,12 +286,13 @@ else
             }
             else
             {
-                Console.WriteLine($"Error leaving activity: {result.ErrorMessage}");
+                SetError(result.ErrorMessage ?? "Kunne ikke forlade aktiviteten.");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception leaving activity: {ex.Message}");
+            LogError("Exception leaving activity", ex);
+            SetError("Der opstod en fejl.");
         }
         finally
         {
@@ -273,7 +303,7 @@ else
     private bool CanParticipate(ActivityDto activity)
     {
         // Kun beboere kan tilmelde sig
-        if (userRole != "Beboer") return false;
+        if (userRole != Roles.User) return false;
         
         // Tjek om beboeren allerede er tilmeldt
         if (activity.Participants.Contains(currentUserId)) return false;
@@ -289,7 +319,7 @@ else
 
     private string GetCannotParticipateReason(ActivityDto activity)
     {
-        if (userRole != "Beboer") return "Kun for beboere";
+        if (userRole != Roles.User) return "Kun for beboere";
         if (activity.Participants.Contains(currentUserId)) return "Allerede tilmeldt";
         if (activity.StartDateTime <= DateTime.Now) return "Aktivitet er startet";
         if (activity.Participants.Count >= activity.MaxParticipants) return "Aktivitet er fuld";
@@ -335,14 +365,16 @@ else
 
     private string GetStaffNameSync(string userId)
     {
-        // For now, return a placeholder. In a real implementation, you might want to cache user data
-        return "Medarbejder " + userId.Substring(0, Math.Min(8, userId.Length));
+        return userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name)
+            ? name
+            : "Medarbejder";
     }
 
     private string GetResidentNameSync(string userId)
     {
-        // For now, return a placeholder. In a real implementation, you might want to cache user data
-        return "Beboer " + userId.Substring(0, Math.Min(8, userId.Length));
+        return userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name)
+            ? name
+            : "Beboer";
     }
 
     private async Task<string> GetStaffName(Guid userId)

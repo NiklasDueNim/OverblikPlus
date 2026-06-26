@@ -1,0 +1,33 @@
+.activities-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.activities-page ::deep h2 {
+    color: #1976D2;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.activities-page ::deep .card {
+    border-radius: 14px;
+    border-width: 2px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.activities-page ::deep .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.activities-page ::deep .card-header {
+    background: #f5f9ff;
+    border-bottom: 1px solid #e3f2fd;
+    border-radius: 14px 14px 0 0;
+}
+
+.activities-page ::deep .participant-item {
+    border: 1px solid #eef2f5;
+}
