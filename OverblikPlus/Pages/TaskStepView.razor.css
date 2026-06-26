@@ -29,7 +29,7 @@
 
 .step-progress-text {
     font-weight: 700;
-    color: #1976D2;
+    color: #0d2b50;
     font-size: 1.05rem;
 }
 
@@ -43,7 +43,7 @@
 
 .step-progress-fill {
     height: 100%;
-    background: linear-gradient(135deg, #2196F3, #1976D2);
+    background: linear-gradient(135deg, #1d4e89, #0d2b50);
     border-radius: 5px;
     transition: width 0.3s ease;
 }
@@ -95,7 +95,7 @@
     border-radius: 50%;
     border: none;
     background: #e3f2fd;
-    color: #1976D2;
+    color: #0d2b50;
     font-size: 1.2rem;
     cursor: pointer;
     transition: background 0.2s ease;
@@ -167,14 +167,14 @@
 }
 
 .btn-next {
-    background: linear-gradient(135deg, #2196F3, #1976D2);
+    background: linear-gradient(135deg, #1d4e89, #0d2b50);
     color: white;
     flex: 1;
 }
 
 .btn-next:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(33, 150, 243, 0.35);
+    box-shadow: 0 8px 20px rgba(29, 78, 137, 0.35);
 }
 
 @media (max-width: 600px) {

@@ -101,7 +101,7 @@
 }
 
 .widget-toggle.on {
-    background: #2196F3;
+    background: #1d4e89;
     color: white;
 }
 
@@ -124,12 +124,12 @@
 }
 
 .widget-size-select button:hover {
-    border-color: #2196F3;
+    border-color: #1d4e89;
 }
 
 .widget-size-select button.active {
-    background: #2196F3;
-    border-color: #2196F3;
+    background: #1d4e89;
+    border-color: #1d4e89;
     color: white;
 }
 
@@ -163,14 +163,14 @@
 
 .widgets-grid.edit-mode .widget-container {
     cursor: move;
-    border: 2px dashed #2196F3;
-    background: rgba(33, 150, 243, 0.05);
+    border: 2px dashed #1d4e89;
+    background: rgba(29, 78, 137, 0.05);
     position: relative;
 }
 
 .widgets-grid.edit-mode .widget-container:hover {
-    border-color: #1976D2;
-    background: rgba(33, 150, 243, 0.1);
+    border-color: #0d2b50;
+    background: rgba(29, 78, 137, 0.1);
 }
 
 /* Drag Handle */
@@ -179,7 +179,7 @@
     top: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #2196F3, #1976D2);
+    background: linear-gradient(135deg, #1d4e89, #0d2b50);
     color: white;
     padding: 0.5rem;
     text-align: center;
@@ -205,7 +205,7 @@
 .widget-container.dragging {
     opacity: 0.5;
     transform: scale(0.95);
-    border: 2px solid #1976D2;
+    border: 2px solid #0d2b50;
 }
 
 .widgets-grid.edit-mode .widget-container.dragging {

@@ -22,8 +22,8 @@
 }
 
 .notification-bell:hover {
-    background: rgba(33, 150, 243, 0.1);
-    color: #2196F3;
+    background: rgba(29, 78, 137, 0.1);
+    color: #1d4e89;
     transform: scale(1.1);
 }
 
@@ -126,7 +126,7 @@
 
 .notification-item.unread {
     background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-    border-left: 3px solid #2196F3;
+    border-left: 3px solid #1d4e89;
 }
 
 .notification-item.read {
@@ -180,7 +180,7 @@
     transform: translateY(-50%);
     width: 8px;
     height: 8px;
-    background: #2196F3;
+    background: #1d4e89;
     border-radius: 50%;
 }
 

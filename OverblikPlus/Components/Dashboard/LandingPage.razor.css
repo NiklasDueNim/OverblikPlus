@@ -85,7 +85,7 @@
 .nav-cta:hover {
     color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(33, 150, 243, 0.4);
+    box-shadow: 0 4px 14px rgba(29, 78, 137, 0.4);
 }
 
 /* Offset so sticky nav doesn't cover anchored sections */
@@ -194,12 +194,12 @@ section {
     display: inline-flex;
     align-items: center;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: 0 6px 18px rgba(33, 150, 243, 0.3);
+    box-shadow: 0 6px 18px rgba(29, 78, 137, 0.3);
 }
 
 .btn-primary-large:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 26px rgba(33, 150, 243, 0.4);
+    box-shadow: 0 10px 26px rgba(29, 78, 137, 0.4);
     color: white;
 }
 
@@ -532,7 +532,7 @@ section {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
+    box-shadow: 0 6px 16px rgba(29, 78, 137, 0.3);
 }
 
 .step-item h3 {

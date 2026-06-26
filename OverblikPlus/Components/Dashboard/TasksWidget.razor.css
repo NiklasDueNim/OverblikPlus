@@ -73,13 +73,13 @@
 
 .toggle-images input[type="checkbox"] {
     cursor: pointer;
-    accent-color: #2196F3;
+    accent-color: #1d4e89;
     width: 16px;
     height: 16px;
 }
 
 .toggle-images:hover {
-    color: #2196F3;
+    color: #1d4e89;
 }
 
 .task-image {
