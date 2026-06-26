@@ -19,9 +19,37 @@
                 </div>
             }
             
-            <DashboardControls IsEditMode="isEditMode" 
-                              OnToggleEditMode="ToggleEditMode" 
+            <DashboardControls IsEditMode="isEditMode"
+                              OnToggleEditMode="ToggleEditMode"
                               OnResetLayout="ResetLayout" />
+
+            @if (isEditMode)
+            {
+                <div class="widget-picker">
+                    <p class="widget-picker-title">Vælg hvilke widgets der vises og hvor store de er. Træk dem rundt i griddet for at ændre rækkefølgen.</p>
+                    <div class="widget-picker-list">
+                        @foreach (var widget in widgets)
+                        {
+                            <div class="widget-picker-row @(widget.IsVisible ? "" : "is-hidden")">
+                                <button type="button"
+                                        class="widget-toggle @(widget.IsVisible ? "on" : "off")"
+                                        @onclick="@(() => ToggleWidgetVisibility(widget))">
+                                    <i class="fas @(widget.IsVisible ? "fa-eye" : "fa-eye-slash")"></i>
+                                    @widget.Title
+                                </button>
+                                <div class="widget-size-select" title="Størrelse">
+                                    <button type="button" class="@(widget.Size == 1 ? "active" : "")"
+                                            @onclick="@(() => SetWidgetSize(widget, 1))">S</button>
+                                    <button type="button" class="@(widget.Size == 2 ? "active" : "")"
+                                            @onclick="@(() => SetWidgetSize(widget, 2))">M</button>
+                                    <button type="button" class="@(widget.Size == 3 ? "active" : "")"
+                                            @onclick="@(() => SetWidgetSize(widget, 3))">L</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
 
             <div class="widgets-grid @(isEditMode ? "edit-mode" : "")">
                 @foreach (var widget in GetVisibleWidgets())
@@ -29,6 +57,7 @@
                     <WidgetContainer SizeClass="@GetWidgetSizeClass(widget.Size)"
                                      IsEditMode="isEditMode"
                                      IsDragging="@(draggedWidget == widget)"
+                                     IsDropTarget="@(dragTargetWidget == widget)"
                                      OnDragStart="@(() => OnDragStart(widget))"
                                      OnDrop="@(() => OnDrop(widget))"
                                      OnDragEnter="@(() => OnDragEnter(widget))"
@@ -66,10 +95,11 @@
 
     [Inject] public CustomAuthStateProvider AuthStateProvider { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] public IDashboardService DashboardService { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        userRole = await AuthStateProvider.GetRoleAsync();
+        userRole = AuthStateProvider.GetRole();
         
         // Redirect Relative brugere til announcements siden, da de ikke skal se dashboard
         if (userRole == "Relative")
@@ -121,11 +151,59 @@
 
     private async Task LoadDashboardSettings()
     {
-        // Initialize default widgets based on user role
-        widgets = GetDefaultWidgets(userRole);
-        
-        // TODO: Load user's saved dashboard settings from backend
-        // This would integrate with a DashboardSettingsService
+        var defaults = GetDefaultWidgets(userRole);
+        var saved = await DashboardService.LoadLayoutAsync(AuthStateProvider.GetUserId() ?? string.Empty);
+
+        widgets = (saved != null && saved.Count > 0)
+            ? MergeWidgets(defaults, saved)
+            : defaults;
+    }
+
+    // Applies the user's saved order/visibility/size onto the current role catalog.
+    // Widgets that are new since the layout was saved keep their default settings and
+    // are appended, so added features still surface for existing users.
+    private List<WidgetInfo> MergeWidgets(List<WidgetInfo> defaults, List<WidgetInfo> saved)
+    {
+        var maxSavedPosition = saved.Count > 0 ? saved.Max(w => w.Position) : 0;
+
+        foreach (var widget in defaults)
+        {
+            var match = saved.FirstOrDefault(w => w.Id == widget.Id);
+            if (match != null)
+            {
+                widget.Position = match.Position;
+                widget.IsVisible = match.IsVisible;
+                widget.Size = match.Size;
+            }
+            else
+            {
+                widget.Position = ++maxSavedPosition;
+            }
+        }
+
+        return defaults.OrderBy(w => w.Position).ToList();
+    }
+
+    private async Task SaveLayout()
+    {
+        await DashboardService.SaveLayoutAsync(AuthStateProvider.GetUserId() ?? string.Empty, widgets);
+    }
+
+    private async Task ToggleWidgetVisibility(WidgetInfo widget)
+    {
+        widget.IsVisible = !widget.IsVisible;
+        await SaveLayout();
+        StateHasChanged();
+    }
+
+    private async Task SetWidgetSize(WidgetInfo widget, int size)
+    {
+        if (widget.Size == size)
+            return;
+
+        widget.Size = size;
+        await SaveLayout();
+        StateHasChanged();
     }
 
     private List<WidgetInfo> GetDefaultWidgets(string role)
@@ -182,6 +260,50 @@
             Role = "All"
         });
 
+        defaultWidgets.Add(new WidgetInfo
+        {
+            Id = "calendar",
+            Title = "Kalender",
+            Type = "Calendar",
+            Position = 4,
+            Size = 1,
+            IsVisible = true,
+            Role = "All"
+        });
+
+        defaultWidgets.Add(new WidgetInfo
+        {
+            Id = "mood",
+            Title = "Mit humør",
+            Type = "Mood",
+            Position = 5,
+            Size = 1,
+            IsVisible = true,
+            Role = "All"
+        });
+
+        defaultWidgets.Add(new WidgetInfo
+        {
+            Id = "budget",
+            Title = "Budget",
+            Type = "Budget",
+            Position = 6,
+            Size = 1,
+            IsVisible = false,
+            Role = "All"
+        });
+
+        defaultWidgets.Add(new WidgetInfo
+        {
+            Id = "messages",
+            Title = "Beskeder",
+            Type = "Messages",
+            Position = 7,
+            Size = 1,
+            IsVisible = false,
+            Role = "All"
+        });
+
         // Role-specific widgets
         if (role == "Admin" || role == "Staff")
         {
@@ -190,7 +312,7 @@
                 Id = "shifts",
                 Title = "Vagtplan",
                 Type = "Shifts",
-                Position = 4,
+                Position = 8,
                 Size = 2,
                 IsVisible = true,
                 Role = "Staff"
@@ -256,6 +378,10 @@
             "Tasks" => "/tasks",
             "Shifts" => "/schedule",
             "Activities" => "/activities",
+            "Calendar" => "/calendar",
+            "Mood" => "/mood",
+            "Budget" => "/budget",
+            "Messages" => "/chatTest",
             "Notifications" => "/notifications",
             "Announcements" => "/announcements",
             _ => "/"
@@ -271,10 +397,9 @@
 
     private async Task ResetLayout()
     {
+        await DashboardService.ClearLayoutAsync(AuthStateProvider.GetUserId() ?? string.Empty);
         widgets = GetDefaultWidgets(userRole);
         StateHasChanged();
-        
-        // TODO: Save reset layout to backend
     }
 
     // Drag and Drop Methods
@@ -288,16 +413,20 @@
         if (draggedWidget != null && draggedWidget != widget)
         {
             dragTargetWidget = widget;
+            StateHasChanged();
         }
     }
 
     private void OnDragLeave()
     {
         dragTargetWidget = null;
+        StateHasChanged();
     }
 
-    private void OnDrop(WidgetInfo targetWidget)
+    private async Task OnDrop(WidgetInfo targetWidget)
     {
+        var reordered = false;
+
         if (draggedWidget != null && draggedWidget != targetWidget)
         {
             // Swap positions
@@ -312,13 +441,20 @@
 
                 // Re-order widgets
                 widgets = widgets.OrderBy(w => w.Position).ToList();
-                StateHasChanged();
+                reordered = true;
             }
         }
 
         // Reset drag state
         draggedWidget = null;
         dragTargetWidget = null;
+
+        if (reordered)
+        {
+            await SaveLayout();
+        }
+
+        StateHasChanged();
     }
 
     public void Dispose()

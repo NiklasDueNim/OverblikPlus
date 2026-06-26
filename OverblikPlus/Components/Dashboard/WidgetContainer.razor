@@ -1,5 +1,5 @@
 @* Widget container component with drag and drop support *@
-<div class="widget-container @SizeClass @(IsDragging ? "dragging" : "")" 
+<div class="widget-container @SizeClass @(IsDragging ? "dragging" : "") @(IsDropTarget ? "drag-over" : "")"
      draggable="@IsEditMode"
      @ondragstart="@OnDragStart"
      @ondragover:preventDefault
@@ -22,6 +22,7 @@
     [Parameter] public string SizeClass { get; set; } = string.Empty;
     [Parameter] public bool IsEditMode { get; set; }
     [Parameter] public bool IsDragging { get; set; }
+    [Parameter] public bool IsDropTarget { get; set; }
     [Parameter] public EventCallback OnDragStart { get; set; }
     [Parameter] public EventCallback OnDrop { get; set; }
     [Parameter] public EventCallback OnDragEnter { get; set; }

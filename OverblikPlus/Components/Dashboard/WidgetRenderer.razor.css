@@ -1,0 +1,48 @@
+/* Shortcut widget (navigation tile) — styled to match the data widgets' cards. */
+.widget-shortcut {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    min-height: 200px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: box-shadow 0.2s ease;
+}
+
+.widget-shortcut:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.widget-shortcut-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+
+.widget-shortcut-icon i {
+    font-size: 1.5rem;
+    color: #2196F3;
+}
+
+.widget-shortcut h4 {
+    color: #1976D2;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+}
+
+.widget-shortcut p {
+    color: #666;
+    font-size: 0.85rem;
+    margin: 0;
+}

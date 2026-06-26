@@ -21,24 +21,43 @@ else if (Widget.Type == "Notifications")
 {
     <NotificationsWidget WidgetInfo="Widget" OnWidgetClicked="OnWidgetClicked" />
 }
-else if (Widget.Type == "Announcements")
+else
 {
-    <div class="widget-announcements">
-        <div class="widget-header">
-            <h4>@Widget.Title</h4>
+    <div class="widget-shortcut">
+        <div class="widget-shortcut-icon">
+            <i class="fas @IconFor(Widget.Type)"></i>
         </div>
-        <div class="widget-body">
-            <p>Klik for at se alle opslag</p>
-        </div>
+        <h4>@Widget.Title</h4>
+        <p>@DescriptionFor(Widget.Type)</p>
     </div>
 }
 
 @code {
     [Parameter] public WidgetInfo Widget { get; set; } = default!;
     [Parameter] public EventCallback<WidgetInfo> OnWidgetClicked { get; set; }
-    
+
     private TasksWidget? tasksWidgetRef;
-    
+
     public TasksWidget? GetTasksWidgetRef() => tasksWidgetRef;
+
+    private static string IconFor(string type) => type switch
+    {
+        "Announcements" => "fa-bullhorn",
+        "Calendar" => "fa-calendar-days",
+        "Mood" => "fa-face-smile",
+        "Budget" => "fa-coins",
+        "Messages" => "fa-comments",
+        _ => "fa-square"
+    };
+
+    private static string DescriptionFor(string type) => type switch
+    {
+        "Announcements" => "Klik for at se alle opslag",
+        "Calendar" => "Klik for at se kalenderen",
+        "Mood" => "Klik for at registrere dit humør",
+        "Budget" => "Klik for at se budgettet",
+        "Messages" => "Klik for at åbne beskeder",
+        _ => "Klik for at åbne"
+    };
 }
 
