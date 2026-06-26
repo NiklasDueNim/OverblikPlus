@@ -10,6 +10,7 @@
 
     --surface: #ffffff;
     --bg-muted: #f8f9fa;
+    --bg-app: #f4f7fb;
 
     --text: #263238;
     --text-muted: #666666;
@@ -20,6 +21,31 @@
     --warning: #ffc107;
 
     --brand-gradient: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+}
+
+/* ==========================================================================
+   Global typography & surfaces — applied app-wide for a sharper, crisper look.
+   ========================================================================== */
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background-color: var(--bg-app);
+}
+
+h1, h2, h3, h4, h5 {
+    letter-spacing: -0.015em;
+}
+
+/* Crisper default focus ring for keyboard users */
+:focus-visible {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 2px;
 }
 
 /* Desktop Sidebar - Legacy styles, overridden by MainLayout.razor.css */
