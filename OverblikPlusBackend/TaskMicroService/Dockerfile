@@ -2,20 +2,20 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy project files and restore dependencies
-COPY TaskMicroService/TaskMicroService.csproj .
-COPY OverblikPlus.Shared/OverblikPlus.Shared.csproj .
-RUN dotnet restore TaskMicroService.csproj
+# Copy project files (preserving the directory layout so relative
+# ProjectReferences resolve) and restore dependencies.
+COPY TaskMicroService/TaskMicroService.csproj TaskMicroService/
+COPY SeedData/SeedData.csproj SeedData/
+COPY OverblikPlus.Shared/OverblikPlus.Shared.csproj OverblikPlus.Shared/
+RUN dotnet restore TaskMicroService/TaskMicroService.csproj
 
-# Copy the rest of the source code
-COPY TaskMicroService/ .
-COPY OverblikPlus.Shared/ .
-
-# Build the application
-RUN dotnet build TaskMicroService.csproj -c Release -o /app/build
+# Copy the rest of the source code (same layout)
+COPY TaskMicroService/ TaskMicroService/
+COPY SeedData/ SeedData/
+COPY OverblikPlus.Shared/ OverblikPlus.Shared/
 
 # Publish the application
-RUN dotnet publish TaskMicroService.csproj -c Release -o /app/publish
+RUN dotnet publish TaskMicroService/TaskMicroService.csproj -c Release -o /app/publish
 
 # Use the official .NET 8 runtime image for running
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
