@@ -1,11 +1,11 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OverblikPlus.Shared.Common;
+using OverblikPlus.Shared.Helpers;
 using OverblikPlus.Shared.Interfaces;
 using TaskMicroService.DataAccess;
 using TaskMicroService.dtos.Task;
 using TaskMicroService.Entities;
-using TaskMicroService.Helpers;
 using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 using TaskMicroService.Services.Recurrence;

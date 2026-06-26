@@ -1,8 +1,8 @@
 using OverblikPlus.Shared.Common;
+using OverblikPlus.Shared.Helpers;
 using OverblikPlus.Shared.Interfaces;
 using TaskMicroService.dtos.Activity;
 using TaskMicroService.Entities;
-using TaskMicroService.Helpers;
 using TaskMicroService.Repositories.Interfaces;
 using TaskMicroService.Services.Interfaces;
 

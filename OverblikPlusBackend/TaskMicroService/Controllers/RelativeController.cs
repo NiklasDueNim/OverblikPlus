@@ -30,7 +30,7 @@ public class RelativeController : ControllerBase
             return BadRequest(result);
 
         _logger.LogInfo($"Found {result.Data?.Count() ?? 0} tasks for user with id: {userId} for date: {date}");
-        return Ok(result);
+        return Ok(result.Data);
     }
     
     [HttpGet("{userId}/events-for-day")]
@@ -43,7 +43,7 @@ public class RelativeController : ControllerBase
             return BadRequest(result);
 
         _logger.LogInfo($"Found {result.Data?.Count() ?? 0} events for user with id: {userId} for date: {date}");
-        return Ok(result);
+        return Ok(result.Data);
     }
     
     [HttpGet("{userId}/events")]
@@ -55,6 +55,6 @@ public class RelativeController : ControllerBase
         if (!result.Success)
             return BadRequest(result);
 
-        return Ok(result);
+        return Ok(result.Data);
     }
 }

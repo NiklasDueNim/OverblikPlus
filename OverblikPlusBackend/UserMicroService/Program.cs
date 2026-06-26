@@ -300,7 +300,7 @@ public class Program
             app.Environment,
             async (serviceProvider, context) =>
             {
-                await Helpers.UserSeeder.SeedUsersAsync(serviceProvider, logger);
+                await Helpers.UserSeeder.SeedUsersAsync(serviceProvider, logger, app.Environment);
             });
         
         await seeder.SeedAsync(app.Services);

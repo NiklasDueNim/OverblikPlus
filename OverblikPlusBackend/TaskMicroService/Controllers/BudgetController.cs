@@ -4,7 +4,7 @@ using OverblikPlus.Shared.Interfaces;
 using System.Security.Claims;
 using TaskMicroService.Dtos.Budget;
 using TaskMicroService.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
+
 
 namespace TaskMicroService.Controllers;
 
@@ -56,7 +56,6 @@ public class BudgetController : ControllerBase
             return NotFound(result);
         }
 
-        // Check if user owns this budget
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (result.Data.UserId != userId)
         {
@@ -101,7 +100,6 @@ public class BudgetController : ControllerBase
             return BadRequest("Budget data is required");
         }
 
-        // Check if user owns this budget
         var existingResult = await _budgetService.GetBudgetByIdAsync(id);
         if (!existingResult.Success)
         {
@@ -128,7 +126,6 @@ public class BudgetController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBudget(Guid id)
     {
-        // Check if user owns this budget
         var existingResult = await _budgetService.GetBudgetByIdAsync(id);
         if (!existingResult.Success)
         {

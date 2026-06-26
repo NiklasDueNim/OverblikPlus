@@ -1,4 +1,4 @@
-namespace TaskMicroService.Helpers;
+namespace OverblikPlus.Shared.Helpers;
 
 public static class JsonHelper
 {
@@ -25,4 +25,5 @@ public static class JsonHelper
         }
     }
 }
+
 

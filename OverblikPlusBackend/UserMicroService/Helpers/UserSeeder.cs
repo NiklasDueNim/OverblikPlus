@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using OverblikPlus.Shared.Interfaces;
 using UserMicroService.Entities;
 
@@ -7,14 +8,19 @@ namespace UserMicroService.Helpers;
 
 public static class UserSeeder
 {
-    public static async Task SeedUsersAsync(IServiceProvider serviceProvider, ILoggerService logger)
+    public static async Task SeedUsersAsync(IServiceProvider serviceProvider, ILoggerService logger, IHostEnvironment environment)
     {
+        if (!environment.IsDevelopment())
+        {
+            logger.LogInfo("User seeding skipped - only runs in Development environment.");
+            return;
+        }
+
         try
         {
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-            // Definer test-brugere med forskellige roller
             var testUsers = new[]
             {
                 new
@@ -99,7 +105,26 @@ public static class UserSeeder
                 }
             };
 
-            // Opret roller hvis de ikke eksisterer
+            logger.LogInfo("Checking if test users already exist...");
+            var allUsersExist = true;
+            foreach (var userData in testUsers)
+            {
+                var existingUser = await userManager.FindByEmailAsync(userData.Email);
+                if (existingUser == null)
+                {
+                    allUsersExist = false;
+                    break;
+                }
+            }
+
+            if (allUsersExist)
+            {
+                logger.LogInfo("All test users already exist. Skipping user seeding.");
+                return;
+            }
+
+            logger.LogInfo("Some test users are missing. Starting user seeding...");
+
             var roles = new[] { "Admin", "Staff", "User", "Relative" };
             foreach (var roleName in roles)
             {
@@ -110,12 +135,15 @@ public static class UserSeeder
                 }
             }
 
-            // Opret brugere
+            int createdCount = 0;
+            int skippedCount = 0;
+            
             foreach (var userData in testUsers)
             {
                 var existingUser = await userManager.FindByEmailAsync(userData.Email);
                 if (existingUser != null)
                 {
+                    skippedCount++;
                     logger.LogInfo($"User '{userData.Email}' already exists, skipping.");
                     continue;
                 }
@@ -136,6 +164,7 @@ public static class UserSeeder
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(user, userData.Role);
+                    createdCount++;
                     logger.LogInfo($"User '{userData.Email}' ({userData.Role}) created successfully with password: {userData.Password}");
                 }
                 else
@@ -144,6 +173,8 @@ public static class UserSeeder
                     logger.LogError($"Failed to create user '{userData.Email}': {errors}", new Exception(errors));
                 }
             }
+
+            logger.LogInfo($"User seeding completed. Created: {createdCount}, Skipped: {skippedCount}, Total: {testUsers.Length}");
         }
         catch (Exception ex)
         {
