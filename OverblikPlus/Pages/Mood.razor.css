@@ -1,0 +1,240 @@
+.mood-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+    text-align: center;
+}
+
+.mood-title {
+    color: #1976D2;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.mood-subtitle {
+    font-size: 1.4rem;
+    color: #455a64;
+    margin-bottom: 2rem;
+}
+
+/* Face buttons */
+.mood-faces {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.mood-face {
+    flex: 1 1 0;
+    min-width: 120px;
+    max-width: 180px;
+    border: 3px solid transparent;
+    border-radius: 20px;
+    background: #f5f7f9;
+    padding: 1.5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.mood-face i {
+    font-size: 3.5rem;
+}
+
+.mood-face span {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #37474f;
+}
+
+.mood-face:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.mood-face:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.mood-face.good i { color: #43a047; }
+.mood-face.okay i { color: #fb8c00; }
+.mood-face.bad i { color: #e53935; }
+
+.mood-face.good.selected { border-color: #43a047; background: #e8f5e9; }
+.mood-face.okay.selected { border-color: #fb8c00; background: #fff3e0; }
+.mood-face.bad.selected { border-color: #e53935; background: #ffebee; }
+
+/* Details (reasons + note) */
+.mood-details {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.mood-details-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #37474f;
+    margin-bottom: 1rem;
+}
+
+.mood-details-title .optional {
+    font-weight: 400;
+    color: #90a4ae;
+}
+
+.mood-reasons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.reason-chip {
+    border: 1px solid #cfd8dc;
+    background: white;
+    color: #546e7a;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.reason-chip:hover {
+    border-color: #2196F3;
+}
+
+.reason-chip.active {
+    background: #2196F3;
+    border-color: #2196F3;
+    color: white;
+}
+
+.mood-note {
+    width: 100%;
+    border: 1px solid #cfd8dc;
+    border-radius: 10px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    resize: vertical;
+    margin-bottom: 1rem;
+}
+
+.mood-note:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15);
+}
+
+.mood-save-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-save-mood {
+    border: none;
+    background: linear-gradient(135deg, #43a047, #2e7d32);
+    color: white;
+    border-radius: 12px;
+    padding: 0.9rem 1.75rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-save-mood:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(67, 160, 71, 0.35);
+}
+
+.btn-save-mood:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-cancel-mood {
+    border: 1px solid #cfd8dc;
+    background: white;
+    color: #607d8b;
+    border-radius: 12px;
+    padding: 0.9rem 1.25rem;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+/* Today's registrations */
+.mood-today {
+    text-align: left;
+    margin-top: 1rem;
+}
+
+.mood-today h3 {
+    color: #1976D2;
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+}
+
+.mood-today-item {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.6rem;
+    border-left: 5px solid #cfd8dc;
+}
+
+.mood-today-item i {
+    font-size: 1.6rem;
+}
+
+.mood-today-item.good { border-left-color: #43a047; }
+.mood-today-item.okay { border-left-color: #fb8c00; }
+.mood-today-item.bad { border-left-color: #e53935; }
+
+.mood-today-item.good i { color: #43a047; }
+.mood-today-item.okay i { color: #fb8c00; }
+.mood-today-item.bad i { color: #e53935; }
+
+.mood-today-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.mood-today-label {
+    font-weight: 600;
+    color: #37474f;
+}
+
+.mood-today-note {
+    font-size: 0.9rem;
+    color: #78909c;
+}
+
+.mood-today-time {
+    color: #90a4ae;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+    .mood-face i { font-size: 2.75rem; }
+    .mood-face { padding: 1rem 0.5rem; min-width: 90px; }
+    .mood-subtitle { font-size: 1.2rem; }
+}

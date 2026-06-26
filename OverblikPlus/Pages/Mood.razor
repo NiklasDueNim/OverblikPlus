@@ -8,44 +8,148 @@
 @inject CustomAuthStateProvider AuthStateProvider
 @inherits BasePage
 
-<h3>Hej @(AuthStateProvider.User?.FirstName ?? "Bruger")</h3>
-<p>Hvordan har du det?</p>
+<div class="mood-page">
+    <h1 class="mood-title">Hej @(AuthStateProvider.User?.FirstName ?? "")</h1>
+    <p class="mood-subtitle">Hvordan har du det?</p>
 
-<AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
-<AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
+    <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+    <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
 
-@if (IsLoading)
-{
-    <LoadingSpinner Text="Gemmer..." />
-}
+    <div class="mood-faces">
+        @foreach (var option in MoodOptions)
+        {
+            <button class="mood-face @option.CssClass @(selectedRating == option.Rating ? "selected" : "")"
+                    @onclick="() => SelectFace(option.Rating)"
+                    disabled="@IsLoading">
+                <i class="fas @option.Icon"></i>
+                <span>@option.Label</span>
+            </button>
+        }
+    </div>
 
-<div class="d-flex gap-2">
-    <button class="btn btn-success btn-lg" 
-            @onclick="() => SaveMood(MoodDto.MoodRating.Good)" 
-            disabled="@IsLoading">
-        <i class="fas fa-smile me-2"></i>God
-    </button>
-    <button class="btn btn-warning btn-lg" 
-            @onclick="() => SaveMood(MoodDto.MoodRating.Okay)" 
-            disabled="@IsLoading">
-        <i class="fas fa-meh me-2"></i>Okay
-    </button>
-    <button class="btn btn-danger btn-lg" 
-            @onclick="() => SaveMood(MoodDto.MoodRating.Bad)" 
-            disabled="@IsLoading">
-        <i class="fas fa-frown me-2"></i>Dårlig
-    </button>
+    @if (selectedRating != null)
+    {
+        <div class="mood-details">
+            <p class="mood-details-title">Vil du fortælle hvorfor? <span class="optional">(valgfrit)</span></p>
+            <div class="mood-reasons">
+                @foreach (var reason in ReasonTags)
+                {
+                    <button type="button"
+                            class="reason-chip @(selectedReasons.Contains(reason) ? "active" : "")"
+                            @onclick="() => ToggleReason(reason)">
+                        @reason
+                    </button>
+                }
+            </div>
+            <textarea class="mood-note" rows="2" placeholder="Skriv evt. en note..." @bind="note"></textarea>
+
+            <div class="mood-save-row">
+                <button class="btn-save-mood" @onclick="SaveMood" disabled="@IsLoading">
+                    @if (IsLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <span>Gemmer...</span>
+                    }
+                    else
+                    {
+                        <span><i class="fas fa-check me-2"></i>Gem mit humør</span>
+                    }
+                </button>
+                <button class="btn-cancel-mood" @onclick="ClearSelection" disabled="@IsLoading">Fortryd</button>
+            </div>
+        </div>
+    }
+
+    @if (todaysMoods.Any())
+    {
+        <div class="mood-today">
+            <h3>Registreret i dag</h3>
+            @foreach (var mood in todaysMoods)
+            {
+                <div class="mood-today-item @CssFor(mood.Rating)">
+                    <i class="fas @IconFor(mood.Rating)"></i>
+                    <div class="mood-today-info">
+                        <span class="mood-today-label">@LabelFor(mood.Rating)</span>
+                        @if (!string.IsNullOrWhiteSpace(mood.Note))
+                        {
+                            <span class="mood-today-note">@mood.Note</span>
+                        }
+                    </div>
+                    <span class="mood-today-time">@mood.Date.ToString("HH:mm")</span>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @code {
+    private MoodDto.MoodRating? selectedRating;
+    private readonly List<string> selectedReasons = new();
+    private string note = string.Empty;
+    private List<MoodDto> todaysMoods = new();
+
+    private static readonly string[] ReasonTags =
+        { "Søvn", "Smerte", "Mad", "Aktivitet", "Besøg", "Ensomhed", "Travlhed" };
+
+    private record MoodOption(MoodDto.MoodRating Rating, string Label, string Icon, string CssClass);
+
+    private static readonly MoodOption[] MoodOptions =
+    {
+        new(MoodDto.MoodRating.Good, "God", "fa-face-smile", "good"),
+        new(MoodDto.MoodRating.Okay, "Okay", "fa-face-meh", "okay"),
+        new(MoodDto.MoodRating.Bad, "Dårlig", "fa-face-frown", "bad"),
+    };
+
     protected override async Task OnInitializedAsync()
     {
-        // Side er klar til brug
+        await LoadTodaysMoods();
     }
 
-    private async Task SaveMood(MoodDto.MoodRating mood)
+    private async Task LoadTodaysMoods()
     {
-        if (IsLoading || AuthStateProvider.User == null)
+        if (!Guid.TryParse(AuthStateProvider.GetUserId(), out var userGuid))
+            return;
+
+        try
+        {
+            var from = DateTime.Today;
+            var to = DateTime.Today.AddDays(1).AddTicks(-1);
+            var result = await MoodService.GetMoodsForUserAsync(userGuid, from, to);
+            if (result.Success && result.Data != null)
+            {
+                todaysMoods = result.Data.OrderByDescending(m => m.Date).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogError("Error loading today's moods", ex);
+        }
+    }
+
+    private void SelectFace(MoodDto.MoodRating rating)
+    {
+        ClearMessages();
+        selectedRating = rating;
+    }
+
+    private void ToggleReason(string reason)
+    {
+        if (!selectedReasons.Remove(reason))
+        {
+            selectedReasons.Add(reason);
+        }
+    }
+
+    private void ClearSelection()
+    {
+        selectedRating = null;
+        selectedReasons.Clear();
+        note = string.Empty;
+    }
+
+    private async Task SaveMood()
+    {
+        if (selectedRating == null || AuthStateProvider.User == null)
             return;
 
         SetLoading(true);
@@ -53,21 +157,27 @@
 
         try
         {
+            var parts = new List<string>(selectedReasons);
+            if (!string.IsNullOrWhiteSpace(note))
+            {
+                parts.Add(note.Trim());
+            }
+
             var newMood = new MoodDto
             {
                 Id = Guid.NewGuid(),
                 UserId = AuthStateProvider.User.Id,
                 Date = DateTime.Now,
-                Note = "",
-                Rating = mood
+                Rating = selectedRating.Value,
+                Note = string.Join(", ", parts)
             };
 
             var result = await MoodService.CreateMood(newMood);
-
             if (result.Success)
             {
-                SetSuccess("Dit humør er blevet gemt!");
-                LogInfo($"Mood saved for user {AuthStateProvider.User.Id}");
+                SetSuccess("Tak! Dit humør er gemt.");
+                ClearSelection();
+                await LoadTodaysMoods();
             }
             else
             {
@@ -77,11 +187,32 @@
         catch (Exception ex)
         {
             LogError("Error saving mood", ex);
-            SetError($"Fejl ved lagring: {ex.Message}");
+            SetError("Der opstod en fejl. Prøv igen.");
         }
         finally
         {
             SetLoading(false);
         }
     }
+
+    private static string LabelFor(MoodDto.MoodRating r) => r switch
+    {
+        MoodDto.MoodRating.Good => "God",
+        MoodDto.MoodRating.Okay => "Okay",
+        _ => "Dårlig"
+    };
+
+    private static string IconFor(MoodDto.MoodRating r) => r switch
+    {
+        MoodDto.MoodRating.Good => "fa-face-smile",
+        MoodDto.MoodRating.Okay => "fa-face-meh",
+        _ => "fa-face-frown"
+    };
+
+    private static string CssFor(MoodDto.MoodRating r) => r switch
+    {
+        MoodDto.MoodRating.Good => "good",
+        MoodDto.MoodRating.Okay => "okay",
+        _ => "bad"
+    };
 }
