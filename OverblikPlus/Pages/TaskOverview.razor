@@ -236,93 +236,16 @@
 
     private bool IsTaskOccurringOnDate(ReadTaskDto task, DateTime selectedDate)
     {
-        if (task.RecurrenceType == "None")
-        {
-            return task.StartDate.Date == selectedDate.Date;
-        }
+        // Each occurrence is its own task row. Non-recurring tasks live on their
+        // StartDate; a recurring occurrence is dated by its NextOccurrence (the backend
+        // creates a fresh row for the next occurrence when the current one is completed).
+        // Showing each row only on its own occurrence date keeps every occurrence's
+        // completion state independent — completing one day no longer ticks off the rest.
+        var occurrenceDate = (string.IsNullOrEmpty(task.RecurrenceType) || task.RecurrenceType == "None")
+            ? task.StartDate.Date
+            : (task.NextOccurrence?.Date ?? task.StartDate.Date);
 
-        if (!task.NextOccurrence.HasValue) return false;
-
-        return task.RecurrenceType switch
-        {
-            "Daily" => IsDailyMatch(task, selectedDate),
-            "Weekly" => IsWeeklyMatch(task, selectedDate),
-            "Monthly" => IsMonthlyMatch(task, selectedDate),
-            "Yearly" => IsYearlyMatch(task, selectedDate),
-            _ => false
-        };
-    }
-
-    private bool IsDailyMatch(ReadTaskDto task, DateTime selectedDate)
-    {
-        var daysDiff = (selectedDate.Date - task.StartDate.Date).Days;
-        return daysDiff >= 0 && daysDiff % task.RecurrenceInterval == 0;
-    }
-
-    private bool IsWeeklyMatch(ReadTaskDto task, DateTime selectedDate)
-    {
-        if (selectedDate.Date < task.StartDate.Date) return false;
-
-        var interval = Math.Max(1, task.RecurrenceInterval);
-        var weeks = (StartOfWeek(selectedDate) - StartOfWeek(task.StartDate)).Days / 7;
-        if (weeks < 0 || weeks % interval != 0) return false;
-
-        var activeDays = task.SelectedWeekDays?.Where(kv => kv.Value).Select(kv => kv.Key).ToList()
-                         ?? new List<string>();
-        if (activeDays.Count == 0)
-        {
-            // No weekday chosen: fall back to the start date's weekday.
-            activeDays.Add(DanishDay(task.StartDate.DayOfWeek));
-        }
-        return activeDays.Contains(DanishDay(selectedDate.DayOfWeek));
-    }
-
-    private static DateTime StartOfWeek(DateTime d)
-    {
-        int diff = ((int)d.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
-        return d.Date.AddDays(-diff);
-    }
-
-    private static string DanishDay(DayOfWeek d) => d switch
-    {
-        DayOfWeek.Monday => "Mandag",
-        DayOfWeek.Tuesday => "Tirsdag",
-        DayOfWeek.Wednesday => "Onsdag",
-        DayOfWeek.Thursday => "Torsdag",
-        DayOfWeek.Friday => "Fredag",
-        DayOfWeek.Saturday => "Lørdag",
-        _ => "Søndag"
-    };
-
-    private bool IsMonthlyMatch(ReadTaskDto task, DateTime selectedDate)
-    {
-        if (selectedDate.Date < task.StartDate.Date) return false;
-
-        var monthsDiff = ((selectedDate.Year - task.StartDate.Year) * 12) +
-                         (selectedDate.Month - task.StartDate.Month);
-
-        if (monthsDiff < 0 || monthsDiff % task.RecurrenceInterval != 0)
-            return false;
-
-        return task.MonthlyType switch
-        {
-            "SameDay" => selectedDate.Day == task.StartDate.Day,
-            "FirstDay" => selectedDate.Day == 1,
-            "LastDay" => selectedDate.Day == DateTime.DaysInMonth(selectedDate.Year, selectedDate.Month),
-            "SpecificDay" => selectedDate.Day == task.MonthlyDay,
-            _ => false
-        };
-    }
-
-    private bool IsYearlyMatch(ReadTaskDto task, DateTime selectedDate)
-    {
-        if (selectedDate.Date < task.StartDate.Date) return false;
-
-        var yearsDiff = selectedDate.Year - task.StartDate.Year;
-
-        return yearsDiff >= 0 && yearsDiff % task.RecurrenceInterval == 0 &&
-               selectedDate.Month == task.StartDate.Month &&
-               selectedDate.Day == task.StartDate.Day;
+        return occurrenceDate == selectedDate.Date;
     }
 
     private void ShowPreviousDay()
