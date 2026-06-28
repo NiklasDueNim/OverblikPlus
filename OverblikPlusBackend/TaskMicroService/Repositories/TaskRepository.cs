@@ -21,6 +21,36 @@ public class TaskRepository : ITaskRepository
             .ToListAsync();
     }
 
+    // ---- Per-occurrence completion ----
+    public async Task<TaskCompletion?> GetCompletionAsync(int taskId, DateTime occurrenceDate)
+    {
+        var day = occurrenceDate.Date;
+        return await _dbContext.TaskCompletions
+            .FirstOrDefaultAsync(c => c.TaskId == taskId && c.OccurrenceDate == day);
+    }
+
+    public async Task AddCompletionAsync(TaskCompletion completion)
+    {
+        completion.OccurrenceDate = completion.OccurrenceDate.Date;
+        completion.CompletedAt = DateTime.UtcNow;
+        await _dbContext.TaskCompletions.AddAsync(completion);
+    }
+
+    public async Task RemoveCompletionAsync(TaskCompletion completion)
+    {
+        _dbContext.TaskCompletions.Remove(completion);
+        await System.Threading.Tasks.Task.CompletedTask;
+    }
+
+    public async Task<List<TaskCompletion>> GetCompletionsForUserAsync(string userId, DateTime from, DateTime to)
+    {
+        var fromDay = from.Date;
+        var toDay = to.Date;
+        return await _dbContext.TaskCompletions
+            .Where(c => c.UserId == userId && c.OccurrenceDate >= fromDay && c.OccurrenceDate <= toDay)
+            .ToListAsync();
+    }
+
     public async Task<TaskEntity?> GetByIdAsync(int id)
     {
         return await _dbContext.Tasks

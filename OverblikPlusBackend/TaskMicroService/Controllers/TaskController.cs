@@ -151,7 +151,7 @@ namespace TaskMicroService.Controllers
 
         [Authorize]
         [HttpPut("{taskId}/complete")]
-        public async Task<IActionResult> MarkTaskAsCompleted(int taskId)
+        public async Task<IActionResult> MarkTaskAsCompleted(int taskId, [FromQuery] DateTime? date)
         {
             if (taskId <= 0)
             {
@@ -159,8 +159,9 @@ namespace TaskMicroService.Controllers
                 return BadRequest(Result<object>.ErrorResult("Invalid task ID."));
             }
 
-            _logger.LogInfo($"Marking task with ID {taskId} as completed.");
-            var result = await _taskService.MarkTaskAsCompleted(taskId);
+            var occurrenceDate = (date ?? DateTime.UtcNow).Date;
+            _logger.LogInfo($"Marking task {taskId} as completed for {occurrenceDate:yyyy-MM-dd}.");
+            var result = await _taskService.MarkTaskAsCompleted(taskId, occurrenceDate);
             if (!result.Success)
             {
                 _logger.LogError($"Failed to mark task with ID {taskId} as completed.", new Exception(result.Error));
@@ -169,26 +170,39 @@ namespace TaskMicroService.Controllers
 
             return Ok(result);
         }
-        
-        
+
+
         [Authorize]
         [HttpPut("{taskId}/notComplete")]
-        public async Task<IActionResult> MarkTaskAsUnCompleted(int taskId)
+        public async Task<IActionResult> MarkTaskAsUnCompleted(int taskId, [FromQuery] DateTime? date)
         {
             if (taskId <= 0)
             {
-                _logger.LogWarning("Invalid task ID for marking as completed.");
+                _logger.LogWarning("Invalid task ID for marking as not completed.");
                 return BadRequest(Result<object>.ErrorResult("Invalid task ID."));
             }
 
-            _logger.LogInfo($"Marking task with ID {taskId} as completed.");
-            var result = await _taskService.MarkTaskAsUnCompleted(taskId);
+            var occurrenceDate = (date ?? DateTime.UtcNow).Date;
+            _logger.LogInfo($"Marking task {taskId} as not completed for {occurrenceDate:yyyy-MM-dd}.");
+            var result = await _taskService.MarkTaskAsUnCompleted(taskId, occurrenceDate);
             if (!result.Success)
             {
-                _logger.LogError($"Failed to mark task with ID {taskId} as completed.", new Exception(result.Error));
-                return BadRequest(Result.ErrorResult("Failed to mark task with ID."));
+                _logger.LogError($"Failed to mark task with ID {taskId} as not completed.", new Exception(result.Error));
+                return BadRequest(Result.ErrorResult("Failed to mark task as not completed."));
             }
 
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("user/{userId}/completions")]
+        public async Task<IActionResult> GetCompletions(string userId, [FromQuery] DateTime from, [FromQuery] DateTime to)
+        {
+            var result = await _taskService.GetCompletions(userId, from, to);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
             return Ok(result);
         }
 

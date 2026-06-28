@@ -15,8 +15,9 @@ namespace OverblikPlus.Services.Interfaces
         Task<Result> UpdateTask(int taskId, UpdateTaskDto updatedTask);
         
         Task<Result> DeleteTask(int taskId);
-        Task<Result> MarkTaskAsCompleted(int taskId);
-        Task<Result> MarkTaskAsUnCompleted(int taskId);
+        Task<Result> MarkTaskAsCompleted(int taskId, DateTime occurrenceDate);
+        Task<Result> MarkTaskAsUnCompleted(int taskId, DateTime occurrenceDate);
+        Task<Result<List<TaskCompletionDto>>> GetCompletions(string userId, DateTime from, DateTime to);
         Task<Result<List<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date);
     }
 }

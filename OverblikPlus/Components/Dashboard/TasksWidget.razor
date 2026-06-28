@@ -268,12 +268,12 @@
             if (wasCompleted)
             {
                 Console.WriteLine($"Calling MarkTaskAsUnCompleted for task {taskId}");
-                result = await TaskService.MarkTaskAsUnCompleted(taskId);
+                result = await TaskService.MarkTaskAsUnCompleted(taskId, DateTime.Today);
             }
             else
             {
                 Console.WriteLine($"Calling MarkTaskAsCompleted for task {taskId}");
-                result = await TaskService.MarkTaskAsCompleted(taskId);
+                result = await TaskService.MarkTaskAsCompleted(taskId, DateTime.Today);
             }
             
             Console.WriteLine($"API result: Success={result.Success}, Error={result.Error}");

@@ -12,6 +12,7 @@ namespace TaskMicroService.DataAccess
 
         public DbSet<TaskEntity> Tasks { get; set; }
         public DbSet<TaskStep> TaskSteps { get; set; }
+        public DbSet<TaskCompletion> TaskCompletions { get; set; }
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
         public DbSet<ActivityEntity> Activities { get; set; }
         public DbSet<MoodEntity> Moods { get; set; }
@@ -28,10 +29,15 @@ namespace TaskMicroService.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<TaskEntity>()
-                .HasMany(t => t.Steps) 
+                .HasMany(t => t.Steps)
                 .WithOne(s => s.Task)
-                .HasForeignKey(s => s.TaskId)  
+                .HasForeignKey(s => s.TaskId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // One completion per task occurrence (per day).
+            modelBuilder.Entity<TaskCompletion>()
+                .HasIndex(c => new { c.TaskId, c.OccurrenceDate })
+                .IsUnique();
             
             modelBuilder.Entity<CalendarEvent>()
                 .HasKey(c => c.Id);

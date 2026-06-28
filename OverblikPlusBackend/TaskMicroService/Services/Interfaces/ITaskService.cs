@@ -11,8 +11,9 @@ namespace TaskMicroService.Services.Interfaces
         Task<Result<int>> CreateTask(CreateTaskDto createTaskDto);
         Task<Result> DeleteTask(int id);
         Task<Result> UpdateTask(int id, UpdateTaskDto updateTaskDto);
-        Task<Result> MarkTaskAsCompleted(int taskId);
-        Task<Result> MarkTaskAsUnCompleted(int taskId);
+        Task<Result> MarkTaskAsCompleted(int taskId, DateTime occurrenceDate);
+        Task<Result> MarkTaskAsUnCompleted(int taskId, DateTime occurrenceDate);
+        Task<Result<IEnumerable<TaskCompletionDto>>> GetCompletions(string userId, DateTime from, DateTime to);
         Task<Result<IEnumerable<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date);
     }
 }

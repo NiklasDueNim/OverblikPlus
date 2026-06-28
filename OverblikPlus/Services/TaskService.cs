@@ -117,39 +117,35 @@ public class TaskService : ITaskService
     public async Task<Result<List<ReadTaskDto>>> GetTasksForCurrentUserAsync() =>
         await ExecuteGetRequest<List<ReadTaskDto>>("/api/Task/user-tasks");
 
-    public async Task<Result> MarkTaskAsCompleted(int taskId)
+    public async Task<Result> MarkTaskAsCompleted(int taskId, DateTime occurrenceDate)
     {
-        _logger.LogDebug("Calling MarkTaskAsCompleted API for task {TaskId}", taskId);
+        _logger.LogDebug("Calling MarkTaskAsCompleted API for task {TaskId} on {Date}", taskId, occurrenceDate);
         var result = await ExecuteNonQueryRequest(
-            () => _httpClient.PutAsync($"/api/Task/{taskId}/complete", null),
+            () => _httpClient.PutAsync($"/api/Task/{taskId}/complete?date={occurrenceDate:yyyy-MM-dd}", null),
             "Mark task as completed");
-        if (result.Success)
-        {
-            _logger.LogInformation("Task {TaskId} marked as completed", taskId);
-        }
-        else
+        if (!result.Success)
         {
             _logger.LogWarning("Failed to mark task {TaskId} as completed: {Error}", taskId, result.Error);
         }
         return result;
     }
-    
-    public async Task<Result> MarkTaskAsUnCompleted(int taskId)
+
+    public async Task<Result> MarkTaskAsUnCompleted(int taskId, DateTime occurrenceDate)
     {
-        _logger.LogDebug("Calling MarkTaskAsUnCompleted API for task {TaskId}", taskId);
+        _logger.LogDebug("Calling MarkTaskAsUnCompleted API for task {TaskId} on {Date}", taskId, occurrenceDate);
         var result = await ExecuteNonQueryRequest(
-            () => _httpClient.PutAsync($"/api/Task/{taskId}/notComplete", null),
+            () => _httpClient.PutAsync($"/api/Task/{taskId}/notComplete?date={occurrenceDate:yyyy-MM-dd}", null),
             "Mark task as uncompleted");
-        if (result.Success)
-        {
-            _logger.LogInformation("Task {TaskId} marked as uncompleted", taskId);
-        }
-        else
+        if (!result.Success)
         {
             _logger.LogWarning("Failed to mark task {TaskId} as uncompleted: {Error}", taskId, result.Error);
         }
         return result;
     }
+
+    public async Task<Result<List<TaskCompletionDto>>> GetCompletions(string userId, DateTime from, DateTime to) =>
+        await ExecuteGetRequest<List<TaskCompletionDto>>(
+            $"/api/Task/user/{userId}/completions?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}");
 
 
     public async Task<Result<List<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date)

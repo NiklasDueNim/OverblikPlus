@@ -59,7 +59,7 @@
         <div class="task-cards">
             @foreach (var task in FilteredTasks)
             {
-                <div class="task-card @(task.IsCompleted ? "is-done" : "")">
+                <div class="task-card @(IsCompleted(task) ? "is-done" : "")">
                     <div class="task-card-media">
                         @if (!string.IsNullOrEmpty(task.Image))
                         {
@@ -85,7 +85,7 @@
                         }
                     </div>
                     <div class="task-card-action">
-                        @if (task.IsCompleted)
+                        @if (IsCompleted(task))
                         {
                             <span class="done-badge"><i class="fas fa-check"></i> Klaret</span>
                             <button class="btn-undo" disabled="@IsLoading" @onclick="() => UncompleteTask(task.Id)">Fortryd</button>
@@ -114,14 +114,43 @@
     private List<ReadTaskDto> FilteredTasks { get; set; } = new();
     private DateTime SelectedDate { get; set; } = DateTime.Today;
 
-    private int CompletedCount => FilteredTasks.Count(t => t.IsCompleted);
+    // Per-occurrence completion: set of (taskId, occurrenceDate) marked done.
+    private HashSet<(int, DateTime)> _completed = new();
+
+    private bool IsCompleted(ReadTaskDto task) => _completed.Contains((task.Id, SelectedDate.Date));
+
+    private int CompletedCount => FilteredTasks.Count(IsCompleted);
     private int TotalCount => FilteredTasks.Count;
     private int ProgressPercent => TotalCount == 0 ? 0 : (int)Math.Round(100.0 * CompletedCount / TotalCount);
 
     protected override async Task OnInitializedAsync()
     {
         await LoadTasks();
+        await LoadCompletions();
         FilterTasksByDate();
+    }
+
+    private async Task LoadCompletions()
+    {
+        try
+        {
+            var userId = AuthStateProvider.GetUserId();
+            if (string.IsNullOrEmpty(userId)) return;
+
+            var from = DateTime.Today.AddDays(-120);
+            var to = DateTime.Today.AddDays(400);
+            var result = await TaskService.GetCompletions(userId, from, to);
+            if (result.Success && result.Data != null)
+            {
+                _completed = result.Data
+                    .Select(c => (c.TaskId, c.OccurrenceDate.Date))
+                    .ToHashSet();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogError("Error loading completions", ex);
+        }
     }
 
     private async Task LoadTasks()
@@ -170,11 +199,10 @@
         ClearMessages();
         try
         {
-            var result = await TaskService.MarkTaskAsCompleted(taskId);
+            var result = await TaskService.MarkTaskAsCompleted(taskId, SelectedDate);
             if (result.Success)
             {
-                SetSuccess("Opgaven er markeret som færdig.");
-                await LoadTasks();
+                _completed.Add((taskId, SelectedDate.Date));
                 FilterTasksByDate();
             }
             else
@@ -199,11 +227,10 @@
         ClearMessages();
         try
         {
-            var result = await TaskService.MarkTaskAsUnCompleted(taskId);
+            var result = await TaskService.MarkTaskAsUnCompleted(taskId, SelectedDate);
             if (result.Success)
             {
-                SetSuccess("Opgaven er sat tilbage som ikke-færdig.");
-                await LoadTasks();
+                _completed.Remove((taskId, SelectedDate.Date));
                 FilterTasksByDate();
             }
             else
@@ -229,24 +256,105 @@
     {
         FilteredTasks = AllTasks
             .Where(task => IsTaskOccurringOnDate(task, SelectedDate))
-            .OrderBy(task => task.IsCompleted)
+            .OrderBy(IsCompleted)
             .ThenBy(task => task.StartTime.TimeOfDay)
             .ToList();
     }
 
+    // A task occurs on a date if it's a one-off on that day, or a recurring task whose
+    // rule matches that day (within its end condition). Completion is tracked separately
+    // per (taskId, date), so each occurrence is independent.
     private bool IsTaskOccurringOnDate(ReadTaskDto task, DateTime selectedDate)
     {
-        // Each occurrence is its own task row. Non-recurring tasks live on their
-        // StartDate; a recurring occurrence is dated by its NextOccurrence (the backend
-        // creates a fresh row for the next occurrence when the current one is completed).
-        // Showing each row only on its own occurrence date keeps every occurrence's
-        // completion state independent — completing one day no longer ticks off the rest.
-        var occurrenceDate = (string.IsNullOrEmpty(task.RecurrenceType) || task.RecurrenceType == "None")
-            ? task.StartDate.Date
-            : (task.NextOccurrence?.Date ?? task.StartDate.Date);
+        var d = selectedDate.Date;
+        if (d < task.StartDate.Date) return false;
 
-        return occurrenceDate == selectedDate.Date;
+        if (string.IsNullOrEmpty(task.RecurrenceType) || task.RecurrenceType == "None")
+            return task.StartDate.Date == d;
+
+        if (!PatternMatches(task, d)) return false;
+        return WithinEnd(task, d);
     }
+
+    private bool PatternMatches(ReadTaskDto task, DateTime d) => task.RecurrenceType switch
+    {
+        "Daily" => (d - task.StartDate.Date).Days % Math.Max(1, task.RecurrenceInterval) == 0,
+        "Weekly" => IsWeeklyMatch(task, d),
+        "Monthly" => IsMonthlyMatch(task, d),
+        "Yearly" => IsYearlyMatch(task, d),
+        _ => false
+    };
+
+    private bool IsWeeklyMatch(ReadTaskDto task, DateTime d)
+    {
+        var interval = Math.Max(1, task.RecurrenceInterval);
+        var weeks = (StartOfWeek(d) - StartOfWeek(task.StartDate)).Days / 7;
+        if (weeks % interval != 0) return false;
+
+        var active = task.SelectedWeekDays?.Where(kv => kv.Value).Select(kv => kv.Key).ToList() ?? new List<string>();
+        if (active.Count == 0) active.Add(DanishDay(task.StartDate.DayOfWeek));
+        return active.Contains(DanishDay(d.DayOfWeek));
+    }
+
+    private bool IsMonthlyMatch(ReadTaskDto task, DateTime d)
+    {
+        var interval = Math.Max(1, task.RecurrenceInterval);
+        var monthsDiff = ((d.Year - task.StartDate.Year) * 12) + (d.Month - task.StartDate.Month);
+        if (monthsDiff < 0 || monthsDiff % interval != 0) return false;
+
+        return task.MonthlyType switch
+        {
+            "FirstDay" => d.Day == 1,
+            "LastDay" => d.Day == DateTime.DaysInMonth(d.Year, d.Month),
+            "SpecificDay" => d.Day == Math.Min(task.MonthlyDay, DateTime.DaysInMonth(d.Year, d.Month)),
+            _ => d.Day == Math.Min(task.StartDate.Day, DateTime.DaysInMonth(d.Year, d.Month))
+        };
+    }
+
+    private bool IsYearlyMatch(ReadTaskDto task, DateTime d)
+    {
+        var interval = Math.Max(1, task.RecurrenceInterval);
+        var yearsDiff = d.Year - task.StartDate.Year;
+        return yearsDiff % interval == 0 && d.Month == task.StartDate.Month && d.Day == task.StartDate.Day;
+    }
+
+    private bool WithinEnd(ReadTaskDto task, DateTime d)
+    {
+        if (task.EndType == "Date")
+            return !task.EndDate.HasValue || d <= task.EndDate.Value.Date;
+
+        if (task.EndType == "After")
+        {
+            var count = 0;
+            var cur = task.StartDate.Date;
+            var guard = 0;
+            while (cur <= d && guard++ < 4000)
+            {
+                if (PatternMatches(task, cur)) count++;
+                cur = cur.AddDays(1);
+            }
+            return count <= Math.Max(1, task.EndAfterCount);
+        }
+
+        return true; // Never
+    }
+
+    private static DateTime StartOfWeek(DateTime d)
+    {
+        int diff = ((int)d.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        return d.Date.AddDays(-diff);
+    }
+
+    private static string DanishDay(DayOfWeek d) => d switch
+    {
+        DayOfWeek.Monday => "Mandag",
+        DayOfWeek.Tuesday => "Tirsdag",
+        DayOfWeek.Wednesday => "Onsdag",
+        DayOfWeek.Thursday => "Torsdag",
+        DayOfWeek.Friday => "Fredag",
+        DayOfWeek.Saturday => "Lørdag",
+        _ => "Søndag"
+    };
 
     private void ShowPreviousDay()
     {

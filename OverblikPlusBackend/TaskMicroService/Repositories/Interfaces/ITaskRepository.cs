@@ -16,6 +16,13 @@ public interface ITaskRepository
     Task UpdateAsync(TaskEntity task);
     Task DeleteAsync(TaskEntity task);
     Task DeleteRangeAsync(IEnumerable<TaskEntity> tasks);
+
+    // Per-occurrence completion
+    Task<TaskCompletion?> GetCompletionAsync(int taskId, DateTime occurrenceDate);
+    Task AddCompletionAsync(TaskCompletion completion);
+    Task RemoveCompletionAsync(TaskCompletion completion);
+    Task<List<TaskCompletion>> GetCompletionsForUserAsync(string userId, DateTime from, DateTime to);
+
     Task SaveChangesAsync();
 }
 

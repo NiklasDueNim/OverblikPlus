@@ -215,205 +215,52 @@ namespace TaskMicroService.Services
             return Result.SuccessResult();
         }
 
-        public async Task<Result> MarkTaskAsCompleted(int taskId)
+        public async Task<Result> MarkTaskAsCompleted(int taskId, DateTime occurrenceDate)
         {
             var task = await _taskRepository.GetByIdAsync(taskId);
             if (task == null)
                 return Result.ErrorResult($"Task with ID {taskId} not found.");
 
-            var today = DateTime.UtcNow.Date;
-            _logger.LogInfo($"[MarkTaskAsCompleted] Task {taskId} '{task.Name}' (NextOccurrence: {task.NextOccurrence?.Date:yyyy-MM-dd}, IsCompleted: {task.IsCompleted}) -> marking as completed");
-
-            // Markér completed
-            task.IsCompleted = true;
-
-            // Ikke gentagende? Så er vi færdige.
-            if (string.IsNullOrEmpty(task.RecurrenceType) || task.RecurrenceType == "None")
+            var day = occurrenceDate.Date;
+            var existing = await _taskRepository.GetCompletionAsync(taskId, day);
+            if (existing == null)
             {
-                try
+                await _taskRepository.AddCompletionAsync(new TaskCompletion
                 {
-                    await _taskRepository.UpdateAsync(task);
-                    await _taskRepository.SaveChangesAsync();
-                    _logger.LogInfo($"[MarkTaskAsCompleted] Task {taskId} is not recurring, marked as completed");
-                    return Result.SuccessResult();
-                }
-                catch (DbUpdateException ex)
-                {
-                    var innerMessage = ex.InnerException?.Message ?? ex.Message;
-                    _logger.LogError($"[MarkTaskAsCompleted] Save failed for task {taskId}: {innerMessage}", ex);
-                    return Result.ErrorResult($"Could not save changes. {innerMessage}");
-                }
-            }
-
-            // Parse SelectedWeekDays from JSON string
-            var selectedWeekDays = JsonHelper.Deserialize<Dictionary<string, bool>>(task.SelectedWeekDays ?? string.Empty)
-                ?? new Dictionary<string, bool>();
-
-            // Bestem SeriesId for denne opgave (brug eksisterende eller sæt til Id)
-            var seriesId = task.SeriesId ?? task.Id;
-            var occurrenceDate = (task.NextOccurrence ?? today).Date;
-
-            // VIGTIGT: Opret KUN ny forekomst hvis den aktuelle forekomst er forfalden (<= i dag)
-            var shouldCreateNext = occurrenceDate <= today;
-
-            if (!shouldCreateNext)
-            {
-                // Fremtidig forekomst blev "forhåndsafsluttet" – ingen ny opgave skal oprettes.
-                _logger.LogInfo($"[MarkTaskAsCompleted] Task {taskId} has future occurrence date {occurrenceDate:yyyy-MM-dd}, not creating next occurrence");
-                try
-                {
-                    await _taskRepository.UpdateAsync(task);
-                    await _taskRepository.SaveChangesAsync();
-                    return Result.SuccessResult();
-                }
-                catch (DbUpdateException ex)
-                {
-                    var innerMessage = ex.InnerException?.Message ?? ex.Message;
-                    _logger.LogError($"[MarkTaskAsCompleted] Save failed for task {taskId}: {innerMessage}", ex);
-                    return Result.ErrorResult($"Could not save changes. {innerMessage}");
-                }
-            }
-
-            // Slet same-day duplicates (midlertidig cleanup - indexet forhindrer nye, men der kan være gammel støj)
-            var sameDayDups = await _taskRepository.GetSameDayDuplicatesAsync(seriesId, occurrenceDate, taskId);
-
-            if (sameDayDups.Any())
-            {
-                _logger.LogInfo($"[MarkTaskAsCompleted] Removing {sameDayDups.Count} same-day duplicates for series {seriesId} on {occurrenceDate:yyyy-MM-dd}");
-                await _taskRepository.DeleteRangeAsync(sameDayDups);
-            }
-            
-            // Slet alle gamle opgaver fra fortiden i samme serie
-            var oldTasks = await _taskRepository.GetOldTasksInSeriesAsync(seriesId, today, taskId);
-
-            if (oldTasks.Any())
-            {
-                _logger.LogInfo($"[MarkTaskAsCompleted] Found {oldTasks.Count} old tasks from the past in series {seriesId}, deleting them.");
-                await _taskRepository.DeleteRangeAsync(oldTasks);
-            }
-
-            // Beregn næste forekomst fra den aktuelle forekomst (ikke fra "i dag")
-            var recurrenceOptions = new RecurrenceOptions
-            {
-                StartDate = occurrenceDate,
-                RecurrenceType = task.RecurrenceType,
-                RecurrenceInterval = task.RecurrenceInterval,
-                MonthlyType = task.MonthlyType,
-                MonthlyDay = task.MonthlyDay,
-                SelectedWeekDays = selectedWeekDays,
-                EndType = task.EndType,
-                EndAfterCount = task.EndAfterCount,
-                EndDate = task.EndDate
-            };
-            var nextOccurrence = _recurrenceCalculator.CalculateNext(occurrenceDate, recurrenceOptions);
-
-            // Sørg for STRIKT senere end occurrenceDate
-            while (nextOccurrence.Date <= occurrenceDate)
-            {
-                recurrenceOptions.StartDate = nextOccurrence.Date;
-                nextOccurrence = _recurrenceCalculator.CalculateNext(nextOccurrence.Date, recurrenceOptions);
-            }
-
-            // Undgå kollisioner i serien: hop frem til en unik dato
-            while (await _taskRepository.ExistsWithDateAsync(seriesId, nextOccurrence.Date))
-            {
-                _logger.LogInfo($"[MarkTaskAsCompleted] Date {nextOccurrence.Date:yyyy-MM-dd} already exists in series {seriesId}, skipping forward");
-                recurrenceOptions.StartDate = nextOccurrence.Date;
-                nextOccurrence = _recurrenceCalculator.CalculateNext(nextOccurrence.Date, recurrenceOptions);
-            }
-
-            _logger.LogInfo($"[MarkTaskAsCompleted] Calculated next occurrence for task {taskId}: {nextOccurrence.Date:yyyy-MM-dd} (occurrenceDate: {occurrenceDate:yyyy-MM-dd}, today: {today:yyyy-MM-dd})");
-
-            // Opret næste forekomst
-            _logger.LogInfo($"[MarkTaskAsCompleted] Creating new task for next occurrence {nextOccurrence.Date:yyyy-MM-dd} in series {seriesId}");
-            var newTask = new TaskEntity
-            {
-                Name = task.Name,
-                Description = task.Description,
-                ImageUrl = task.ImageUrl,
-                RecurrenceType = task.RecurrenceType,
-                RecurrenceInterval = task.RecurrenceInterval,
-                StartDate = task.StartDate,
-                NextOccurrence = nextOccurrence,
-                UserId = task.UserId,
-                RequiresQrCodeScan = task.RequiresQrCodeScan,
-                IsCompleted = false,
-                MonthlyType = task.MonthlyType,
-                MonthlyDay = task.MonthlyDay,
-                SelectedWeekDays = task.SelectedWeekDays,
-                EndType = task.EndType,
-                EndAfterCount = task.EndAfterCount,
-                EndDate = task.EndDate,
-                SeriesId = seriesId
-            };
-
-            await _taskRepository.AddAsync(newTask);
-
-            try
-            {
+                    TaskId = taskId,
+                    UserId = task.UserId,
+                    OccurrenceDate = day
+                });
                 await _taskRepository.SaveChangesAsync();
-                _logger.LogInfo($"[MarkTaskAsCompleted] Task {taskId} marked as completed successfully");
-                return Result.SuccessResult();
+                _logger.LogInfo($"[MarkTaskAsCompleted] Task {taskId} completed for {day:yyyy-MM-dd}");
             }
-            catch (DbUpdateException ex)
-            {
-                var innerMessage = ex.InnerException?.Message ?? ex.Message;
-                _logger.LogError($"[MarkTaskAsCompleted] Save failed for task {taskId}: {innerMessage}", ex);
-                return Result.ErrorResult($"Could not save changes. {innerMessage}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"[MarkTaskAsCompleted] Unexpected error for task {taskId}: {ex.Message}", ex);
-                return Result.ErrorResult($"An unexpected error occurred: {ex.Message}");
-            }
+
+            return Result.SuccessResult();
         }
 
-
-        public async Task<Result> MarkTaskAsUnCompleted(int taskId)
+        public async Task<Result> MarkTaskAsUnCompleted(int taskId, DateTime occurrenceDate)
         {
-            var task = await _taskRepository.GetByIdAsync(taskId);
-            if (task == null)
+            var day = occurrenceDate.Date;
+            var existing = await _taskRepository.GetCompletionAsync(taskId, day);
+            if (existing != null)
             {
-                return Result.ErrorResult($"Task with ID {taskId} not found.");
+                await _taskRepository.RemoveCompletionAsync(existing);
+                await _taskRepository.SaveChangesAsync();
+                _logger.LogInfo($"[MarkTaskAsUnCompleted] Task {taskId} un-completed for {day:yyyy-MM-dd}");
             }
 
-            task.IsCompleted = false;
-
-            // Hvis det er en gentagende opgave, find og slet den nye opgave der blev oprettet
-            // når markeringen blev sat (hvis den findes)
-            if (!string.IsNullOrEmpty(task.RecurrenceType) && task.RecurrenceType != "None")
-            {
-                var today = DateTime.Today;
-                var seriesId = task.SeriesId ?? task.Id;
-                
-                // Find alle opgaver i samme serie der er fremtidige ELLER i dag
-                // Disse kan være opgaver der blev oprettet ved fejl
-                var tasksInSeries = await _taskRepository.GetBySeriesIdAsync(seriesId);
-                var duplicateTasks = tasksInSeries
-                    .Where(t => 
-                        t.Id != taskId && // Ikke den samme opgave
-                        t.NextOccurrence.HasValue &&
-                        t.NextOccurrence.Value.Date >= today && // Fremtidige eller i dag
-                        t.IsCompleted == false)
-                    .OrderBy(t => t.NextOccurrence) // Sorter efter NextOccurrence
-                    .ToList();
-
-                if (duplicateTasks.Any())
-                {
-                    // Slet alle duplikater (der skulle kun være én, men for sikkerheds skyld sletter vi alle)
-                    foreach (var duplicateTask in duplicateTasks)
-                    {
-                        var dupNextOccurrence = duplicateTask.NextOccurrence?.Date.ToString("yyyy-MM-dd") ?? "null";
-                        var taskNextOccurrence = task.NextOccurrence?.Date.ToString("yyyy-MM-dd") ?? "null";
-                        _logger.LogInfo($"Deleted duplicate task {duplicateTask.Id} (NextOccurrence: {dupNextOccurrence}) when uncompleting task {taskId} (NextOccurrence: {taskNextOccurrence})");
-                    }
-                    await _taskRepository.DeleteRangeAsync(duplicateTasks);
-                }
-            }
-
-            await _taskRepository.UpdateAsync(task);
-            await _taskRepository.SaveChangesAsync();
             return Result.SuccessResult();
+        }
+
+        public async Task<Result<IEnumerable<TaskCompletionDto>>> GetCompletions(string userId, DateTime from, DateTime to)
+        {
+            var completions = await _taskRepository.GetCompletionsForUserAsync(userId, from, to);
+            var dtos = completions.Select(c => new TaskCompletionDto
+            {
+                TaskId = c.TaskId,
+                OccurrenceDate = c.OccurrenceDate
+            });
+            return Result<IEnumerable<TaskCompletionDto>>.SuccessResult(dtos);
         }
 
         public async Task<Result<IEnumerable<ReadTaskDto>>> GetTasksForDay(string userId, DateTime date)

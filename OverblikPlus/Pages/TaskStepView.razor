@@ -155,7 +155,7 @@
         }
         else
         {
-            await TaskService.MarkTaskAsCompleted(TaskId);
+            await TaskService.MarkTaskAsCompleted(TaskId, DateTime.Today);
             Navigation.NavigateTo("/tasks");
         }
     }
