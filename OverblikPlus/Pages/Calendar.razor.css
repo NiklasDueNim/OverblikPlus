@@ -1,173 +1,301 @@
+.calendar-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
 .calendar-title {
     color: #0d2b50;
     font-weight: 700;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
-/* Kalender-grid.
-   Bemærk: For “dagvisning” bruger vi klassen .single-day (grid-template-columns: 1fr). 
-   For uge-/måned-visning sættes den tilbage til 7 kolonner. */
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr); /* default 7 kolonner */
-    grid-auto-rows: minmax(80px, auto);
-    gap: 1px;
-    background-color: #e6e6e6;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-}
-.calendar-grid.single-day {
-    grid-template-columns: repeat(1, 1fr); /* dag-visning: 1 kolonne */
+/* ---------- TOOLBAR ---------- */
+.cal-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
 }
 
-/* Header for ugedage */
+.cal-views {
+    display: inline-flex;
+    background: #eef2f7;
+    border-radius: 12px;
+    padding: 3px;
+}
+
+.cal-view-btn {
+    border: none;
+    background: transparent;
+    color: #546e7a;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.cal-view-btn.active {
+    background: white;
+    color: #0d2b50;
+    box-shadow: 0 2px 6px rgba(13, 60, 97, 0.12);
+}
+
+.cal-search {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 0.5rem 0.85rem;
+}
+
+.cal-search i { color: #90a4ae; }
+
+.cal-search input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 0.95rem;
+    background: transparent;
+}
+
+.cal-download {
+    border: 1px solid #cfd8dc;
+    background: white;
+    color: #455a64;
+    border-radius: 10px;
+    padding: 0.55rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.cal-download:hover {
+    border-color: #16b8a6;
+    color: #0e958b;
+}
+
+/* ---------- NAVIGATION ---------- */
+.cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.cal-nav-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: #e3f2fd;
+    color: #0d2b50;
+    font-size: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+}
+
+.cal-nav-btn:hover { background: #bbdefb; }
+
+.cal-nav-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.cal-period {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0d2b50;
+    text-transform: capitalize;
+}
+
+.cal-today {
+    border: none;
+    background: #16b8a6;
+    color: white;
+    border-radius: 16px;
+    padding: 0.2rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ---------- WEEKDAY HEADER ---------- */
 .calendar-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
-    padding: 10px 0;
-    font-weight: bold;
+    padding: 0.6rem 0;
+    font-weight: 700;
     color: white;
     background: linear-gradient(135deg, #1d4e89, #0d2b50);
-    border-radius: 8px 8px 0 0;
+    border-radius: 12px 12px 0 0;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
 }
 
-/* Kalendercelle */
+/* ---------- GRID ---------- */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(104px, auto);
+    gap: 1px;
+    background-color: #e8edf2;
+    border: 1px solid #e8edf2;
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+}
+
+.calendar-grid.single-day {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(320px, auto);
+    border-radius: 12px;
+}
+
 .calendar-cell {
     background-color: white;
-    padding: 5px;
-    border: 1px solid #ddd;
+    padding: 6px 7px;
     font-size: 12px;
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
 }
+
 .calendar-cell:hover {
-    background-color: #f5f5f5;
+    background-color: #f5f9ff;
 }
 
 .calendar-cell.today {
-    background-color: #e3f2fd;
-    border: 2px solid #42a5f5;
+    background-color: #f0f9ff;
+    box-shadow: inset 0 0 0 2px #16b8a6;
 }
 
-/* Leading days (grå celler) - tomme celler fra forrige måned i månedsvisning */
 .leading-day {
-    background-color: #f0f0f0;
+    background-color: #fafbfc;
     pointer-events: none;
 }
 
-/* Dato-nummer i hjørnet */
 .date-number {
-    font-weight: bold;
-    margin-bottom: 4px;
+    font-weight: 700;
+    color: #455a64;
+    font-size: 0.85rem;
+    align-self: flex-start;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
-/* Lister til tasks og events */
+.calendar-cell.today .date-number {
+    background: #16b8a6;
+    color: white;
+}
+
+/* ---------- CHIPS (tasks & events) ---------- */
+.task-item,
+.event-item {
+    font-size: 11px;
+    color: white;
+    border-radius: 6px;
+    padding: 2px 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.5;
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.task-item {
+    background-color: #1d4e89; /* navy = opgave */
+}
+
+.event-item {
+    background-color: #16b8a6; /* teal = begivenhed */
+}
+
 .task-list, .event-list {
     margin: 0;
     padding: 0;
     list-style-type: none;
 }
 
-/* Farvekodning for tasks */
-.task-item {
-    font-size: 12px;
-    color: white;
-    background-color: #ff7043; /* Orange */
-    border-radius: 4px;
-    padding: 2px 4px;
-    margin-bottom: 5px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Farvekodning for events */
-.event-item {
-    font-size: 12px;
-    color: white;
-    background-color: #7e57c2; /* Lilla */
-    border-radius: 4px;
-    padding: 2px 4px;
-    margin-bottom: 5px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Modal-backdrop + modal-dialog = overlay */
+/* ---------- MODAL ---------- */
 .modal-backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background-color: rgba(13, 43, 80, 0.45);
     z-index: 1050;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
 }
 
 .modal-dialog {
     background: white;
-    border-radius: 8px;
-    width: 400px;
-    max-width: 90%;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+    width: 560px;
+    max-width: 100%;
+    box-shadow: 0 20px 60px rgba(13, 43, 80, 0.3);
 }
 
 .modal-content {
     position: relative;
-    padding: 20px;
+    padding: 1.5rem;
 }
 
 .modal-header, .modal-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
+    gap: 0.5rem;
 }
+
+.modal-header { margin-bottom: 1rem; }
+.modal-footer { margin-top: 1rem; }
 
 .modal-title {
     margin: 0;
+    color: #0d2b50;
+    font-weight: 700;
+    text-transform: capitalize;
 }
 
 .btn-close {
     background: none;
     border: none;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
+    color: #90a4ae;
+    line-height: 1;
 }
 
-/* Responsivt design */
-@media (max-width: 768px) {
-    .calendar-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    .calendar-header {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    .modal-dialog {
-        width: 90%;
-    }
-}
-
-@media (max-width: 480px) {
-    .calendar-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .calendar-header {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .calendar-cell {
-        font-size: 9px;
-    }
-    .modal-dialog {
-        width: 100%;
-        margin: 10px;
-    }
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 720px) {
+    .calendar-cell { min-height: 78px; font-size: 10px; }
+    .date-number { font-size: 0.75rem; width: 22px; height: 22px; }
+    .task-item, .event-item { font-size: 9px; padding: 1px 4px; }
+    .cal-period { font-size: 1.15rem; }
+    .cal-search { order: 3; flex-basis: 100%; }
 }
