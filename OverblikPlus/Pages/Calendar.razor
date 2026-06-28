@@ -179,9 +179,16 @@
                         <hr/>
 
                         <!-- Formular til oprettelse/redigering -->
+                        <h6 class="cal-form-heading">@(isEditMode ? "Rediger aftale" : "Ny aftale")</h6>
+                        @if (!string.IsNullOrEmpty(modalError))
+                        {
+                            <div class="alert alert-danger py-2">@modalError</div>
+                        }
+
                         <div class="mb-3">
-                            <label for="title" class="form-label">Titel:</label>
-                            <input type="text" id="title" @bind="newTaskTitle" class="form-control"/>
+                            <label for="title" class="form-label">Titel <span class="req">*</span></label>
+                            <input type="text" id="title" @bind="newTaskTitle" @bind:event="oninput"
+                                   class="form-control" placeholder="F.eks. Tandlæge, gåtur, møde"/>
                         </div>
                         <div class="mb-3">
                             <label for="desc" class="form-label">Beskrivelse:</label>
@@ -209,14 +216,18 @@
                         <button type="button" class="btn btn-secondary" @onclick="CloseModal">Luk</button>
                         @if (isEditMode)
                         {
-                            <button type="button" class="btn btn-primary" @onclick="UpdateCalendarEvent">
+                            <button type="button" class="btn btn-primary"
+                                    disabled="@string.IsNullOrWhiteSpace(newTaskTitle)"
+                                    @onclick="UpdateCalendarEvent">
                                 Opdater
                             </button>
                         }
                         else
                         {
-                            <button type="button" class="btn btn-primary" @onclick="AddCalendarEvent">
-                                Tilføj
+                            <button type="button" class="btn btn-primary"
+                                    disabled="@string.IsNullOrWhiteSpace(newTaskTitle)"
+                                    @onclick="AddCalendarEvent">
+                                <i class="fas fa-plus me-1"></i> Tilføj aftale
                             </button>
                         }
                     </div>
@@ -262,6 +273,7 @@
     private bool? newIsRecurring;
 
     private string searchTerm = "";
+    private string? modalError;
 
     protected override async Task OnInitializedAsync()
     {
@@ -366,13 +378,33 @@
         editingEventId = Guid.Empty;
         newTaskTitle = "";
         newTaskDescription = "";
-        newStartDateTime = selectedDate;
-        newEndDateTime = selectedDate.AddHours(1);
+        // Default to a sensible time of day instead of midnight.
+        newStartDateTime = selectedDate.Date.AddHours(9);
+        newEndDateTime = selectedDate.Date.AddHours(10);
         newIsRecurring = false;
+        modalError = null;
+    }
+
+    private bool ValidateEventForm()
+    {
+        modalError = null;
+        if (string.IsNullOrWhiteSpace(newTaskTitle))
+        {
+            modalError = "Skriv en titel til aftalen.";
+            return false;
+        }
+        if (newEndDateTime <= newStartDateTime)
+        {
+            modalError = "Sluttidspunkt skal være efter starttidspunkt.";
+            return false;
+        }
+        return true;
     }
 
     private async Task AddCalendarEvent()
     {
+        if (!ValidateEventForm()) return;
+
         var newEvent = new CreateCalendarEventDto
         {
             Title = newTaskTitle,
@@ -387,9 +419,11 @@
         {
             await CalendarEventService.CreateEventAsync(newEvent);
             await ReloadCurrentView();
+            showModal = false;
         }
         catch (Exception ex)
         {
+            modalError = "Kunne ikke oprette aftalen. Prøv igen.";
             Console.Error.WriteLine($"Fejl ved oprettelse af event: {ex.Message}");
         }
         finally
@@ -413,6 +447,7 @@
     private async Task UpdateCalendarEvent()
     {
         if (editingEventId == Guid.Empty) return;
+        if (!ValidateEventForm()) return;
 
         var updatedEvent = new UpdateCalendarEventDto
         {
@@ -438,9 +473,11 @@
                     UserId = updatedEvent.UserId
                 });
             await ReloadCurrentView();
+            showModal = false;
         }
         catch (Exception ex)
         {
+            modalError = "Kunne ikke opdatere aftalen. Prøv igen.";
             Console.Error.WriteLine($"Fejl ved opdatering af event: {ex.Message}");
         }
         finally
