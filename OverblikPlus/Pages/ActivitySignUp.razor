@@ -2,9 +2,11 @@
 @using OverblikPlus.AuthHelpers
 @using OverblikPlus.Models.Dtos.Activity
 @using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Services
 @inject IActivityService ActivityService
 @inject IUserService UserService
 @inject CustomAuthStateProvider AuthStateProvider
+@inject ActivityNoticeService NoticeService
 @using OverblikPlus.Constants
 @using OverblikPlus.Components
 @using OverblikPlus.Components.Shared
@@ -20,12 +22,50 @@
                 <h2 class="mb-0">Aktiviteter for @DateTime.Today.ToString("dddd, dd. MMMM yyyy")</h2>
                 @if (userRole == "Staff" || userRole == "Admin")
                 {
-                    <a href="/create-activity" class="btn btn-success">
-                        <i class="fas fa-plus me-1"></i>
-                        Opret Aktivitet
-                    </a>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" @onclick="OpenNoticeDialog">
+                            <i class="fas fa-bullhorn me-1"></i>
+                            Send hurtig besked
+                        </button>
+                        <a href="/create-activity" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i>
+                            Opret Aktivitet
+                        </a>
+                    </div>
                 }
             </div>
+
+            @if (showNoticeDialog)
+            {
+                <div class="notice-backdrop" @onclick="CloseNoticeDialog">
+                    <div class="notice-dialog" @onclick:stopPropagation="true">
+                        <h3 class="notice-dialog-title"><i class="fas fa-bullhorn me-2"></i>Send besked til beboerne</h3>
+                        <p class="notice-dialog-help">Beskeden vises med det samme hos de beboere, der er logget ind.</p>
+
+                        <div class="notice-templates">
+                            @foreach (var tpl in NoticeTemplates)
+                            {
+                                <button type="button" class="notice-template" @onclick="@(() => noticeText = tpl)">@tpl</button>
+                            }
+                        </div>
+
+                        <textarea class="notice-input" rows="3" placeholder="Skriv en besked..." @bind="noticeText" @bind:event="oninput"></textarea>
+
+                        @if (!string.IsNullOrEmpty(noticeFeedback))
+                        {
+                            <div class="notice-feedback">@noticeFeedback</div>
+                        }
+
+                        <div class="notice-actions">
+                            <button class="btn btn-secondary" @onclick="CloseNoticeDialog">Luk</button>
+                            <button class="btn btn-primary" disabled="@(sendingNotice || string.IsNullOrWhiteSpace(noticeText))" @onclick="SendNotice">
+                                <i class="fas fa-paper-plane me-1"></i>
+                                @(sendingNotice ? "Sender..." : "Send")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
 
 @if (activities == null)
 {
@@ -199,6 +239,61 @@ else
     private bool isLeaving = false;
     private string userRole = string.Empty;
     private Dictionary<string, string> userNames = new();
+
+    private bool showNoticeDialog = false;
+    private string noticeText = string.Empty;
+    private bool sendingNotice = false;
+    private string? noticeFeedback;
+    private static readonly string[] NoticeTemplates =
+    {
+        "Kortspil i fællestuen om 5 min",
+        "Kaffe i fællestuen nu",
+        "Gåtur om 10 minutter",
+        "Fælles aftensmad om 15 min"
+    };
+
+    private void OpenNoticeDialog()
+    {
+        noticeText = string.Empty;
+        noticeFeedback = null;
+        showNoticeDialog = true;
+    }
+
+    private void CloseNoticeDialog() => showNoticeDialog = false;
+
+    private async Task SendNotice()
+    {
+        if (string.IsNullOrWhiteSpace(noticeText)) return;
+
+        sendingNotice = true;
+        noticeFeedback = null;
+        try
+        {
+            var sender = AuthStateProvider.User != null
+                ? $"{AuthStateProvider.User.FirstName} {AuthStateProvider.User.LastName}".Trim()
+                : "Personale";
+
+            var ok = await NoticeService.SendAsync(sender, noticeText.Trim());
+            if (ok)
+            {
+                noticeFeedback = "Beskeden er sendt ✓";
+                noticeText = string.Empty;
+            }
+            else
+            {
+                noticeFeedback = "Kunne ikke sende lige nu (ingen forbindelse). Prøv igen.";
+            }
+        }
+        catch (Exception ex)
+        {
+            noticeFeedback = "Der opstod en fejl ved afsendelse.";
+            LogError("Error sending activity notice", ex);
+        }
+        finally
+        {
+            sendingNotice = false;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

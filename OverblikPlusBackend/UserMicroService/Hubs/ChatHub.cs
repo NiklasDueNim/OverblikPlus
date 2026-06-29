@@ -9,4 +9,11 @@ public class ChatHub : Hub
     {
         return Clients.All.SendAsync("ReceiveMessage", user, message);
     }
+
+    // Staff broadcasts a quick activity notice to everyone else currently connected
+    // (e.g. "Kortspil i fællestuen om 5 min"). The sender doesn't receive it back.
+    public Task SendActivityNotice(string sender, string message)
+    {
+        return Clients.Others.SendAsync("ReceiveActivityNotice", sender, message);
+    }
 }

@@ -1,0 +1,67 @@
+.activity-notice {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: min(560px, calc(100% - 2rem));
+    background: linear-gradient(135deg, #16b8a6, #0e958b);
+    color: white;
+    border-radius: 14px;
+    padding: 0.9rem 1.1rem;
+    box-shadow: 0 12px 32px rgba(13, 60, 97, 0.3);
+    animation: noticeIn 0.3s ease;
+}
+
+@keyframes noticeIn {
+    from { opacity: 0; transform: translate(-50%, -16px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.activity-notice-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.activity-notice-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.35;
+}
+
+.activity-notice-message {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.activity-notice-sender {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.activity-notice-close {
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    opacity: 0.85;
+    flex-shrink: 0;
+}
+
+.activity-notice-close:hover { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+    .activity-notice { animation: none; }
+}

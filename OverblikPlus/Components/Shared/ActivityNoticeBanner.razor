@@ -1,0 +1,64 @@
+@using OverblikPlus.Services
+@implements IDisposable
+@inject ActivityNoticeService NoticeService
+
+@if (_visible && !string.IsNullOrEmpty(_message))
+{
+    <div class="activity-notice">
+        <div class="activity-notice-icon"><i class="fas fa-bullhorn"></i></div>
+        <div class="activity-notice-text">
+            <span class="activity-notice-message">@_message</span>
+            @if (!string.IsNullOrWhiteSpace(_sender))
+            {
+                <span class="activity-notice-sender">– @_sender</span>
+            }
+        </div>
+        <button class="activity-notice-close" @onclick="Dismiss" aria-label="Luk">
+            <i class="fas fa-xmark"></i>
+        </button>
+    </div>
+}
+
+@code {
+    private string? _message;
+    private string? _sender;
+    private bool _visible;
+    private System.Timers.Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        NoticeService.NoticeReceived += OnNotice;
+        await NoticeService.EnsureConnectedAsync();
+    }
+
+    private void OnNotice(string sender, string message)
+    {
+        _sender = sender;
+        _message = message;
+        _visible = true;
+
+        // Auto-dismiss after a while so it doesn't linger forever.
+        _timer?.Dispose();
+        _timer = new System.Timers.Timer(90000) { AutoReset = false };
+        _timer.Elapsed += (_, _) =>
+        {
+            _visible = false;
+            InvokeAsync(StateHasChanged);
+        };
+        _timer.Start();
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void Dismiss()
+    {
+        _visible = false;
+        _timer?.Dispose();
+    }
+
+    public void Dispose()
+    {
+        NoticeService.NoticeReceived -= OnNotice;
+        _timer?.Dispose();
+    }
+}
