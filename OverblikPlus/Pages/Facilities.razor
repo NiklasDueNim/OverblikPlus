@@ -1,0 +1,329 @@
+@page "/facilities"
+@using OverblikPlus.AuthHelpers
+@using OverblikPlus.Constants
+@using OverblikPlus.Models.Dtos.Facilities
+@using OverblikPlus.Models.Dtos.User
+@using OverblikPlus.Services.Interfaces
+@using OverblikPlus.Components
+@using OverblikPlus.Components.Shared
+@inject IFacilityService FacilityService
+@inject IUserService UserService
+@inject CustomAuthStateProvider AuthStateProvider
+@inherits BasePage
+
+<div class="facilities-page">
+    <div class="fac-header">
+        <h1 class="fac-title">Faciliteter</h1>
+        @if (CanManage)
+        {
+            <button class="btn-new-fac" @onclick="OpenCreate">
+                <i class="fas fa-plus me-1"></i> Tilføj ting
+            </button>
+        }
+    </div>
+
+    <AlertMessage Message="@ErrorMessage" Type="AlertType.Error" MessageChanged="@((string? msg) => ErrorMessage = msg)" />
+    <AlertMessage Message="@SuccessMessage" Type="AlertType.Success" MessageChanged="@((string? msg) => SuccessMessage = msg)" />
+
+    @if (IsLoading)
+    {
+        <LoadingSpinner Text="Henter faciliteter..." />
+    }
+    else if (facilities.Count == 0)
+    {
+        <div class="fac-empty">
+            <i class="fas fa-couch"></i>
+            <h3>Ingen ting endnu</h3>
+            <p>Tilføj fx bilen, hallen eller gamer-rummet – med billede og en ansvarlig.</p>
+        </div>
+    }
+    else
+    {
+        <div class="fac-grid">
+            @foreach (var f in facilities)
+            {
+                <div class="fac-card">
+                    <div class="fac-media">
+                        @if (!string.IsNullOrEmpty(f.ImageUrl))
+                        {
+                            <img src="@f.ImageUrl" alt="@f.Name" />
+                        }
+                        else
+                        {
+                            <i class="fas fa-image"></i>
+                        }
+                    </div>
+                    <div class="fac-body">
+                        <h2 class="fac-name">@f.Name</h2>
+                        @if (!string.IsNullOrEmpty(f.Description))
+                        {
+                            <p class="fac-desc">@f.Description</p>
+                        }
+                        <div class="fac-staff">
+                            <i class="fas fa-user-nurse"></i>
+                            <span>@StaffName(f.ResponsibleStaffId)</span>
+                        </div>
+                        @if (CanManage)
+                        {
+                            <div class="fac-actions">
+                                <button class="fac-btn-edit" @onclick="() => OpenEdit(f)">Rediger</button>
+                                <button class="fac-btn-del" @onclick="() => AskDelete(f.Id)">Slet</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@if (showForm)
+{
+    <div class="fac-backdrop" @onclick="CloseForm">
+        <div class="fac-dialog" @onclick:stopPropagation="true">
+            <h3 class="fac-dialog-title">@(form.Id.HasValue ? "Rediger ting" : "Ny ting")</h3>
+
+            <div class="mb-3">
+                <label class="form-label">Navn <span class="req">*</span></label>
+                <input class="form-control" @bind="form.Name" @bind:event="oninput" placeholder="F.eks. Bil, Hallen, Gamer-rummet" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Beskrivelse</label>
+                <textarea class="form-control" rows="2" @bind="form.Description"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Billede</label>
+                <InputFile OnChange="HandleImage" class="form-control" />
+                @if (!string.IsNullOrEmpty(form.ImageBase64))
+                {
+                    <img class="fac-preview" src="data:image/png;base64,@form.ImageBase64" alt="Forhåndsvisning" />
+                }
+                else if (!string.IsNullOrEmpty(form.ImageUrl))
+                {
+                    <img class="fac-preview" src="@form.ImageUrl" alt="Nuværende billede" />
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Ansvarlig personale</label>
+                <select class="form-select" @bind="form.ResponsibleStaffId">
+                    <option value="">Ingen</option>
+                    @foreach (var s in staff)
+                    {
+                        <option value="@s.Id">@s.FirstName @s.LastName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="fac-dialog-actions">
+                <button class="btn btn-secondary" @onclick="CloseForm">Annuller</button>
+                <button class="btn btn-primary" disabled="@(saving || string.IsNullOrWhiteSpace(form.Name))" @onclick="Save">
+                    @(saving ? "Gemmer..." : "Gem")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<ConfirmDialog Show="@showDeleteConfirm"
+               Title="Slet ting"
+               Message="Er du sikker på, at du vil slette denne ting?"
+               ConfirmText="Slet"
+               OnConfirmed="ConfirmDelete"
+               OnCancelled="@(() => { showDeleteConfirm = false; toDeleteId = null; })" />
+
+@code {
+    private List<ReadFacilityDto> facilities = new();
+    private List<ReadUserDto> staff = new();
+    private Dictionary<string, string> userNames = new();
+
+    private bool showForm = false;
+    private bool saving = false;
+    private FacilityForm form = new();
+
+    private bool showDeleteConfirm = false;
+    private Guid? toDeleteId;
+
+    private bool CanManage => Roles.IsAdminOrStaff(AuthStateProvider.GetRole());
+
+    private class FacilityForm
+    {
+        public Guid? Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? ImageBase64 { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? ResponsibleStaffId { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+        await LoadFacilities();
+    }
+
+    private async Task LoadFacilities()
+    {
+        SetLoading(true);
+        ClearMessages();
+        try
+        {
+            facilities = await FacilityService.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            SetError("Kunne ikke hente faciliteter.");
+            LogError("Error loading facilities", ex);
+        }
+        finally
+        {
+            SetLoading(false);
+        }
+    }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            var result = await UserService.GetAllUsers();
+            if (result.Success && result.Data != null)
+            {
+                var all = result.Data.ToList();
+                userNames = all.ToDictionary(u => u.Id, u => $"{u.FirstName} {u.LastName}".Trim());
+                staff = all.Where(u => u.Role == Roles.Staff || u.Role == Roles.Admin)
+                           .OrderBy(u => u.FirstName).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogError("Error loading users", ex);
+        }
+    }
+
+    private string StaffName(string? id) =>
+        !string.IsNullOrEmpty(id) && userNames.TryGetValue(id, out var n) && !string.IsNullOrWhiteSpace(n)
+            ? n
+            : "Ingen ansvarlig";
+
+    private void OpenCreate()
+    {
+        form = new FacilityForm();
+        showForm = true;
+    }
+
+    private void OpenEdit(ReadFacilityDto f)
+    {
+        form = new FacilityForm
+        {
+            Id = f.Id,
+            Name = f.Name,
+            Description = f.Description,
+            ImageUrl = f.ImageUrl,
+            ResponsibleStaffId = f.ResponsibleStaffId
+        };
+        showForm = true;
+    }
+
+    private void CloseForm() => showForm = false;
+
+    private async Task HandleImage(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount == 0) return;
+        var file = e.File;
+        using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+        var buffer = new byte[file.Size];
+        await stream.ReadAsync(buffer);
+        form.ImageBase64 = Convert.ToBase64String(buffer);
+    }
+
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(form.Name)) return;
+
+        saving = true;
+        ClearMessages();
+        try
+        {
+            bool ok;
+            if (form.Id.HasValue)
+            {
+                ok = await FacilityService.UpdateAsync(form.Id.Value, new UpdateFacilityDto
+                {
+                    Name = form.Name,
+                    Description = form.Description,
+                    ImageBase64 = form.ImageBase64,
+                    ImageUrl = form.ImageUrl,
+                    ResponsibleStaffId = string.IsNullOrEmpty(form.ResponsibleStaffId) ? null : form.ResponsibleStaffId
+                });
+            }
+            else
+            {
+                ok = await FacilityService.CreateAsync(new CreateFacilityDto
+                {
+                    Name = form.Name,
+                    Description = form.Description,
+                    ImageBase64 = form.ImageBase64,
+                    ResponsibleStaffId = string.IsNullOrEmpty(form.ResponsibleStaffId) ? null : form.ResponsibleStaffId,
+                    BostedId = AuthStateProvider.GetBostedId()
+                });
+            }
+
+            if (ok)
+            {
+                SetSuccess(form.Id.HasValue ? "Tingen er opdateret." : "Tingen er tilføjet.");
+                showForm = false;
+                await LoadFacilities();
+            }
+            else
+            {
+                SetError("Kunne ikke gemme. Prøv igen.");
+            }
+        }
+        catch (Exception ex)
+        {
+            SetError("Der opstod en fejl ved lagring.");
+            LogError("Error saving facility", ex);
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void AskDelete(Guid id)
+    {
+        toDeleteId = id;
+        showDeleteConfirm = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        showDeleteConfirm = false;
+        if (!toDeleteId.HasValue) return;
+
+        try
+        {
+            var ok = await FacilityService.DeleteAsync(toDeleteId.Value);
+            if (ok)
+            {
+                SetSuccess("Tingen er slettet.");
+                await LoadFacilities();
+            }
+            else
+            {
+                SetError("Kunne ikke slette.");
+            }
+        }
+        catch (Exception ex)
+        {
+            SetError("Der opstod en fejl ved sletning.");
+            LogError("Error deleting facility", ex);
+        }
+        finally
+        {
+            toDeleteId = null;
+        }
+    }
+}

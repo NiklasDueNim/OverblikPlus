@@ -10,6 +10,8 @@ public interface ITaskDbContext
 
     DbSet<TaskCompletion> TaskCompletions { get; }
 
+    DbSet<FacilityEntity> Facilities { get; }
+
     DbSet<TaskStep> TaskSteps { get; }
     
     DbSet<CalendarEvent> CalendarEvents { get; }

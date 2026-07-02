@@ -13,6 +13,7 @@ namespace TaskMicroService.DataAccess
         public DbSet<TaskEntity> Tasks { get; set; }
         public DbSet<TaskStep> TaskSteps { get; set; }
         public DbSet<TaskCompletion> TaskCompletions { get; set; }
+        public DbSet<FacilityEntity> Facilities { get; set; }
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
         public DbSet<ActivityEntity> Activities { get; set; }
         public DbSet<MoodEntity> Moods { get; set; }

@@ -231,6 +231,7 @@ public class Program
         builder.Services.AddScoped<Repositories.Interfaces.IMoodRepository, Repositories.MoodRepository>();
         builder.Services.AddScoped<Repositories.Interfaces.ITaskStepRepository, Repositories.TaskStepRepository>();
         builder.Services.AddScoped<Repositories.Interfaces.IActivityRepository, Repositories.ActivityRepository>();
+        builder.Services.AddScoped<Repositories.Interfaces.IFacilityRepository, Repositories.FacilityRepository>();
         builder.Services.AddScoped<Repositories.Interfaces.ITaskRepository, Repositories.TaskRepository>();
         
         // Services
@@ -240,6 +241,7 @@ public class Program
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<ICalendarEventService, CalendarEventService>();
         builder.Services.AddScoped<IActivityService, ActivityService>();
+        builder.Services.AddScoped<IFacilityService, FacilityService>();
         builder.Services.AddScoped<IShiftService, ShiftService>();
         builder.Services.AddScoped<ITaskDbContext, TaskDbContext>();
         builder.Services.AddScoped<IImageService, ImageService>();

@@ -189,6 +189,7 @@ ConfigureHttpClient<IRelativeService, RelativeService>(builder.Services, taskApi
 ConfigureHttpClient<IAnnouncementService, AnnouncementService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<IMoodService, MoodService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<IActivityService, ActivityService>(builder.Services, taskApiBaseUrl);
+ConfigureHttpClient<IFacilityService, FacilityService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<IShiftService, ShiftService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<INotificationService, NotificationService>(builder.Services, taskApiBaseUrl);
 ConfigureHttpClient<IBudgetService, BudgetService>(builder.Services, taskApiBaseUrl);
