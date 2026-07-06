@@ -37,10 +37,11 @@ public class BlobStorageService : IBlobStorageService
         var blobClient = containerClient.GetBlobClient(fileName);
         await blobClient.UploadAsync(imageStream, overwrite: true);
 
-        // In development the blob lives in Azurite, which is not reachable from the
-        // browser (e.g. the docker-internal "azurite" host). Return an API proxy URL
-        // so the client always hits a reachable endpoint and avoids CORS issues.
-        if (_environment.IsDevelopment() && IsLocalDevStorage(_blobBaseUrl))
+        // When images live in Azurite (local dev or the Coolify-hosted deployment),
+        // the blob host (e.g. the docker-internal "azurite" host) is not reachable from
+        // the browser. Return an API proxy URL so the client always hits a reachable
+        // endpoint (task-api) and avoids CORS issues.
+        if (IsLocalDevStorage(_blobBaseUrl))
         {
             var request = _httpContextAccessor.HttpContext?.Request;
             if (request != null)

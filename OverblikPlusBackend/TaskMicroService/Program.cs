@@ -175,6 +175,7 @@ public class Program
                     policy.WithOrigins(
                             "https://nice-wave-08dd97903.1.azurestaticapps.net",  // PROD Static Web App
                             "https://overblikplus.dk",                              // PROD Custom Domain
+                            "https://www.overblikplus.dk",                          // PROD Custom Domain (www)
                             "https://witty-meadow-0c52c9003.2.azurestaticapps.net", // DEV Static Web App
                             "http://localhost:5226",                                 // Local Development (Rider Frontend)
                             "http://localhost:5003"                                  // Docker Development (Docker Frontend)

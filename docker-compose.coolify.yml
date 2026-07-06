@@ -1,0 +1,93 @@
+# Coolify Docker Compose deployment for OverblikPlus.
+#
+# Set these as environment variables / secrets in Coolify:
+#   SQL_PASSWORD    – strong SQL Server 'sa' password
+#   JWT_KEY         – JWT signing key, at least 32 characters (256-bit for HS256)
+#   ENCRYPTION_KEY  – 32-char key used by UserService for field encryption
+#   SEED_USERS      – set to "true" for the FIRST deploy to seed test users, then back to "false"
+#
+# Domains are assigned in Coolify via the SERVICE_FQDN_* magic variables:
+#   SERVICE_FQDN_FRONTEND_80 -> overblikplus.dk
+#   SERVICE_FQDN_USER_API_80 -> user-api.overblikplus.dk
+#   SERVICE_FQDN_TASK_API_80 -> task-api.overblikplus.dk
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SQL_PASSWORD}
+      - MSSQL_PID=Express
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$SA_PASSWORD\" -C -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 45s
+    restart: unless-stopped
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: azurite-blob --blobHost 0.0.0.0 --location /data
+    volumes:
+      - azurite_data:/data
+    restart: unless-stopped
+
+  user-api:
+    build:
+      context: ./OverblikPlusBackend
+      dockerfile: UserMicroService/Dockerfile
+    environment:
+      - SERVICE_FQDN_USER_API_80
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DBConnectionString=Server=sqlserver;Database=UserDb;User Id=sa;Password=${SQL_PASSWORD};TrustServerCertificate=true;
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=https://user-api.overblikplus.dk
+      - Jwt__Audience=https://user-api.overblikplus.dk
+      - SEED_USERS=${SEED_USERS:-false}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+    restart: unless-stopped
+
+  task-api:
+    build:
+      context: ./OverblikPlusBackend
+      dockerfile: TaskMicroService/Dockerfile
+    environment:
+      - SERVICE_FQDN_TASK_API_80
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DBConnectionString=Server=sqlserver;Database=TaskDb;User Id=sa;Password=${SQL_PASSWORD};TrustServerCertificate=true;
+      - ConnectionStrings__BlobStorageConnectionString=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;
+      - BlobStorageBaseUrl=http://azurite:10000/devstoreaccount1
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=https://user-api.overblikplus.dk
+      - Jwt__Audience=https://user-api.overblikplus.dk
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./OverblikPlus
+      dockerfile: Dockerfile
+    environment:
+      - SERVICE_FQDN_FRONTEND_80
+    depends_on:
+      - user-api
+      - task-api
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+  azurite_data:

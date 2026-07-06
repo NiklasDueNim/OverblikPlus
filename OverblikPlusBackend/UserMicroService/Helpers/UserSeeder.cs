@@ -10,9 +10,16 @@ public static class UserSeeder
 {
     public static async Task SeedUsersAsync(IServiceProvider serviceProvider, ILoggerService logger, IHostEnvironment environment)
     {
-        if (!environment.IsDevelopment())
+        // Seed test users in Development, or in any environment when SEED_USERS=true
+        // (used to bootstrap the first admin on a fresh Coolify/production database).
+        var seedOptIn = string.Equals(
+            Environment.GetEnvironmentVariable("SEED_USERS"),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
+
+        if (!environment.IsDevelopment() && !seedOptIn)
         {
-            logger.LogInfo("User seeding skipped - only runs in Development environment.");
+            logger.LogInfo("User seeding skipped - set SEED_USERS=true to seed outside Development.");
             return;
         }
 
