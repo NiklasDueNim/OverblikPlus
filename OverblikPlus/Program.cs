@@ -46,9 +46,12 @@ string userApiBaseUrl;
 // Check if running on production domain (overblikplus.dk)
 if (host.Contains("overblikplus.dk"))
 {
-    // PRODUCTION (Coolify/Hetzner): read API endpoints from appsettings.production.json
-    taskApiBaseUrl = configuration["TASK_API_BASE_URL"] ?? "https://task-api.overblikplus.dk";
-    userApiBaseUrl = configuration["USER_API_BASE_URL"] ?? "https://user-api.overblikplus.dk";
+    // PRODUCTION (Coolify/Hetzner). Hardcoded on purpose: Blazor WASM does not reliably
+    // merge appsettings.production.json (it auto-loads "appsettings.Production.json" with a
+    // capital P), so reading these from config silently fell back to the localhost defaults
+    // in appsettings.json. The domains are fixed and known at build time anyway.
+    taskApiBaseUrl = "https://task-api.overblikplus.dk";
+    userApiBaseUrl = "https://user-api.overblikplus.dk";
     envConfig = "production";
 }
 // Check if running on production Azure Static Web App
